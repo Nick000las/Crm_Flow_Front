@@ -1,17 +1,23 @@
+import {
+  ApiError,
+  CLIENT_ERROR_CODES,
+  createApiErrorFromResponse,
+  createNetworkError,
+} from './api-error.js'
+
+export {
+  ApiError,
+  CLIENT_ERROR_CODES,
+  getFieldError,
+  isAbortError,
+  toApiError,
+} from './api-error.js'
+
 const DEFAULT_API_URL = 'http://localhost:3000'
 
 export const API_BASE_URL = (
-  import.meta.env.VITE_API_URL?.trim() || DEFAULT_API_URL
+  import.meta.env?.VITE_API_URL?.trim() || DEFAULT_API_URL
 ).replace(/\/+$/, '')
-
-export class ApiError extends Error {
-  constructor(message, status, data) {
-    super(message)
-    this.name = 'ApiError'
-    this.status = status
-    this.data = data
-  }
-}
 
 function buildApiUrl(path) {
   return `${API_BASE_URL}/${path.replace(/^\/+/, '')}`
@@ -55,23 +61,66 @@ export async function apiRequest(path, options = {}) {
     headers.set('Content-Type', 'application/json')
   }
 
-  const response = await fetch(buildApiUrl(path), {
-    ...requestOptions,
-    headers,
-    body: json === undefined ? requestOptions.body : JSON.stringify(json),
-  })
-  const data = await readResponse(response)
+  let response
+  let data
+  let body = requestOptions.body
 
-  if (!response.ok) {
-    const message =
-      data && typeof data === 'object' && 'error' in data
-        ? data.error
-        : `A API respondeu com o status ${response.status}`
-
-    throw new ApiError(message, response.status, data)
+  if (json !== undefined) {
+    try {
+      body = JSON.stringify(json)
+    } catch (cause) {
+      throw new ApiError('Não foi possível preparar os dados da solicitação.', {
+        code: CLIENT_ERROR_CODES.INVALID_REQUEST,
+        cause,
+      })
+    }
   }
 
-  return data
+  try {
+    response = await fetch(buildApiUrl(path), {
+      ...requestOptions,
+      credentials: requestOptions.credentials ?? 'include',
+      headers,
+      body,
+    })
+    data = await readResponse(response)
+  } catch (error) {
+    throw createNetworkError(error)
+  }
+
+  if (!response.ok) {
+    throw createApiErrorFromResponse(data, response.status)
+  }
+
+  return unwrapResponseData(data)
+}
+
+/**
+ * Cliente HTTP compartilhado. Os métodos retornam diretamente o corpo da
+ * resposta já convertido de JSON.
+ */
+export const api = {
+  request: apiRequest,
+
+  get(path, options = {}) {
+    return apiRequest(path, { ...options, method: 'GET' })
+  },
+
+  post(path, json, options = {}) {
+    return apiRequest(path, { ...options, method: 'POST', json })
+  },
+
+  put(path, json, options = {}) {
+    return apiRequest(path, { ...options, method: 'PUT', json })
+  },
+
+  patch(path, json, options = {}) {
+    return apiRequest(path, { ...options, method: 'PATCH', json })
+  },
+
+  delete(path, options = {}) {
+    return apiRequest(path, { ...options, method: 'DELETE' })
+  },
 }
 
 function isBackendHealth(data) {
@@ -88,15 +137,36 @@ function isBackendHealth(data) {
 }
 
 export async function getBackendHealth(options = {}) {
-  const data = await apiRequest('/health', options)
+  const data = await api.get('/health', options)
 
   if (!isBackendHealth(data)) {
     throw new ApiError(
       'A API respondeu, mas o health check retornou dados inválidos.',
-      200,
-      data,
+      {
+        status: 200,
+        code: CLIENT_ERROR_CODES.INVALID_RESPONSE,
+        data,
+      },
     )
   }
 
   return data
+}
+
+export default api
+
+/** @param {unknown} payload */
+function unwrapResponseData(payload) {
+  if (
+    payload !== null &&
+    typeof payload === 'object' &&
+    !Array.isArray(payload) &&
+    Object.prototype.hasOwnProperty.call(payload, 'data') &&
+    typeof payload.statusCode === 'number' &&
+    !Object.prototype.hasOwnProperty.call(payload, 'error')
+  ) {
+    return payload.data
+  }
+
+  return payload
 }
