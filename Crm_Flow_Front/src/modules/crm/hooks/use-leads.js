@@ -1,9 +1,18 @@
 import { useEffect, useState } from 'react';
-import { apiRequest } from '../../../services/api.js';
+import {
+  api,
+  isAbortError,
+  toApiError,
+} from '../../../services/api.js';
 
 /**
  * Hook de dado do módulo CRM — chama o backend, nunca importa de outro módulo.
  * @param {string | null | undefined} accessToken
+ * @returns {{
+ *   leads: import('../types.js').Lead[],
+ *   carregando: boolean,
+ *   erro: import('../../../services/api-error.js').ApiError | null,
+ * }}
  */
 export function useLeads(accessToken) {
   const [result, setResult] = useState(() => ({
@@ -14,11 +23,13 @@ export function useLeads(accessToken) {
   }));
 
   useEffect(() => {
-    if (!accessToken) return undefined;
+    if (!accessToken) {
+      return undefined;
+    }
 
     const controller = new AbortController();
 
-    apiRequest('/crm/leads', {
+    api.get('/crm/leads', {
       accessToken,
       signal: controller.signal,
     })
@@ -33,12 +44,12 @@ export function useLeads(accessToken) {
         }
       })
       .catch((error) => {
-        if (!controller.signal.aborted) {
+        if (!controller.signal.aborted && !isAbortError(error)) {
           setResult({
             accessToken,
             leads: [],
             carregando: false,
-            erro: error.message,
+            erro: toApiError(error),
           });
         }
       });

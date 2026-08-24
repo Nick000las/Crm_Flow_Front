@@ -12,8 +12,7 @@ pnpm install
 pnpm dev
 ```
 
-O backend inicia em `http://localhost:3000` e precisa responder em
-`GET /health`.
+O backend inicia em `http://localhost:3000`.
 
 Depois, neste repositório:
 
@@ -23,8 +22,7 @@ cp .env.example .env.local
 pnpm dev
 ```
 
-Acesse `http://localhost:5173`. A tela inicial consulta o health check e mostra
-se a comunicação foi concluída.
+Acesse `http://localhost:5173`. A rota inicial redireciona para o login.
 
 ## Configuração
 
@@ -43,18 +41,32 @@ As chamadas são centralizadas em `src/services/api.js`. O cliente:
 
 - monta URLs a partir de `VITE_API_URL`;
 - envia e recebe JSON;
-- transforma respostas HTTP inválidas em `ApiError`;
+- desempacota respostas de sucesso no formato `{ statusCode, data }`;
+- transforma falhas HTTP, de rede e de serialização em `ApiError`;
 - aceita `accessToken` para rotas protegidas.
 
-O health check é cancelado após oito segundos e pode ser repetido pela tela em
-caso de falha.
+Os métodos retornam diretamente o corpo da resposta já convertido de JSON:
 
-O endpoint `/health` é público. Rotas como `/crm/leads` exigem um access token
-JWT válido; o backend ainda não oferece uma rota de login.
+```js
+import { api } from '@/services/api'
+
+const leads = await api.get('/crm/leads', { accessToken })
+const newLead = await api.post('/crm/leads', lead, { accessToken })
+```
+
+Erros do backend preservam `status`, `code`, `message`, `fields`, `details` e
+`requestId`. Fluxos condicionais devem usar `code`; mensagens são exibidas com
+o componente acessível `ApiErrorAlert`. Formulários mostram erros inline,
+carregamentos de página mantêm um estado persistente e cancelamentos são
+silenciosos. O cliente HTTP não dispara toast, evitando feedback duplicado.
+
+Rotas como `/crm/leads` exigem um access token JWT válido. A autenticação começa
+em `POST /auth/login`.
 
 ## Qualidade
 
 ```bash
+pnpm test
 pnpm lint
 pnpm build
 ```
