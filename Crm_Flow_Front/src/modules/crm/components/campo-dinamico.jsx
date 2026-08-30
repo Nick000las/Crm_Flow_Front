@@ -1,7 +1,13 @@
+/**
+ * @file Controle de um campo de `/crm/leads/fields`, escolhido pelo `tipo`. Campo calculado
+ * (Lead score com `crm.score`) ou só de ver (`acesso: 'view'`, permissão por campo) aparece
+ * travado, com o motivo.
+ */
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
+
 import {
   MENSAGEM_CALCULADO,
   MENSAGEM_SEM_ACESSO_PIPELINE,
@@ -30,7 +36,7 @@ function CampoNumero({ value, onChange, controle }) {
   return (
     <Input
       {...controle}
-      className={cn(INPUT_CLASS, 'font-mono tabular-nums')}
+      className={cn(INPUT_CLASS, 'tabular-nums')}
       inputMode="decimal"
       onChange={(event) => onChange(event.target.value)}
       value={value}
@@ -42,7 +48,7 @@ function CampoData({ value, onChange, controle }) {
   return (
     <Input
       {...controle}
-      className={cn(INPUT_CLASS, 'font-mono')}
+      className={INPUT_CLASS}
       onChange={(event) => onChange(event.target.value)}
       type="date"
       value={value}
@@ -149,12 +155,15 @@ function motivoTravado(campo) {
   if (campo.calculado) {
     return MENSAGEM_CALCULADO;
   }
+
   if (campo.somenteLeitura) {
     return MENSAGEM_SOMENTE_LEITURA;
   }
+
   if (campo.semAcessoComercial) {
     return MENSAGEM_SEM_ACESSO_PIPELINE;
   }
+
   return podeEditarCampo(campo) ? null : MENSAGEM_SEM_PERMISSAO;
 }
 

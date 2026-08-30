@@ -1,7 +1,13 @@
+/**
+ * @file Compartilha estado e efeitos de use available boards, na área de Kanban, entre
+ * consumidores da interface.
+ */
 import { useEffect, useState } from 'react';
-import { useKanbanEvents } from './use-kanban-events';
+
 import { useAuth } from '@/hooks/useAuth';
+
 import { quadrosDaGaleria } from '../lib/board-modo';
+import { useKanbanEvents } from './use-kanban-events';
 
 export function useAvailableBoards() {
   const { authApi } = useAuth();

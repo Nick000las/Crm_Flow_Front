@@ -1,5 +1,11 @@
+/**
+ * @file Desligar o MFA exige a senha de novo — reduzir a proteção não pode depender só de um
+ * access token válido (regra do backend em `DELETE /auth/mfa`).
+ */
 import { useState } from 'react';
+
 import { ApiErrorAlert } from '@/components/api-error-alert';
+import { FieldError } from '@/components/field-error';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -10,8 +16,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Form } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { focusFirstInvalidField, validateRequired } from '@/lib/form-validation';
 import { getFieldError, isAbortError, toApiError } from '@/services/api';
 
 const PASSWORD_ERROR_ID = 'disable-mfa-password-error';
@@ -23,25 +31,40 @@ const SUBMIT_ERROR_ID = 'disable-mfa-submit-error';
  */
 export function DisableMfaDialog({ open, onOpenChange, authApi, onDisabled }) {
   const [submitError, setSubmitError] = useState(null);
+  const [clientPasswordError, setClientPasswordError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const passwordError = submitError ? getFieldError(submitError, 'senha') : null;
+  const passwordError =
+    clientPasswordError || (submitError ? getFieldError(submitError, 'senha') : null);
 
   function handleOpenChange(nextOpen) {
     if (isSubmitting) {
       return;
     }
+
     if (!nextOpen) {
       setSubmitError(null);
+      setClientPasswordError(null);
     }
+
     onOpenChange(nextOpen);
   }
 
   async function handleSubmit(event) {
     event.preventDefault();
 
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     const senha = String(formData.get('senha') ?? '');
+    const validationError = validateRequired(senha, 'A senha');
 
+    if (validationError) {
+      setClientPasswordError(validationError);
+      focusFirstInvalidField(form, ['senha']);
+
+      return;
+    }
+
+    setClientPasswordError(null);
     setSubmitError(null);
     setIsSubmitting(true);
 
@@ -62,7 +85,7 @@ export function DisableMfaDialog({ open, onOpenChange, authApi, onDisabled }) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md" showCloseButton={!isSubmitting}>
-        <form onSubmit={handleSubmit}>
+        <Form noValidate onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Desativar verificação em duas etapas</DialogTitle>
             <DialogDescription>
@@ -74,7 +97,8 @@ export function DisableMfaDialog({ open, onOpenChange, authApi, onDisabled }) {
             <div className="grid gap-2">
               <Label htmlFor="disable-mfa-password">Senha</Label>
               <Input
-                className="h-10"
+                size="lg"
+
                 id="disable-mfa-password"
                 name="senha"
                 type="password"
@@ -83,14 +107,12 @@ export function DisableMfaDialog({ open, onOpenChange, authApi, onDisabled }) {
                 aria-describedby={passwordError ? PASSWORD_ERROR_ID : undefined}
                 aria-invalid={Boolean(passwordError)}
                 disabled={isSubmitting}
-                onChange={() => setSubmitError(null)}
-                required
+                onChange={() => {
+                  setClientPasswordError(null);
+                  setSubmitError(null);
+                }}
               />
-              {passwordError && (
-                <p className="text-sm text-destructive" id={PASSWORD_ERROR_ID}>
-                  {passwordError}
-                </p>
-              )}
+              <FieldError id={PASSWORD_ERROR_ID} message={passwordError} />
             </div>
 
             <ApiErrorAlert error={submitError} id={SUBMIT_ERROR_ID} />
@@ -113,7 +135,7 @@ export function DisableMfaDialog({ open, onOpenChange, authApi, onDisabled }) {
               {isSubmitting ? 'Desativando...' : 'Desativar'}
             </Button>
           </DialogFooter>
-        </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

@@ -1,5 +1,10 @@
+/**
+ * @file Arquivar, desarquivar, excluir e restaurar. @param {string} leadId.
+ */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
+
 import {
   acaoDaOportunidade,
   criarOportunidade,
@@ -55,18 +60,21 @@ function useMutacaoDeOportunidade(leadId, mutationFn) {
 /** Arquivar, desarquivar, excluir e restaurar. @param {string} leadId */
 export function useAcaoDaOportunidade(leadId) {
   const { authApi } = useAuth();
+
   return useMutacaoDeOportunidade(leadId, ({ id, acao }) => acaoDaOportunidade(authApi, id, acao));
 }
 
 /** @param {string} leadId */
 export function useCriarOportunidade(leadId) {
   const { authApi } = useAuth();
+
   return useMutacaoDeOportunidade(leadId, (corpo) => criarOportunidade(authApi, leadId, corpo));
 }
 
 /** @param {string} leadId */
 export function useEditarOportunidade(leadId) {
   const { authApi } = useAuth();
+
   return useMutacaoDeOportunidade(leadId, ({ id, corpo }) =>
     editarOportunidade(authApi, id, corpo),
   );
@@ -75,6 +83,7 @@ export function useEditarOportunidade(leadId) {
 /** @param {string} leadId */
 export function useMudarStatusDaOportunidade(leadId) {
   const { authApi } = useAuth();
+
   return useMutacaoDeOportunidade(leadId, ({ id, corpo }) =>
     mudarStatusDaOportunidade(authApi, id, corpo),
   );

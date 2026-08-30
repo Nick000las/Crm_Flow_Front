@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import {
-  MENSAGEM_LOTE,
   confirmacaoBate,
   exigeLote,
+  MENSAGEM_LOTE,
   problemaDoLote,
   resumoDaAnonimizacao,
   textoDeConfirmacao,

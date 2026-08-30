@@ -1,3 +1,7 @@
+/**
+ * @file Regras puras do form de campo personalizado (Camada 3), usado em Configurações ›
+ * Campos. Matriz, nome e ordem ficam em `configuracoes-campos.js`.
+ */
 import { TIPOS_COM_OPCOES } from '../constants.js';
 
 /**
@@ -63,6 +67,7 @@ export function validarDefinicao(valores) {
 
   if (usaOpcoes(valores.tipo)) {
     const opcoes = opcoesLimpas(valores.opcoes);
+
     if (opcoes.length === 0) {
       erros.opcoes = MENSAGENS_CAMPOS.OPCOES;
     } else if (new Set(opcoes).size !== opcoes.length) {

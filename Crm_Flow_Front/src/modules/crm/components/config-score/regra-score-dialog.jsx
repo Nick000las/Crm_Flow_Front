@@ -1,4 +1,9 @@
+/**
+ * @file Criar ou editar uma regra de pontuação **no rascunho**: nada é salvo aqui — o "Salvar"
+ * da seção manda tudo (e recalcula os leads).
+ */
 import { useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -9,8 +14,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Form } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+
 import { SCORE } from '../../constants';
 import { validarRegraScore } from '../../lib/score';
 import { CampoForm } from '../campo-form';
@@ -34,25 +41,29 @@ function FormRegraScore({ regra, campos, errosDoServidor, onConfirmar }) {
 
   function handleSubmit(event) {
     event.preventDefault();
+
     const erros = validarRegraScore(valores, campos);
+
     if (Object.keys(erros).length > 0) {
       setErrosCliente(erros);
+
       return;
     }
+
     onConfirmar({ ...valores, nome: valores.nome.trim(), pontos: valores.pontos.trim() });
   }
 
   const erroGeral = erroDe('item');
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_8rem]">
         <CampoForm erro={erroDe('nome')} id="score-regra-nome" label="Nome da regra" obrigatorio>
           {(controle) => (
             <Input
               {...controle}
               autoFocus
-              className="h-9 rounded-none"
+
               onChange={(event) => alterar({ nome: event.target.value })}
               placeholder="Ex.: Veio do site"
               value={valores.nome}
@@ -69,7 +80,7 @@ function FormRegraScore({ regra, campos, errosDoServidor, onConfirmar }) {
           {(controle) => (
             <Input
               {...controle}
-              className="h-9 rounded-none font-mono tabular-nums"
+              className="tabular-nums"
               inputMode="numeric"
               onChange={(event) => alterar({ pontos: event.target.value })}
               value={valores.pontos}
@@ -106,7 +117,7 @@ function FormRegraScore({ regra, campos, errosDoServidor, onConfirmar }) {
         <DialogClose render={<Button type="button" variant="outline" />}>Cancelar</DialogClose>
         <Button type="submit">Concluir</Button>
       </DialogFooter>
-    </form>
+    </Form>
   );
 }
 
@@ -133,7 +144,7 @@ export function RegraScoreDialog({
 }) {
   return (
     <Dialog onOpenChange={onOpenChange} open={Boolean(regra)}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-none sm:max-w-xl">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>{nova ? 'Nova regra' : 'Editar regra'}</DialogTitle>
           <DialogDescription>

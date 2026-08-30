@@ -1,3 +1,7 @@
+/**
+ * @file "Alergias contém dipirona", a partir do alerta como a API devolve. Alvo desconhecido
+ * fica como "Item removido".
+ */
 import { condicaoParaEnvio, condicaoParaForm } from './condicoes.js';
 import { descreverItem, operadoresDoCampo } from './filtro.js';
 import { valorDaCondicao } from './regras.js';
@@ -86,9 +90,11 @@ export function alvoDaChave(chave) {
   if (chave.startsWith(PREFIXO_CAMPO)) {
     return { campoId: chave.slice(PREFIXO_CAMPO.length) };
   }
+
   if (chave.startsWith(PREFIXO_PERGUNTA)) {
     return { perguntaId: chave.slice(PREFIXO_PERGUNTA.length) };
   }
+
   return null;
 }
 
@@ -101,6 +107,7 @@ export function alvoDaChave(chave) {
  */
 function alvoDePergunta(chave, pergunta) {
   const opcoes = (pergunta.opcoes ?? []).map((opcao) => opcao.trim()).filter(Boolean);
+
   return {
     id: chave,
     chave,
@@ -149,7 +156,9 @@ export function alvosDoRascunho(rascunho, campos) {
           ? [alvoDePergunta(`${PREFIXO_PERGUNTA}${item.pergunta.id}`, item.pergunta)]
           : [];
       }
+
       const campo = porId.get(item.campoId);
+
       return campo ? [alvoDeCampo(`${PREFIXO_CAMPO}${item.campoId}`, campo)] : [];
     });
 }
@@ -259,12 +268,14 @@ export function validarAlertas(alertas, alvos) {
       erros.operador = MENSAGENS_ALERTA.OPERADOR;
     } else {
       const resultado = valorDaCondicao(alerta.condicao, alvos);
+
       if ('erro' in resultado) {
         erros.valor = resultado.erro;
       }
     }
 
     const texto = alerta.texto.trim();
+
     if (!texto) {
       erros.texto = MENSAGENS_ALERTA.TEXTO;
     } else if (texto.length > LIMITES_ALERTA.TEXTO) {
@@ -277,6 +288,7 @@ export function validarAlertas(alertas, alvos) {
   }
 
   let geral = null;
+
   if (alertas.length > LIMITES_ALERTA.POR_FORMULARIO) {
     geral = MENSAGENS_ALERTA.LIMITE;
   } else if (Object.keys(porAlerta).length > 0) {
@@ -307,9 +319,11 @@ export const CAMINHO_DO_ALERTA = /^rascunho\.alertas\.(\d+)(?:\.(\w+))?/;
  */
 export function destinoDoErroDeAlerta(caminho, enviados) {
   const alerta = enviados[Number(caminho[1])];
+
   if (!alerta) {
     return null;
   }
+
   return {
     chaveLocal: alerta.chaveLocal,
     parte: /** @type {keyof ErrosDoAlerta} */ (ERRO_DA_PARTE[caminho[2]] ?? 'texto'),
@@ -327,9 +341,11 @@ export function destinoDoErroDeAlerta(caminho, enviados) {
 export function descreverAlerta(alerta, alvos, nomePorId) {
   const chave = chaveDoAlvo(alerta.alvo);
   const alvo = alvos.find((atual) => atual.id === chave);
+
   if (!alvo) {
     return 'Item removido';
   }
+
   return descreverItem(
     { chave, operador: alerta.operador, valor: alerta.valor },
     alvo,

@@ -1,4 +1,7 @@
 /**
+ * @file Usuários ativos do tenant, para o select e o nome do responsável.
+ */
+/**
  * Usuários ativos do tenant, para o select e o nome do responsável.
  *
  * @param {import('@/hooks/create-auth-session').AuthApi} authApi

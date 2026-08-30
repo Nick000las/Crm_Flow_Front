@@ -1,20 +1,46 @@
-import { LogOut } from 'lucide-react';
-import { useState } from 'react';
-import { Spinner } from '@/components/ui/spinner';
+/**
+ * @file Renderiza module rail, na área de navegação, expondo os estados e eventos necessários à
+ * interface.
+ */
+import { CircleHelp } from 'lucide-react';
+import { motion } from 'motion/react';
 import { Link, useLocation } from 'react-router-dom';
+
+import { TRANSITION_FAST } from '@/components/motion/motion-tokens';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAuth } from '@/hooks/useAuth';
-import { UTILITY_ITEMS } from '@/lib/modules-registry';
 import { cn } from '@/lib/utils';
 import { SinoNotificacoes } from '@/modules/notificacoes/components/sino-notificacoes';
 
-const ITEM_BASE =
-  'relative grid size-9 place-items-center rounded-md outline-none transition-colors duration-200 focus-visible:ring-3 focus-visible:ring-ring/50';
-const ITEM_INACTIVE = 'text-background/55 hover:bg-background/10 hover:text-background';
-// Único ponto de cor de destaque do Rail.
-const ITEM_ACTIVE = 'bg-primary/15 text-primary';
+import { getInitials } from '../lib/user-initials';
+import { AccountMenu } from './account-menu';
 
-function RailLink({ item, isActive }) {
+const ITEM_BASE =
+  'relative grid size-9.5 place-items-center rounded-xl outline-none transition-colors duration-150 focus-visible:ring-3 focus-visible:ring-sidebar-ring';
+const ITEM_INACTIVE =
+  'text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground';
+const ITEM_ACTIVE = 'text-primary';
+
+function FlowMark() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className="size-4.5"
+      aria-hidden="true"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M 4 8 C 9 8 9 13 14 13 L 20 13" />
+      <path d="M 16 9.5 L 20 13 L 16 16.5" />
+      <path d="M 4 16 L 10 16 C 13 16 14 18.5 17 18.5" opacity="0.45" />
+    </svg>
+  );
+}
+
+function RailLink({ item, isActive, layoutScope, onNavigate }) {
   const Icon = item.icon;
 
   return (
@@ -23,14 +49,29 @@ function RailLink({ item, isActive }) {
         render={
           <Link
             to={item.path}
+            onClick={onNavigate}
+            data-module={item.key}
             aria-label={item.label}
             aria-current={isActive ? 'page' : undefined}
             className={cn(ITEM_BASE, isActive ? ITEM_ACTIVE : ITEM_INACTIVE)}
           >
             {isActive && (
-              <span className="absolute inset-y-1 -left-2 w-0.5 bg-primary" aria-hidden="true" />
+              <>
+                <motion.span
+                  layoutId={`${layoutScope}-module-rail-pill`}
+                  transition={TRANSITION_FAST}
+                  className="theme-rail-pill absolute inset-0 rounded-xl border border-primary/25 bg-primary/16 shadow-xs"
+                  aria-hidden="true"
+                />
+                <motion.span
+                  layoutId={`${layoutScope}-module-rail-bar`}
+                  transition={TRANSITION_FAST}
+                  className="theme-rail-bar absolute inset-y-2 -left-2.5 w-0.5 rounded-full bg-primary"
+                  aria-hidden="true"
+                />
+              </>
             )}
-            <Icon className="size-4.5" aria-hidden="true" />
+            <Icon className="relative z-10 size-4.5" aria-hidden="true" />
           </Link>
         }
       />
@@ -39,55 +80,101 @@ function RailLink({ item, isActive }) {
   );
 }
 
-/** @param {{ modules: import('@/lib/modules-registry').ModuleEntry[] }} props */
-export function ModuleRail({ modules }) {
-  const { logout } = useAuth();
-  const [loggingOut, setLoggingOut] = useState(false);
+/** @param {{ modules: import('@/lib/modules-registry').ModuleEntry[], onOpenShortcuts?: () => void, onStartTour?: () => void, showAccountMenu?: boolean }} props */
+export function ModuleRail({
+  modules,
+  onOpenShortcuts,
+  onStartTour,
+  onNavigate,
+  showAccountMenu = false,
+  className,
+  layoutScope = 'desktop',
+}) {
+  const { user } = useAuth();
   const { pathname } = useLocation();
-
-  async function handleLogout() {
-    setLoggingOut(true);
-    try {
-      await logout();
-    } finally {
-      setLoggingOut(false);
-    }
-  }
+  const initials = getInitials(user?.nome, user?.email);
 
   const isItemActive = (item) => pathname.startsWith(item.path);
 
   return (
     <nav
-      className="flex w-14 shrink-0 flex-col items-center gap-1 bg-foreground py-3"
+      data-tour={layoutScope === 'desktop' ? 'shell-rail' : undefined}
+      className={cn(
+        'theme-module-rail flex w-15 shrink-0 flex-col items-center overflow-y-auto border-r border-sidebar-border bg-sidebar py-3',
+        className,
+      )}
       aria-label="Módulos"
     >
-      {modules.map((entry) => (
-        <RailLink key={entry.key} item={entry} isActive={isItemActive(entry)} />
-      ))}
+      <div
+        className="mb-3 grid size-9.5 place-items-center text-primary"
+        role="img"
+        aria-label="Flow CRM"
+      >
+        <FlowMark />
+      </div>
 
-      <div className="mt-auto flex flex-col items-center gap-1">
+      <div className="mb-3 h-px w-6 bg-sidebar-border" aria-hidden="true" />
+
+      <div className="flex flex-col items-center gap-1.5">
+        {modules.map((entry) => (
+          <RailLink
+            key={entry.key}
+            item={entry}
+            isActive={isItemActive(entry)}
+            layoutScope={layoutScope}
+            onNavigate={onNavigate}
+          />
+        ))}
+      </div>
+
+      <div className="mt-auto flex flex-col items-center gap-1.5 pt-3">
+        <div className="mb-1.5 h-px w-6 bg-sidebar-border" aria-hidden="true" />
+
+        {onStartTour && (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <button
+                  type="button"
+                  onClick={onStartTour}
+                  aria-label="Iniciar tutorial desta tela"
+                  className={cn(ITEM_BASE, ITEM_INACTIVE)}
+                >
+                  <CircleHelp className="size-4.5" aria-hidden="true" />
+                </button>
+              }
+            />
+            <TooltipContent side="right">Tutorial desta tela</TooltipContent>
+          </Tooltip>
+        )}
+
         {/* Core, sem flag: todo usuário logado tem o sino. */}
         <SinoNotificacoes triggerClassName={cn(ITEM_BASE, ITEM_INACTIVE)} />
-        {UTILITY_ITEMS.map((item) => (
-          <RailLink key={item.key} item={item} isActive={isItemActive(item)} />
-        ))}
 
-        <Tooltip>
-          <TooltipTrigger
-            aria-label={loggingOut ? 'Saindo…' : 'Sair'}
-            disabled={loggingOut}
-            aria-busy={loggingOut}
-            className={cn(ITEM_BASE, ITEM_INACTIVE)}
-            onClick={handleLogout}
-          >
-            {loggingOut ? (
-              <Spinner className="size-4.5" />
-            ) : (
-              <LogOut className="size-4.5" aria-hidden="true" />
-            )}
-          </TooltipTrigger>
-          <TooltipContent side="right">Sair</TooltipContent>
-        </Tooltip>
+        {/* Quando não há PageSidebar (ex.: em /configuracoes), o menu da conta fica acessível pelo avatar no Rail. */}
+        {showAccountMenu && user && (
+          <AccountMenu
+            side="right"
+            align="end"
+            onNavigate={onNavigate}
+            onOpenShortcuts={onOpenShortcuts}
+            onStartTour={onStartTour}
+            trigger={
+              <button
+                type="button"
+                data-tour={layoutScope === 'desktop' ? 'shell-account-menu' : undefined}
+                aria-label="Abrir menu da conta"
+                title={user.nome || user.email}
+                className={cn(
+                  ITEM_BASE,
+                  'cursor-pointer border border-sidebar-border bg-card text-xs font-semibold text-foreground shadow-xs hover:border-border-strong',
+                )}
+              >
+                {initials}
+              </button>
+            }
+          />
+        )}
       </div>
     </nav>
   );

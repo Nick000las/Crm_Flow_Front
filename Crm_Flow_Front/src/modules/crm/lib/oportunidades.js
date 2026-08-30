@@ -1,8 +1,13 @@
+/**
+ * @file Separa os `fields` do erro: os que têm campo no dialog e os demais, que
+ * `CAMPOS_OBRIGATORIOS` pode trazer (a regra pede um dado do lead) e precisam aparecer em
+ * texto, porque o alerta geral não os mostra.
+ */
 import { CAMADA, CATEGORIAS_STATUS, CHAVE_VALOR, TIPOS_CAMPO } from '../constants.js';
 import {
   CHAVE_RESPONSAVEL,
-  MENSAGENS,
   erroComercial,
+  MENSAGENS,
   paraValorDeApi,
   paraValorDeForm,
   podeEditarCampo,
@@ -56,9 +61,11 @@ function acessoAoDado(campos, { campo: chave, semFields = false }) {
   }
 
   const campo = campoDoSistema(campos, chave);
+
   if (!campo) {
     return { visivel: semFields, editavel: semFields };
   }
+
   return { visivel: true, editavel: podeEditarCampo(campo) };
 }
 
@@ -75,6 +82,7 @@ export function acessoAosDados(campos) {
 /** @param {Campo[]} campos */
 export const podeMudarStatus = (campos) => {
   const campo = campoDoSistema(campos, CHAVE_STATUS);
+
   return Boolean(campo) && podeEditarCampo(campo);
 };
 
@@ -118,6 +126,7 @@ export function validarOportunidade(valores) {
   for (const { chave, tipo } of DADOS) {
     const valor = paraValorDeApi(tipo, valores[chave]);
     const erro = Number.isNaN(valor) ? MENSAGENS.NUMERO_INVALIDO : erroComercial(chave, valor);
+
     if (erro) {
       erros[chave] = erro;
     }
@@ -139,11 +148,14 @@ export function payloadDaCriacao(valores, campos) {
   if (valores.pipelineId) {
     payload.pipelineId = valores.pipelineId;
   }
+
   if (valores.status) {
     payload.status = valores.status;
   }
+
   for (const { chave, tipo } of dadosEditaveis(campos)) {
     const valor = paraValorDeApi(tipo, valores[chave]);
+
     if (valor !== null) {
       payload[chave] = valor;
     }
@@ -167,6 +179,7 @@ export function payloadDaEdicao(oportunidade, valores, campos) {
   for (const { chave, tipo } of dadosEditaveis(campos)) {
     const antes = paraValorDeApi(tipo, iniciais[chave]);
     const depois = paraValorDeApi(tipo, valores[chave]);
+
     if (antes !== depois) {
       mudancas[chave] = depois;
     }
@@ -245,6 +258,7 @@ export function errosDoDialog(erro, chaves) {
 
   for (const [chave, mensagens] of Object.entries(erro?.fields ?? {})) {
     const mensagem = mensagens?.[0];
+
     if (mensagem && chaves.includes(chave)) {
       porCampo[chave] = mensagem;
     } else if (mensagem) {

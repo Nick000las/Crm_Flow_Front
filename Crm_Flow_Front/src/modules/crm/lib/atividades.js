@@ -1,3 +1,7 @@
+/**
+ * @file Regras das atividades do lead (`crm.atividades`). O back valida de novo (400 por
+ * campo); aqui só o caso comum, antes de ir à rede.
+ */
 import { LIMITES_ATIVIDADE } from '../constants.js';
 import { opcaoDoCampo } from './opcoes.js';
 
@@ -33,11 +37,13 @@ const dois = (numero) => String(numero).padStart(2, '0');
  */
 export function paraInputLocal(iso) {
   const data = iso ? new Date(iso) : null;
+
   if (!data || Number.isNaN(data.getTime())) {
     return '';
   }
 
   const dia = `${data.getFullYear()}-${dois(data.getMonth() + 1)}-${dois(data.getDate())}`;
+
   return `${dia}T${dois(data.getHours())}:${dois(data.getMinutes())}`;
 }
 
@@ -53,6 +59,7 @@ export function deInputLocal(texto) {
   }
 
   const data = new Date(texto);
+
   return Number.isNaN(data.getTime()) ? null : data.toISOString();
 }
 
@@ -75,14 +82,17 @@ export function validarAtividade(valores) {
   if (!valores.tipo) {
     erros.tipo = MENSAGENS_ATIVIDADE.TIPO;
   }
+
   if (!titulo) {
     erros.titulo = MENSAGENS_ATIVIDADE.TITULO;
   } else if (titulo.length > LIMITES_ATIVIDADE.TITULO) {
     erros.titulo = MENSAGENS_ATIVIDADE.TITULO_LONGO;
   }
+
   if (valores.notas.trim().length > LIMITES_ATIVIDADE.NOTAS) {
     erros.notas = MENSAGENS_ATIVIDADE.NOTAS_LONGAS;
   }
+
   if (!valores.jaAconteceu && valores.agendadaPara && !deInputLocal(valores.agendadaPara)) {
     erros.agendadaPara = MENSAGENS_ATIVIDADE.DATA;
   }
@@ -145,6 +155,7 @@ export function estaAtrasada(atividade, agora = new Date()) {
   }
 
   const agenda = Date.parse(atividade.agendadaPara);
+
   return !Number.isNaN(agenda) && agenda < agora.getTime();
 }
 
@@ -183,10 +194,12 @@ export function opcoesDeTipo(lista, atual) {
   const itens = (lista ?? [])
     .filter((opcao) => opcao.ativo)
     .map((opcao) => ({ valor: opcao.key, rotulo: opcao.label }));
+
   if (!atual || itens.some((item) => item.valor === atual)) {
     return itens;
   }
 
   const opcao = opcaoDoTipo(lista, atual);
+
   return [...itens, { valor: opcao.key, rotulo: `${opcao.label}${SUFIXO_INATIVA}` }];
 }

@@ -1,3 +1,7 @@
+/**
+ * @file Renderiza excluir view dialog, na área de CRM, expondo os estados e eventos necessários
+ * à interface.
+ */
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import {
   AlertDialog,
@@ -9,6 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+
 import { useExcluirView } from '../hooks/use-views';
 
 /**
@@ -24,15 +29,17 @@ export function ExcluirViewDialog({ view, onOpenChange }) {
     if (excluir.isPending) {
       return;
     }
+
     if (!proximo) {
       excluir.reset();
     }
+
     onOpenChange(proximo);
   }
 
   return (
     <AlertDialog onOpenChange={handleOpenChange} open={Boolean(view)}>
-      <AlertDialogContent className="rounded-none">
+      <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Excluir view</AlertDialogTitle>
           <AlertDialogDescription>

@@ -1,4 +1,9 @@
 /**
+ * @file 503 `QUEUE_UNAVAILABLE` devolve o job para `pendente` — dá para confirmar de novo.
+ * `acoes` decide linha a linha o que fazer com as duplicadas (`crm.duplicidade`); linha sem
+ * ação segue a estratégia geral.
+ */
+/**
  * Import de planilha em 4 etapas no back: preview (não grava) → validate
  * (grava job `pendente` com as linhas válidas) → confirm (enfileira) →
  * status (polling). Só DONO/MASTER.
@@ -6,12 +11,15 @@
 
 function formComArquivo(arquivo, campos = {}) {
   const form = new FormData();
+
   for (const [nome, valor] of Object.entries(campos)) {
     form.append(nome, valor);
   }
+
   // Arquivo por último: o back lê o multipart em qualquer ordem, mas assim os
   // campos de texto chegam antes do corpo grande.
   form.append('arquivo', arquivo);
+
   return form;
 }
 

@@ -1,5 +1,11 @@
+/**
+ * @file Navegação entre a lista e o Sheet preservando a query string: abrir um lead e voltar
+ * mantém busca, página e tamanho. Aberto sobre o quadro comercial, a rota-pai manda
+ * `baseDoLead` pelo Outlet, e o Sheet volta para ela.
+ */
 import { useCallback, useMemo } from 'react';
 import { useLocation, useNavigate, useOutletContext } from 'react-router-dom';
+
 import { ROTAS_CRM } from '../rotas';
 
 /**

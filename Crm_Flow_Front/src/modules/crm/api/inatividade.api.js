@@ -1,4 +1,8 @@
 /**
+ * @file Só DONO/MASTER. Parcial: status não enviado fica como está; `null` desliga. Status
+ * fechado com dias dá 400 em `fields["status.<key>"]`.
+ */
+/**
  * Lead esfriando (`crm.inatividade`): dias sem interação até o lead esfriar,
  * por status.
  */

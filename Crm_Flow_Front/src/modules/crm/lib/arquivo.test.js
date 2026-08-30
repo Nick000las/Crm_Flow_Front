@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import { AVISOS_LEAD } from '../constants.js';
 import {
   avisoDaRestauracao,
@@ -52,5 +53,6 @@ test('avisoDaRestauracao diz para onde o lead voltou', () => {
     avisoDaRestauracao({ archived_at: '2026-10-01T00:00:00Z' }),
     AVISOS_LEAD.RESTAURADO_ARQUIVADO,
   );
+
   assert.equal(avisoDaRestauracao({ archived_at: null }), AVISOS_LEAD.RESTAURADO);
 });

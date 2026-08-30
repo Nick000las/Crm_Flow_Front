@@ -1,7 +1,13 @@
+/**
+ * @file Aba Assertividade do Forecast (FC3, só gestão): o que o primeiro snapshot de cada mês
+ * fechado previa e o que se realizou.
+ */
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+
 import { ApiErrorAlert } from '@/components/api-error-alert';
-import { LoadingState } from '@/components/loading-state';
+import { MetricsSkeleton } from '@/components/loading-skeletons';
+
 import { useAssertividade } from '../../hooks/use-assertividade';
 import {
   erroDaAssertividade,
@@ -71,11 +77,14 @@ export function ForecastAssertividade({ onOculta }) {
 
   function mudarPeriodo(proximo) {
     const erros = validarPeriodoFechado(proximo.de, proximo.ate, ultimoFechado);
+
     if (proximo.de && proximo.ate && Object.keys(erros).length === 0) {
       setRascunho(null);
       atualizar({ de: proximo.de, ate: proximo.ate });
+
       return;
     }
+
     setRascunho({ ...proximo, erros });
   }
 
@@ -88,6 +97,7 @@ export function ForecastAssertividade({ onOculta }) {
     ate: consulta.ate ?? resposta?.periodo?.ate ?? '',
   };
   const erros = { ...(rascunho?.erros ?? errosDaUrl) };
+
   if (erro?.tipo === 'filtro') {
     erros[erro.campo] ??= erro.mensagem;
   }
@@ -110,7 +120,9 @@ export function ForecastAssertividade({ onOculta }) {
       {query.error && !erro && (
         <ApiErrorAlert error={query.error} title="Não foi possível carregar a assertividade" />
       )}
-      {!resposta && query.isPending && <LoadingState label="Carregando a assertividade…" />}
+      {!resposta && query.isPending && (
+        <MetricsSkeleton stats={3} rows={4} label="Carregando a assertividade…" />
+      )}
 
       {resposta && (
         <>

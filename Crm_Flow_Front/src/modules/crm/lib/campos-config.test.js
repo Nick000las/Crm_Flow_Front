@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
+
 import {
   MENSAGENS_CAMPOS,
   payloadDaDefinicao,
@@ -29,10 +30,12 @@ describe('form de definição', () => {
     const base = { label: 'Plano', tipo: 'selecao', obrigatorio: false };
 
     assert.equal(validarDefinicao({ ...base, opcoes: ['  ', ''] }).opcoes, MENSAGENS_CAMPOS.OPCOES);
+
     assert.equal(
       validarDefinicao({ ...base, opcoes: ['A', ' A '] }).opcoes,
       MENSAGENS_CAMPOS.OPCAO_REPETIDA,
     );
+
     assert.deepEqual(validarDefinicao({ ...base, opcoes: ['A', 'B'] }), {});
   });
 
@@ -53,6 +56,7 @@ describe('form de definição', () => {
       }),
       { label: 'Plano', tipo: 'selecao_multipla', obrigatorio: true, opcoes: ['A', 'B'] },
     );
+
     assert.deepEqual(
       payloadDaDefinicao({ label: 'Renda', tipo: 'numero', obrigatorio: false, opcoes: ['x'] }),
       {

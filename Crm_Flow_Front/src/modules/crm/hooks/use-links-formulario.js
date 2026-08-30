@@ -1,13 +1,18 @@
+/**
+ * @file Copiar, copiar de novo e gerar novo: o mesmo POST.
+ */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
+
 import {
   listarAlertas,
   listarFormulariosDisponiveis,
   listarLinksDaPessoa,
   listarRespostas,
   marcarAlertaVisto,
-  obterResposta,
   obterLinkDoFormulario,
+  obterResposta,
   revogarLinkDoFormulario,
 } from '../api/links-formulario.api';
 import { crmKeys } from '../query-keys';

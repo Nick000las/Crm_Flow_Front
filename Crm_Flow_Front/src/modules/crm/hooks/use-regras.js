@@ -1,6 +1,11 @@
+/**
+ * @file Regras do tenant. Só busca com `crm.regras`.
+ */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
 import { temFeature } from '@/lib/acesso';
+
 import { criarRegra, editarRegra, excluirRegra, listarRegras } from '../api/regras.api';
 import { CRM_FEATURES } from '../constants';
 import { crmKeys } from '../query-keys';
@@ -35,16 +40,19 @@ function useMutacaoDeRegra(mutationFn) {
 
 export function useCriarRegra() {
   const { authApi } = useAuth();
+
   return useMutacaoDeRegra((corpo) => criarRegra(authApi, corpo));
 }
 
 /** Editar no dialog e o liga/desliga da lista. */
 export function useEditarRegra() {
   const { authApi } = useAuth();
+
   return useMutacaoDeRegra(({ id, parcial }) => editarRegra(authApi, id, parcial));
 }
 
 export function useExcluirRegra() {
   const { authApi } = useAuth();
+
   return useMutacaoDeRegra((id) => excluirRegra(authApi, id));
 }

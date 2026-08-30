@@ -1,6 +1,11 @@
+/**
+ * @file Categorias do filtro do histórico (`crm.timeline`); lista fixa do back.
+ */
 import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
 import { temFeature } from '@/lib/acesso';
+
 import { listarCategoriasHistorico, listarHistorico } from '../api/atividades.api';
 import { CRM_FEATURES, TAMANHO_HISTORICO } from '../constants';
 import { crmKeys } from '../query-keys';

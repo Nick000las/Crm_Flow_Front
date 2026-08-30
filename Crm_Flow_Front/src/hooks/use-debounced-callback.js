@@ -1,3 +1,8 @@
+/**
+ * @file Versão "debounced" de `callback`: só dispara depois de `delayMs` sem nova chamada.
+ * Debounce no evento (e não num valor observado por efeito) evita que uma navegação externa — o
+ * botão voltar — seja desfeita por um valor antigo ainda pendente.
+ */
 import { useCallback, useEffect, useRef } from 'react';
 
 /**

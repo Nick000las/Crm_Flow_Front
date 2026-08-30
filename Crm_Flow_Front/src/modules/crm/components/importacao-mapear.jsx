@@ -1,6 +1,13 @@
+/**
+ * @file Passo 2: para cada coluna da planilha, o campo do CRM que a recebe. Avisos no cliente
+ * espelham o back; a validação de verdade é o passo 3.
+ */
 import { TriangleAlert } from 'lucide-react';
+
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Radio } from '@/components/ui/radio';
 import {
   Table,
   TableBody,
@@ -10,14 +17,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { getFieldError } from '@/services/api';
+
 import { CAMPOS_LGPD, ESTRATEGIAS_DUPLICATA, ROTULOS_ESTRATEGIA } from '../constants';
 import { useConfigLgpd } from '../hooks/use-lgpd';
 import { problemasDoMapeamento } from '../lib/importacao';
 import { exigeLote, problemaDoLote } from '../lib/lgpd';
 import { SelectSimples } from './select-simples';
 
-const HEAD_CLASS =
-  'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
 const AMOSTRAS = 3;
 const NAO_IMPORTAR = 'Não importar';
 
@@ -25,6 +31,7 @@ function textoDaAmostra(valor) {
   if (valor === null || valor === undefined || valor === '') {
     return '—';
   }
+
   return String(valor);
 }
 
@@ -61,13 +68,12 @@ function Estrategia({ valor, onChange }) {
             htmlFor={id}
             key={estrategia}
           >
-            <input
+            <Radio
               checked={valor === estrategia}
-              className="mt-0.5 accent-foreground"
+              className="mt-0.5"
               id={id}
               name="estrategia-duplicata"
               onChange={() => onChange(estrategia)}
-              type="radio"
             />
             <span>
               <span className="font-medium">{rotulo}</span>
@@ -168,26 +174,17 @@ export function ImportacaoMapear({
   return (
     <div className="grid gap-6">
       <p className="text-sm text-muted-foreground">
-        <span className="font-mono text-foreground">{nomeArquivo}</span> ·{' '}
-        <span className="font-mono tabular-nums">
-          {preview.totalLinhas.toLocaleString('pt-BR')}
-        </span>{' '}
-        linhas
+        <span className="text-foreground">{nomeArquivo}</span> ·{' '}
+        <span className="tabular-nums">{preview.totalLinhas.toLocaleString('pt-BR')}</span> linhas
       </p>
 
-      <div className="overflow-x-auto border border-border">
+      <Card layout="plain" className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className={HEAD_CLASS} scope="col">
-                Coluna da planilha
-              </TableHead>
-              <TableHead className={HEAD_CLASS} scope="col">
-                Campo do CRM
-              </TableHead>
-              <TableHead className={HEAD_CLASS} scope="col">
-                Amostras
-              </TableHead>
+              <TableHead scope="col">Coluna da planilha</TableHead>
+              <TableHead scope="col">Campo do CRM</TableHead>
+              <TableHead scope="col">Amostras</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -203,7 +200,7 @@ export function ImportacaoMapear({
                     value={mapeamento[coluna] ?? ''}
                   />
                 </TableCell>
-                <TableCell className="font-mono text-xs text-muted-foreground">
+                <TableCell className="text-xs text-muted-foreground">
                   {preview.linhas.slice(0, AMOSTRAS).map((linha, indice) => (
                     <span className="block max-w-56 truncate" key={indice}>
                       {textoDaAmostra(linha[coluna])}
@@ -214,7 +211,7 @@ export function ImportacaoMapear({
             ))}
           </TableBody>
         </Table>
-      </div>
+      </Card>
 
       <Avisos problemas={problemasDoBack.length > 0 ? problemasDoBack : problemas} />
       {lgpd && onBaseLegalLote && (
@@ -246,8 +243,10 @@ export function ImportacaoMapear({
           aria-busy={validacao.isPending}
           disabled={problemas.length > 0 || validacao.isPending}
           onClick={onValidar}
+          loading={validacao.isPending}
+          loadingText="Validando…"
         >
-          {validacao.isPending ? 'Validando…' : 'Validar planilha'}
+          {'Validar planilha'}
         </Button>
       </div>
     </div>

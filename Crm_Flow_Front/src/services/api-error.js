@@ -1,3 +1,7 @@
+/**
+ * @file 403 de contratação/rollout: a tela mostra um estado próprio (`AcessoIndisponivel`) em
+ * vez de um alerta de erro.
+ */
 const DEFAULT_ERROR_MESSAGE = 'Não foi possível concluir a solicitação.';
 
 export const CLIENT_ERROR_CODES = Object.freeze({
@@ -122,6 +126,7 @@ export function toApiError(error, fallbackMessage = DEFAULT_ERROR_MESSAGE) {
   if (error instanceof ApiError) {
     return error;
   }
+
   if (isAbortError(error)) {
     return createNetworkError(error);
   }

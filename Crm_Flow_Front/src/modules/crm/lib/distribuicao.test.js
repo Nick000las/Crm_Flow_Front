@@ -1,13 +1,14 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import {
-  MENSAGENS_DISTRIBUICAO,
   chaveDaConfig,
   descreverCondicoes,
   destinoDoSelect,
   distribuicaoMudou,
   distribuicaoParaEnvio,
   errosDoPut,
+  MENSAGENS_DISTRIBUICAO,
   nomeDoDestino,
   novaRegra,
   podeAdicionarRegra,
@@ -85,6 +86,7 @@ test('ida e volta: o PUT leva a config inteira, na ordem, com o id das regras ex
       },
     ],
   });
+
   assert.equal(distribuicaoMudou(valores, CONFIG, CAMPOS), false);
 });
 
@@ -100,16 +102,20 @@ test('regra nova vai sem id; reordenar e remover mudam o corpo', () => {
     condicoes: [],
     destino: { tipo: 'usuario', id: 'u-bia' },
   });
+
   assert.deepEqual(
     corpo.regras.map((regra) => regra.id),
     [undefined, 'r-site'],
   );
+
   assert.equal(distribuicaoMudou(proximos, CONFIG, CAMPOS), true);
 });
 
 test('operador sem valor não manda valor', () => {
   const valores = valoresDaDistribuicao(CONFIG, CAMPOS);
+
   valores.regras[0].condicoes = [{ campoId: 'f-empresa', operador: 'vazio', valor: null }];
+
   const { corpo } = /** @type {any} */ (distribuicaoParaEnvio(valores, CAMPOS));
 
   assert.deepEqual(corpo.regras[0].condicoes, [{ campoId: 'f-empresa', operador: 'vazio' }]);
@@ -128,6 +134,7 @@ test('validação: nome, destino, condição incompleta e limite de condições'
     operador: 'nao_vazio',
     valor: null,
   }));
+
   assert.equal(
     validarRegraDistribuicao(
       { ...regra, nome: 'X', destino: 'usuario:u', condicoes: muitas },
@@ -139,12 +146,15 @@ test('validação: nome, destino, condição incompleta e limite de condições'
   const resultado = /** @type {any} */ (
     distribuicaoParaEnvio({ ativo: true, fallback: 'rodizio_geral', regras: [regra] }, CAMPOS)
   );
+
   assert.deepEqual(Object.keys(resultado.erros), ['nova-1']);
 });
 
 test('limite de 50 regras', () => {
   const regras = Array.from({ length: 50 }, (_, indice) => novaRegra(`n-${indice}`));
+
   assert.equal(podeAdicionarRegra({ ativo: true, fallback: 'rodizio_geral', regras }), false);
+
   assert.equal(
     podeAdicionarRegra({ ativo: true, fallback: 'rodizio_geral', regras: regras.slice(1) }),
     true,
@@ -168,6 +178,7 @@ test('400 do PUT: o índice enviado acha a regra mesmo depois de reordenar', () 
     'r-resto': { destino: 'Grupo não encontrado' },
     'r-site': { regra: 'Regra inválida' },
   });
+
   assert.deepEqual(outros, ['Use no máximo 50 regras']);
 });
 

@@ -1,4 +1,8 @@
 /**
+ * @file Por papel, o mapa inteiro `{ [campoId]: acesso }`. 400 em `<papel>.<campoId>` (o Nome)
+ * ou `<papel>` (e-mail e telefone restritos).
+ */
+/**
  * Permissão por campo (`crm.permissoes`). Só DONO/MASTER (o OPERADOR é o
  * papel configurável e vê o efeito em `/crm/leads/fields`).
  *

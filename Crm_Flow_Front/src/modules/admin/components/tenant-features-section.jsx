@@ -1,10 +1,17 @@
+/**
+ * @file `PUT /admin/tenants/:id/features` substitui o conjunto inteiro de flags ligadas — lista
+ * vazia desliga tudo (kill switch).
+ */
 import { useState } from 'react';
+
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Form } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
 import { isAbortError, toApiError } from '@/services/api';
+
 import { useFeatureCatalog } from '../hooks/use-feature-catalog';
 import { agruparFeaturesPorModulo, mesmoConjunto } from '../lib/features';
 
@@ -31,6 +38,7 @@ export function TenantFeaturesSection({ tenant, adminApi, onSaved }) {
 
   function alternar(featureKey, marcado) {
     setSubmitError(null);
+
     setSelecionadas((atual) =>
       marcado ? [...atual, featureKey] : atual.filter((chave) => chave !== featureKey),
     );
@@ -46,6 +54,7 @@ export function TenantFeaturesSection({ tenant, adminApi, onSaved }) {
       await adminApi.put(`/admin/tenants/${tenant.id}/features`, {
         features: selecionadas,
       });
+
       await onSaved();
     } catch (error) {
       if (!isAbortError(error)) {
@@ -67,7 +76,7 @@ export function TenantFeaturesSection({ tenant, adminApi, onSaved }) {
       </CardHeader>
 
       <CardContent>
-        <form className="grid gap-6" onSubmit={handleSubmit}>
+        <Form className="grid gap-6" noValidate onSubmit={handleSubmit}>
           {erroCatalogo ? (
             <ApiErrorAlert
               error={erroCatalogo}
@@ -80,7 +89,7 @@ export function TenantFeaturesSection({ tenant, adminApi, onSaved }) {
           ) : (
             grupos.map(({ moduleKey, features }) => (
               <fieldset className="grid gap-3" key={moduleKey}>
-                <legend className="mb-3 font-mono text-[11px] uppercase tracking-wide text-muted-foreground">
+                <legend className="mb-3 text-[11px] uppercase tracking-wide text-muted-foreground">
                   {moduleKey}
                   {!contratados.includes(moduleKey) && ' · não contratado'}
                 </legend>
@@ -97,7 +106,7 @@ export function TenantFeaturesSection({ tenant, adminApi, onSaved }) {
                           id={id}
                           onCheckedChange={(marcado) => alternar(featureKey, marcado)}
                         />
-                        <Label className="font-mono text-xs font-normal" htmlFor={id}>
+                        <Label className="text-xs font-normal" htmlFor={id}>
                           {featureKey}
                         </Label>
                       </div>
@@ -119,7 +128,7 @@ export function TenantFeaturesSection({ tenant, adminApi, onSaved }) {
               {isSubmitting ? 'Salvando...' : 'Salvar flags'}
             </Button>
           </div>
-        </form>
+        </Form>
       </CardContent>
     </Card>
   );

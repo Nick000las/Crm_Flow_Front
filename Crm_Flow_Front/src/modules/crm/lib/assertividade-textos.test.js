@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import { PAPEIS_GESTAO } from '../constants.js';
-import { DEFINICOES_ABAS_FORECAST } from './forecast-abas.js';
 import { AJUDA_FAIXA, rotuloMesSemAno } from './assertividade-textos.js';
+import { DEFINICOES_ABAS_FORECAST } from './forecast-abas.js';
 
 test('a ajuda de faixa mostra os limites 80% e 120%', () => {
   assert.match(AJUDA_FAIXA.otimista, /80%/);

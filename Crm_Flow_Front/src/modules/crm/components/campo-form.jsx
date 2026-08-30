@@ -1,3 +1,7 @@
+/**
+ * @file Rótulo, controle e erro de um campo.
+ */
+import { FieldError } from '@/components/field-error';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -83,11 +87,7 @@ export function CampoForm({
           {ajuda}
         </p>
       )}
-      {erro && (
-        <p className="text-xs text-destructive" id={erroId}>
-          {erro}
-        </p>
-      )}
+      <FieldError id={erroId} message={erro} />
     </>
   );
 

@@ -1,13 +1,16 @@
+/**
+ * @file Filtros que não acharam nada (diferente de `vazio`, que é o tenant sem vendas).
+ */
 import { BLOCOS_FORECAST } from '../constants.js';
-import { formatarData, formatarMoeda } from './formatadores.js';
 import {
   AJUDA_BLOCO,
-  ROTULOS_BLOCO,
-  ROTULOS_SERIE,
   rotuloCurtoDoMes,
   rotuloDoMes,
+  ROTULOS_BLOCO,
+  ROTULOS_SERIE,
   textoGanhasSemValor,
 } from './forecast-textos.js';
+import { formatarData, formatarMoeda } from './formatadores.js';
 
 /**
  * Montagem do que a tela do forecast mostra. Funções puras: nada é calculado
@@ -30,6 +33,7 @@ export function dinheiro(valor) {
   if (valor === null || valor === undefined) {
     return null;
   }
+
   return formatarMoeda(valor);
 }
 
@@ -91,6 +95,7 @@ export function serieDoGrafico(meses, { veValor, hoje }) {
     const realizado = numeroOuNulo(m.realizado?.soma);
     const emAberto = numeroOuNulo(m.ponderado?.soma);
     const melhorCaso = numeroOuNulo(m.melhorCaso?.soma);
+
     return {
       ...base,
       realizado,
@@ -143,13 +148,17 @@ const BLOCOS_DE_ALERTA = new Set([BLOCOS_FORECAST.ATRASADAS, BLOCOS_FORECAST.SEM
  */
 export function cardsDosBlocos(blocos, veValor) {
   const cards = [];
+
   for (const chave of ORDEM_CARDS) {
     const bloco = blocos?.[chave];
     const quantidade = contagem(bloco?.quantidade);
+
     if (chave === BLOCOS_FORECAST.ANTES_DO_PERIODO && quantidade <= 0) {
       continue;
     }
+
     const comValor = veValor && chave !== BLOCOS_FORECAST.SEM_VALOR;
+
     cards.push({
       chave,
       rotulo: ROTULOS_BLOCO[chave],
@@ -161,6 +170,7 @@ export function cardsDosBlocos(blocos, veValor) {
       clicavel: quantidade > 0,
     });
   }
+
   return cards;
 }
 
@@ -194,13 +204,17 @@ export function colunasDaLista(itens) {
     if (coluna.chave === null) {
       return true;
     }
+
     const presente = itens.some((item) => coluna.chave in item);
+
     if (!presente) {
       return false;
     }
+
     if (coluna.id === 'ganhaEm') {
       return itens.some((item) => item.ganhaEm !== null && item.ganhaEm !== undefined);
     }
+
     return true;
   });
 }
@@ -214,6 +228,7 @@ export function colunasDaLista(itens) {
  */
 export function celulaDaLista(item, coluna, nomePorId) {
   const id = typeof coluna === 'string' ? coluna : coluna.id;
+
   switch (id) {
     case 'pessoa':
       return item.pessoa ?? null;
@@ -225,19 +240,24 @@ export function celulaDaLista(item, coluna, nomePorId) {
       return dinheiro(item.ponderado);
     case 'probabilidade': {
       const n = numeroOuNulo(item.probabilidadeEfetiva);
+
       return n === null ? null : `${n}%`;
     }
+
     case 'dataPrevista':
       return formatarData(item.dataPrevistaFechamento);
     case 'ganhaEm':
       return formatarData(item.ganhaEm);
     case 'responsavel': {
       const respId = item.responsavelId;
+
       if (respId === null || respId === undefined) {
         return 'Sem responsável';
       }
+
       return nomePorId.get(respId) ?? String(respId).slice(0, 8);
     }
+
     default:
       return null;
   }
@@ -262,13 +282,17 @@ export function linhasDosGrupos(grupos, veValor) {
     let quantidade = 0;
     const meses = grupo.meses.map((m) => {
       const qtd = contagem(m.realizado?.quantidade) + contagem(m.ponderado?.quantidade);
+
       quantidade += qtd;
+
       return { mes: m.mes, texto: veValor ? dinheiro(numeroOuNulo(m.previsto)) : String(qtd) };
     });
 
     let previsto = null;
+
     if (veValor) {
       const valores = grupo.meses.map((m) => numeroOuNulo(m.previsto));
+
       if (valores.every((v) => v !== null)) {
         previsto = dinheiro(valores.reduce((total, v) => total + v, 0));
       }
@@ -287,11 +311,13 @@ export function semResultado(resposta) {
   if (resposta.vazio) {
     return false;
   }
+
   const meses = resposta.meses.every(
     (m) => contagem(m.realizado?.quantidade) === 0 && contagem(m.ponderado?.quantidade) === 0,
   );
   const blocos = Object.values(resposta.blocos ?? {}).every(
     (bloco) => contagem(bloco?.quantidade) === 0,
   );
+
   return meses && blocos;
 }

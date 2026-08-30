@@ -1,14 +1,15 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { describe, test } from 'node:test';
+
 import {
-  MENSAGENS_REGRA,
   avaliarNoForm,
   avaliarRegras,
   camposComRegras,
   categoriaDoStatus,
   descreverRegra,
   leadParaAvaliar,
+  MENSAGENS_REGRA,
   payloadDaRegra,
   validarRegra,
   valoresDaRegra,
@@ -101,6 +102,7 @@ test('leadParaAvaliar: o atual coberto pelo form, no formato da API', () => {
     tags: ['vip', 'nova'],
     customFields: { porte: null },
   });
+
   assert.deepEqual(leadParaAvaliar(CAMPOS, undefined, [EMPRESA], { empresa: ' X ' }), {
     empresa: 'X',
     customFields: {},
@@ -141,10 +143,12 @@ test('descreverRegra', () => {
     descreverRegra(POR_STATUS, CAMPOS),
     'Obrigatório quando o status é Proposta ou um status perdido',
   );
+
   assert.equal(
     descreverRegra(CONDICIONAL, CAMPOS),
     'Obrigatório e só aparece quando Origem é Evento',
   );
+
   assert.equal(
     descreverRegra({ ...CONDICIONAL, efeito: { visivel: true } }, CAMPOS),
     'Só aparece quando Origem é Evento',
@@ -158,6 +162,7 @@ test('form da regra por status: validar e montar', () => {
     campoId: MENSAGENS_REGRA.CAMPO,
     condicao: MENSAGENS_REGRA.STATUS,
   });
+
   assert.deepEqual(
     payloadDaRegra({ ...nova, campoId: 'f-empresa', categorias: ['perdido'] }, CAMPOS),
     {
@@ -178,6 +183,7 @@ test('form da regra condicional: valor no formato do filtro e efeito obrigatóri
   };
 
   assert.deepEqual(validarRegra(valores, CAMPOS), { efeito: MENSAGENS_REGRA.EFEITO });
+
   assert.deepEqual(
     validarRegra({ ...valores, condicao: { ...valores.condicao, campoId: 'f-empresa' } }, CAMPOS),
     {
@@ -185,6 +191,7 @@ test('form da regra condicional: valor no formato do filtro e efeito obrigatóri
       efeito: MENSAGENS_REGRA.EFEITO,
     },
   );
+
   assert.deepEqual(payloadDaRegra({ ...valores, visivel: true }, CAMPOS), {
     kind: 'conditional',
     campoId: 'f-empresa',
@@ -198,6 +205,7 @@ test('edição: volta da regra e manda só o que mudou', () => {
 
   assert.deepEqual(valores.condicao, { campoId: 'f-origem', operador: 'igual', valor: 'evento' });
   assert.equal(payloadDaRegra(valores, CAMPOS, CONDICIONAL), null);
+
   assert.deepEqual(payloadDaRegra({ ...valores, visivel: false }, CAMPOS, CONDICIONAL), {
     efeito: { obrigatorio: true, visivel: false },
   });

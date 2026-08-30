@@ -1,4 +1,8 @@
+/**
+ * @file Criar um formulário. Os campos e o termo entram depois, no editor.
+ */
 import { useState } from 'react';
+
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,9 +14,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Form } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { focusFirstInvalidField } from '@/lib/form-validation';
 import { getFieldError } from '@/services/api';
+
 import { useCriarFormulario } from '../../hooks/use-formularios';
 import { MENSAGENS_FORMULARIO, VALIDADE, validarNoCliente } from '../../lib/formularios';
 import { CampoForm } from '../campo-form';
@@ -38,6 +45,7 @@ function FormNovo({ onCriado }) {
   function mudar(campo, valor) {
     setDados((atuais) => ({ ...atuais, [campo]: valor }));
     setErrosLocais({});
+
     if (criar.error) {
       criar.reset();
     }
@@ -45,11 +53,22 @@ function FormNovo({ onCriado }) {
 
   function handleSubmit(event) {
     event.preventDefault();
+
     const { dados: erros } = validarNoCliente(dados, SEM_RASCUNHO, []);
+
     if (Object.keys(erros).length > 0) {
       setErrosLocais(erros);
+
+      focusFirstInvalidField(
+        event.currentTarget,
+        Object.keys(erros).map(
+          (campo) => `formulario-novo-${campo === 'validadeDias' ? 'validade' : campo}`,
+        ),
+      );
+
       return;
     }
+
     criar.mutate(
       {
         nome: dados.nome.trim(),
@@ -61,14 +80,14 @@ function FormNovo({ onCriado }) {
   }
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       {/* 409 de nome repetido e o limite de formulários chegam em `fields.nome`. */}
       <CampoForm erro={erroDe('nome')} id="formulario-novo-nome" label="Nome" obrigatorio>
         {(controle) => (
           <Input
             {...controle}
             autoFocus
-            className="h-9 rounded-none"
+
             onChange={(event) => mudar('nome', event.target.value)}
             placeholder={`Ex.: Anamnese`}
             value={dados.nome}
@@ -79,7 +98,6 @@ function FormNovo({ onCriado }) {
         {(controle) => (
           <Textarea
             {...controle}
-            className="rounded-none"
             onChange={(event) => mudar('descricao', event.target.value)}
             rows={2}
             value={dados.descricao}
@@ -96,7 +114,7 @@ function FormNovo({ onCriado }) {
         {(controle) => (
           <Input
             {...controle}
-            className="h-9 w-32 rounded-none font-mono tabular-nums"
+            className="w-32 tabular-nums"
             inputMode="numeric"
             max={VALIDADE.MAXIMO}
             min={VALIDADE.MINIMO}
@@ -119,11 +137,17 @@ function FormNovo({ onCriado }) {
         <DialogClose render={<Button disabled={criar.isPending} type="button" variant="outline" />}>
           Cancelar
         </DialogClose>
-        <Button aria-busy={criar.isPending} disabled={criar.isPending} type="submit">
-          {criar.isPending ? 'Criando…' : 'Criar e montar'}
+        <Button
+          aria-busy={criar.isPending}
+          disabled={criar.isPending}
+          type="submit"
+          loading={criar.isPending}
+          loadingText="Criando…"
+        >
+          {'Criar e montar'}
         </Button>
       </DialogFooter>
-    </form>
+    </Form>
   );
 }
 
@@ -139,7 +163,7 @@ function FormNovo({ onCriado }) {
 export function FormularioDialog({ open, onOpenChange, onCriado }) {
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="rounded-none sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Novo formulário</DialogTitle>
           <DialogDescription>

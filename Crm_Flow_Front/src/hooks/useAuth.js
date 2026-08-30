@@ -1,5 +1,10 @@
-import api from '@/services/api';
+/**
+ * @file Expõe a sessão autenticada do tenant e resolve o usuário com módulos e permissões
+ * atuais.
+ */
 import { queryClient } from '@/lib/query-client';
+import api from '@/services/api';
+
 import { createAuthSession, getResponseUser } from './create-auth-session.js';
 
 /**

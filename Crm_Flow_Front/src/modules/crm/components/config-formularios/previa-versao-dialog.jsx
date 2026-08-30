@@ -1,4 +1,9 @@
+/**
+ * @file Prévia de uma versão publicada, só leitura. Os nomes são os do dia da publicação:
+ * renomear o campo depois não muda a versão.
+ */
 import { ApiErrorAlert } from '@/components/api-error-alert';
+import { LoadingState } from '@/components/loading-state';
 import {
   Dialog,
   DialogContent,
@@ -7,6 +12,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
+
 import { ROTULOS_TIPO } from '../../constants';
 import { useCampos } from '../../hooks/use-campos';
 import { useVersaoDoFormulario } from '../../hooks/use-formularios';
@@ -22,9 +28,11 @@ const CAMPOS_VAZIOS = [];
 function AlertasDaVersao({ versao }) {
   const campos = useCampos().data ?? CAMPOS_VAZIOS;
   const alertas = versao.alertas ?? [];
+
   if (alertas.length === 0) {
     return null;
   }
+
   const alvos = alvosDaVersao(versao, campos);
 
   return (
@@ -33,7 +41,7 @@ function AlertasDaVersao({ versao }) {
       <ul className="grid gap-1.5">
         {alertas.map((alerta, indice) => (
           <li
-            className="grid gap-1 border border-border px-3 py-2 text-sm"
+            className="grid gap-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm"
             key={alerta.id ?? indice}
           >
             <span className="flex flex-wrap items-baseline gap-2">
@@ -56,14 +64,13 @@ function Conteudo({ formularioId, versaoId }) {
   if (versaoQuery.error) {
     return <ApiErrorAlert error={versaoQuery.error} id="formulario-previa-erro" />;
   }
+
   if (versaoQuery.isPending) {
     return (
       <div className="grid gap-2" aria-busy="true">
-        <span className="sr-only" role="status">
-          Carregando versão…
-        </span>
-        <Skeleton className="h-24 rounded-none" />
-        <Skeleton className="h-24 rounded-none" />
+        <LoadingState label="Carregando versão…" />
+        <Skeleton className="h-24" />
+        <Skeleton className="h-24" />
       </div>
     );
   }
@@ -84,7 +91,7 @@ function Conteudo({ formularioId, versaoId }) {
 
               return (
                 <li
-                  className="grid gap-1 border border-border px-3 py-2 text-sm"
+                  className="grid gap-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm"
                   key={pergunta ? `pergunta-${pergunta.id}` : item.campoId}
                 >
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -98,7 +105,7 @@ function Conteudo({ formularioId, versaoId }) {
                           <span className="sr-only">(obrigatório)</span>
                         </>
                       )}
-                      <span className="ml-2 font-mono text-[11px] text-muted-foreground">
+                      <span className="ml-2 text-[11px] text-muted-foreground">
                         {ROTULOS_TIPO[dados.tipo] ?? dados.tipo}
                       </span>
                       {dados.sensivel && <SeloSensivel className="ml-2" />}
@@ -125,7 +132,9 @@ function Conteudo({ formularioId, versaoId }) {
       ))}
       <div className="grid gap-1">
         <p className="text-xs font-medium text-muted-foreground">Termo de aceite</p>
-        <p className="border border-border px-3 py-2 text-sm whitespace-pre-wrap">{versao.termo}</p>
+        <p className="rounded-lg border border-border bg-surface px-3 py-2 text-sm whitespace-pre-wrap">
+          {versao.termo}
+        </p>
       </div>
       <AlertasDaVersao versao={versao} />
     </div>
@@ -145,7 +154,7 @@ function Conteudo({ formularioId, versaoId }) {
 export function PreviaVersaoDialog({ formularioId, versao, onFechar }) {
   return (
     <Dialog onOpenChange={(aberto) => !aberto && onFechar()} open={Boolean(versao)}>
-      <DialogContent className="rounded-none sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Versão {versao?.versao}</DialogTitle>
           <DialogDescription>Como a pessoa vai ver o formulário.</DialogDescription>

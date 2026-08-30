@@ -1,4 +1,8 @@
 /**
+ * @file Preferência de quem está vendo, em `localStorage`. Pode voltar vazia: nada que precise
+ * persistir de verdade mora aqui.
+ */
+/**
  * Preferência de quem está vendo, em `localStorage`. Pode voltar vazia: nada
  * que precise persistir de verdade mora aqui.
  *

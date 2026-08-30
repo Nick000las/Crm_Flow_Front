@@ -1,5 +1,10 @@
+/**
+ * @file Estado da lista (busca, página, tamanho) guardado na URL: um link compartilhado reabre
+ * a mesma visão, e voltar no navegador funciona.
+ */
 import { useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
+
 import { escreverEstadoLista, lerEstadoLista } from '../lib/url-state';
 
 /**

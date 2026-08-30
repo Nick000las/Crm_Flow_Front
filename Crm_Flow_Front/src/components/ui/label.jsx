@@ -1,3 +1,7 @@
+/**
+ * @file Renderiza label, na área de interface compartilhada, expondo os estados e eventos
+ * necessários à interface.
+ */
 import { cn } from '@/lib/utils';
 
 function Label({ className, ...props }) {

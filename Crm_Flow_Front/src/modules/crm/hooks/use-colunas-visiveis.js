@@ -1,5 +1,11 @@
+/**
+ * @file Colunas escolhidas na tabela. Fica em `localStorage` por tenant porque é conveniência
+ * de quem está vendo, não dado do CRM.
+ */
 import { useCallback, useMemo, useState } from 'react';
+
 import { lerPreferencia, salvarPreferencia } from '@/lib/preferencia-local';
+
 import { sanearSelecao } from '../lib/colunas';
 
 const PREFIXO_CHAVE = 'crm:colunas:';

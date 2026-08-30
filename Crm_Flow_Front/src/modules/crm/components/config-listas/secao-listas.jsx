@@ -1,14 +1,24 @@
-import { Plus } from 'lucide-react';
+/**
+ * @file Configurações › Listas: status, origem, motivos de perda, tipos de atividade e tags do
+ * tenant. A key de cada opção é o que o lead grava, e não muda ao renomear; desativar tira dos
+ * seletores sem mexer em lead nenhum. A aba fica na URL (`?lista=`) para dar link direto.
+ */
 import { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Plus } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
+
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
+import { LoadingState } from '@/components/loading-state';
+import { StatusToast } from '@/components/status-toast';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { isAccessError } from '@/services/api';
+
 import { ROTULOS_LISTA, TIPOS_LISTA } from '../../constants';
 import { useListas, useReordenarOpcoes } from '../../hooks/use-listas';
+import { caminhoDaSecao } from '../../lib/secoes-configuracoes';
 import { ExcluirOpcaoDialog } from './excluir-opcao-dialog';
 import { OpcaoDialog } from './opcao-dialog';
 import { TabelaOpcoes } from './tabela-opcoes';
@@ -20,11 +30,9 @@ const LINHAS_SKELETON = 6;
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando listas…
-      </span>
+      <LoadingState label="Carregando listas…" />
       {Array.from({ length: LINHAS_SKELETON }, (_, indice) => (
-        <Skeleton className="h-11 rounded-none" key={indice} />
+        <Skeleton className="h-11" key={indice} />
       ))}
     </div>
   );
@@ -51,9 +59,11 @@ export function SecaoListas() {
   if (isAccessError(listasQuery.error)) {
     return <AcessoIndisponivel error={listasQuery.error} />;
   }
+
   if (listasQuery.error) {
     return <ApiErrorAlert error={listasQuery.error} id="config-listas-carregar-erro" />;
   }
+
   if (listasQuery.isPending) {
     return <Carregando />;
   }
@@ -64,6 +74,7 @@ export function SecaoListas() {
   function trocarLista(proximo) {
     setAviso(null);
     reordenar.reset();
+
     setSearchParams(proximo === TIPOS_LISTA.STATUS ? {} : { [PARAM_LISTA]: proximo }, {
       replace: true,
     });
@@ -98,15 +109,24 @@ export function SecaoListas() {
           <p className="max-w-2xl text-sm text-muted-foreground">
             A ordem daqui é a dos seletores. Renomear não muda os leads; desativar tira a opção dos
             seletores, e quem já a tem continua com ela.
-            {tipo === TIPOS_LISTA.STATUS &&
-              ' Estes são os status do pipeline padrão; os demais ficam em Pipelines.'}
+            {tipo === TIPOS_LISTA.STATUS && (
+              <>
+                {' '}
+                Estes são os status do pipeline padrão; os demais ficam em{' '}
+                <Link
+                  className="font-medium text-primary underline-offset-4 hover:underline"
+                  to={caminhoDaSecao('pipelines')}
+                >
+                  Pipelines
+                </Link>
+                .
+              </>
+            )}
           </p>
           {opcoes.length > 0 && botaoNovo}
         </div>
 
-        <p className={aviso ? 'border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
-          {aviso}
-        </p>
+        <StatusToast message={aviso} onDismiss={() => setAviso(null)} />
         <ApiErrorAlert
           error={reordenar.error}
           id="config-listas-ordem-erro"

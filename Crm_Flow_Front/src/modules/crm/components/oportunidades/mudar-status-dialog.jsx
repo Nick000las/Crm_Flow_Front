@@ -1,4 +1,9 @@
+/**
+ * @file É aqui que se ganha, perde e reabre: a categoria do status escolhido define o efeito no
+ * back. Aberto enquanto houver `oportunidade`.
+ */
 import { useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -9,11 +14,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Form } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { focusFirstInvalidField } from '@/lib/form-validation';
 import { toApiError } from '@/services/api';
+
 import { MENSAGEM_SEM_PERMISSAO } from '../../constants';
 import { useMudarStatusDaOportunidade } from '../../hooks/use-oportunidades';
 import { podeEditarCampo } from '../../lib/form-lead';
+import { opcoesDoSeletor } from '../../lib/opcoes';
 import {
   acessoAosDados,
   campoDoMotivo,
@@ -22,7 +31,6 @@ import {
   pedeMotivo,
   pedeProbabilidadeNoStatus,
 } from '../../lib/oportunidades';
-import { opcoesDoSeletor } from '../../lib/opcoes';
 import { statusDisponiveis, statusDoPipeline } from '../../lib/pipelines';
 import {
   avisoDeProbabilidade,
@@ -74,9 +82,14 @@ function FormStatus({ oportunidade, pipelines, campos, leadId, onSalvo }) {
 
   function handleSubmit(event) {
     event.preventDefault();
+
     const invalida = comProbabilidade ? validarProbabilidade(probabilidade) : null;
+
     setErroProbabilidade(invalida);
+
     if (invalida) {
+      focusFirstInvalidField(event.currentTarget, ['oportunidade-status-probabilidade']);
+
       return;
     }
 
@@ -106,7 +119,7 @@ function FormStatus({ oportunidade, pipelines, campos, leadId, onSalvo }) {
   }
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       <CampoForm erro={porCampo.status} id="oportunidade-status" label="Status" obrigatorio>
         {(controle) => (
           <SelectSimples
@@ -147,7 +160,7 @@ function FormStatus({ oportunidade, pipelines, campos, leadId, onSalvo }) {
           {(controle) => (
             <Input
               {...controle}
-              className={`${INPUT_CLASS} w-48 font-mono tabular-nums`}
+              className={`${INPUT_CLASS} w-48 tabular-nums`}
               inputMode="numeric"
               onChange={(event) => {
                 setErroProbabilidade(null);
@@ -176,11 +189,13 @@ function FormStatus({ oportunidade, pipelines, campos, leadId, onSalvo }) {
           aria-busy={mudar.isPending}
           disabled={mudar.isPending || !status || status === oportunidade.status}
           type="submit"
+          loading={mudar.isPending}
+          loadingText="Salvando…"
         >
-          {mudar.isPending ? 'Salvando…' : 'Mudar status'}
+          {'Mudar status'}
         </Button>
       </DialogFooter>
-    </form>
+    </Form>
   );
 }
 
@@ -207,7 +222,7 @@ export function MudarStatusDialog({
 }) {
   return (
     <Dialog onOpenChange={onOpenChange} open={Boolean(oportunidade)}>
-      <DialogContent className="rounded-none sm:max-w-md">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Mudar status</DialogTitle>
           <DialogDescription>

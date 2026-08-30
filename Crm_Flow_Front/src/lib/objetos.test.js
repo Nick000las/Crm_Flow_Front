@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import { semChave } from './objetos.js';
 
 test('remove a chave sem alterar o original', () => {

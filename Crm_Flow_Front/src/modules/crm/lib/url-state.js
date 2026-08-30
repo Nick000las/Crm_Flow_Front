@@ -1,3 +1,6 @@
+/**
+ * @file View salva → mudanças no estado da lista (volta para a 1ª página).
+ */
 import { BUSCA_LEADS, SITUACOES_LEAD, TAMANHOS_PAGINA } from '../constants.js';
 import { lerSituacao } from './arquivo.js';
 import { FILTRO_VAZIO, lerFiltro, serializarFiltro } from './filtro.js';

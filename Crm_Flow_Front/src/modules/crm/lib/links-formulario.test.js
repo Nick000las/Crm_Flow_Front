@@ -1,13 +1,14 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import {
-  MOTIVOS_LINK,
-  STATUS_LINK,
   estadoDoLink,
   linkDoWhatsapp,
   mensagemDoWhatsapp,
+  MOTIVOS_LINK,
   motivoSemEnvio,
   primeiroNomeDoLead,
+  STATUS_LINK,
   telefoneDoWhatsapp,
   urlAbsoluta,
 } from './links-formulario.js';
@@ -17,14 +18,17 @@ test('estadoDoLink segue a tabela do handoff', () => {
     rotulo: 'Aguardando resposta',
     acao: 'copiar',
   });
+
   assert.deepEqual(estadoDoLink({ status: STATUS_LINK.VENCIDO }), {
     rotulo: 'Vencido',
     acao: 'gerar',
   });
+
   assert.deepEqual(estadoDoLink({ status: STATUS_LINK.CANCELADO }), {
     rotulo: 'Cancelado',
     acao: 'gerar',
   });
+
   assert.deepEqual(estadoDoLink({ status: STATUS_LINK.RESPONDIDO }), {
     rotulo: 'Respondido',
     acao: null,
@@ -36,6 +40,7 @@ test('urlAbsoluta mantém a absoluta e resolve o caminho na origem', () => {
     urlAbsoluta('https://app.exemplo.com/f/abc', 'http://localhost:5173'),
     'https://app.exemplo.com/f/abc',
   );
+
   assert.equal(urlAbsoluta('/f/abc', 'http://localhost:5173'), 'http://localhost:5173/f/abc');
 });
 
@@ -58,6 +63,7 @@ test('mensagemDoWhatsapp cumprimenta pelo nome quando há', () => {
     mensagemDoWhatsapp({ primeiroNome: 'Ana', formulario: 'Anamnese', url: 'u' }),
     'Olá, Ana! Responda o formulário Anamnese: u',
   );
+
   assert.equal(
     mensagemDoWhatsapp({ primeiroNome: null, formulario: 'Anamnese', url: 'u' }),
     'Olá! Responda o formulário Anamnese: u',
@@ -73,6 +79,7 @@ test('primeiroNomeDoLead usa o do back e cai no Nome', () => {
 test('motivoSemEnvio trava pessoa arquivada ou anonimizada', () => {
   assert.equal(motivoSemEnvio({}), null);
   assert.equal(motivoSemEnvio({ archived_at: '2026-11-07' }), MOTIVOS_LINK.ARQUIVADA);
+
   assert.equal(
     motivoSemEnvio({ archived_at: '2026-11-07', anonimizado_em: '2026-11-07' }),
     MOTIVOS_LINK.ANONIMIZADA,

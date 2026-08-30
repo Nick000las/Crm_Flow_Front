@@ -1,3 +1,7 @@
+/**
+ * @file O filtro que vai para a busca. Sem a flag, `faixaScore` sai (o back daria 400): um link
+ * ou view antiga não quebra a lista.
+ */
 import { corValida } from '../../../lib/contraste.js';
 import { SCORE } from '../constants.js';
 import { condicaoParaEnvio, condicaoParaForm, validarCondicoes } from './condicoes.js';
@@ -51,9 +55,11 @@ const INTEIRO = /^-?\d+$/;
 /** Texto → inteiro; '' → `null` (sem limite); inválido → `NaN`. */
 function lerInteiro(texto) {
   const limpo = String(texto ?? '').trim();
+
   if (limpo === '') {
     return null;
   }
+
   return INTEIRO.test(limpo) ? Number(limpo) : Number.NaN;
 }
 
@@ -72,7 +78,9 @@ export function faixaDoScore(faixas, score) {
   if (!faixas || score === null || score === undefined || score === '') {
     return null;
   }
+
   const valor = Number(score);
+
   if (!Number.isFinite(valor)) {
     return null;
   }
@@ -89,9 +97,11 @@ export function faixaDoScore(faixas, score) {
 /** "+20", "-10", "0" — os pontos de uma regra com sinal. */
 export function textoDosPontos(pontos) {
   const numero = lerInteiro(pontos);
+
   if (numero === null || Number.isNaN(numero)) {
     return String(pontos ?? '');
   }
+
   return numero > 0 ? `+${numero}` : String(numero);
 }
 
@@ -141,10 +151,13 @@ export function novaFaixa(chaveLocal) {
  */
 export function validarRegraScore(regra, campos) {
   const erros = {};
+
   if (!regra.nome.trim()) {
     erros.nome = MENSAGENS_SCORE.NOME;
   }
+
   const pontos = lerInteiro(regra.pontos);
+
   if (pontos === null || Number.isNaN(pontos) || Math.abs(pontos) > SCORE.PONTOS_MAX) {
     erros.pontos = MENSAGENS_SCORE.PONTOS;
   }
@@ -155,23 +168,30 @@ export function validarRegraScore(regra, campos) {
 /** @param {FaixaNoForm} faixa */
 function validarFaixa(faixa) {
   const erros = {};
+
   if (!faixa.rotulo.trim()) {
     erros.rotulo = MENSAGENS_SCORE.ROTULO;
   }
+
   const minimo = lerInteiro(faixa.minimo);
   const maximo = lerInteiro(faixa.maximo);
+
   if (Number.isNaN(minimo)) {
     erros.minimo = MENSAGENS_SCORE.LIMITE;
   }
+
   if (Number.isNaN(maximo)) {
     erros.maximo = MENSAGENS_SCORE.LIMITE;
   }
+
   if (!erros.minimo && !erros.maximo && minimo !== null && maximo !== null && minimo > maximo) {
     erros.item = MENSAGENS_SCORE.MINIMO_MAIOR;
   }
+
   if (!corValida(faixa.cor)) {
     erros.cor = MENSAGENS_SCORE.COR;
   }
+
   return erros;
 }
 
@@ -188,10 +208,12 @@ function sobreposicao(faixas) {
   for (let indice = 1; indice < ordenadas.length; indice++) {
     const anterior = ordenadas[indice - 1];
     const atual = ordenadas[indice];
+
     if ((anterior.maximo ?? Infinity) >= (atual.minimo ?? -Infinity)) {
       return `As faixas "${anterior.rotulo}" e "${atual.rotulo}" se sobrepõem`;
     }
   }
+
   return null;
 }
 
@@ -209,27 +231,35 @@ export function scoreParaEnvio(valores, campos) {
 
   for (const regra of valores.regras) {
     const daRegra = validarRegraScore(regra, campos);
+
     if (Object.keys(daRegra).length > 0) {
       erros.regras[regra.chaveLocal] = daRegra;
     }
   }
+
   for (const faixa of valores.faixas) {
     const daFaixa = validarFaixa(faixa);
+
     if (Object.keys(daFaixa).length > 0) {
       erros.faixas[faixa.chaveLocal] = daFaixa;
     }
   }
+
   if (valores.regras.length > SCORE.MAX_REGRAS) {
     erros.geral.push(MENSAGENS_SCORE.MAX_REGRAS);
   }
+
   if (valores.faixas.length === 0) {
     erros.geral.push(MENSAGENS_SCORE.SEM_FAIXA);
   }
+
   if (valores.faixas.length > SCORE.MAX_FAIXAS) {
     erros.geral.push(MENSAGENS_SCORE.MAX_FAIXAS);
   }
+
   if (Object.keys(erros.faixas).length === 0) {
     const sobrepostas = sobreposicao(valores.faixas);
+
     if (sobrepostas) {
       erros.geral.push(sobrepostas);
     }
@@ -239,6 +269,7 @@ export function scoreParaEnvio(valores, campos) {
     erros.geral.length > 0 ||
     Object.keys(erros.regras).length > 0 ||
     Object.keys(erros.faixas).length > 0;
+
   if (temErro) {
     return { erros };
   }
@@ -265,7 +296,9 @@ export function scoreParaEnvio(valores, campos) {
 const semChaveLocal = (itens) =>
   itens.map((item) => {
     const resto = { ...item };
+
     delete resto.chaveLocal;
+
     return resto;
   });
 
@@ -278,6 +311,7 @@ const semChaveLocal = (itens) =>
  */
 export function scoreMudou(valores, config, campos) {
   const salvo = valoresDoScore(config, campos);
+
   return (
     JSON.stringify([semChaveLocal(valores.regras), semChaveLocal(valores.faixas)]) !==
     JSON.stringify([semChaveLocal(salvo.regras), semChaveLocal(salvo.faixas)])
@@ -311,13 +345,17 @@ export function textoDoRecalculo(recalculo) {
   if (!recalculo) {
     return null;
   }
+
   if (recalculo.emAndamento) {
     return `Recalculando… ${numeroFormatter.format(recalculo.processados)} de ${numeroFormatter.format(recalculo.total)} leads`;
   }
+
   if (!recalculo.concluidoEm) {
     return null;
   }
+
   const data = new Date(recalculo.concluidoEm);
+
   return Number.isNaN(data.getTime())
     ? null
     : `Último recálculo: ${instanteFormatter.format(data)}`;

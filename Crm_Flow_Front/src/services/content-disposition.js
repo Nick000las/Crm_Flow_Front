@@ -1,3 +1,7 @@
+/**
+ * @file Extrai o nome do arquivo de um cabeçalho `Content-Disposition`. `filename*` (RFC 5987)
+ * tem prioridade por suportar acentos.
+ */
 const FILENAME_STAR = /filename\*\s*=\s*([^']*)'[^']*'([^;]+)/i;
 const FILENAME_PLAIN = /filename\s*=\s*(?:"([^"]*)"|([^;]+))/i;
 

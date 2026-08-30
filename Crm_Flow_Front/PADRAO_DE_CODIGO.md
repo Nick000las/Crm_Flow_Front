@@ -1,79 +1,87 @@
-# Padrão de código
+# Padrão de código e legibilidade
 
-Backend e frontend usam ESLint para qualidade e Prettier para formatação.
-Cada projeto tem configuração própria para funcionar também fora deste workspace.
+Este documento descreve o padrão aplicado ao código existente. ESLint verifica estrutura e responsabilidades; Prettier formata o código. Ambos bloqueiam o `check` quando há divergências, inclusive avisos.
 
-- Dois espaços, aspas simples, ponto e vírgula e vírgula final.
-- Quebra de linhas orientada a 100 caracteres pelo Prettier.
-- Blocos com chaves obrigatórios, inclusive em condicionais de uma linha.
-- No máximo uma instrução por linha.
-- Igualdade estrita, `const` quando possível, sem `var` nem imports duplicados.
-- O lint falha também em avisos. As regras de arquitetura e React continuam ativas.
+As ferramentas exigem Node.js compatível com `^20.19.0 || ^22.13.0 || >=24`, declarado em `package.json`.
 
-Execute os comandos na pasta que contém o `package.json` de cada projeto:
+## Formatação e separação de contextos
+
+- Dois espaços, UTF-8, LF, aspas simples, ponto e vírgula e vírgula final. Prettier orienta a quebra em 100 colunas.
+- Imports no início do arquivo, agrupados em: efeitos colaterais, módulos Node, dependências, aliases internos e caminhos relativos. A ordem e os nomes importados são corrigidos automaticamente.
+- Uma instrução por linha; condicionais sempre com chaves; igualdade estrita; `const` quando não houver reatribuição; sem imports duplicados.
+- Separe com linha em branco declarações e execução, validações, blocos de controle, chamadas que ocupam várias linhas e o retorno. Declarações consecutivas do mesmo contexto podem ficar juntas.
+- Não una leitura, validação, mutação e retorno em uma sequência compactada. Evite funções com vários assuntos: extraia operações com nomes do domínio.
+- Chamadas longas são quebradas pelo Prettier. Prefira objeto nomeado quando houver vários argumentos com significado de negócio; não esconda condições ou efeitos colaterais dentro dos argumentos.
+- Não force linhas em branco entre cada campo de objeto, item de array ou setter relacionado: o objetivo é distinguir contextos, não aumentar artificialmente o arquivo.
+
+```js
+const input = validarEntrada(request.body);
+
+if (!input.nome) {
+  throw erroDeValidacao('nome', 'Informe o nome');
+}
+
+const resultado = await salvarRegistro({
+  tenantId: context.tenantId,
+  nome: input.nome,
+});
+
+return resultado;
+```
+
+## Finalidade dos arquivos
+
+Todo arquivo de produção em `src/` começa com JSDoc `@file`, antes dos imports. Explique o que ele entrega e seu limite de responsabilidade; não escreva apenas “funções auxiliares”. Testes são identificados pelo nome `*.test.js` e pelo comportamento descrito nas suítes.
+
+```js
+/**
+ * @file Valida a equipe do quadro e garante o acesso de edição do autor ao salvar.
+ * @layer service
+ */
+```
+
+`@layer` é útil nas camadas de aplicação; `@file` é obrigatório e verificado pelo lint. Documente parâmetros e retornos não óbvios com JSDoc. Comentários explicam intenção e invariantes, sem repetir cada linha do código. Envolva a descrição do cabeçalho em linhas curtas.
+
+## Comandos
+
+Execute na pasta com `package.json`:
 
 ```sh
-pnpm lint:fix
-pnpm format
-pnpm lint
-pnpm format:check
+pnpm lint:fix     # corrige imports, espaçamento e formatação
+pnpm lint         # verifica ESLint e Prettier sem alterar arquivos
+pnpm test:lint    # verifica as regras locais com exemplos válidos e inválidos
+pnpm check        # validação completa do projeto
 ```
 
-`pnpm check` reúne lint, verificação de formatação e testes; no frontend,
-também executa o build. Os testes de isolamento do backend precisam do banco.
+O comando de correção executa Prettier, autofix ESLint e Prettier novamente antes da validação final. Isso permite corrigir chaves e quebras de linha na mesma execução, mantendo falha para qualquer erro ou aviso restante.
 
-Configure o editor para usar Prettier ao salvar. O `.editorconfig` define
-indentação, UTF-8 e fim de linha LF. Não edite migrations já aplicadas para
-adequar formatação: elas estão excluídas do Prettier.
+As regras de legibilidade ficam em `eslint.rules.js`; as específicas do projeto, em `tooling/eslint/`. Não crie configurações divergentes por pasta para fazer o lint passar. Uma exceção precisa ser pontual, explicar o motivo e preservar os contratos existentes.
 
-## Interface e orientações para agentes
+Migrations já aplicadas, arquivos gerados e lockfiles não são reformatados. A revisão de estilo não autoriza alterar o comportamento dos dados.
 
-O ponto de entrada para agentes é [AGENTS.md](.agents/AGENTS.md), que referencia a
-skill [flow-frontend](.agents/skills/flow-frontend/SKILL.md).
+## Responsabilidades no frontend
 
-Exclusões persistidas usam o componente compartilhado
-`src/components/confirmation-dialog.jsx`, com foco inicial em Cancelar, alcance
-da exclusão explícito, ação vermelha e erro visível. O envio bloqueia novas
-confirmações e fechamento. A exclusão de tenant mantém o modal especializado
-com confirmação digitada do subdomínio.
+| Local                | Responsabilidade                                      | Evitar                                                                    |
+| -------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------- |
+| `pages/`             | Compor a tela, navegação e estados de apresentação    | Protocolos HTTP duplicados e cálculos de domínio espalhados no JSX        |
+| `components/`        | Renderizar um contexto visual e expor eventos claros  | Consultas ao banco ou misturar recursos independentes no mesmo componente |
+| `hooks/`             | Compartilhar estado e efeitos de um fluxo             | Virar um depósito genérico de regras de vários módulos                    |
+| `api/` e `*.api.js`  | Transporte, endpoints e contratos das chamadas        | Importar React, telas, componentes ou hooks                               |
+| `lib/`               | Cálculos, normalização e transformações puras         | Efeitos de rede escondidos                                                |
+| `src/components/ui/` | Controles reutilizáveis e seus contratos de interação | Recriar controles diferentes em cada módulo                               |
+| `src/services/`      | Infraestrutura HTTP e sessão compartilhada            | Armazenar credenciais em estado persistente do navegador                  |
 
-Use `Button` com `variant="destructive"`; no CSS legado do Kanban, use
-`kb-button-danger`. As regras de ESLint bloqueiam `confirm`, `alert` e `prompt`
-nativos. Navegação entre páginas de um módulo pertence ao menu lateral.
+O lint impede dependências de interface nos arquivos `.api.js`. As regras de React, hooks, controles compartilhados e atualização de componentes continuam ativas. Regras de permissão e integridade são obrigatoriamente revalidadas no backend.
 
-## Carregamentos
+Exemplos: `src/hooks/create-auth-session.js` cuida do ciclo de sessão; `src/modules/kanban/components/card-flow-fields.jsx` contém os campos do fluxo do card; `src/modules/kanban/lib/flow.js` concentra as transformações puras.
 
-Cada formulário ou região de dados tem seu próprio estado de requisição. Use
-`LoadingState` para áreas e `Button` com `loading` e `loadingText` para ações.
-Ambos usam o `Spinner` compartilhado, com suporte a movimento reduzido.
-Não use overlay global nem apenas texto de espera. Preserve os dados atuais em
-revalidações e os rascunhos de outros componentes.
+## Fluxo de desenvolvimento
 
-```jsx
-<LoadingState label="Carregando participantes…" />
-<Button loading={isSaving} loadingText="Salvando…">Salvar</Button>
-```
+1. Edite o arquivo na camada que representa sua responsabilidade.
+2. Atualize sua descrição `@file` se a finalidade mudar.
+3. Rode `pnpm lint:fix` e revise o diff.
+4. Rode `pnpm check`; mudanças de interação também usam os testes de navegador pertinentes.
 
-As IAs devem atualizar as skills versionadas quando estes padrões evoluírem,
-junto com o código de referência e as verificações aplicáveis.
+Configure o editor para usar Prettier e ESLint ao salvar. As configurações do projeto são a fonte de verdade, independentemente do editor.
 
-## Requisições em paralelo
-
-Consultas independentes do mesmo fluxo usam `Promise.all`, iniciando todas as
-chamadas antes do `await`. Efeitos de componentes independentes já concorrem e
-mantêm seus próprios spinners e erros. Operações que dependem do resultado da
-anterior continuam sequenciais, como salvar e depois consultar o estado salvo.
-
-## Animações
-
-Use `src/styles/motion.css`: 120 ms para feedback e 180 ms para entradas.
-`PageTransition` anima o conteúdo dos shells sem remontar os componentes.
-Modais, cards, comentários e botões compartilham efeitos discretos. Respeite
-`prefers-reduced-motion` e não atrase ações ou requisições para esperar animações.
-
-## Organização das instruções de IA
-
-Skills, regras e contexto para agentes ficam em `.agents/`, dentro deste projeto.
-O ponto de entrada é `.agents/AGENTS.md`; não mantenha arquivos de instruções
-de IA na raiz. Configure a ferramenta para ler esse caminho quando necessário.
-Mantenha as regras centralizadas e atualize os links quando a estrutura evoluir.
+As orientações para agentes ficam em [.agents/AGENTS.md](.agents/AGENTS.md) e na [skill do frontend](.agents/skills/flow-frontend/SKILL.md).

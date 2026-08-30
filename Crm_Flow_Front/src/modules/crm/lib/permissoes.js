@@ -1,3 +1,7 @@
+/**
+ * @file 400 do PUT → `porCampo` (`<papel>.<campoId>`, na linha) e `porPapel` (`<papel>`, no
+ * alerta). O resto volta em `outros`.
+ */
 import { ACESSOS_CAMPO } from '../constants.js';
 
 /**
@@ -62,6 +66,7 @@ export function permissoesMudaram(valores, config) {
 export function validarPermissoes(valores, config) {
   const erros = {};
   const contatos = config.campos.filter((campo) => CHAVES_CONTATO.includes(campo.chave));
+
   if (contatos.length < CHAVES_CONTATO.length) {
     return erros;
   }
@@ -71,6 +76,7 @@ export function validarPermissoes(valores, config) {
       erros[papel] = MENSAGENS_PERMISSOES.CONTATO;
     }
   }
+
   return erros;
 }
 
@@ -90,6 +96,7 @@ export function errosDasPermissoes(fields, papeis) {
   for (const [caminho, mensagens] of Object.entries(fields ?? {})) {
     const mensagem = Array.isArray(mensagens) ? mensagens[0] : String(mensagens);
     const [papel, campoId, ...resto] = caminho.split('.');
+
     if (!papeis.includes(papel) || resto.length > 0) {
       outros.push(mensagem);
     } else if (campoId) {

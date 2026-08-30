@@ -1,3 +1,7 @@
+/**
+ * @file Frase das condições: "Origem é Site e UF é SP"; sem condição, "Todos os leads".
+ * Condição incompleta aparece só pelo campo.
+ */
 import { descreverItem, itemDaLinha, linhaDoItem } from './filtro.js';
 import { MENSAGENS_REGRA, valorDaCondicao } from './regras.js';
 
@@ -20,9 +24,11 @@ import { MENSAGENS_REGRA, valorDaCondicao } from './regras.js';
  */
 export function condicaoParaForm({ campoId, operador, valor }, campos) {
   const campo = campos.find((atual) => atual.id === campoId);
+
   if (!campo) {
     return { campoId, operador, valor: valor ?? null };
   }
+
   return {
     campoId,
     operador,
@@ -39,6 +45,7 @@ export function condicaoParaForm({ campoId, operador, valor }, campos) {
  */
 export function condicaoParaEnvio(condicao, campos) {
   const { valor } = /** @type {{ valor: unknown }} */ (valorDaCondicao(condicao, campos));
+
   return {
     campoId: condicao.campoId,
     operador: condicao.operador,
@@ -57,12 +64,14 @@ export function condicaoParaEnvio(condicao, campos) {
  */
 export function validarCondicoes(condicoes, campos, maximo) {
   const erros = {};
+
   if (condicoes.length > maximo) {
     erros.condicoes = `Use no máximo ${maximo} condições`;
   }
 
   condicoes.forEach((condicao, indice) => {
     const resultado = valorDaCondicao(condicao, campos);
+
     if ('erro' in resultado) {
       erros[`condicoes.${indice}`] = resultado.erro;
     }
@@ -87,10 +96,13 @@ export function descreverCondicoes(regra, campos, nomePorId) {
   return regra.condicoes
     .map(({ campoId, operador, valor }) => {
       const campo = campos.find((atual) => atual.id === campoId);
+
       if (!campo) {
         return MENSAGENS_REGRA.CAMPO_CONDICAO;
       }
+
       const resultado = itemDaLinha({ chave: campo.chave, operador, valor }, campo);
+
       return 'erro' in resultado
         ? `${campo.label} (incompleta)`
         : descreverItem(resultado.item, campo, nomePorId);

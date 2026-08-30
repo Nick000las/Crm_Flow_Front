@@ -1,12 +1,19 @@
-import { LoadingState } from '@/components/loading-state';
+/**
+ * @file Organiza a tela de tenant detail page, na área de administração, e coordena navegação,
+ * consultas e ações do usuário.
+ */
 import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+
 import { ApiErrorAlert } from '@/components/api-error-alert';
+import { FormSkeleton } from '@/components/loading-skeletons';
+import { LoadingState } from '@/components/loading-state';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAdminAuth } from '@/hooks/use-admin-auth';
+
 import { DeleteTenantDialog } from '../components/delete-tenant-dialog';
 import { TenantFeaturesSection } from '../components/tenant-features-section';
 import { TenantIdentitySection } from '../components/tenant-identity-section';
@@ -34,7 +41,10 @@ export default function TenantDetailPage() {
     return (
       <>
         <PageHeader actions={voltar} title="Tenant" />
-        <LoadingState label="Carregando dados do tenant…" />
+        <div className="grid gap-6">
+          <FormSkeleton fields={4} label="Carregando dados do tenant…" />
+          <FormSkeleton fields={2} label="Carregando módulos e recursos…" />
+        </div>
       </>
     );
   }
@@ -59,14 +69,18 @@ export default function TenantDetailPage() {
             estado local de cada seção já é igual ao que foi gravado — é o que
             faz os botões voltarem a ficar desabilitados. Remontar aqui só
             apagaria a confirmação de "salvo" no instante em que ela aparece. */}
-        <TenantIdentitySection adminApi={authApi} onSaved={recarregar} tenant={tenant} />
+        <div data-tour="admin-tenant-identity" className="grid gap-6">
+          <TenantIdentitySection adminApi={authApi} onSaved={recarregar} tenant={tenant} />
 
-        <TenantStatusSection adminApi={authApi} onSaved={recarregar} tenant={tenant} />
+          <TenantStatusSection adminApi={authApi} onSaved={recarregar} tenant={tenant} />
+        </div>
 
-        <TenantModulesSection adminApi={authApi} onSaved={recarregar} tenant={tenant} />
-        <TenantFeaturesSection adminApi={authApi} onSaved={recarregar} tenant={tenant} />
+        <div data-tour="admin-tenant-modules" className="grid gap-6">
+          <TenantModulesSection adminApi={authApi} onSaved={recarregar} tenant={tenant} />
+          <TenantFeaturesSection adminApi={authApi} onSaved={recarregar} tenant={tenant} />
+        </div>
 
-        <Card className="border-destructive/30">
+        <Card data-tour="admin-tenant-danger" className="border-destructive/30">
           <CardHeader>
             <CardTitle>Excluir tenant</CardTitle>
             <CardDescription>

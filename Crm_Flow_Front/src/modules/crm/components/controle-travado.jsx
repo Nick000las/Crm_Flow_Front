@@ -1,3 +1,7 @@
+/**
+ * @file Explica por que um controle está desabilitado: tooltip no mouse e o mesmo texto em
+ * `sr-only` com `motivoId`, que o controle aponta em `aria-describedby`.
+ */
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 /**

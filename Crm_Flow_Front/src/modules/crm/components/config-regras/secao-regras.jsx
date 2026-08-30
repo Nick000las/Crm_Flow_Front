@@ -1,13 +1,20 @@
-import { ListChecks, Pencil, Plus, Trash2 } from 'lucide-react';
+/**
+ * @file Configurações › Regras de campo (`crm.regras`, DONO/MASTER): quando um campo fica
+ * obrigatório ou só aparece no formulário do lead.
+ */
 import { useState } from 'react';
+import { ListChecks, Pencil, Plus, Trash2 } from 'lucide-react';
+
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
-import { ModulePlaceholder } from '@/components/module-placeholder';
+import { EmptyState } from '@/components/empty-state';
+import { LoadingState } from '@/components/loading-state';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { isAccessError } from '@/services/api';
+
 import { useCampos } from '../../hooks/use-campos';
 import { useEditarRegra, useRegras } from '../../hooks/use-regras';
 import { descreverRegra } from '../../lib/regras';
@@ -20,11 +27,9 @@ const CAMPOS_VAZIOS = [];
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando regras…
-      </span>
+      <LoadingState label="Carregando regras…" />
       {Array.from({ length: 4 }, (_, indice) => (
-        <Skeleton className="h-14 rounded-none" key={indice} />
+        <Skeleton className="h-14" key={indice} />
       ))}
     </div>
   );
@@ -39,11 +44,7 @@ function LinhaRegra({ regra, descricao, alternando, onAlternar, onEditar, onExcl
       <div className="grid min-w-0 flex-1 gap-0.5">
         <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
           {regra.alvo.label}
-          {regra.sistema && (
-            <Badge className="rounded-none" variant="outline">
-              Sistema
-            </Badge>
-          )}
+          {regra.sistema && <Badge variant="outline">Sistema</Badge>}
         </p>
         <p className="text-sm text-muted-foreground">{descricao}</p>
       </div>
@@ -93,12 +94,15 @@ export function SecaoRegras() {
   const [aviso, setAviso] = useState(null);
 
   const erro = regrasQuery.error ?? camposQuery.error;
+
   if (isAccessError(erro)) {
     return <AcessoIndisponivel error={erro} />;
   }
+
   if (erro) {
     return <ApiErrorAlert error={erro} id="config-regras-carregar-erro" />;
   }
+
   if (regrasQuery.isPending || camposQuery.isPending) {
     return <Carregando />;
   }
@@ -114,6 +118,7 @@ export function SecaoRegras() {
 
   function alternarAtiva(regra, ativo) {
     setAviso(null);
+
     alternar.mutate(
       { id: regra.id, parcial: { ativo } },
       { onSuccess: () => setAviso(ativo ? 'Regra ligada.' : 'Regra desligada.') },
@@ -137,7 +142,12 @@ export function SecaoRegras() {
         {regras.length > 0 && botaoNova}
       </div>
 
-      <p className={aviso ? 'border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
+      <p
+        className={
+          aviso ? 'rounded-lg border border-border bg-surface px-3 py-2 text-sm' : 'sr-only'
+        }
+        role="status"
+      >
         {aviso}
       </p>
       <ApiErrorAlert
@@ -147,13 +157,13 @@ export function SecaoRegras() {
       />
 
       {regras.length === 0 ? (
-        <ModulePlaceholder
+        <EmptyState
           description="Ex.: Motivo da perda obrigatório quando o status é Perdido."
           icon={ListChecks}
           title="Nenhuma regra ainda"
         >
           {botaoNova}
-        </ModulePlaceholder>
+        </EmptyState>
       ) : (
         <ul className="border border-border">
           {regras.map((regra) => (

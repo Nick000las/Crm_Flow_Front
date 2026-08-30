@@ -1,17 +1,18 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
+
 import {
-  MENSAGENS_LAYOUT,
-  SEM_NOME,
   colunaDoItem,
   errosPorParte,
-  idsDasColunas,
   identificadorPermitido,
+  idsDasColunas,
   layoutDoEditor,
+  MENSAGENS_LAYOUT,
   opcoesDoEditor,
   parcialDoMeu,
-  placeholderDaBusca,
   PLACEHOLDER_BUSCA,
+  placeholderDaBusca,
+  SEM_NOME,
   subtituloDoLead,
   textoDoValor,
   tituloDoLead,
@@ -115,6 +116,7 @@ describe('colunas', () => {
       'responsavel',
       'criadoEm',
     ]);
+
     assert.equal(colunaDoItem(criadoEm).tipo, 'instante');
     assert.equal(colunaDoItem(empresa).campo, empresa);
   });
@@ -175,11 +177,14 @@ describe('editor', () => {
     const base = { identificador: 'n', subtitulo: [], destaques: [], secoes: [], colunas: ['a'] };
 
     assert.deepEqual(validarLayout(base), {});
+
     assert.equal(
       validarLayout({ ...base, subtitulo: ['a', 'b', 'c'] }).subtitulo,
       MENSAGENS_LAYOUT.SUBTITULO,
     );
+
     assert.equal(validarLayout({ ...base, colunas: [] }).colunas, MENSAGENS_LAYOUT.COLUNAS);
+
     assert.equal(
       validarLayout({
         ...base,
@@ -190,6 +195,7 @@ describe('editor', () => {
       }).secoes,
       MENSAGENS_LAYOUT.SECAO_REPETIDA,
     );
+
     assert.equal(
       validarLayout({
         ...base,
@@ -200,6 +206,7 @@ describe('editor', () => {
       }).secoes,
       MENSAGENS_LAYOUT.CAMPO_EM_DUAS_SECOES,
     );
+
     assert.equal(
       validarLayout({ ...base, secoes: [{ nome: '', campos: [] }] }).secoes,
       MENSAGENS_LAYOUT.NOME_SECAO,
@@ -218,5 +225,6 @@ test('400 do back cai na parte certa do editor', () => {
     errosPorParte({ 'secoes.1.nome': ['Nome repetido'], subtitulo: ['No máximo 2'], outro: ['x'] }),
     { porParte: { secoes: 'Nome repetido', subtitulo: 'No máximo 2' }, geral: ['x'] },
   );
+
   assert.deepEqual(errosPorParte(undefined), { porParte: {}, geral: [] });
 });

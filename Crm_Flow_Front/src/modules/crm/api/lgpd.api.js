@@ -1,4 +1,9 @@
 /**
+ * @file Pedido do titular, irreversível (só DONO/MASTER). Vale para lead arquivado ou na
+ * lixeira e leva junto os mesclados nele. 409 = já anonimizado; 403 = OPERADOR; 404 = não
+ * existe.
+ */
+/**
  * LGPD (`crm.lgpd`): base legal padrão/obrigatória e anonimização.
  *
  * @typedef {{ key: string, label: string }} OpcaoLgpd

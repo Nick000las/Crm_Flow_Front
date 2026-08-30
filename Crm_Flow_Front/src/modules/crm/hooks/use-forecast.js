@@ -1,5 +1,11 @@
+/**
+ * @file Ação em massa. Recarrega no sucesso e no erro: um 500 deixa gravadas as que já passaram
+ * (handoff FC2, 2.3). As oportunidades mudam nas fichas abertas.
+ */
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
+
 import {
   atualizarDataPrevista,
   buscarForecast,

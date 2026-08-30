@@ -1,4 +1,9 @@
+/**
+ * @file Criar ou editar um grupo de distribuição. Salva na hora (não faz parte do rascunho das
+ * regras).
+ */
 import { useState } from 'react';
+
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -11,8 +16,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Form } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { getFieldError } from '@/services/api';
+
 import { useCriarGrupo, useEditarGrupo } from '../../hooks/use-distribuicao';
 import { MENSAGENS_DISTRIBUICAO } from '../../lib/distribuicao';
 import { CampoForm } from '../campo-form';
@@ -37,6 +44,7 @@ function FormGrupo({ grupo, usuarios, onSalvo }) {
 
   function limparErros() {
     setErroNome(null);
+
     if (mutacao.error) {
       mutacao.reset();
     }
@@ -49,11 +57,15 @@ function FormGrupo({ grupo, usuarios, onSalvo }) {
 
   function handleSubmit(event) {
     event.preventDefault();
+
     if (!nome.trim()) {
       setErroNome(MENSAGENS_DISTRIBUICAO.NOME_GRUPO);
+
       return;
     }
+
     const corpo = { nome: nome.trim(), membros };
+
     if (editando) {
       editar.mutate({ id: grupo.id, grupo: corpo }, { onSuccess: onSalvo });
     } else {
@@ -62,14 +74,14 @@ function FormGrupo({ grupo, usuarios, onSalvo }) {
   }
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       {/* 409 de nome repetido chega em `fields.nome`. */}
       <CampoForm erro={erroNome ?? erroDe('nome')} id="grupo-nome" label="Nome" obrigatorio>
         {(controle) => (
           <Input
             {...controle}
             autoFocus
-            className="h-9 rounded-none"
+
             onChange={(event) => {
               setNome(event.target.value);
               limparErros();
@@ -88,6 +100,7 @@ function FormGrupo({ grupo, usuarios, onSalvo }) {
             <div className="grid max-h-64 gap-2 overflow-y-auto border border-border p-2 sm:grid-cols-2">
               {usuarios.map((usuario) => {
                 const id = `grupo-membro-${usuario.id}`;
+
                 return (
                   <label className="flex items-center gap-2 text-sm" htmlFor={id} key={usuario.id}>
                     <Checkbox
@@ -122,11 +135,17 @@ function FormGrupo({ grupo, usuarios, onSalvo }) {
         >
           Cancelar
         </DialogClose>
-        <Button aria-busy={mutacao.isPending} disabled={mutacao.isPending} type="submit">
-          {mutacao.isPending ? 'Salvando…' : editando ? 'Salvar alterações' : 'Criar grupo'}
+        <Button
+          aria-busy={mutacao.isPending}
+          disabled={mutacao.isPending}
+          type="submit"
+          loading={mutacao.isPending}
+          loadingText="Salvando…"
+        >
+          {editando ? 'Salvar alterações' : 'Criar grupo'}
         </Button>
       </DialogFooter>
-    </form>
+    </Form>
   );
 }
 
@@ -145,24 +164,22 @@ function FormGrupo({ grupo, usuarios, onSalvo }) {
 export function GrupoDialog({ open, onOpenChange, grupo, usuarios, onSalvo }) {
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="rounded-none sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{grupo ? 'Editar grupo' : 'Novo grupo'}</DialogTitle>
           <DialogDescription>
             Um grupo pode ser o destino de uma regra de distribuição.
           </DialogDescription>
         </DialogHeader>
-        {open && (
-          <FormGrupo
-            grupo={grupo}
-            key={grupo?.id ?? 'novo'}
-            onSalvo={(salvo) => {
-              onOpenChange(false);
-              onSalvo(salvo);
-            }}
-            usuarios={usuarios}
-          />
-        )}
+        <FormGrupo
+          grupo={grupo}
+          key={grupo?.id ?? 'novo'}
+          onSalvo={(salvo) => {
+            onOpenChange(false);
+            onSalvo(salvo);
+          }}
+          usuarios={usuarios}
+        />
       </DialogContent>
     </Dialog>
   );

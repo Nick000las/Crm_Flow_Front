@@ -1,18 +1,19 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
+
 import {
-  payloadDeUmCampo,
-  MENSAGENS,
   camposDoStatus,
   errosDoServidor,
   lerNumeroDigitado,
   marcarCalculados,
+  marcarSemAcessoComercial,
+  MENSAGENS,
   montarPayloadCriacao,
   montarPayloadEdicao,
+  payloadDeUmCampo,
   payloadVazio,
-  validarNoCliente,
-  marcarSemAcessoComercial,
   podeEditarCampo,
+  validarNoCliente,
   valoresIniciais,
   versaoDoLead,
 } from './form-lead.js';
@@ -144,6 +145,7 @@ test('payloadDeUmCampo põe o personalizado em customFields', () => {
   assert.deepEqual(payloadDeUmCampo({ chave: 'email', camada: 1 }, 'a@b.com'), {
     email: 'a@b.com',
   });
+
   assert.deepEqual(payloadDeUmCampo({ chave: 'alergias', camada: 3 }, 'Dipirona'), {
     customFields: { alergias: 'Dipirona' },
   });
@@ -169,10 +171,12 @@ describe('limites comerciais', () => {
 
     assert.deepEqual(validar({}), {});
     assert.equal(validar({ valor: '-1' }).valor, MENSAGENS.VALOR_NEGATIVO);
+
     assert.equal(
       validar({ probabilidadeFechamento: '101' }).probabilidadeFechamento,
       MENSAGENS.PROBABILIDADE_INVALIDA,
     );
+
     assert.equal(
       validar({ probabilidadeFechamento: '10,5' }).probabilidadeFechamento,
       MENSAGENS.PROBABILIDADE_INVALIDA,
@@ -218,6 +222,7 @@ describe('camposDoStatus', () => {
     const valores = { status: 'novo', dataConversao: '2026-11-06', valor: '' };
 
     assert.deepEqual(montarPayloadCriacao(lista, valores), { status: 'novo' });
+
     assert.deepEqual(montarPayloadCriacao(lista, { ...valores, status: 'ganho' }), {
       status: 'ganho',
       dataConversao: '2026-11-06',
@@ -230,6 +235,7 @@ describe('camposDoStatus', () => {
     assert.deepEqual(montarPayloadEdicao(lista, iniciais, { ...iniciais, status: 'novo' }), {
       status: 'novo',
     });
+
     assert.deepEqual(
       montarPayloadEdicao(lista, iniciais, {
         ...iniciais,
@@ -392,6 +398,7 @@ describe('errosDoServidor', () => {
       leadScore: 'Informe um número válido',
       usuarioResponsavelId: 'Escolha um usuário ativo desta conta',
     });
+
     assert.deepEqual(gerais, [
       '"Renda" é obrigatório e não pode ser limpo',
       'Informe o estágio do funil',
@@ -530,6 +537,7 @@ describe('telefone com DDD', () => {
       validarNoCliente(campos, { ...base(), telefone: '(11) 2345-6789' }).telefone,
       undefined,
     );
+
     assert.equal(
       validarNoCliente(campos, { ...base(), telefone: '11923456789' }).telefone,
       undefined,
@@ -556,6 +564,7 @@ describe('listas do tenant', () => {
         ],
       };
     }
+
     return campo;
   });
 
@@ -754,11 +763,13 @@ describe('permissão por campo (crm.permissoes)', () => {
 
     const iniciais = valoresIniciais(restritos, lead);
     const editados = { ...iniciais, status: 'ganho', renda: '', nome: 'Bia' };
+
     assert.deepEqual(montarPayloadEdicao(restritos, iniciais, editados), { nome: 'Bia' });
   });
 
   test('não cobra obrigatório de campo só de ver', () => {
     const restritos = comAcesso({ nome: 'view' });
+
     assert.equal(
       validarNoCliente(restritos, { ...valoresIniciais(restritos), email: 'a@x.com' }).nome,
       undefined,
@@ -767,10 +778,12 @@ describe('permissão por campo (crm.permissoes)', () => {
 
   test('contato: e-mail oculto ou só de ver manda o aviso para o telefone', () => {
     const semEmail = campos.filter((campo) => campo.chave !== 'email');
+
     assert.equal(validarNoCliente(semEmail, valoresIniciais(semEmail)).telefone, MENSAGENS.CONTATO);
 
     const emailSoVer = comAcesso({ email: 'view' });
     const erros = validarNoCliente(emailSoVer, valoresIniciais(emailSoVer));
+
     assert.equal(erros.telefone, MENSAGENS.CONTATO);
     assert.equal(erros.email, undefined);
 
@@ -783,6 +796,7 @@ describe('permissão por campo (crm.permissoes)', () => {
 
   test('sem contato editável no form, o back decide', () => {
     const semContato = campos.filter((campo) => !['email', 'telefone'].includes(campo.chave));
+
     assert.equal(
       validarNoCliente(semContato, { ...valoresIniciais(semContato), nome: 'Ana' }).email,
       undefined,
@@ -795,6 +809,7 @@ describe('Lead score calculado (crm.score)', () => {
     const valores = { ...valoresIniciais(campos), nome: 'Ana', email: 'a@x.com', leadScore: '50' };
 
     assert.equal(montarPayloadCriacao(marcarCalculados(campos, false), valores).leadScore, 50);
+
     assert.equal(
       montarPayloadCriacao(marcarCalculados(campos, true), valores).leadScore,
       undefined,
@@ -802,6 +817,7 @@ describe('Lead score calculado (crm.score)', () => {
 
     const iniciais = valoresIniciais(campos, lead);
     const editados = { ...iniciais, leadScore: '99' };
+
     assert.deepEqual(montarPayloadEdicao(marcarCalculados(campos, true), iniciais, editados), {});
   });
 });
@@ -837,12 +853,15 @@ describe('LGPD (crm.lgpd)', () => {
       email: 'a@x.com',
       baseLegalEm: '2026-10-01',
     };
+
     assert.equal(montarPayloadCriacao(comLgpd, valores).baseLegalEm, undefined);
   });
 
   test('opt-out: na criação só vai marcado; na edição, quando muda', () => {
     const base = { ...valoresIniciais(comLgpd), nome: 'Ana', email: 'a@x.com' };
+
     assert.equal(montarPayloadCriacao(comLgpd, base).optOutMarketing, undefined);
+
     assert.equal(
       montarPayloadCriacao(comLgpd, { ...base, optOutMarketing: true }).optOutMarketing,
       true,
@@ -852,8 +871,10 @@ describe('LGPD (crm.lgpd)', () => {
       ...lead,
       marketing_opt_out_at: '2026-10-01T00:00:00Z',
     });
+
     assert.equal(iniciais.optOutMarketing, true);
     assert.deepEqual(montarPayloadEdicao(comLgpd, iniciais, iniciais), {});
+
     assert.deepEqual(
       montarPayloadEdicao(comLgpd, iniciais, { ...iniciais, optOutMarketing: false }),
       {
@@ -867,6 +888,7 @@ describe('LGPD (crm.lgpd)', () => {
       valoresIniciais(comLgpd, undefined, { baseLegal: 'consentimento' }).baseLegal,
       'consentimento',
     );
+
     assert.equal(valoresIniciais(comLgpd, lead, { baseLegal: 'consentimento' }).baseLegal, '');
   });
 });

@@ -1,11 +1,18 @@
-import { ArrowLeft, ClipboardList } from 'lucide-react';
+/**
+ * @file Carrega o formulário e grava. As mutações moram aqui, e não no editor: salvar remonta o
+ * editor com a resposta, e o "Salvar e publicar" continua depois.
+ */
 import { useState } from 'react';
+import { ArrowLeft, ClipboardList } from 'lucide-react';
+
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
-import { ModulePlaceholder } from '@/components/module-placeholder';
+import { EmptyState } from '@/components/empty-state';
+import { LoadingState } from '@/components/loading-state';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { isAccessError, toApiError } from '@/services/api';
+
 import { useCampos } from '../../hooks/use-campos';
 import {
   useCamposElegiveis,
@@ -22,12 +29,10 @@ const STATUS_NAO_ENCONTRADO = 404;
 function Carregando() {
   return (
     <div className="grid gap-3" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando formulário…
-      </span>
-      <Skeleton className="h-9 w-64 rounded-none" />
-      <Skeleton className="h-40 rounded-none" />
-      <Skeleton className="h-64 rounded-none" />
+      <LoadingState label="Carregando formulário…" />
+      <Skeleton className="h-9 w-64" />
+      <Skeleton className="h-40" />
+      <Skeleton className="h-64" />
     </div>
   );
 }
@@ -58,12 +63,15 @@ export function FormularioAberto({ id, onVoltar, onAviso }) {
   async function gravar({ corpo, rascunho, publicarDepois }) {
     setFalha(null);
     onAviso(null);
+
     try {
       if (corpo) {
         await salvar.mutateAsync(corpo);
       }
+
       if (publicarDepois) {
         const versao = await publicar.mutateAsync();
+
         onAviso(`Versão ${versao.versao} publicada.`);
       } else {
         onAviso('Formulário salvo.');
@@ -78,26 +86,30 @@ export function FormularioAberto({ id, onVoltar, onAviso }) {
   }
 
   const erro = formularioQuery.error ?? elegiveisQuery.error ?? camposQuery.error;
+
   if (isAccessError(erro)) {
     return <AcessoIndisponivel error={erro} />;
   }
+
   if (formularioQuery.error?.status === STATUS_NAO_ENCONTRADO) {
     return (
-      <ModulePlaceholder
+      <EmptyState
         description="Ele pode ter sido apagado, ou o link está errado."
         icon={ClipboardList}
         title="Formulário não encontrado"
       >
-        <Button className="rounded-none" onClick={onVoltar} type="button" variant="outline">
+        <Button onClick={onVoltar} type="button" variant="outline">
           <ArrowLeft aria-hidden="true" />
           Voltar aos formulários
         </Button>
-      </ModulePlaceholder>
+      </EmptyState>
     );
   }
+
   if (erro) {
     return <ApiErrorAlert error={erro} id="config-formulario-carregar-erro" />;
   }
+
   if (formularioQuery.isPending || elegiveisQuery.isPending || camposQuery.isPending) {
     return <Carregando />;
   }

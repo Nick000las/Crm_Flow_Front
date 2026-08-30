@@ -1,4 +1,7 @@
 /**
+ * @file Corpo `colunas` do export, na ordem escolhida. @param {ItemExport[]} itens.
+ */
+/**
  * Colunas do export: um checklist ordenável. Começa com as colunas visíveis
  * da tabela (na ordem dela) marcadas, e o resto desmarcado no fim. Campo
  * sensível (FM1) começa desmarcado: o front sempre manda `colunas`, e o back
@@ -58,12 +61,15 @@ export function itensIniciais(campos, idsVisiveis, { comMassa = false } = {}) {
  */
 export function moverItem(itens, indice, direcao) {
   const destino = indice + direcao;
+
   if (destino < 0 || destino >= itens.length) {
     return itens;
   }
 
   const proximos = [...itens];
+
   [proximos[indice], proximos[destino]] = [proximos[destino], proximos[indice]];
+
   return proximos;
 }
 

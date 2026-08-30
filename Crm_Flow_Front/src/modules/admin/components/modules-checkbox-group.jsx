@@ -1,5 +1,8 @@
-import { LoadingState } from '@/components/loading-state';
+/**
+ * @file Seleção de módulos contratados, compartilhada pela criação e pela edição.
+ */
 import { ApiErrorAlert } from '@/components/api-error-alert';
+import { LoadingState } from '@/components/loading-state';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 
@@ -46,7 +49,7 @@ export function ModulesCheckboxGroup({
               id={id}
               onCheckedChange={(marcado) => onToggle(moduleKey, marcado)}
             />
-            <Label className="font-mono text-xs font-normal" htmlFor={id}>
+            <Label className="text-xs font-normal" htmlFor={id}>
               {moduleKey}
             </Label>
           </div>

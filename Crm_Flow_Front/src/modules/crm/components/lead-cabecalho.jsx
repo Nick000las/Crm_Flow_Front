@@ -1,3 +1,8 @@
+/**
+ * @file Cabeçalho do Sheet do lead. Com layout (`crm.layout`): título pelo identificador (com
+ * fallback para o Nome), subtítulo " · " e destaques. Sem layout: o nome e uma frase do modo.
+ * `arquivo` (`crm.arquivo`) traz o selo "Arquivado" e as ações de arquivo.
+ */
 import {
   Archive,
   ArchiveRestore,
@@ -7,6 +12,7 @@ import {
   Shuffle,
   Trash2,
 } from 'lucide-react';
+
 import { Badge } from '@/components/ui/badge';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
@@ -16,7 +22,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { cn } from '@/lib/utils';
+
 import { estaArquivado } from '../lib/arquivo';
 import { lerValorDaColuna } from '../lib/colunas';
 import { colunaDoItem, subtituloDoLead, tituloDoLead } from '../lib/layout';
@@ -44,7 +50,7 @@ function Destaques({ lead, itens, nomePorId }) {
 
         return (
           <div className="grid gap-0.5 border border-border px-2 py-1" key={item.ref}>
-            <dt className="font-mono text-[10px] tracking-wide text-muted-foreground uppercase">
+            <dt className="text-[10px] tracking-wide text-muted-foreground uppercase">
               {item.label}
             </dt>
             <dd className="text-sm">
@@ -73,11 +79,11 @@ function MaisAcoes({ comExcluir, onExcluir, onAnonimizar }) {
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label="Mais ações do lead"
-        className={cn(buttonVariants({ variant: 'outline', size: 'icon-sm' }), 'rounded-none')}
+        className={buttonVariants({ variant: 'outline', size: 'icon-sm' })}
       >
         <MoreHorizontal aria-hidden="true" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-44 rounded-none shadow-none ring-border">
+      <DropdownMenuContent align="start" className="w-44 ring-border">
         {onAnonimizar && (
           <DropdownMenuItem onClick={onAnonimizar}>
             <ShieldOff aria-hidden="true" />
@@ -142,6 +148,7 @@ function AcoesDoLead({ arquivo, anonimizado, onEditar, onExcluir, onAnonimizar }
         onClick={arquivado ? onDesarquivar : onArquivar}
         size="sm"
         variant="outline"
+        loading={ocupado}
       >
         {arquivado ? <ArchiveRestore aria-hidden="true" /> : <Archive aria-hidden="true" />}
         {arquivado ? 'Desarquivar' : 'Arquivar'}
@@ -191,7 +198,7 @@ export function LeadCabecalho({
       <div className="flex flex-wrap items-center gap-2 pr-8">
         <SheetTitle>{titulo}</SheetTitle>
         {arquivado && (
-          <Badge className="rounded-none" variant="outline">
+          <Badge variant="outline">
             <Archive aria-hidden="true" />
             Arquivado
           </Badge>

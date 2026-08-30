@@ -1,8 +1,13 @@
+/**
+ * @file Forecast (FC2/FC3, `crm.forecast`).
+ */
 import { useState } from 'react';
 import { Outlet, useSearchParams } from 'react-router-dom';
+
 import { PageHeader } from '@/components/page-header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
+
 import { ForecastAssertividade } from '../components/forecast/forecast-assertividade';
 import { ForecastPrevisao } from '../components/forecast/forecast-previsao';
 import { ABAS_FORECAST } from '../constants';
@@ -37,11 +42,15 @@ export default function ForecastPage() {
 
   return (
     <>
-      <PageHeader description={TEXTOS_FORECAST.subtitulo} title={TEXTOS_FORECAST.titulo} />
+      <PageHeader
+        eyebrow="CRM"
+        description={TEXTOS_FORECAST.subtitulo}
+        title={TEXTOS_FORECAST.titulo}
+      />
 
       {abas.length > 1 ? (
         <Tabs className="gap-6" onValueChange={trocarAba} value={aba}>
-          <TabsList variant="line">
+          <TabsList variant="line" data-tour="crm-forecast-tabs">
             {abas.map((definicao) => (
               <TabsTrigger key={definicao.valor} value={definicao.valor}>
                 {definicao.rotulo}

@@ -1,6 +1,12 @@
-import { useQuery } from '@tanstack/react-query';
+/**
+ * @file Usuários do tenant e um mapa `id → nome`. Falhar aqui não derruba a tela: quem consome
+ * cai para o ID curto do responsável.
+ */
 import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
+
 import { listarUsuarios } from '../api/usuarios.api';
 import { crmKeys } from '../query-keys';
 

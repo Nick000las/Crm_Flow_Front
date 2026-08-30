@@ -1,5 +1,7 @@
-import api, { ApiError } from '../services/api.js';
-import { restoreSession } from '../services/session.js';
+/**
+ * @file Gerencia o ciclo de sessão, restauração, refresh e clientes autenticados separados por
+ * área.
+ */
 import {
   createContext,
   createElement,
@@ -10,6 +12,9 @@ import {
   useRef,
   useState,
 } from 'react';
+
+import api, { ApiError } from '../services/api.js';
+import { restoreSession } from '../services/session.js';
 
 /**
  * Cliente autenticado exposto pela sessão: mesmos métodos de `api`, com o
@@ -56,6 +61,7 @@ export function createAuthSession({
   onSessionChange = () => {},
 }) {
   const Context = createContext(null);
+
   Context.displayName = `${nome}Context`;
 
   function Provider({ children }) {
@@ -111,6 +117,7 @@ export function createAuthSession({
     const authApi = useMemo(() => {
       async function doRefresh() {
         const revision = sessionRevision.current;
+
         try {
           // Sem refresh em memória (sessão persistente), o corpo vai vazio e
           // o back usa o cookie httpOnly.
@@ -143,6 +150,7 @@ export function createAuthSession({
           ) {
             forceLogout();
           }
+
           return null;
         }
       }
@@ -166,21 +174,28 @@ export function createAuthSession({
       async function withAuthRetry(invoke) {
         const revision = sessionRevision.current;
         const originalToken = accessTokenRef.current;
+
         function assertCurrentSession() {
           if (revision !== sessionRevision.current) {
             throw new DOMException('A sessão foi alterada.', 'AbortError');
           }
         }
+
         async function invokeForSession(token) {
           assertCurrentSession();
+
           const response = await invoke(token);
+
           assertCurrentSession();
+
           return response;
         }
+
         try {
           return await invokeForSession(originalToken);
         } catch (error) {
           assertCurrentSession();
+
           const podeRenovar = persistente || Boolean(refreshTokenRef.current);
 
           if (error instanceof ApiError && error.status === 401 && podeRenovar) {
@@ -201,6 +216,7 @@ export function createAuthSession({
                 ) {
                   forceLogout();
                 }
+
                 throw retryError;
               }
             }
@@ -241,12 +257,14 @@ export function createAuthSession({
         const revision = ++sessionRevision.current;
         const nextAccessToken = getResponseAccessToken(authData);
         const nextRefreshToken = getResponseRefreshToken(authData);
+
         if (typeof nextAccessToken !== 'string' || !nextAccessToken) {
           throw new ApiError('Resposta de login inválida.', {
             status: 401,
             code: 'AUTH_TOKEN_INVALID',
           });
         }
+
         onSessionChange();
 
         accessTokenRef.current = nextAccessToken;
@@ -257,7 +275,8 @@ export function createAuthSession({
         let nextUser;
 
         try {
-          nextUser = await resolverUsuario(nextAccessToken, authData);
+          nextUser = getResponseUser({ user: await resolverUsuario(nextAccessToken, authData) });
+
           if (!nextUser || typeof nextUser !== 'object') {
             throw new ApiError('Usuário da sessão inválido.', {
               status: 401,
@@ -271,6 +290,7 @@ export function createAuthSession({
           if (revision === sessionRevision.current) {
             forceLogout();
           }
+
           throw error;
         }
 
@@ -294,23 +314,29 @@ export function createAuthSession({
       if (!persistente || restauracaoIniciadaRef.current === restorationAttempt) {
         return;
       }
+
       restauracaoIniciadaRef.current = restorationAttempt;
 
       async function restaurarSessao() {
         const revision = sessionRevision.current;
+
         try {
           const response = await restoreSession(sessionScope);
+
           if (revision !== sessionRevision.current) {
             return;
           }
+
           if (!response) {
             forceLogout();
+
             return;
           }
+
           onSessionChange();
           accessTokenRef.current = response.accessToken;
           setAccessToken(response.accessToken);
-          setUser(response.user);
+          setUser(getResponseUser(response));
           setMfaEnabled(Boolean(response.user.mfaAtivo));
         } catch (error) {
           if (revision === sessionRevision.current) {
@@ -333,6 +359,7 @@ export function createAuthSession({
     const logout = useCallback(async () => {
       // Invalida restaurações e refreshes ainda pendentes antes do HTTP.
       sessionRevision.current += 1;
+
       try {
         await authApi.post('/auth/logout', { scope: sessionScope });
       } catch {
@@ -401,7 +428,10 @@ export function getResponseUser(response) {
     return null;
   }
 
-  return response.user ?? response.session?.user ?? null;
+  const user = response.user ?? response.session?.user ?? null;
+
+  // O backend usa userId no contexto; a UI compartilha o contrato user.id.
+  return user && !user.id && user.userId ? { ...user, id: user.userId } : user;
 }
 
 export function getResponseAccessToken(response) {

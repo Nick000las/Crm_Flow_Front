@@ -1,3 +1,7 @@
+/**
+ * @file Vira `true` na primeira vez que o elemento aparece e não volta: serve para adiar uma
+ * busca até ela ser necessária.
+ */
 import { useEffect, useState } from 'react';
 
 /**
@@ -11,6 +15,7 @@ export function useVisivelUmaVez(ref) {
 
   useEffect(() => {
     const alvo = ref.current;
+
     if (visivel || !alvo) {
       return undefined;
     }
@@ -20,6 +25,7 @@ export function useVisivelUmaVez(ref) {
         setVisivel(true);
       }
     });
+
     observador.observe(alvo);
 
     return () => observador.disconnect();

@@ -1,3 +1,7 @@
+/**
+ * @file "Voltar ao padrão" desfaz toda a ordem personalizada de uma vez — por isso pede
+ * confirmação. Nomes, telas e obrigatoriedade não mudam.
+ */
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import {
   AlertDialog,
@@ -9,6 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+
 import { useRestaurarOrdemPadrao } from '../../hooks/use-configuracoes-campos';
 
 /**
@@ -24,9 +29,11 @@ export function RestaurarOrdemDialog({ open, onOpenChange, onRestaurado }) {
     if (restaurar.isPending) {
       return;
     }
+
     if (!proximo) {
       restaurar.reset();
     }
+
     onOpenChange(proximo);
   }
 
@@ -41,7 +48,7 @@ export function RestaurarOrdemDialog({ open, onOpenChange, onRestaurado }) {
 
   return (
     <AlertDialog onOpenChange={handleOpenChange} open={open}>
-      <AlertDialogContent className="rounded-none">
+      <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Voltar à ordem padrão?</AlertDialogTitle>
           <AlertDialogDescription>

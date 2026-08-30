@@ -1,14 +1,17 @@
+/**
+ * @file Opções de uma lista, na ordem dos seletores, com arrastar e ↑/↓.
+ */
 import { ListChecks } from 'lucide-react';
-import { ModulePlaceholder } from '@/components/module-placeholder';
+
+import { EmptyState } from '@/components/empty-state';
+import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
 import { temCategoria } from '../../lib/listas';
 import { moverPara } from '../../lib/ordem';
 import { AJUDA_PROBABILIDADE_PADRAO } from '../../lib/probabilidade';
 import { ListaOrdenavel } from '../ordenavel/lista-ordenavel';
 import { LinhaOpcao } from './linha-opcao';
-
-const HEAD_CLASS =
-  'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
 
 /**
  * Opções de uma lista, na ordem dos seletores, com arrastar e ↑/↓.
@@ -37,13 +40,13 @@ export function TabelaOpcoes({
 }) {
   if (opcoes.length === 0) {
     return (
-      <ModulePlaceholder
+      <EmptyState
         description="As opções desta lista aparecem nos seletores do lead e nos filtros."
         icon={ListChecks}
         title="Nenhuma opção ainda"
       >
         {acaoVazio}
-      </ModulePlaceholder>
+      </EmptyState>
     );
   }
 
@@ -55,6 +58,7 @@ export function TabelaOpcoes({
 
   function mover(de, para) {
     const proximos = moverPara(ids, de, para);
+
     if (proximos !== ids) {
       onReordenar(proximos);
     }
@@ -67,30 +71,24 @@ export function TabelaOpcoes({
           Probabilidade: {AJUDA_PROBABILIDADE_PADRAO} Ganho é sempre 100% e perdido, 0%.
         </p>
       )}
-      <div aria-busy={ordemOcupada} className="overflow-x-auto border border-border">
+      <Card layout="plain" aria-busy={ordemOcupada} className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead scope="col">
                 <span className="sr-only">Ordem</span>
               </TableHead>
-              <TableHead className={HEAD_CLASS} scope="col">
-                Opção
-              </TableHead>
-              {temCategoria(tipo) && (
-                <TableHead className={HEAD_CLASS} scope="col">
-                  Categoria
-                </TableHead>
-              )}
+              <TableHead scope="col">Opção</TableHead>
+              {temCategoria(tipo) && <TableHead scope="col">Categoria</TableHead>}
               {pipelineId && (
-                <TableHead className={`${HEAD_CLASS} text-right`} scope="col">
+                <TableHead className="text-right" scope="col">
                   Probabilidade
                 </TableHead>
               )}
-              <TableHead className={`${HEAD_CLASS} text-right`} scope="col">
+              <TableHead className="text-right" scope="col">
                 {pipelineId ? 'Oportunidades' : 'Leads'}
               </TableHead>
-              <TableHead className={`${HEAD_CLASS} text-center`} scope="col">
+              <TableHead className="text-center" scope="col">
                 Ativa
               </TableHead>
               <TableHead scope="col">
@@ -117,7 +115,7 @@ export function TabelaOpcoes({
             ))}
           </TableBody>
         </Table>
-      </div>
+      </Card>
     </ListaOrdenavel>
   );
 }

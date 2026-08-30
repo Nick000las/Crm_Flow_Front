@@ -1,3 +1,7 @@
+/**
+ * @file Renderiza excluir regra dialog, na área de CRM, expondo os estados e eventos
+ * necessários à interface.
+ */
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import {
   AlertDialog,
@@ -9,6 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+
 import { useExcluirRegra } from '../../hooks/use-regras';
 
 /**
@@ -26,9 +31,11 @@ export function ExcluirRegraDialog({ regra, descricao, onOpenChange, onExcluida 
     if (excluir.isPending) {
       return;
     }
+
     if (!proximo) {
       excluir.reset();
     }
+
     onOpenChange(proximo);
   }
 
@@ -43,7 +50,7 @@ export function ExcluirRegraDialog({ regra, descricao, onOpenChange, onExcluida 
 
   return (
     <AlertDialog onOpenChange={handleOpenChange} open={Boolean(regra)}>
-      <AlertDialogContent className="rounded-none">
+      <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Excluir regra</AlertDialogTitle>
           <AlertDialogDescription>

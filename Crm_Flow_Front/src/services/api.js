@@ -1,3 +1,6 @@
+/**
+ * @file Cliente HTTP compartilhado: envelopes de resposta, erros e transporte das requisições.
+ */
 import {
   ApiError,
   CLIENT_ERROR_CODES,
@@ -35,6 +38,7 @@ async function readResponse(response) {
   }
 
   const text = await response.text();
+
   if (!text) {
     return null;
   }
@@ -120,9 +124,11 @@ export async function apiRequest(path, options = {}) {
     const erro = createApiErrorFromResponse(data, response.status);
     // 429: quantos segundos esperar (a página pública do formulário mostra).
     const retryAfter = Number(response.headers.get('Retry-After'));
+
     if (response.status === STATUS_MUITAS_TENTATIVAS && retryAfter > 0) {
       erro.retryAfter = retryAfter;
     }
+
     throw erro;
   }
 

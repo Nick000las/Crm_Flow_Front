@@ -1,4 +1,9 @@
+/**
+ * @file Registrar ou editar uma atividade. Os tipos vêm da lista `tipo_atividade`
+ * (Configurações › Listas); sem acesso a ela, o dialog explica em vez do form.
+ */
 import { useState } from 'react';
+
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
@@ -11,12 +16,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Form } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { semChave } from '@/lib/objetos';
 import { getFieldError, isAccessError } from '@/services/api';
+
 import { LIMITES_ATIVIDADE } from '../../constants';
 import { useCriarAtividade, useEditarAtividade } from '../../hooks/use-atividades';
 import {
@@ -29,7 +36,7 @@ import { CampoForm } from '../campo-form';
 import { SelectSimples } from '../select-simples';
 
 const CAMPOS_DO_SERVIDOR = ['tipo', 'titulo', 'notas', 'agendadaPara'];
-const INPUT_CLASS = 'h-9 rounded-none';
+const INPUT_CLASS = 'w-full';
 
 /** Montado só com o dialog aberto: cada abertura parte da atividade atual. */
 function FormAtividade({ leadId, atividade, tipos, onSalvo }) {
@@ -48,6 +55,7 @@ function FormAtividade({ leadId, atividade, tipos, onSalvo }) {
   function alterar(campo, valor) {
     setValores((atuais) => ({ ...atuais, [campo]: valor }));
     setErrosCliente((atuais) => semChave(atuais, campo));
+
     if (mutacao.error) {
       mutacao.reset();
     }
@@ -55,32 +63,41 @@ function FormAtividade({ leadId, atividade, tipos, onSalvo }) {
 
   function handleSubmit(event) {
     event.preventDefault();
+
     const erros = validarAtividade(valores);
+
     if (Object.keys(erros).length > 0) {
       setErrosCliente(erros);
+
       return;
     }
 
     const corpo = payloadDaAtividade(valores, atividade);
+
     if (!corpo) {
       onSalvo(null);
+
       return;
     }
+
     if (editando) {
       editar.mutate(
         { id: atividade.id, parcial: corpo },
         { onSuccess: () => onSalvo('Atividade atualizada.') },
       );
+
       return;
     }
+
     const aviso = corpo.concluida
       ? 'Atividade registrada como concluída.'
       : 'Atividade registrada.';
+
     criar.mutate(corpo, { onSuccess: () => onSalvo(aviso) });
   }
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       <CampoForm erro={erroDe('tipo')} id="atividade-tipo" label="Tipo" obrigatorio>
         {(controle) => (
           <SelectSimples
@@ -110,7 +127,7 @@ function FormAtividade({ leadId, atividade, tipos, onSalvo }) {
         {(controle) => (
           <Textarea
             {...controle}
-            className="min-h-24 rounded-none"
+            className="min-h-24"
             maxLength={LIMITES_ATIVIDADE.NOTAS}
             onChange={(event) => alterar('notas', event.target.value)}
             value={valores.notas}
@@ -136,7 +153,7 @@ function FormAtividade({ leadId, atividade, tipos, onSalvo }) {
           {(controle) => (
             <Input
               {...controle}
-              className={`${INPUT_CLASS} font-mono tabular-nums`}
+              className={`${INPUT_CLASS} tabular-nums`}
               onChange={(event) => alterar('agendadaPara', event.target.value)}
               type="datetime-local"
               value={valores.agendadaPara}
@@ -155,11 +172,17 @@ function FormAtividade({ leadId, atividade, tipos, onSalvo }) {
         >
           Cancelar
         </DialogClose>
-        <Button aria-busy={mutacao.isPending} disabled={mutacao.isPending} type="submit">
-          {mutacao.isPending ? 'Salvando…' : editando ? 'Salvar alterações' : 'Registrar'}
+        <Button
+          aria-busy={mutacao.isPending}
+          disabled={mutacao.isPending}
+          type="submit"
+          loading={mutacao.isPending}
+          loadingText="Salvando…"
+        >
+          {editando ? 'Salvar alterações' : 'Registrar'}
         </Button>
       </DialogFooter>
-    </form>
+    </Form>
   );
 }
 
@@ -188,7 +211,7 @@ export function AtividadeDialog({
 }) {
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="rounded-none sm:max-w-md">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{atividade ? 'Editar atividade' : 'Registrar atividade'}</DialogTitle>
           <DialogDescription>

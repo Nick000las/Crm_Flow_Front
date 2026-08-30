@@ -1,9 +1,14 @@
+/**
+ * @file Renderiza account section, na área de configurações, expondo os estados e eventos
+ * necessários à interface.
+ */
 import { UserRound } from 'lucide-react';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export function AccountSection({ nome, email, role }) {
   return (
-    <Card>
+    <Card data-tour="settings-account">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <UserRound className="size-4" aria-hidden="true" />
@@ -13,17 +18,17 @@ export function AccountSection({ nome, email, role }) {
       </CardHeader>
 
       <CardContent className="grid gap-3 text-sm">
-        <div className="flex items-center justify-between gap-6">
+        <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-1">
           <span className="text-muted-foreground">Nome</span>
-          <span className="font-medium text-foreground">{nome}</span>
+          <span className="min-w-0 break-all font-medium text-foreground">{nome}</span>
         </div>
-        <div className="flex items-center justify-between gap-6">
+        <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-1">
           <span className="text-muted-foreground">E-mail</span>
-          <span className="font-medium text-foreground">{email}</span>
+          <span className="min-w-0 break-all font-medium text-foreground">{email}</span>
         </div>
-        <div className="flex items-center justify-between gap-6">
+        <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-1">
           <span className="text-muted-foreground">Perfil</span>
-          <span className="font-mono text-xs font-medium text-foreground">{role}</span>
+          <span className="text-xs min-w-0 break-all font-medium text-foreground">{role}</span>
         </div>
       </CardContent>
     </Card>

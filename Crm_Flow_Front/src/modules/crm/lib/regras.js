@@ -1,10 +1,14 @@
+/**
+ * @file Regras de campo (`crm.regras`): "Status = Perdido exige Motivo" e "se A = X, B fica
+ * obrigatório e/ou só aparece então".
+ */
 import { CAMADA, ROTULOS_CATEGORIA, TIPOS_CAMPO, TIPOS_REGRA } from '../constants.js';
 import { lerValorDoCampo } from './colunas.js';
 import {
-  OPERADOR,
   descreverItem,
   itemDaLinha,
   linhaDoItem,
+  OPERADOR,
   operadoresDoCampo,
   valorVazio,
 } from './filtro.js';
@@ -54,13 +58,17 @@ const MINUTOS_NA_HORA = 60;
 /** `9:05`, `09:05` ou `09:05:30` → `09:05`; inválida → `null` (`normalizarHora` do back). */
 function normalizarHora(texto) {
   const partes = PADRAO_HORA.exec(texto.trim());
+
   if (!partes) {
     return null;
   }
+
   const [horas, minutos] = [Number(partes[1]), Number(partes[2])];
+
   if (horas >= HORAS_NO_DIA || minutos >= MINUTOS_NA_HORA) {
     return null;
   }
+
   return `${String(horas).padStart(2, '0')}:${partes[2]}`;
 }
 
@@ -75,12 +83,15 @@ export function valorAusente(valor) {
   if (valor === undefined || valor === null || valor === '') {
     return true;
   }
+
   if (Array.isArray(valor)) {
     return valor.length === 0;
   }
+
   if (objetoSimples(valor)) {
     return Object.values(valor).every(valorAusente);
   }
+
   return false;
 }
 
@@ -121,17 +132,21 @@ function comparavel(tipo, valor) {
  */
 export function avaliarCondicao(tipo, operador, valorRegra, valorLead) {
   const ausente = valorAusente(valorLead);
+
   if (operador === OPERADOR.VAZIO) {
     return ausente;
   }
+
   if (operador === OPERADOR.NAO_VAZIO) {
     return !ausente;
   }
+
   if (ausente) {
     return false;
   }
 
   const lista = Array.isArray(valorLead) ? valorLead : null;
+
   switch (operador) {
     case OPERADOR.IGUAL:
       return comparavel(tipo, valorLead) === comparavel(tipo, valorRegra);
@@ -145,25 +160,32 @@ export function avaliarCondicao(tipo, operador, valorRegra, valorLead) {
       const opcoes = (Array.isArray(valorRegra) ? valorRegra : []).map((item) =>
         comparavel(tipo, item),
       );
+
       return lista
         ? lista.some((item) => opcoes.includes(item))
         : opcoes.includes(comparavel(tipo, valorLead));
     }
+
     case OPERADOR.ENTRE: {
       const { de, ate } = valorRegra ?? {};
+
       if (tipo === TIPOS_CAMPO.INTERVALO_DATAS) {
         // Sobreposição: o período começa até o fim da regra e termina depois do início dela.
         const comecaAntesDoFim =
           ate === undefined || ate === null || diaDe(valorLead.de) <= diaDe(ate);
         const terminaDepoisDoInicio =
           de === undefined || de === null || diaDe(valorLead.ate) >= diaDe(de);
+
         return comecaAntesDoFim && terminaDepoisDoInicio;
       }
+
       const atual = comparavel(tipo, valorLead);
       const depoisDoInicio = de === undefined || de === null || atual >= comparavel(tipo, de);
       const antesDoFim = ate === undefined || ate === null || atual <= comparavel(tipo, ate);
+
       return depoisDoInicio && antesDoFim;
     }
+
     default:
       return false;
   }
@@ -177,6 +199,7 @@ export function valorDoCampo(lead, campo) {
 function regraCasa(regra, lead, { categoriaDoStatus = null }) {
   if (regra.kind === TIPOS_REGRA.POR_STATUS) {
     const { status = [], categorias = [] } = regra.condicao;
+
     return (
       (lead.status !== null && lead.status !== undefined && status.includes(lead.status)) ||
       (categoriaDoStatus !== null &&
@@ -184,7 +207,9 @@ function regraCasa(regra, lead, { categoriaDoStatus = null }) {
         categorias.includes(categoriaDoStatus))
     );
   }
+
   const { campo, operador, valor } = regra.condicao;
+
   return avaliarCondicao(campo.tipo, operador, valor, valorDoCampo(lead, campo));
 }
 
@@ -206,20 +231,25 @@ export function avaliarRegras(regras, lead, contexto = {}) {
     if (!regra.ativo) {
       continue;
     }
+
     const casa = regraCasa(regra, lead, contexto);
     const { chave } = regra.alvo;
+
     if (regra.efeito.visivel) {
       visibilidade.set(chave, (visibilidade.get(chave) ?? false) || casa);
     }
+
     if (regra.efeito.obrigatorio && casa) {
       obrigatorios.add(chave);
     }
   }
 
   const ocultos = [...visibilidade].filter(([, visivel]) => !visivel).map(([chave]) => chave);
+
   for (const chave of ocultos) {
     obrigatorios.delete(chave);
   }
+
   return { obrigatorios: [...obrigatorios].sort(), ocultos: ocultos.sort() };
 }
 
@@ -231,6 +261,7 @@ function keysDasTags(campo, nomes) {
   const porNome = new Map(
     (campo.opcoesLista ?? []).map((opcao) => [textoNormalizado(opcao.label), opcao.key]),
   );
+
   return nomes.map((nome) => porNome.get(textoNormalizado(nome)) ?? nome);
 }
 
@@ -261,9 +292,11 @@ export function leadParaAvaliar(todosCampos, leadAtual, camposDoForm, valores) {
       atribuir(campo, lerValorDoCampo(leadAtual, campo));
     }
   }
+
   for (const campo of camposDoForm) {
     const bruto = valores[idNoForm(campo)];
     const valor = ehListaLivre(campo) && Array.isArray(bruto) ? keysDasTags(campo, bruto) : bruto;
+
     atribuir(campo, paraValorDeApi(campo.tipo, valor));
   }
 
@@ -282,6 +315,7 @@ export function leadParaAvaliar(todosCampos, leadAtual, camposDoForm, valores) {
  */
 export function avaliarNoForm(regras, todosCampos, leadAtual, camposDoForm, valores) {
   const lead = leadParaAvaliar(todosCampos, leadAtual, camposDoForm, valores);
+
   return avaliarRegras(regras, lead, {
     categoriaDoStatus: categoriaDoStatus(todosCampos, lead.status),
   });
@@ -328,6 +362,7 @@ export function descreverRegra(regra, campos) {
         (categoria) => `um status ${(ROTULOS_CATEGORIA[categoria] ?? categoria).toLowerCase()}`,
       ),
     ];
+
     return `Obrigatório quando o status é ${juntarComOu(partes)}`;
   }
 
@@ -341,6 +376,7 @@ export function descreverRegra(regra, campos) {
       : obrigatorio
         ? 'Obrigatório'
         : 'Só aparece';
+
   return `${efeito} quando ${condicao}`;
 }
 
@@ -371,7 +407,9 @@ export function condicaoDoCampo(campo) {
   if (!campo) {
     return { ...CONDICAO_VAZIA };
   }
+
   const [operador] = operadoresDoCampo(campo);
+
   return { campoId: campo.id, operador, valor: valorVazio(operador, campo) };
 }
 
@@ -391,6 +429,7 @@ export function valoresDaRegra(regra, campos, kind = TIPOS_REGRA.POR_STATUS) {
     obrigatorio: true,
     visivel: false,
   };
+
   if (!regra) {
     return base;
   }
@@ -406,6 +445,7 @@ export function valoresDaRegra(regra, campos, kind = TIPOS_REGRA.POR_STATUS) {
   const { campo, operador, valor } = regra.condicao;
   const doSchema = campos.find((atual) => atual.id === campo.id) ?? campo;
   const linha = linhaDoItem({ chave: campo.chave, operador, valor }, doSchema);
+
   return {
     ...base,
     condicao: { campoId: campo.id, operador, valor: linha.valor },
@@ -424,13 +464,16 @@ export function valoresDaRegra(regra, campos, kind = TIPOS_REGRA.POR_STATUS) {
  */
 export function valorDaCondicao(condicao, campos) {
   const campo = campos.find((atual) => atual.id === condicao.campoId);
+
   if (!campo) {
     return { erro: MENSAGENS_REGRA.CAMPO_CONDICAO };
   }
+
   const resultado = itemDaLinha(
     { chave: campo.chave, operador: condicao.operador, valor: condicao.valor },
     campo,
   );
+
   return 'erro' in resultado ? resultado : { valor: resultado.item.valor };
 }
 
@@ -441,6 +484,7 @@ export function valorDaCondicao(condicao, campos) {
  */
 export function validarRegra(valores, campos) {
   const erros = {};
+
   if (!valores.campoId) {
     erros.campoId = MENSAGENS_REGRA.CAMPO;
   }
@@ -449,20 +493,24 @@ export function validarRegra(valores, campos) {
     if (valores.status.length === 0 && valores.categorias.length === 0) {
       erros.condicao = MENSAGENS_REGRA.STATUS;
     }
+
     return erros;
   }
 
   const { campoId } = valores.condicao;
+
   if (!campoId || !campos.some((campo) => campo.id === campoId)) {
     erros['condicao.campoId'] = MENSAGENS_REGRA.CAMPO_CONDICAO;
   } else if (campoId === valores.campoId) {
     erros['condicao.campoId'] = MENSAGENS_REGRA.MESMO_CAMPO;
   } else {
     const resultado = valorDaCondicao(valores.condicao, campos);
+
     if ('erro' in resultado) {
       erros['condicao.valor'] = resultado.erro;
     }
   }
+
   if (!valores.obrigatorio && !valores.visivel) {
     erros.efeito = MENSAGENS_REGRA.EFEITO;
   }
@@ -483,6 +531,7 @@ function corpoCompleto(valores, campos) {
   }
 
   const { valor } = valorDaCondicao(valores.condicao, campos);
+
   return {
     kind: valores.kind,
     campoId: valores.campoId,
@@ -505,6 +554,7 @@ function corpoCompleto(valores, campos) {
  */
 export function payloadDaRegra(valores, campos, original = null) {
   const corpo = corpoCompleto(valores, campos);
+
   if (!original) {
     return corpo;
   }
@@ -516,5 +566,6 @@ export function payloadDaRegra(valores, campos, original = null) {
         parte !== 'kind' && JSON.stringify(valor) !== JSON.stringify(antes[parte]),
     ),
   );
+
   return Object.keys(parcial).length > 0 ? parcial : null;
 }

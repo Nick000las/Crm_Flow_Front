@@ -1,4 +1,7 @@
 /**
+ * @file Uma versão publicada, como o link vai mostrar.
+ */
+/**
  * Formulários (FM1): só gestão (DONO/MASTER) e atrás de `crm.formularios`;
  * sem um dos dois, 403. Tipos em `lib/formularios.js`.
  *

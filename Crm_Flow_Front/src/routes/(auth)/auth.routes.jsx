@@ -1,4 +1,8 @@
+/**
+ * @file Login do tenant — sem shell, layout mínimo.
+ */
 import { Navigate } from 'react-router-dom';
+
 import { useAuth } from '@/hooks/useAuth';
 import EmailLogin from '@/modules/auth/pages/email-login';
 

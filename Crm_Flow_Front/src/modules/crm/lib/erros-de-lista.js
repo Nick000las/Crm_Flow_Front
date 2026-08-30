@@ -1,4 +1,8 @@
 /**
+ * @file 400 de um PUT que leva uma lista inteira (regras da distribuição, regras e faixas da
+ * pontuação) → erros por item do rascunho.
+ */
+/**
  * 400 de um PUT que leva uma lista inteira (regras da distribuição, regras e
  * faixas da pontuação) → erros por item do rascunho. Puro.
  *
@@ -21,10 +25,12 @@ export function errosPorItem(fields, prefixo, chavesEnviadas) {
     const mensagem = Array.isArray(mensagens) ? mensagens[0] : String(mensagens);
     const partes = caminhoDoItem.exec(caminho);
     const chave = partes ? chavesEnviadas[Number(partes[1])] : undefined;
+
     if (!chave) {
       outros.push(mensagem);
       continue;
     }
+
     porItem[chave] = { ...porItem[chave], [partes[2] ?? 'item']: mensagem };
   }
 

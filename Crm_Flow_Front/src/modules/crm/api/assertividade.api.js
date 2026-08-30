@@ -1,3 +1,7 @@
+/**
+ * @file `GET /crm/forecast/assertividade`. Sem `de`/`ate`, o back aplica o padrão (os 6 meses
+ * fechados antes do atual, no fuso do tenant).
+ */
 import { comQuery } from './forecast.api';
 
 /**

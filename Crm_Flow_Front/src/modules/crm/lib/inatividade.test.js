@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import {
   alternarStatus,
   diasEsfriando,
@@ -40,7 +41,9 @@ test('filtroDaBusca: sem a flag, esfriando sai; com a flag, fica', () => {
 
   assert.deepEqual(filtroDaBusca(filtro, false), { filtros: [], valorMin: 10 });
   assert.equal(filtroDaBusca(filtro, true), filtro);
+
   const semEsfriando = { filtros: [] };
+
   assert.equal(filtroDaBusca(semEsfriando, false), semEsfriando);
 });
 
@@ -74,10 +77,12 @@ test('valores do form a partir da lista', () => {
 
 test('ligar sem dias sugere o padrão; desligar guarda o digitado', () => {
   assert.deepEqual(alternarStatus({ ligado: false, dias: '' }, true), { ligado: true, dias: '7' });
+
   assert.deepEqual(alternarStatus({ ligado: false, dias: '12' }, true), {
     ligado: true,
     dias: '12',
   });
+
   assert.deepEqual(alternarStatus({ ligado: true, dias: '12' }, false), {
     ligado: false,
     dias: '12',
@@ -101,6 +106,7 @@ test('inatividadeParaEnvio: só as mudanças, null para desligar', () => {
   const valores = valoresDaInatividade(lista);
 
   assert.equal(inatividadeParaEnvio(valores, lista), null);
+
   assert.deepEqual(
     inatividadeParaEnvio(
       { ...valores, novo: { ligado: false, dias: '1' }, proposta: { ligado: true, dias: '7' } },

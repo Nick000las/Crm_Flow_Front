@@ -1,4 +1,7 @@
 /**
+ * @file Views salvas são do usuário logado (o back filtra por `usuario_id`).
+ */
+/**
  * Views salvas são do usuário logado (o back filtra por `usuario_id`).
  *
  * @param {import('@/hooks/create-auth-session').AuthApi} authApi

@@ -1,3 +1,6 @@
+/**
+ * @file 'AAAA-MM' → nome do mês ('outubro'). Entrada inválida volta igual.
+ */
 import { FAIXAS_ASSERTIVIDADE } from '../constants.js';
 
 /** Textos da aba Assertividade do forecast (FC3). */
@@ -71,12 +74,16 @@ const MESES = Object.freeze([
  */
 export function rotuloMesSemAno(mes) {
   const m = typeof mes === 'string' ? /^\d{4}-(\d{2})$/.exec(mes) : null;
+
   if (!m) {
     return mes;
   }
+
   const indice = Number(m[1]) - 1;
+
   if (indice < 0 || indice > 11) {
     return mes;
   }
+
   return MESES[indice];
 }

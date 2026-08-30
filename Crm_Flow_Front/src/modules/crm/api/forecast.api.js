@@ -1,4 +1,7 @@
 /**
+ * @file Página de `GET /crm/forecast/oportunidades` (dentro de `data`). Sem cache.
+ */
+/**
  * Tipos do forecast (FC2), a partir de `handoff-front-fc2.md`, seções 2 e 3.
  * As três rotas (`GET /crm/forecast`, `GET /crm/forecast/oportunidades` e
  * `POST /crm/forecast/data-prevista`) ficam atrás da flag `crm.forecast` e
@@ -146,13 +149,17 @@
  */
 export function comQuery(caminho, params = {}) {
   const query = new URLSearchParams();
+
   for (const [chave, valor] of Object.entries(params ?? {})) {
     if (valor === undefined || valor === null || valor === '') {
       continue;
     }
+
     query.set(chave, String(valor));
   }
+
   const texto = query.toString();
+
   return texto ? `${caminho}?${texto}` : caminho;
 }
 

@@ -1,3 +1,6 @@
+/**
+ * @file Por que não dá para gerar link (o back daria 409), ou `null`.
+ */
 import { estaArquivado } from './arquivo.js';
 
 /**
@@ -76,6 +79,7 @@ export function urlAbsoluta(url, origem) {
  */
 export function telefoneDoWhatsapp(telefone) {
   const digitos = String(telefone ?? '').replace(/\D/g, '');
+
   return digitos.length === TELEFONE_FIXO || digitos.length === TELEFONE_CELULAR ? digitos : null;
 }
 
@@ -92,6 +96,7 @@ export function linkDoWhatsapp(digitos, mensagem) {
  */
 export function mensagemDoWhatsapp({ primeiroNome, formulario, url }) {
   const saudacao = primeiroNome?.trim() ? `Olá, ${primeiroNome.trim()}!` : 'Olá!';
+
   return `${saudacao} Responda o formulário ${formulario}: ${url}`;
 }
 
@@ -113,5 +118,6 @@ export function motivoSemEnvio(lead) {
   if (lead.anonimizado_em) {
     return MOTIVOS_LINK.ANONIMIZADA;
   }
+
   return estaArquivado(lead) ? MOTIVOS_LINK.ARQUIVADA : null;
 }

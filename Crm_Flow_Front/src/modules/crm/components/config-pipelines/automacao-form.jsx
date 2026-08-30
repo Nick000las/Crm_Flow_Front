@@ -1,8 +1,15 @@
+/**
+ * @file Atendimento automático: venda ganha no pipeline de origem cria um card aqui. Quem só lê
+ * vê uma frase, sem controles.
+ */
 import { useState } from 'react';
+
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
+import { Form } from '@/components/ui/form';
 import { Switch } from '@/components/ui/switch';
 import { getFieldError } from '@/services/api';
+
 import { REGRAS_DONO_ATENDIMENTO, ROTULOS_REGRA_DONO } from '../../constants';
 import { useAtualizarPipeline } from '../../hooks/use-pipelines';
 import { useUsuarios } from '../../hooks/use-usuarios';
@@ -59,6 +66,7 @@ export function AutomacaoForm({ pipeline, pipelines, podeEditar, onAviso }) {
 
   function handleSubmit(event) {
     event.preventDefault();
+
     salvar.mutate(
       { id: pipeline.id, parcial: { automacao: payloadDaAutomacao(valores) } },
       { onSuccess: () => onAviso('Automação salva.') },
@@ -66,7 +74,7 @@ export function AutomacaoForm({ pipeline, pipelines, podeEditar, onAviso }) {
   }
 
   return (
-    <form className="grid max-w-md gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid max-w-md gap-4" noValidate onSubmit={handleSubmit}>
       <label className="flex items-center gap-2 text-sm" htmlFor={`${idBase}-ativa`}>
         <Switch
           checked={valores.ativa}
@@ -139,10 +147,16 @@ export function AutomacaoForm({ pipeline, pipelines, podeEditar, onAviso }) {
       )}
 
       <div>
-        <Button aria-busy={salvar.isPending} disabled={salvar.isPending} type="submit">
-          {salvar.isPending ? 'Salvando…' : 'Salvar automação'}
+        <Button
+          aria-busy={salvar.isPending}
+          disabled={salvar.isPending}
+          type="submit"
+          loading={salvar.isPending}
+          loadingText="Salvando…"
+        >
+          {'Salvar automação'}
         </Button>
       </div>
-    </form>
+    </Form>
   );
 }

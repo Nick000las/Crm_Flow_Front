@@ -1,4 +1,7 @@
 /**
+ * @file A de outro usuário (ou inexistente) é 404.
+ */
+/**
  * Notificações do usuário logado (core, sem flag). O back só devolve e marca
  * as próprias — o usuário vem do token.
  */
@@ -11,6 +14,7 @@
  */
 export function listarNotificacoes(authApi, { pagina, tamanho }, options) {
   const params = new URLSearchParams({ pagina: String(pagina), tamanho: String(tamanho) });
+
   return authApi.get(`/notificacoes?${params}`, options);
 }
 

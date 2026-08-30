@@ -1,3 +1,6 @@
+/**
+ * @file Mensagens de erro dos filtros de ciclo de vida (espelham o 400 da busca).
+ */
 import { CICLOS_DE_VIDA } from '../constants.js';
 
 /** Textos do ciclo de vida do lead (FC4). */

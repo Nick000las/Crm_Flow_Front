@@ -1,9 +1,13 @@
+/**
+ * @file Renderiza checkbox, na área de interface compartilhada, expondo os estados e eventos
+ * necessários à interface.
+ */
 'use client';
 
 import { Checkbox as CheckboxPrimitive } from '@base-ui/react/checkbox';
+import { CheckIcon } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
-import { CheckIcon } from 'lucide-react';
 
 function Checkbox({ className, ...props }) {
   return (

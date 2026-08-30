@@ -1,4 +1,8 @@
 /**
+ * @file Ganhar, perder e reabrir. Aqui a última gravação vence: com versão antiga grava do
+ * mesmo jeito e responde `conflito: true`.
+ */
+/**
  * Oportunidades da pessoa (M2.5, sem flag). Campo desligado ou oculto para o
  * papel some da resposta, então toda chave comercial é opcional; sem `status`,
  * somem também `categoria`, `ganhaEm` e `perdidaEm`.

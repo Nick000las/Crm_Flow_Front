@@ -1,3 +1,7 @@
+/**
+ * @file 409 de duplicidade ao salvar: os parecidos, com "Abrir" em cada um. No aviso há "Salvar
+ * mesmo assim" (reenvia com `ignorarDuplicados`); no bloqueio, não.
+ */
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -8,6 +12,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+
 import { candidatosDoErro, descreverCandidato, ehBloqueio } from '../lib/duplicidade';
 
 const TEXTO = Object.freeze({
@@ -41,7 +46,7 @@ export function DuplicadosDialog({ erro, salvando, onFechar, onSalvarMesmoAssim,
 
   return (
     <AlertDialog onOpenChange={(aberto) => !aberto && !salvando && onFechar()} open={Boolean(erro)}>
-      <AlertDialogContent className="rounded-none">
+      <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{titulo}</AlertDialogTitle>
           <AlertDialogDescription>{descricao}</AlertDialogDescription>
@@ -77,8 +82,14 @@ export function DuplicadosDialog({ erro, salvando, onFechar, onSalvarMesmoAssim,
         <AlertDialogFooter>
           <AlertDialogCancel disabled={salvando}>Voltar ao formulário</AlertDialogCancel>
           {!bloqueio && (
-            <Button aria-busy={salvando} disabled={salvando} onClick={onSalvarMesmoAssim}>
-              {salvando ? 'Salvando…' : 'Salvar mesmo assim'}
+            <Button
+              aria-busy={salvando}
+              disabled={salvando}
+              onClick={onSalvarMesmoAssim}
+              loading={salvando}
+              loadingText="Salvando…"
+            >
+              {'Salvar mesmo assim'}
             </Button>
           )}
         </AlertDialogFooter>

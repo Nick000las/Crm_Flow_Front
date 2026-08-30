@@ -1,4 +1,10 @@
+/**
+ * @file `GET /admin/features` — catálogo de feature flags que os módulos do back declaram (`{
+ * moduleKey, featureKey }[]`). Vem do back pelo mesmo motivo do catálogo de módulos: uma lista
+ * fixa aqui envelheceria a cada marco.
+ */
 import { useEffect, useState } from 'react';
+
 import { isAbortError, toApiError } from '@/services/api';
 
 /**

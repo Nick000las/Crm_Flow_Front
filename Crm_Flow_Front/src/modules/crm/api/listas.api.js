@@ -1,4 +1,7 @@
 /**
+ * @file Opção em uso (ou a última de uma lista) = 409.
+ */
+/**
  * Configurações › Listas (flag `crm.listas`). Leitura para qualquer papel;
  * escrita só DONO/MASTER. `tipo` ∈ `TIPOS_LISTA`.
  */

@@ -1,3 +1,6 @@
+/**
+ * @file Nova ordem dos status de um pipeline, para o cache otimista.
+ */
 import {
   CATEGORIAS_STATUS,
   REGRAS_DONO_ATENDIMENTO,
@@ -31,6 +34,7 @@ const paraSeletor = (status) => ({ valor: status.key, rotulo: status.label });
  */
 export function statusDoPipeline(pipelines, pipelineId, key) {
   const pipeline = pipelines.find((item) => item.id === pipelineId);
+
   return pipeline?.status.find((status) => status.key === key) ?? null;
 }
 
@@ -145,12 +149,15 @@ export function motivoNaoExclui(pipeline, pipelines) {
   if (pipeline.padrao) {
     return 'O pipeline padrão não pode ser excluído.';
   }
+
   if (pipeline.oportunidades > 0) {
     return 'Tem oportunidades. Desative em vez de excluir.';
   }
+
   const ehOrigem = pipelines.some(
     (outro) => outro.id !== pipeline.id && outro.automacao.origemId === pipeline.id,
   );
+
   return ehOrigem ? 'Outro pipeline nasce deste. Mude a automação dele antes.' : null;
 }
 
@@ -167,7 +174,9 @@ export function comStatusReordenados(pipelines, pipelineId, ids) {
     if (pipeline.id !== pipelineId) {
       return pipeline;
     }
+
     const porId = new Map(pipeline.status.map((status) => [status.id, status]));
+
     return { ...pipeline, status: ids.map((id) => porId.get(id)).filter(Boolean) };
   });
 }

@@ -1,4 +1,9 @@
 /**
+ * @file Página de navegação com subseções próprias (CRM › Configurações): só aparece se o
+ * usuário enxerga ao menos uma subseção pronta — senão o OPERADOR veria um item que leva a
+ * lugar nenhum.
+ */
+/**
  * Regra única de visibilidade da navegação: Rail, Sidebar e `RequireRole`
  * decidem por aqui, nunca com condição de papel/módulo/flag no JSX.
  *
@@ -73,6 +78,7 @@ export function paginaVisivel(page, user) {
   if (!podeVer(page, user)) {
     return false;
   }
+
   if (!page.secoes) {
     return true;
   }

@@ -1,5 +1,11 @@
+/**
+ * @file Uma página do sino. Não há push: recarrega de tempos em tempos (o contador `naoLidas`
+ * vem junto) e ao abrir o sino (`refetch`).
+ */
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
+
 import { listarNotificacoes, marcarComoLida, marcarTodasComoLidas } from '../api/notificacoes.api';
 import { INTERVALO_NOTIFICACOES_MS, TAMANHO_NOTIFICACOES } from '../lib/notificacoes';
 import { notificacoesKeys } from '../query-keys';
@@ -33,10 +39,12 @@ function useMutacaoDeNotificacao(mutationFn) {
 
 export function useMarcarComoLida() {
   const { authApi } = useAuth();
+
   return useMutacaoDeNotificacao((id) => marcarComoLida(authApi, id));
 }
 
 export function useMarcarTodasComoLidas() {
   const { authApi } = useAuth();
+
   return useMutacaoDeNotificacao(() => marcarTodasComoLidas(authApi));
 }

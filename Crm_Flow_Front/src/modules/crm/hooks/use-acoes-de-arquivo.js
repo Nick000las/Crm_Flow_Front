@@ -1,5 +1,10 @@
+/**
+ * @file Arquiva o lead confirmado; o erro vai para o dialog (que fica aberto).
+ */
 import { useState } from 'react';
+
 import { toApiError } from '@/services/api';
+
 import { AVISOS_LEAD } from '../constants';
 import { avisoDaRestauracao } from '../lib/arquivo';
 import { useArquivarLead, useDesarquivarLead, useRestaurarLead } from './use-lead-mutations';
@@ -44,13 +49,16 @@ export function useAcoesDeArquivo(onAviso, { confirmarArquivo = false } = {}) {
     /** Arquiva o lead confirmado; o erro vai para o dialog (que fica aberto). */
     async confirmarArquivo() {
       limparErro();
+
       try {
         await arquivar.mutateAsync(aConfirmar.id);
       } catch (error) {
         // O erro aparece no dialog, não também no alerta da lista.
         arquivar.reset();
+
         throw new Error(toApiError(error).message, { cause: error });
       }
+
       onAviso(AVISOS_LEAD.ARQUIVADO);
     },
     cancelarArquivo: () => setAConfirmar(null),

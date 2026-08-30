@@ -1,4 +1,8 @@
+/**
+ * @file Catálogo de módulos contratáveis.
+ */
 import { useEffect, useState } from 'react';
+
 import { getBackendHealth, isAbortError, toApiError } from '@/services/api';
 
 /**

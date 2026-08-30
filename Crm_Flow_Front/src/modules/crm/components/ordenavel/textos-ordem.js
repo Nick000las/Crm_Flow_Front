@@ -1,4 +1,8 @@
 /**
+ * @file Textos do arrastar para leitor de tela (dnd-kit `accessibility`), em pt-BR. O dnd-kit
+ * anuncia em inglês por padrão.
+ */
+/**
  * Textos do arrastar para leitor de tela (dnd-kit `accessibility`), em pt-BR.
  * O dnd-kit anuncia em inglês por padrão.
  */

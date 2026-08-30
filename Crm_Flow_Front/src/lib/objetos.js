@@ -1,4 +1,8 @@
 /**
+ * @file Cópia sem `chave`. Devolve o mesmo objeto se a chave não existe, para um `setState` não
+ * renderizar à toa.
+ */
+/**
  * Cópia sem `chave`. Devolve o mesmo objeto se a chave não existe, para um
  * `setState` não renderizar à toa.
  *
@@ -13,6 +17,8 @@ export function semChave(objeto, chave) {
   }
 
   const copia = { ...objeto };
+
   delete copia[chave];
+
   return copia;
 }

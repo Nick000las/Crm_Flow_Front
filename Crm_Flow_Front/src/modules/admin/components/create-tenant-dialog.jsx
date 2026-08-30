@@ -1,4 +1,10 @@
+/**
+ * @file `POST /admin/tenants` — provisiona o tenant e a conta do responsável numa tacada só. O
+ * Zod do servidor é quem valida; o formulário apenas espelha as mensagens de campo que
+ * voltarem.
+ */
 import { useState } from 'react';
+
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,9 +16,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Form } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { getFieldError, isAbortError, toApiError } from '@/services/api';
+
 import { useContractableModules } from '../hooks/use-contractable-modules';
 import { ModulesCheckboxGroup } from './modules-checkbox-group';
 
@@ -33,6 +41,7 @@ export function CreateTenantDialog({ open, onOpenChange, adminApi, onCreated }) 
     if (isSubmitting) {
       return;
     }
+
     if (!nextOpen) {
       setSubmitError(null);
       setModulosSelecionados([]);
@@ -43,6 +52,7 @@ export function CreateTenantDialog({ open, onOpenChange, adminApi, onCreated }) 
 
   function alternarModulo(moduleKey, marcado) {
     setSubmitError(null);
+
     setModulosSelecionados((atual) =>
       marcado ? [...atual, moduleKey] : atual.filter((chave) => chave !== moduleKey),
     );
@@ -82,7 +92,7 @@ export function CreateTenantDialog({ open, onOpenChange, adminApi, onCreated }) 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-lg" showCloseButton={!isSubmitting}>
-        <form onSubmit={handleSubmit}>
+        <Form noValidate onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Novo tenant</DialogTitle>
             <DialogDescription>
@@ -102,7 +112,6 @@ export function CreateTenantDialog({ open, onOpenChange, adminApi, onCreated }) 
             />
 
             <Campo
-              className="font-mono"
               disabled={isSubmitting}
               erro={getFieldError(submitError, 'subdomain')}
               id="tenant-subdomain"
@@ -113,7 +122,7 @@ export function CreateTenantDialog({ open, onOpenChange, adminApi, onCreated }) 
             />
 
             <fieldset className="grid gap-4 border-t border-border pt-4">
-              <legend className="font-mono text-[11px] uppercase tracking-wide text-muted-foreground">
+              <legend className="text-[11px] uppercase tracking-wide text-muted-foreground">
                 Responsável
               </legend>
 
@@ -140,7 +149,7 @@ export function CreateTenantDialog({ open, onOpenChange, adminApi, onCreated }) 
             </fieldset>
 
             <fieldset className="grid gap-3 border-t border-border pt-4">
-              <legend className="font-mono text-[11px] uppercase tracking-wide text-muted-foreground">
+              <legend className="text-[11px] uppercase tracking-wide text-muted-foreground">
                 Módulos contratados
               </legend>
 
@@ -170,7 +179,7 @@ export function CreateTenantDialog({ open, onOpenChange, adminApi, onCreated }) 
               {isSubmitting ? 'Criando...' : 'Criar tenant'}
             </Button>
           </DialogFooter>
-        </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );
@@ -185,7 +194,8 @@ function Campo({ erro, id, label, className, ...props }) {
       <Input
         aria-describedby={erro ? erroId : undefined}
         aria-invalid={Boolean(erro)}
-        className={`h-10 ${className ?? ''}`}
+        size="lg"
+        className={className}
         id={id}
         required
         {...props}

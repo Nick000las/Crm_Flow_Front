@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
+
 import {
-  MOTIVOS,
   bloqueios,
+  MOTIVOS,
   parcialDeVisibilidade,
   parcialDoNome,
   substituirCampo,
@@ -30,6 +31,7 @@ const campo = (overrides = {}) => ({
 describe('bloqueios', () => {
   test('sem canBeSensitive, marcar sensível trava com o motivo', () => {
     assert.equal(bloqueios(campo()).sensivel, null);
+
     assert.equal(
       bloqueios(
         campo({
@@ -75,6 +77,7 @@ describe('bloqueios', () => {
       ).obrigatorio,
       MOTIVOS.OBRIGATORIEDADE_FIXA,
     );
+
     assert.equal(
       bloqueios(campo({ visibilidade: { ...todasAsTelas, create_form: false } })).obrigatorio,
       MOTIVOS.LIGUE_CRIACAO,
@@ -101,6 +104,7 @@ describe('corpos do PUT', () => {
     assert.equal(parcialDoNome(renomeado, ' Companhia '), null);
     assert.deepEqual(parcialDoNome(renomeado, 'Empresa'), { label: null });
     assert.deepEqual(parcialDoNome(renomeado, ' Razão social '), { label: 'Razão social' });
+
     assert.deepEqual(parcialDoNome(campo({ labelPadrao: null, label: 'Renda' }), 'Salário'), {
       label: 'Salário',
     });
@@ -113,6 +117,7 @@ describe('ordem', () => {
     assert.deepEqual(moverPara(['a', 'b', 'c'], 2, 0), ['c', 'a', 'b']);
 
     const itens = ['a', 'b'];
+
     assert.equal(moverPara(itens, 0, -1), itens);
     assert.equal(moverPara(itens, 1, 1), itens);
   });
@@ -124,6 +129,7 @@ describe('ordem', () => {
       ordenarPorIds(lista, ['b', 'a']).map((item) => item.id),
       ['b', 'a'],
     );
+
     assert.equal(substituirCampo(lista, campo({ id: 'b', label: 'Nova' }))[1].label, 'Nova');
   });
 });

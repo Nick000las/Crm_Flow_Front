@@ -1,3 +1,7 @@
+/**
+ * @file Renderiza table, na área de interface compartilhada, expondo os estados e eventos
+ * necessários à interface.
+ */
 import { cn } from '@/lib/utils';
 
 function Table({ className, ...props }) {
@@ -40,6 +44,7 @@ function TableRow({ className, ...props }) {
   return (
     <tr
       data-slot="table-row"
+      data-interactive={typeof props.onClick === 'function' || undefined}
       className={cn(
         'border-b transition-colors hover:bg-muted/50 has-aria-expanded:bg-muted/50 data-[state=selected]:bg-muted',
         className,
@@ -54,7 +59,7 @@ function TableHead({ className, ...props }) {
     <th
       data-slot="table-head"
       className={cn(
-        'h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground [&:has([role=checkbox])]:pr-0',
+        'h-10 px-3 text-left align-middle text-[11px] font-normal uppercase tracking-wide text-muted-foreground whitespace-nowrap',
         className,
       )}
       {...props}
@@ -66,7 +71,7 @@ function TableCell({ className, ...props }) {
   return (
     <td
       data-slot="table-cell"
-      className={cn('p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0', className)}
+      className={cn('px-3 py-2.5 align-middle whitespace-nowrap', className)}
       {...props}
     />
   );
@@ -82,4 +87,4 @@ function TableCaption({ className, ...props }) {
   );
 }
 
-export { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell, TableCaption };
+export { Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow };

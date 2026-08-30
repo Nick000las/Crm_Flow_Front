@@ -1,4 +1,7 @@
 /**
+ * @file Os dados já preenchidos ficam nos leads; o back devolve um `aviso` dizendo isso.
+ */
+/**
  * Campos personalizados (Camada 3): criar, editar e excluir — usados pelos
  * dialogs de Configurações › Campos. Matriz, nome do sistema e ordem vão por
  * `configuracoes.api.js`. Escrita só DONO/MASTER.

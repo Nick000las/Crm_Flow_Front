@@ -1,6 +1,12 @@
+/**
+ * @file Cards ligados ao lead, para a aba Projetos. Qualquer erro (403 de flag ou de módulo)
+ * conta como lista vazia: a aba só some.
+ */
 import { useQuery } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
 import { temFeature } from '@/lib/acesso';
+
 import { listarProjetosDoLead } from '../api/projetos.api';
 import { crmKeys } from '../query-keys';
 

@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import { errosPorItem } from './erros-de-lista.js';
 import {
-  MENSAGENS_SCORE,
   chaveDaConfig,
   faixaDoScore,
   filtroComScore,
+  MENSAGENS_SCORE,
   novaFaixa,
   novaRegraScore,
   scoreMudou,
@@ -55,6 +56,7 @@ test('faixaDoScore: string decimal, negativo, limites inclusivos e sem score', (
   assert.equal(faixaDoScore(PADRAO, '30')?.chave, 'morno');
   assert.equal(faixaDoScore(PADRAO, null), null);
   assert.equal(faixaDoScore(null, 50), null);
+
   assert.equal(
     faixaDoScore([{ chave: 'a', rotulo: 'A', minimo: 0, maximo: 10, cor: '#000000' }], 50),
     null,
@@ -63,6 +65,7 @@ test('faixaDoScore: string decimal, negativo, limites inclusivos e sem score', (
 
 test('ida e volta: regra sem id, faixa salva mantém a chave, nova vai sem', () => {
   const valores = valoresDoScore(CONFIG, CAMPOS);
+
   assert.equal(scoreMudou(valores, CONFIG, CAMPOS), false);
 
   const comNova = {
@@ -82,6 +85,7 @@ test('ida e volta: regra sem id, faixa salva mantém a chave, nova vai sem', () 
       condicoes: [{ campoId: 'f-origem', operador: 'igual', valor: 'site' }],
     },
   ]);
+
   assert.deepEqual(corpo.faixas[0], {
     chave: 'frio',
     rotulo: 'Frio',
@@ -89,12 +93,14 @@ test('ida e volta: regra sem id, faixa salva mantém a chave, nova vai sem', () 
     maximo: 29,
     cor: '#3B82F6',
   });
+
   assert.deepEqual(corpo.faixas[2], {
     rotulo: 'Muito quente',
     minimo: 70,
     maximo: null,
     cor: '#000000',
   });
+
   assert.equal(scoreMudou(comNova, CONFIG, CAMPOS), true);
 });
 
@@ -116,6 +122,7 @@ test('validação: pontos, mínimo maior que o máximo, cor e sobreposição', (
   const resultado = /** @type {any} */ (
     scoreParaEnvio({ regras: [], faixas: sobrepostas }, CAMPOS)
   );
+
   assert.deepEqual(resultado.erros.geral, ['As faixas "Morno" e "Quente" se sobrepõem']);
 
   assert.deepEqual(
@@ -139,6 +146,7 @@ test('400 das faixas volta para a faixa certa; o da lista, para o geral', () => 
     'faixa-morno': { rotulo: 'Dê um nome à faixa' },
     'faixa-frio': { item: '"Frio": o mínimo passa do máximo' },
   });
+
   assert.deepEqual(outros, ['Sobrepõem']);
 });
 
@@ -146,10 +154,12 @@ test('textos: pontos com sinal e progresso do recálculo', () => {
   assert.equal(textoDosPontos('20'), '+20');
   assert.equal(textoDosPontos(-10), '-10');
   assert.equal(textoDosPontos('0'), '0');
+
   assert.equal(
     textoDoRecalculo({ total: 3000, processados: 1500, emAndamento: true, concluidoEm: null }),
     'Recalculando… 1.500 de 3.000 leads',
   );
+
   assert.equal(textoDoRecalculo(null), null);
 });
 
@@ -158,11 +168,13 @@ test('chave da config ignora o progresso do recálculo', () => {
     ...CONFIG,
     recalculo: { total: 10, processados: 5, emAndamento: true, concluidoEm: null },
   };
+
   assert.equal(chaveDaConfig(CONFIG), chaveDaConfig(rodando));
 });
 
 test('sem a flag, faixaScore sai do filtro', () => {
   const filtro = { filtros: [], faixaScore: 'quente' };
+
   assert.deepEqual(filtroComScore(filtro, false), { filtros: [] });
   assert.equal(filtroComScore(filtro, true), filtro);
 });

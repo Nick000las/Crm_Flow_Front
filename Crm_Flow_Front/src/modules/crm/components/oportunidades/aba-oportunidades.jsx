@@ -1,12 +1,20 @@
-import { Handshake, Plus, Trash2 } from 'lucide-react';
+/**
+ * @file Aba "Oportunidades" do drawer: uma pessoa pode ter várias, cada uma em um pipeline e
+ * com o próprio status.
+ */
 import { useState } from 'react';
+import { ChevronDown, Handshake, Plus, Trash2 } from 'lucide-react';
+
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { ConfirmationDialog } from '@/components/confirmation-dialog';
-import { ModulePlaceholder } from '@/components/module-placeholder';
+import { EmptyState } from '@/components/empty-state';
+import { LoadingState } from '@/components/loading-state';
+import { StatusToast } from '@/components/status-toast';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { isAccessError } from '@/services/api';
+
 import { useCampos } from '../../hooks/use-campos';
 import { useAcaoDaOportunidade, useOportunidades } from '../../hooks/use-oportunidades';
 import { usePipelines } from '../../hooks/use-pipelines';
@@ -26,11 +34,9 @@ const AVISO_DA_ACAO = Object.freeze({
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando oportunidades…
-      </span>
+      <LoadingState label="Carregando oportunidades…" />
       {Array.from({ length: 2 }, (_, indice) => (
-        <Skeleton className="h-20 rounded-none" key={indice} />
+        <Skeleton className="h-20" key={indice} />
       ))}
     </div>
   );
@@ -52,18 +58,23 @@ export function AbaOportunidades({ lead, nomePorId }) {
   // `undefined` = fechado; `null` = criando; objeto = editando.
   const [emEdicao, setEmEdicao] = useState(undefined);
   const [mudandoStatus, setMudandoStatus] = useState(null);
+  const [aArquivar, setAArquivar] = useState(null);
   const [aExcluir, setAExcluir] = useState(null);
+  const [verArquivadas, setVerArquivadas] = useState(false);
   const [comLixeira, setComLixeira] = useState(false);
   const [aviso, setAviso] = useState(null);
   const acao = useAcaoDaOportunidade(lead.id);
 
   const erro = oportunidadesQuery.error ?? pipelinesQuery.error;
+
   if (isAccessError(erro)) {
     return <AcessoIndisponivel error={erro} />;
   }
+
   if (erro) {
     return <ApiErrorAlert error={erro} id="oportunidades-erro" />;
   }
+
   if (oportunidadesQuery.isPending || pipelinesQuery.isPending) {
     return <Carregando />;
   }
@@ -91,13 +102,37 @@ export function AbaOportunidades({ lead, nomePorId }) {
     </Button>
   );
 
+  const ativas = oportunidades.filter((item) => !item.arquivadaEm);
+  const arquivadas = oportunidades.filter((item) => Boolean(item.arquivadaEm));
+
+  const renderItem = (oportunidade) => {
+    const alteravel = podeAlterar(oportunidade, lead);
+    const arquivada = Boolean(oportunidade.arquivadaEm);
+    const { id } = oportunidade;
+
+    return (
+      <ItemOportunidade
+        campos={campos}
+        key={oportunidade.id}
+        nomePorId={nomePorId}
+        onArquivar={alteravel ? () => setAArquivar(oportunidade) : undefined}
+        onDesarquivar={arquivada && !anonimizado ? () => aplicar(id, 'desarquivar') : undefined}
+        onEditar={alteravel ? () => abrir(() => setEmEdicao(oportunidade)) : undefined}
+        onExcluir={anonimizado ? undefined : () => setAExcluir(oportunidade)}
+        onMudarStatus={
+          alteravel && comStatus ? () => abrir(() => setMudandoStatus(oportunidade)) : undefined
+        }
+        oportunidade={oportunidade}
+        pipelines={pipelines}
+      />
+    );
+  };
+
   return (
     <div className="grid gap-4">
       {oportunidades.length > 0 && <div>{botaoNovo}</div>}
 
-      <p className={aviso ? 'border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
-        {aviso}
-      </p>
+      <StatusToast message={aviso} onDismiss={() => setAviso(null)} />
       <ApiErrorAlert
         error={acao.error}
         id="oportunidades-acao-erro"
@@ -105,48 +140,42 @@ export function AbaOportunidades({ lead, nomePorId }) {
       />
 
       {oportunidades.length === 0 ? (
-        <ModulePlaceholder
+        <EmptyState
           description="Registre as negociações e os atendimentos desta pessoa."
           icon={Handshake}
           title="Nenhuma oportunidade ainda"
         >
           {botaoNovo}
-        </ModulePlaceholder>
+        </EmptyState>
       ) : (
-        <ul>
-          {oportunidades.map((oportunidade) => {
-            const alteravel = podeAlterar(oportunidade, lead);
-            const arquivada = Boolean(oportunidade.arquivadaEm);
-            const { id } = oportunidade;
-
-            return (
-              <ItemOportunidade
-                campos={campos}
-                key={oportunidade.id}
-                nomePorId={nomePorId}
-                onArquivar={alteravel ? () => aplicar(id, 'arquivar') : undefined}
-                onDesarquivar={
-                  arquivada && !anonimizado ? () => aplicar(id, 'desarquivar') : undefined
-                }
-                onEditar={alteravel ? () => abrir(() => setEmEdicao(oportunidade)) : undefined}
-                onExcluir={anonimizado ? undefined : () => setAExcluir(oportunidade)}
-                onMudarStatus={
-                  alteravel && comStatus
-                    ? () => abrir(() => setMudandoStatus(oportunidade))
-                    : undefined
-                }
-                oportunidade={oportunidade}
-                pipelines={pipelines}
-              />
-            );
-          })}
-        </ul>
+        <div className="grid gap-4">
+          {ativas.length > 0 && <ul>{ativas.map(renderItem)}</ul>}
+          {arquivadas.length > 0 && (
+            <section className="grid gap-1">
+              <Button
+                aria-expanded={verArquivadas || ativas.length === 0}
+                className="w-fit gap-1.5 px-1 text-[11px] font-medium tracking-wide text-muted-foreground uppercase"
+                onClick={() => setVerArquivadas((atual) => !atual)}
+                size="xs"
+                type="button"
+                variant="ghost"
+              >
+                <ChevronDown
+                  aria-hidden="true"
+                  className={`size-3.5 transition-transform ${verArquivadas || ativas.length === 0 ? 'rotate-180' : ''}`}
+                />
+                Arquivadas ({arquivadas.length})
+              </Button>
+              {(verArquivadas || ativas.length === 0) && <ul>{arquivadas.map(renderItem)}</ul>}
+            </section>
+          )}
+        </div>
       )}
 
       <div className="grid gap-2 border-t border-border pt-3">
         <Button
           aria-expanded={comLixeira}
-          className="w-fit rounded-none"
+          className="w-fit"
           onClick={() => setComLixeira((atual) => !atual)}
           size="sm"
           type="button"
@@ -182,6 +211,19 @@ export function AbaOportunidades({ lead, nomePorId }) {
         oportunidade={mudandoStatus}
         pipelines={pipelines}
       />
+      {aArquivar && (
+        <ConfirmationDialog
+          confirmLabel="Arquivar oportunidade"
+          description="Ela sairá do quadro ativo, mas poderá ser desarquivada a qualquer momento nesta aba."
+          onClose={() => setAArquivar(null)}
+          onConfirm={async () => {
+            await acao.mutateAsync({ id: aArquivar.id, acao: 'arquivar' });
+            setAviso(AVISO_DA_ACAO.arquivar);
+          }}
+          pendingLabel="Arquivando…"
+          title="Arquivar esta oportunidade?"
+        />
+      )}
       {aExcluir && (
         <ConfirmationDialog
           confirmLabel="Mover para a lixeira"

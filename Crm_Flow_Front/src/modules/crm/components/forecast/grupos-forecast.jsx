@@ -1,3 +1,8 @@
+/**
+ * @file Resumo por grupo (responsável ou status), uma linha por grupo. Sem valor, as células
+ * mostram contagens e não há coluna de previsto.
+ */
+import { Card } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -6,11 +11,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+
 import { AGRUPAR_FORECAST } from '../../constants';
 import { rotuloCurtoDoMes } from '../../lib/forecast-textos';
-
-const HEAD_CLASS =
-  'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
 
 /**
  * Resumo por grupo (responsável ou status), uma linha por grupo. Sem valor, as
@@ -31,23 +34,23 @@ export function GruposForecast({ linhas, meses, agrupar }) {
   const comPrevisto = linhas.some((linha) => linha.previsto !== null);
 
   return (
-    <div className="overflow-x-auto border border-border">
+    <Card layout="plain" className="overflow-x-auto">
       <Table>
         <caption className="border-b border-border p-3 text-left text-sm font-medium">
           {legenda}
         </caption>
         <TableHeader>
           <TableRow>
-            <TableHead className={HEAD_CLASS} scope="col">
+            <TableHead scope="col">
               {agrupar === AGRUPAR_FORECAST.STATUS ? 'Status' : 'Responsável'}
             </TableHead>
             {comPrevisto && (
-              <TableHead className={`${HEAD_CLASS} text-right`} scope="col">
+              <TableHead className="text-right" scope="col">
                 Previsto
               </TableHead>
             )}
             {meses.map((m) => (
-              <TableHead className={`${HEAD_CLASS} text-right`} key={m.mes} scope="col">
+              <TableHead className="text-right" key={m.mes} scope="col">
                 {rotuloCurtoDoMes(m.mes)}
               </TableHead>
             ))}
@@ -56,18 +59,17 @@ export function GruposForecast({ linhas, meses, agrupar }) {
         <TableBody>
           {linhas.map((linha) => {
             const textoPorMes = new Map(linha.meses.map((m) => [m.mes, m.texto]));
+
             return (
               <TableRow key={linha.chave ?? 'sem-responsavel'}>
                 <TableCell className="font-medium" scope="row">
                   {linha.rotulo}
                 </TableCell>
                 {comPrevisto && (
-                  <TableCell className="text-right font-mono tabular-nums">
-                    {linha.previsto ?? '—'}
-                  </TableCell>
+                  <TableCell className="text-right tabular-nums">{linha.previsto ?? '—'}</TableCell>
                 )}
                 {meses.map((m) => (
-                  <TableCell className="text-right font-mono tabular-nums" key={m.mes}>
+                  <TableCell className="text-right tabular-nums" key={m.mes}>
                     {textoPorMes.get(m.mes) ?? '—'}
                   </TableCell>
                 ))}
@@ -76,6 +78,6 @@ export function GruposForecast({ linhas, meses, agrupar }) {
           })}
         </TableBody>
       </Table>
-    </div>
+    </Card>
   );
 }

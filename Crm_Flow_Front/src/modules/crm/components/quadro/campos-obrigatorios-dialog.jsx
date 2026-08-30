@@ -1,5 +1,11 @@
+/**
+ * @file Aceite 1 do M3: o movimento foi recusado com `CAMPOS_OBRIGATORIOS`, o card já voltou, e
+ * aqui se preenche o que falta para concluir. Aberto enquanto houver `pendencia`.
+ */
 import { useState } from 'react';
+
 import { ApiErrorAlert } from '@/components/api-error-alert';
+import { LoadingState } from '@/components/loading-state';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -10,9 +16,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Form } from '@/components/ui/form';
 import { Skeleton } from '@/components/ui/skeleton';
+import { focusFirstInvalidField } from '@/lib/form-validation';
 import { semChave } from '@/lib/objetos';
 import { toApiError } from '@/services/api';
+
 import { useLead } from '../../hooks/use-lead';
 import { useAtualizarLead } from '../../hooks/use-lead-mutations';
 import { useEditarOportunidade, useOportunidades } from '../../hooks/use-oportunidades';
@@ -26,8 +35,8 @@ import {
 } from '../../lib/form-lead';
 import { payloadDaEdicao, valoresDaOportunidade } from '../../lib/oportunidades';
 import {
-  CODIGO_CAMPOS_OBRIGATORIOS,
   camposDoMover,
+  CODIGO_CAMPOS_OBRIGATORIOS,
   pedeOutrosCampos,
   separarObrigatorios,
 } from '../../lib/quadro';
@@ -96,10 +105,13 @@ function FormObrigatorios({
       { ...valoresDaOportunidade(oportunidade), ...valores },
       daOportunidade,
     );
+
     if (!corpo) {
       return oportunidade.atualizadaEm;
     }
+
     const salva = await editar.mutateAsync({ id: oportunidade.id, corpo });
+
     return salva.atualizadaEm;
   }
 
@@ -108,6 +120,7 @@ function FormObrigatorios({
       ...valoresIniciais(doLead, lead),
       ...valores,
     });
+
     if (!payloadVazio(corpo)) {
       await atualizarLead.mutateAsync(corpo);
     }
@@ -115,11 +128,15 @@ function FormObrigatorios({
 
   function tratarErro(error) {
     const erro = toApiError(error);
+
     if (erro.code === CODIGO_CAMPOS_OBRIGATORIOS && pedeOutrosCampos(erro.fields, chaves)) {
       onRecusado(erro);
+
       return;
     }
+
     const { porCampo, gerais } = errosDoServidor(erro.fields, lista);
+
     setErros(porCampo);
     setOutros(gerais);
     setErroGeral(gerais.length > 0 || Object.keys(porCampo).length === 0 ? erro : null);
@@ -127,20 +144,32 @@ function FormObrigatorios({
 
   async function handleSubmit(event) {
     event.preventDefault();
+
     const locais = validarNoCliente(lista, valores);
+
     setErros(locais);
     setErroGeral(null);
     setOutros([]);
+
     if (Object.keys(locais).length > 0) {
+      focusFirstInvalidField(
+        event.currentTarget,
+        Object.keys(locais).map((id) => `quadro-obrigatorio-${id}`),
+      );
+
       return;
     }
 
     setEnviando(true);
+
     try {
       const versao = await gravarOportunidade();
+
       await gravarContato();
+
       const campos = camposDoMover(noMover, valores);
       const resposta = await onMover(pendencia, { versao, ...(campos && { campos }) });
+
       onSalvo(avisoDoFormulario(resposta, pendencia.padraoDoDestino));
     } catch (error) {
       tratarErro(error);
@@ -150,7 +179,7 @@ function FormObrigatorios({
   }
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       {lista.map((campo) => {
         const id = idNoForm(campo);
 
@@ -167,7 +196,10 @@ function FormObrigatorios({
       })}
 
       {bloqueados.length > 0 && (
-        <div className="grid gap-1 border border-border px-3 py-2 text-sm" role="alert">
+        <div
+          className="grid gap-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm"
+          role="alert"
+        >
           <p>Estes dados dependem de outra pessoa com acesso a eles:</p>
           <ul className="list-inside list-disc">
             {bloqueados.map((mensagem) => (
@@ -193,11 +225,13 @@ function FormObrigatorios({
           aria-busy={enviando}
           disabled={enviando || bloqueados.length > 0 || lista.length === 0}
           type="submit"
+          loading={enviando}
+          loadingText="Salvando…"
         >
-          {enviando ? 'Salvando…' : `Salvar e mover`}
+          Salvar e mover
         </Button>
       </DialogFooter>
-    </form>
+    </Form>
   );
 }
 
@@ -211,19 +245,19 @@ function ConteudoDoDialog({ pendencia, campos, onMover, onRecusado, onSalvo }) {
   if (falha) {
     return <ApiErrorAlert error={falha} id={`${ERRO_ID}-carregar`} />;
   }
+
   if (oportunidadesQuery.isPending || leadQuery.isPending) {
     return (
       <div className="grid gap-2" aria-busy="true">
-        <span className="sr-only" role="status">
-          Carregando dados do card…
-        </span>
-        <Skeleton className="h-9 rounded-none" />
-        <Skeleton className="h-9 rounded-none" />
+        <LoadingState label="Carregando dados do card…" />
+        <Skeleton className="h-9" />
+        <Skeleton className="h-9" />
       </div>
     );
   }
 
   const oportunidade = oportunidadesQuery.data.find((item) => item.id === card.entidadeId);
+
   if (!oportunidade) {
     return <p className="text-sm">Esta oportunidade não está mais disponível.</p>;
   }
@@ -280,7 +314,7 @@ export function CamposObrigatoriosDialog({
 }) {
   return (
     <Dialog onOpenChange={(aberto) => !aberto && onFechar()} open={Boolean(pendencia)}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-none sm:max-w-md">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Falta preencher para mover</DialogTitle>
           <DialogDescription>

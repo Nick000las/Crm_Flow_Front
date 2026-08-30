@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import { cardsDasPaginas } from './quadro.js';
 import {
-  LIMITE_DE_IDS,
   aplicarNaColuna,
   colunasAfetadas,
+  LIMITE_DE_IDS,
   lotesDeIds,
   ordenaPorAtualizacao,
 } from './quadro-tempo-real.js';
@@ -30,6 +31,7 @@ test('lotesDeIds respeita o limite da rota', () => {
     lotesDeIds(todos).map((lote) => lote.length),
     [LIMITE_DE_IDS, 1],
   );
+
   assert.deepEqual(lotesDeIds([]), []);
 });
 
@@ -57,6 +59,7 @@ test('colunasAfetadas avisa quando não sabe de onde o card veio', () => {
 
   assert.equal(colunasAfetadas(dados, { itens: [], ausentes: ['b'] }).desconhecido, true);
   assert.equal(colunasAfetadas(dados, { itens: [], ausentes: ['a'] }).desconhecido, false);
+
   assert.deepEqual(
     colunasAfetadas(dados, { itens: [], ausentes: ['a'] }).colunas,
     new Set(['novo']),
@@ -159,5 +162,6 @@ test('cardsDasPaginas não repete o card que voltou no "Carregar mais"', () => {
     cardsDasPaginas(dados).map((item) => item.entidadeId),
     ['a', 'b'],
   );
+
   assert.deepEqual(cardsDasPaginas(undefined), []);
 });

@@ -1,5 +1,11 @@
+/**
+ * @file Compartilha estado e efeitos de use views, na área de CRM, entre consumidores da
+ * interface.
+ */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
+
 import { excluirView, listarViews, salvarView } from '../api/views.api';
 import { crmKeys } from '../query-keys';
 

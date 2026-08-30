@@ -1,3 +1,7 @@
+/**
+ * @file Reúne operações reutilizáveis de team selection, mantendo cálculos e transformações
+ * independentes da interface.
+ */
 export const TEAM_PAGE_SIZE = 20;
 
 function normalize(value) {
@@ -6,8 +10,10 @@ function normalize(value) {
 
 export function filterTeamMembers(members, selectedIds, query, filter) {
   const terms = normalize(query.trim()).split(/\s+/u).filter(Boolean);
+
   return members.filter((member) => {
     const selected = selectedIds.has(member.id);
+
     return (
       (filter !== 'selected' || selected) &&
       (filter !== 'available' || !selected) &&
@@ -18,6 +24,7 @@ export function filterTeamMembers(members, selectedIds, query, filter) {
 
 export function updateTeamSelection(current, ids, selected) {
   const next = new Set(current);
+
   for (const id of ids) {
     if (selected) {
       next.add(id);
@@ -25,5 +32,6 @@ export function updateTeamSelection(current, ids, selected) {
       next.delete(id);
     }
   }
+
   return next;
 }

@@ -1,3 +1,7 @@
+/**
+ * @file Excluir uma opção sem uso. Em uso ou última da lista, o back responde 409 — a mensagem
+ * dele aparece aqui (o botão da linha já evita o caso comum).
+ */
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import {
   AlertDialog,
@@ -9,6 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+
 import { useExcluirOpcao } from '../../hooks/use-listas';
 
 /**
@@ -30,9 +35,11 @@ export function ExcluirOpcaoDialog({ tipo, opcao, onOpenChange, onExcluida, pipe
     if (excluir.isPending) {
       return;
     }
+
     if (!proximo) {
       excluir.reset();
     }
+
     onOpenChange(proximo);
   }
 
@@ -50,7 +57,7 @@ export function ExcluirOpcaoDialog({ tipo, opcao, onOpenChange, onExcluida, pipe
 
   return (
     <AlertDialog onOpenChange={handleOpenChange} open={Boolean(opcao)}>
-      <AlertDialogContent className="rounded-none">
+      <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Excluir opção</AlertDialogTitle>
           <AlertDialogDescription>

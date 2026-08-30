@@ -1,3 +1,6 @@
+/**
+ * @file Espelho de `ROLES` do back (`Back/src/shared/constants/index.js`).
+ */
 /** Espelho de `ROLES` do back (`Back/src/shared/constants/index.js`). */
 export const ROLES = Object.freeze({
   MASTER: 'MASTER',

@@ -1,4 +1,9 @@
+/**
+ * @file Criar ou editar uma regra de distribuição **no rascunho**: nada é salvo aqui — o
+ * "Salvar" da seção manda a configuração inteira.
+ */
 import { useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -9,8 +14,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Form } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+
 import { DISTRIBUICAO } from '../../constants';
 import { validarRegraDistribuicao } from '../../lib/distribuicao';
 import { CampoForm } from '../campo-form';
@@ -35,18 +42,22 @@ function FormRegraDistribuicao({ regra, campos, opcoesDestino, errosDoServidor, 
 
   function handleSubmit(event) {
     event.preventDefault();
+
     const erros = validarRegraDistribuicao(valores, campos);
+
     if (Object.keys(erros).length > 0) {
       setErrosCliente(erros);
+
       return;
     }
+
     onConfirmar({ ...valores, nome: valores.nome.trim() });
   }
 
   const erroGeral = erroDe('regra') ?? erroDe('id');
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       <CampoForm
         erro={erroDe('nome')}
         id="distribuicao-regra-nome"
@@ -57,7 +68,7 @@ function FormRegraDistribuicao({ regra, campos, opcoesDestino, errosDoServidor, 
           <Input
             {...controle}
             autoFocus
-            className="h-9 rounded-none"
+
             onChange={(event) => alterar({ nome: event.target.value })}
             placeholder="Ex.: Leads do site"
             value={valores.nome}
@@ -110,7 +121,7 @@ function FormRegraDistribuicao({ regra, campos, opcoesDestino, errosDoServidor, 
         <DialogClose render={<Button type="button" variant="outline" />}>Cancelar</DialogClose>
         <Button type="submit">Concluir</Button>
       </DialogFooter>
-    </form>
+    </Form>
   );
 }
 
@@ -139,7 +150,7 @@ export function RegraDistribuicaoDialog({
 }) {
   return (
     <Dialog onOpenChange={onOpenChange} open={Boolean(regra)}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-none sm:max-w-xl">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>{nova ? 'Nova regra' : 'Editar regra'}</DialogTitle>
           <DialogDescription>

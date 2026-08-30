@@ -1,5 +1,12 @@
-import { ArrowLeft } from 'lucide-react';
+/**
+ * @file Editor de um formulário: dados, perguntas (seções e campos), termo e alertas (FM5, que
+ * precisam do schema em `campos`). Tudo é rascunho até "Salvar"; publicar grava uma versão nova
+ * a partir do salvo. Montado com a `key` do `atualizadoEm`: depois de salvar, recomeça da
+ * resposta.
+ */
 import { useMemo, useState } from 'react';
+import { ArrowLeft } from 'lucide-react';
+
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import {
   AlertDialog,
@@ -12,18 +19,21 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Form } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+
 import {
-  VALIDADE,
   corpoDoPut,
   dadosDoForm,
   formularioMudou,
   itensIndisponiveis,
   rascunhoDoForm,
   situacaoDoFormulario,
+  VALIDADE,
   validarNoCliente,
 } from '../../lib/formularios';
 import { CampoForm } from '../campo-form';
@@ -106,6 +116,7 @@ export function EditorFormulario({
 
   function gravar(publicarDepois) {
     const validacao = validarNoCliente(dados, rascunho, elegiveis, campos);
+
     if (
       Object.keys(validacao.dados).length > 0 ||
       Object.keys(validacao.porItem).length > 0 ||
@@ -113,8 +124,10 @@ export function EditorFormulario({
       validacao.geral
     ) {
       setErrosLocais(validacao);
+
       return;
     }
+
     onGravar({ corpo: mudou ? corpo : null, rascunho, publicarDepois });
   }
 
@@ -127,7 +140,7 @@ export function EditorFormulario({
   }
 
   return (
-    <form
+    <Form
       className="grid gap-6"
       noValidate
       onSubmit={(event) => {
@@ -137,7 +150,7 @@ export function EditorFormulario({
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
-          <Button className="rounded-none" onClick={voltar} type="button" variant="ghost">
+          <Button onClick={voltar} type="button" variant="ghost">
             <ArrowLeft aria-hidden="true" />
             Formulários
           </Button>
@@ -146,7 +159,7 @@ export function EditorFormulario({
             <span className="ml-2 text-muted-foreground">
               {situacao.rotulo}
               {situacao.versao !== null && (
-                <span className="ml-1.5 font-mono text-xs">v{situacao.versao}</span>
+                <span className="ml-1.5 text-xs">v{situacao.versao}</span>
               )}
             </span>
           </p>
@@ -154,10 +167,10 @@ export function EditorFormulario({
         <div className="flex gap-2">
           <Button
             aria-busy={ocupado}
-            className="rounded-none"
             disabled={!mudou || ocupado}
             type="submit"
             variant="outline"
+            loading={ocupado}
           >
             Salvar
           </Button>
@@ -168,10 +181,11 @@ export function EditorFormulario({
             <Button
               aria-busy={ocupado}
               aria-describedby={nadaNovo ? 'formulario-publicar-motivo' : undefined}
-              className={nadaNovo ? 'pointer-events-none rounded-none' : 'rounded-none'}
+              className={nadaNovo ? 'pointer-events-none' : undefined}
               disabled={nadaNovo || ocupado}
               onClick={() => gravar(true)}
               type="button"
+              loading={ocupado}
             >
               {mudou ? 'Salvar e publicar' : 'Publicar'}
             </Button>
@@ -197,14 +211,14 @@ export function EditorFormulario({
         </ul>
       )}
 
-      <fieldset className="grid gap-4 border border-border p-4">
+      <Card as="fieldset" layout="plain" className="grid gap-4 p-4">
         <legend className={`${LEGENDA} px-1`}>Dados</legend>
         <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto]">
           <CampoForm erro={erroDe('nome')} id="formulario-nome" label="Nome" obrigatorio>
             {(controle) => (
               <Input
                 {...controle}
-                className="h-9 rounded-none"
+
                 onChange={(event) => mudarDado('nome', event.target.value)}
                 value={dados.nome}
               />
@@ -219,7 +233,7 @@ export function EditorFormulario({
             {(controle) => (
               <Input
                 {...controle}
-                className="h-9 w-32 rounded-none font-mono tabular-nums"
+                className="w-32 tabular-nums"
                 inputMode="numeric"
                 max={VALIDADE.MAXIMO}
                 min={VALIDADE.MINIMO}
@@ -234,7 +248,6 @@ export function EditorFormulario({
           {(controle) => (
             <Textarea
               {...controle}
-              className="rounded-none"
               onChange={(event) => mudarDado('descricao', event.target.value)}
               rows={2}
               value={dados.descricao}
@@ -253,9 +266,9 @@ export function EditorFormulario({
             Inativo, o formulário fica guardado, mas não é oferecido para envio.
           </span>
         </div>
-      </fieldset>
+      </Card>
 
-      <fieldset className="grid gap-4 border border-border p-4">
+      <Card as="fieldset" layout="plain" className="grid gap-4 p-4">
         <legend className={`${LEGENDA} px-1`}>Perguntas</legend>
         <CampoForm
           ajuda="Aparece antes das perguntas."
@@ -266,7 +279,6 @@ export function EditorFormulario({
           {(controle) => (
             <Textarea
               {...controle}
-              className="rounded-none"
               onChange={(event) => mudarRascunho({ ...rascunho, introducao: event.target.value })}
               rows={3}
               value={rascunho.introducao}
@@ -293,7 +305,6 @@ export function EditorFormulario({
           {(controle) => (
             <Textarea
               {...controle}
-              className="rounded-none"
               onChange={(event) => mudarRascunho({ ...rascunho, termo: event.target.value })}
               placeholder="Ex.: Autorizo o uso dos meus dados para o atendimento."
               rows={4}
@@ -301,7 +312,7 @@ export function EditorFormulario({
             />
           )}
         </CampoForm>
-      </fieldset>
+      </Card>
 
       <AlertasDoFormulario
         campos={campos}
@@ -314,7 +325,7 @@ export function EditorFormulario({
       <VersoesDoFormulario formulario={detalhe} nomePorId={nomePorId} />
 
       <AlertDialog onOpenChange={setConfirmandoSaida} open={confirmandoSaida}>
-        <AlertDialogContent className="rounded-none">
+        <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Sair sem salvar?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -322,13 +333,13 @@ export function EditorFormulario({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-none">Continuar editando</AlertDialogCancel>
-            <AlertDialogAction className="rounded-none" onClick={onVoltar} variant="destructive">
+            <AlertDialogCancel>Continuar editando</AlertDialogCancel>
+            <AlertDialogAction onClick={onVoltar} variant="destructive">
               Descartar e sair
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </form>
+    </Form>
   );
 }

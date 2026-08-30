@@ -1,4 +1,7 @@
 /**
+ * @file "2 atualizados · 1 para revisar", sem o que é zero.
+ */
+/**
  * Respostas de formulário na ficha (FM4): o que a pessoa declarou e o que a
  * resposta fez em cada campo do CRM. A pergunta própria não tem `escrita`:
  * a resposta dela fica só no formulário.
@@ -65,9 +68,11 @@ export function textoDaEscrita(escrita) {
   if (!escrita) {
     return null;
   }
+
   if (escrita.resultado === RESULTADOS_ESCRITA.GRAVADO) {
     return TEXTO_POR_RESULTADO.gravado;
   }
+
   return TEXTO_POR_MOTIVO[escrita.motivo] ?? TEXTO_POR_RESULTADO[escrita.resultado] ?? null;
 }
 
@@ -108,6 +113,7 @@ export function rotuloDeQuemPreencheu({ preenchidoPor, nomeResponsavel }) {
   if (preenchidoPor === 'responsavel') {
     return nomeResponsavel ? `Responsável: ${nomeResponsavel}` : 'Responsável';
   }
+
   return 'A própria pessoa';
 }
 
@@ -120,11 +126,13 @@ export function resumoDaEscrita(escrita) {
   if (!escrita) {
     return null;
   }
+
   const partes = [
     escrita.gravados > 0 &&
       `${escrita.gravados} ${escrita.gravados === 1 ? 'atualizado' : 'atualizados'}`,
     escrita.ignorados > 0 && `${escrita.ignorados} sem mudança`,
     escrita.revisao > 0 && `${escrita.revisao} para revisar`,
   ].filter(Boolean);
+
   return partes.length > 0 ? partes.join(' · ') : null;
 }

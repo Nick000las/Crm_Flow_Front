@@ -1,9 +1,14 @@
+/**
+ * @file 400/409 do `PUT` ou do publicar → onde mostrar. Os índices são os de `secoesEnviadas`
+ * do rascunho que foi enviado; o item guarda a primeira mensagem de cada parte (`campoId`,
+ * `preencher`, `pergunta.*`).
+ */
 import { ROTULOS_TIPO, TIPOS_CAMPO } from '../constants.js';
 import {
-  CAMINHO_DO_ALERTA,
   alertasDoForm,
   alertasParaApi,
   alvosDoRascunho,
+  CAMINHO_DO_ALERTA,
   destinoDoErroDeAlerta,
   validarAlertas,
 } from './alertas-formulario.js';
@@ -152,6 +157,7 @@ export function situacaoDoFormulario({ versaoAtual, alteracoesNaoPublicadas }) {
   if (!versaoAtual) {
     return { rotulo: 'Rascunho', versao: null };
   }
+
   return {
     rotulo: alteracoesNaoPublicadas ? 'Publicado com alterações' : 'Publicado',
     versao: versaoAtual.versao,
@@ -191,6 +197,7 @@ export function perguntaVazia() {
 function itemDoForm(item, chaveNova) {
   if (ehPergunta(item)) {
     const { pergunta } = /** @type {ItemDePerguntaDaApi} */ (item);
+
     return {
       chaveLocal: pergunta.id ? `pergunta:${pergunta.id}` : chaveNova,
       obrigatorio: item.obrigatorio ?? false,
@@ -204,7 +211,9 @@ function itemDoForm(item, chaveNova) {
       },
     };
   }
+
   const { campoId, obrigatorio, politica, preencher } = /** @type {ItemDeCampoDaApi} */ (item);
+
   return {
     chaveLocal: `campo:${campoId}`,
     campoId,
@@ -278,7 +287,9 @@ function itemParaApi(item) {
   if (ehPergunta(item)) {
     return { pergunta: perguntaParaApi(item.pergunta), obrigatorio: item.obrigatorio };
   }
+
   const { campoId, obrigatorio, politica, preencher } = item;
+
   return { campoId, obrigatorio, politica, preencher };
 }
 
@@ -340,6 +351,7 @@ export function adicionarSecao(rascunho) {
  */
 export function removerSecao(rascunho, chaveLocal) {
   const secoes = rascunho.secoes.filter((secao) => secao.chaveLocal !== chaveLocal);
+
   return secoes.length > 0 ? { ...rascunho, secoes } : adicionarSecao({ ...rascunho, secoes });
 }
 
@@ -399,6 +411,7 @@ export function adicionarItem(rascunho, chaveSecao, campo) {
  */
 export function adicionarPergunta(rascunho, chaveSecao, pergunta) {
   const comChave = { ...rascunho, sequencia: rascunho.sequencia + 1 };
+
   return noFimDaSecao(comChave, chaveSecao, {
     chaveLocal: `nova-${rascunho.sequencia}`,
     obrigatorio: false,
@@ -455,10 +468,12 @@ export function alterarItem(rascunho, chaveLocal, mudancas) {
 export function posicaoDoItem(rascunho, chaveLocal) {
   for (const secao of rascunho.secoes) {
     const indice = secao.itens.findIndex((item) => item.chaveLocal === chaveLocal);
+
     if (indice >= 0) {
       return { secao: secao.chaveLocal, indice };
     }
   }
+
   return null;
 }
 
@@ -472,9 +487,11 @@ export function posicaoDoItem(rascunho, chaveLocal) {
  */
 export function moverItem(rascunho, chaveLocal, destino) {
   const origem = posicaoDoItem(rascunho, chaveLocal);
+
   if (!origem || (origem.secao === destino.secao && origem.indice === destino.indice)) {
     return rascunho;
   }
+
   const item = rascunho.secoes
     .find((secao) => secao.chaveLocal === origem.secao)
     .itens.find((atual) => atual.chaveLocal === chaveLocal);
@@ -486,8 +503,11 @@ export function moverItem(rascunho, chaveLocal, destino) {
       if (secao.chaveLocal !== destino.secao) {
         return secao;
       }
+
       const itens = [...secao.itens];
+
       itens.splice(Math.min(Math.max(destino.indice, 0), itens.length), 0, item);
+
       return { ...secao, itens };
     }),
   };
@@ -507,6 +527,7 @@ const itensDeCampo = (rascunho) =>
  */
 export function camposDisponiveis(elegiveis, rascunho) {
   const usados = new Set(itensDeCampo(rascunho).map((item) => item.campoId));
+
   return elegiveis.filter((campo) => !usados.has(campo.id));
 }
 
@@ -520,6 +541,7 @@ export function camposDisponiveis(elegiveis, rascunho) {
  */
 export function itensIndisponiveis(rascunho, elegiveis) {
   const ids = new Set(elegiveis.map((campo) => campo.id));
+
   return new Set(
     itensDeCampo(rascunho)
       .filter((item) => !ids.has(item.campoId))
@@ -537,6 +559,7 @@ export function itensIndisponiveis(rascunho, elegiveis) {
  */
 export function preenchidosProibidos(rascunho, elegiveis) {
   const porId = new Map(elegiveis.map((campo) => [campo.id, campo]));
+
   return new Set(
     itensDeCampo(rascunho)
       .filter((item) => item.preencher && porId.get(item.campoId)?.podePreencher === false)
@@ -553,17 +576,21 @@ export function preenchidosProibidos(rascunho, elegiveis) {
 export function validarPergunta(pergunta) {
   const erros = {};
   const rotulo = pergunta.rotulo.trim();
+
   if (!rotulo) {
     erros.rotulo = MENSAGENS_FORMULARIO.ROTULO;
   } else if (rotulo.length > LIMITES_PERGUNTA.ROTULO) {
     erros.rotulo = MENSAGENS_FORMULARIO.ROTULO_LONGO;
   }
+
   if (pergunta.ajuda.trim().length > LIMITES_PERGUNTA.AJUDA) {
     erros.ajuda = MENSAGENS_FORMULARIO.AJUDA_LONGA;
   }
+
   if (temOpcoes(pergunta.tipo)) {
     const opcoes = pergunta.opcoes.map((opcao) => opcao.trim()).filter(Boolean);
     const normalizadas = opcoes.map((opcao) => opcao.toLocaleLowerCase('pt-BR'));
+
     if (opcoes.length === 0) {
       erros.opcoes = MENSAGENS_FORMULARIO.SEM_OPCOES;
     } else if (opcoes.length > LIMITES_PERGUNTA.OPCOES) {
@@ -574,6 +601,7 @@ export function validarPergunta(pergunta) {
       erros.opcoes = MENSAGENS_FORMULARIO.OPCAO_REPETIDA;
     }
   }
+
   return erros;
 }
 
@@ -593,10 +621,13 @@ export function validarPergunta(pergunta) {
  */
 export function validarNoCliente(dados, rascunho, elegiveis, campos = []) {
   const erros = {};
+
   if (!dados.nome.trim()) {
     erros.nome = MENSAGENS_FORMULARIO.NOME;
   }
+
   const validade = Number(dados.validadeDias);
+
   if (
     !dados.validadeDias.trim() ||
     !Number.isInteger(validade) ||
@@ -607,11 +638,14 @@ export function validarNoCliente(dados, rascunho, elegiveis, campos = []) {
   }
 
   const porItem = {};
+
   for (const chave of preenchidosProibidos(rascunho, elegiveis)) {
     porItem[chave] = { preencher: MENSAGENS_FORMULARIO.DESLIGUE_PREENCHER };
   }
+
   for (const item of rascunho.secoes.flatMap((secao) => secao.itens)) {
     const daPergunta = ehPergunta(item) ? Object.values(validarPergunta(item.pergunta))[0] : null;
+
     if (daPergunta) {
       porItem[item.chaveLocal] = { pergunta: daPergunta };
     }
@@ -620,6 +654,7 @@ export function validarNoCliente(dados, rascunho, elegiveis, campos = []) {
   const alertas = validarAlertas(rascunho.alertas ?? [], alvosDoRascunho(rascunho, campos));
 
   let geral = alertas.geral;
+
   if (itensIndisponiveis(rascunho, elegiveis).size > 0) {
     geral = MENSAGENS_FORMULARIO.INDISPONIVEIS;
   } else if (Object.keys(porItem).length > 0) {
@@ -657,15 +692,19 @@ export function errosDoFormulario(fields, enviado) {
     const mensagem = Array.isArray(mensagens) ? mensagens[0] : String(mensagens);
     const doAlerta = CAMINHO_DO_ALERTA.exec(caminho);
     const destino = doAlerta && destinoDoErroDeAlerta(doAlerta, enviado.alertas ?? []);
+
     if (destino) {
       const doMesmo = erros.porAlerta[destino.chaveLocal] ?? {};
+
       erros.porAlerta[destino.chaveLocal] = { [destino.parte]: mensagem, ...doMesmo };
       continue;
     }
+
     if (caminho === 'rascunho.alertas') {
       erros.alertas = mensagem;
       continue;
     }
+
     const doItem = CAMINHO_DO_ITEM.exec(caminho);
     const daSecao = CAMINHO_DA_SECAO.exec(caminho);
     const item = doItem && secoes[Number(doItem[1])]?.itens[Number(doItem[2])];
@@ -676,6 +715,7 @@ export function errosDoFormulario(fields, enviado) {
     } else if (item) {
       const parte = ERRO_DA_PARTE[doItem[3]] ?? 'item';
       const doMesmo = erros.porItem[item.chaveLocal] ?? {};
+
       erros.porItem[item.chaveLocal] = { [parte]: mensagem, ...doMesmo };
     } else if (secao) {
       erros.porSecao[secao.chaveLocal] = mensagem;

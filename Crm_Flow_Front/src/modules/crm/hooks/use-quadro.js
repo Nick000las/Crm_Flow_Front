@@ -1,3 +1,7 @@
+/**
+ * @file Busca de pessoas para o "Adicionar" da coluna.
+ */
+import { useRef } from 'react';
 import {
   keepPreviousData,
   useInfiniteQuery,
@@ -5,7 +9,9 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
+
 import { pesquisarLeads } from '../api/leads.api';
 import { buscarCards, criarCard, listarColunas, moverCard, resumirColuna } from '../api/quadro.api';
 import { porNoTopo, tirarDasPaginas } from '../lib/quadro';
@@ -26,6 +32,7 @@ const PESSOAS_NA_BUSCA = 8;
  */
 function recarregarColunas(queryClient, quadroRef, colunas) {
   queryClient.invalidateQueries({ queryKey: crmKeys.leads(), refetchType: 'none' });
+
   return Promise.all(
     colunas
       .flatMap((coluna) => [
@@ -111,35 +118,63 @@ export function useResumoDaColuna(quadroRef, colunaRef, consulta, ligada) {
 export function useMoverCard(quadroRef, consulta) {
   const { authApi } = useAuth();
   const queryClient = useQueryClient();
+  const colunasTocadas = useRef(new Set());
+  const filtros = consulta?.filtros;
+  const mutationKey = [...crmKeys.quadro(quadroRef), 'mover'];
   const chaveDaColuna = (colunaRef) =>
     crmKeys.quadroCards(quadroRef, colunaRef, consulta ?? undefined);
+  const chaveDoResumo = (colunaRef) => crmKeys.quadroResumo(quadroRef, colunaRef, filtros);
 
   return useMutation({
+    mutationKey,
     mutationFn: ({ card, para, versao, campos }) =>
       moverCard(authApi, quadroRef, card.entidadeId, {
         colunaDestino: para,
         expectedUpdatedAt: versao ?? card.atualizadoEm,
-        ...(consulta?.filtros && { filtros: consulta.filtros }),
+        ...(filtros && { filtros }),
         ...(campos && { campos }),
       }),
-    onMutate: async ({ card, de, para }) => {
+    onMutate: ({ card, de, para }) => {
       const origem = chaveDaColuna(de);
       const destino = chaveDaColuna(para);
-      await Promise.all(
-        [origem, destino].map((queryKey) => queryClient.cancelQueries({ queryKey })),
-      );
+      const resumoOrigem = chaveDoResumo(de);
+      const resumoDestino = chaveDoResumo(para);
+
+      // Cancela buscas pendentes sem `await`: a troca de coluna acontece no mesmo frame do drop.
+      for (const colunaRef of [de, para]) {
+        void queryClient.cancelQueries({ queryKey: crmKeys.quadroCards(quadroRef, colunaRef) });
+        void queryClient.cancelQueries({ queryKey: crmKeys.quadroResumo(quadroRef, colunaRef) });
+      }
 
       const antes = {
         origem: queryClient.getQueryData(origem),
         destino: queryClient.getQueryData(destino),
+        resumoOrigem: queryClient.getQueryData(resumoOrigem),
+        resumoDestino: queryClient.getQueryData(resumoDestino),
       };
+
       queryClient.setQueryData(origem, (dados) => tirarDasPaginas(dados, card.entidadeId));
       queryClient.setQueryData(destino, (dados) => porNoTopo(dados, card));
+
+      queryClient.setQueryData(resumoOrigem, (resumo) =>
+        resumo && typeof resumo.total === 'number'
+          ? { ...resumo, total: Math.max(0, resumo.total - 1) }
+          : resumo,
+      );
+
+      queryClient.setQueryData(resumoDestino, (resumo) =>
+        resumo && typeof resumo.total === 'number'
+          ? { ...resumo, total: resumo.total + 1 }
+          : resumo,
+      );
+
       return antes;
     },
     onError: (_erro, { de, para }, antes) => {
       queryClient.setQueryData(chaveDaColuna(de), antes?.origem);
       queryClient.setQueryData(chaveDaColuna(para), antes?.destino);
+      queryClient.setQueryData(chaveDoResumo(de), antes?.resumoOrigem);
+      queryClient.setQueryData(chaveDoResumo(para), antes?.resumoDestino);
     },
     onSuccess: ({ saiuDoFiltro }, { card, para }) => {
       if (saiuDoFiltro) {
@@ -148,15 +183,31 @@ export function useMoverCard(quadroRef, consulta) {
         );
       }
     },
-    onSettled: (_resposta, _erro, { card, de, para }) =>
-      Promise.all([
-        recarregarColunas(queryClient, quadroRef, [de, para]),
-        ...[
-          crmKeys.lead(card.leadId),
-          crmKeys.oportunidades(card.leadId),
-          crmKeys.historico(card.leadId),
-        ].map((queryKey) => queryClient.invalidateQueries({ queryKey })),
-      ]),
+    onSettled: (_resposta, _erro, { card, de, para }) => {
+      colunasTocadas.current.add(de);
+      colunasTocadas.current.add(para);
+
+      const leadInvalidations = [
+        crmKeys.lead(card.leadId),
+        crmKeys.oportunidades(card.leadId),
+        crmKeys.historico(card.leadId),
+      ].map((queryKey) => queryClient.invalidateQueries({ queryKey }));
+
+      // Só recarrega colunas quando o último movimento em voo terminar, evitando
+      // que a resposta de um movimento anterior sobrescreva o próximo e duplique o card.
+      if (queryClient.isMutating({ mutationKey }) > 1) {
+        return Promise.all(leadInvalidations);
+      }
+
+      const tocadas = [...colunasTocadas.current];
+
+      colunasTocadas.current.clear();
+
+      return Promise.all([
+        recarregarColunas(queryClient, quadroRef, tocadas),
+        ...leadInvalidations,
+      ]);
+    },
   });
 }
 

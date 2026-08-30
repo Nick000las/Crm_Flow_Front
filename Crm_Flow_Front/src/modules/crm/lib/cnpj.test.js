@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import {
   aplicarSugestoes,
   camposCompativeis,
@@ -86,6 +87,7 @@ test('campo só de ver (permissão) aparece, mas não se aplica', () => {
   assert.equal(empresa.disponivel, false);
   assert.equal(empresa.marcadaPorPadrao, false);
   assert.equal(empresa.motivo, 'Sem permissão para editar');
+
   assert.deepEqual(aplicarSugestoes({ empresa: '' }, [empresa], new Set([empresa.id])), {
     empresa: '',
   });
@@ -111,6 +113,7 @@ test('configuração: compatíveis por tipo, envio sem dado vazio, mudou sem dep
     { id: 'f2', label: 'CEP', tipo: 'cep' },
     { id: 'f3', label: 'Sede', tipo: 'endereco' },
   ];
+
   assert.deepEqual(
     camposCompativeis({ tipos: ['endereco', 'texto', 'texto_longo'] }, configurados).map(
       (campo) => campo.id,
@@ -125,15 +128,19 @@ test('configuração: compatíveis por tipo, envio sem dado vazio, mudou sem dep
     mapeamento: { razaoSocial: 'f1', cep: 'f2' },
   };
   const valores = valoresDaConfig(config);
+
   assert.equal(configMudou(valores, config), false);
+
   assert.equal(
     configMudou({ ...valores, mapeamento: { cep: 'f2', razaoSocial: 'f1' } }, config),
     false,
   );
+
   assert.deepEqual(
     configParaEnvio({ ...valores, mapeamento: { razaoSocial: '', cep: 'f2' } }).mapeamento,
     { cep: 'f2' },
   );
+
   assert.equal(configMudou({ ...valores, modo: 'automatico' }, config), true);
 });
 
@@ -171,6 +178,7 @@ test('dados só para leitura: ordem e rótulo do back, formatados, endereço num
     { chave: 'telefone', label: 'Telefone', texto: '(11) 3214-5678' },
     { chave: 'dataAbertura', label: 'Data de abertura', texto: '03/10/2013' },
   ]);
+
   assert.deepEqual(dadosParaLeitura(null, camposReceita), []);
 });
 

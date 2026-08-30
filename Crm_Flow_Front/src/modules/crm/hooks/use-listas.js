@@ -1,5 +1,10 @@
+/**
+ * @file Otimista, como a ordem de Campos: muda ao soltar e volta se o back recusar.
+ */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
+
 import {
   atualizarOpcao,
   criarOpcao,
@@ -60,9 +65,11 @@ function useMutacaoDeLista(mutationFn, aplicar, pipelineId) {
       if (pipelineId) {
         return invalidarStatus(queryClient);
       }
+
       queryClient.setQueryData(CHAVE, (listas) =>
         listas ? aplicar(listas, resposta, variaveis) : listas,
       );
+
       return invalidarConsumidores(queryClient);
     },
   });
@@ -71,6 +78,7 @@ function useMutacaoDeLista(mutationFn, aplicar, pipelineId) {
 /** @param {string} [pipelineId] status de um pipeline, em vez da lista do tenant */
 export function useCriarOpcao(pipelineId) {
   const { authApi } = useAuth();
+
   return useMutacaoDeLista(
     ({ tipo, corpo }) =>
       pipelineId ? criarStatus(authApi, pipelineId, corpo) : criarOpcao(authApi, tipo, corpo),
@@ -86,6 +94,7 @@ export function useCriarOpcao(pipelineId) {
  */
 export function useAtualizarOpcao(pipelineId) {
   const { authApi } = useAuth();
+
   return useMutacaoDeLista(
     ({ tipo, id, parcial }) =>
       pipelineId
@@ -99,6 +108,7 @@ export function useAtualizarOpcao(pipelineId) {
 /** @param {string} [pipelineId] */
 export function useExcluirOpcao(pipelineId) {
   const { authApi } = useAuth();
+
   return useMutacaoDeLista(
     ({ tipo, id }) =>
       pipelineId ? excluirStatus(authApi, pipelineId, id) : excluirOpcao(authApi, tipo, id),
@@ -116,16 +126,20 @@ export function useReordenarOpcoes() {
     mutationFn: ({ tipo, ids }) => reordenarOpcoes(authApi, tipo, ids),
     onMutate: async ({ tipo, ids }) => {
       await queryClient.cancelQueries({ queryKey: CHAVE });
+
       const anterior = queryClient.getQueryData(CHAVE);
+
       queryClient.setQueryData(CHAVE, (listas) =>
         listas ? reordenarLista(listas, tipo, ids) : listas,
       );
+
       return { anterior };
     },
     onError: (_erro, _variaveis, contexto) => queryClient.setQueryData(CHAVE, contexto?.anterior),
     // A resposta é a lista do tipo, já na ordem nova.
     onSuccess: (lista, { tipo }) => {
       queryClient.setQueryData(CHAVE, (listas) => (listas ? { ...listas, [tipo]: lista } : listas));
+
       return invalidarConsumidores(queryClient);
     },
   });

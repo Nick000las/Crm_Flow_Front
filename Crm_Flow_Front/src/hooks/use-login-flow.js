@@ -1,4 +1,9 @@
+/**
+ * @file Orquestração do login, compartilhada pelo login do tenant e pelo da área master.
+ */
 import { useState } from 'react';
+
+import { focusFirstInvalidField, validateEmail } from '@/lib/form-validation';
 import api, { getFieldError, isAbortError, toApiError } from '@/services/api';
 
 /**
@@ -12,6 +17,7 @@ export const LOGIN_STEP = {
   MFA_CODE: 'mfaCode',
   CREATE_PASSWORD: 'createPassword',
   SUCCESS: 'success',
+  RECOVERY: 'recovery',
 };
 
 /**
@@ -32,8 +38,9 @@ export function useLoginFlow(onAuthenticated) {
   const [step, setStep] = useState(LOGIN_STEP.EMAIL);
   const [email, setEmail] = useState('');
   const [submitError, setSubmitError] = useState(null);
+  const [clientEmailError, setClientEmailError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const emailError = submitError ? getFieldError(submitError, 'email') : null;
+  const emailError = clientEmailError || (submitError ? getFieldError(submitError, 'email') : null);
 
   async function handleLoginResponse(
     response,
@@ -50,6 +57,7 @@ export function useLoginFlow(onAuthenticated) {
     ) {
       setEmail(submittedEmail);
       setStep(nextStep);
+
       return;
     }
 
@@ -64,9 +72,19 @@ export function useLoginFlow(onAuthenticated) {
   async function handleSubmit(event) {
     event.preventDefault();
 
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     const submittedEmail = String(formData.get('email') ?? '').trim();
+    const validationError = validateEmail(submittedEmail);
 
+    if (validationError) {
+      setClientEmailError(validationError);
+      focusFirstInvalidField(form, ['email']);
+
+      return;
+    }
+
+    setClientEmailError(null);
     setSubmitError(null);
     setIsSubmitting(true);
 
@@ -85,21 +103,37 @@ export function useLoginFlow(onAuthenticated) {
     }
   }
 
+  function clearErrors() {
+    setClientEmailError(null);
+    setSubmitError(null);
+  }
+
   function restartLogin() {
     setStep(LOGIN_STEP.EMAIL);
     setEmail('');
-    setSubmitError(null);
+    clearErrors();
   }
 
   return {
     step,
     email,
+    setEmail,
     submitError,
-    setSubmitError,
+    setSubmitError: (value) => {
+      if (!value) {
+        setClientEmailError(null);
+      }
+
+      setSubmitError(value);
+    },
     isSubmitting,
     emailError,
     handleLoginResponse,
     handleSubmit,
     restartLogin,
+    startRecovery: () => {
+      clearErrors();
+      setStep(LOGIN_STEP.RECOVERY);
+    },
   };
 }

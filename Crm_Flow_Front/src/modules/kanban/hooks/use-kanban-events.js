@@ -1,13 +1,19 @@
+/**
+ * @file Os callbacks recebem o estado mais recente sem reconectar a cada renderização.
+ */
 import { useContext, useEffect, useRef } from 'react';
+
 import { KanbanRealtimeContext } from '../lib/kanban-realtime-context';
 
 const SUBSCRIBE_TIMEOUT_MS = 5000;
 
 export function useKanbanConnection() {
   const context = useContext(KanbanRealtimeContext);
+
   if (!context) {
     throw new Error('O Kanban deve estar dentro do provedor de tempo real.');
   }
+
   return context;
 }
 
@@ -15,6 +21,7 @@ export function useKanbanConnection() {
 export function useKanbanEvents(onEvent, { boardId, cardId } = {}) {
   const { socket } = useKanbanConnection();
   const callback = useRef(onEvent);
+
   useEffect(() => {
     callback.current = onEvent;
   }, [onEvent]);
@@ -23,6 +30,7 @@ export function useKanbanEvents(onEvent, { boardId, cardId } = {}) {
     if (!socket) {
       return;
     }
+
     let active = true;
     const subscription = { boardId, ...(cardId && { cardId }) };
     const notify = (event) => {
@@ -34,6 +42,7 @@ export function useKanbanEvents(onEvent, { boardId, cardId } = {}) {
       if (boardId && event.boardId !== boardId) {
         return;
       }
+
       notify(event);
     };
     const revoked = (event) => {
@@ -45,14 +54,18 @@ export function useKanbanEvents(onEvent, { boardId, cardId } = {}) {
       if (!active) {
         return;
       }
+
       if (!boardId) {
         notify({ type: 'connection.restored' });
+
         return;
       }
+
       socket.timeout(SUBSCRIBE_TIMEOUT_MS).emit('kanban:watch', subscription, (error, result) => {
         if (!active) {
           return;
         }
+
         if (!error && result?.ok) {
           notify({ type: 'connection.restored', boardId, cardId });
         } else if (['FORBIDDEN', 'RESOURCE_NOT_FOUND'].includes(result?.code)) {
@@ -67,6 +80,7 @@ export function useKanbanEvents(onEvent, { boardId, cardId } = {}) {
     socket.on('kanban:access-revoked', revoked);
     socket.on('connect', synchronize);
     socket.on('realtime:ready', synchronize);
+
     if (socket.connected) {
       queueMicrotask(synchronize);
     }
@@ -77,6 +91,7 @@ export function useKanbanEvents(onEvent, { boardId, cardId } = {}) {
       socket.off('kanban:access-revoked', revoked);
       socket.off('connect', synchronize);
       socket.off('realtime:ready', synchronize);
+
       if (boardId && socket.connected) {
         socket.emit('kanban:unwatch', subscription);
       }

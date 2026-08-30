@@ -1,4 +1,7 @@
 /**
+ * @file Todos os ids do pipeline, na ordem nova.
+ */
+/**
  * Configurações › Pipelines (M2.5, sem flag). Leitura para qualquer papel,
  * porque a aba Oportunidades precisa dos nomes e dos status; escrita só
  * DONO/MASTER. O `POST` de pipeline responde sem `status` nem `oportunidades`:

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import { alternarItem, colunasSelecionadas, itensIniciais, moverItem } from './colunas-export.js';
 
 const campos = [
@@ -40,11 +41,13 @@ test('mover troca vizinhos e não passa das bordas', () => {
       .slice(0, 2),
     ['email', 'nome'],
   );
+
   assert.equal(moverItem(itens, 0, -1), itens);
 });
 
 test('colunas selecionadas respeitam a ordem escolhida', () => {
   let itens = itensIniciais(campos, ['nome', 'email']);
+
   itens = alternarItem(itens, 'valor');
   itens = moverItem(itens, 3, -1);
 

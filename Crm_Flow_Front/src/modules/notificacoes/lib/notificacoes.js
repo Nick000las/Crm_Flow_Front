@@ -1,3 +1,6 @@
+/**
+ * @file "3", "9+" ou vazio (sem não lidas, o contador some).
+ */
 import { destinoCrm } from '../../crm/lib/notificacoes.js';
 
 /**
@@ -38,11 +41,13 @@ const DESTINO_POR_MODULO = Object.freeze({ crm: destinoCrm });
  */
 export function destinoDaNotificacao({ modulo, dados }) {
   const doModulo = DESTINO_POR_MODULO[modulo]?.(dados);
+
   if (doModulo) {
     return doModulo;
   }
 
   const rota = dados?.rota;
+
   return typeof rota === 'string' && rota.startsWith('/') && !rota.startsWith('//') ? rota : null;
 }
 

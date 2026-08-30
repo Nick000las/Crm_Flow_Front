@@ -1,23 +1,30 @@
-import { Download, Plus } from 'lucide-react';
+/**
+ * @file Coordena busca, filtros e operações da lista de leads com permissões e campos
+ * dinâmicos.
+ */
 import { useMemo, useState } from 'react';
+import { Download, Plus } from 'lucide-react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
+
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { PageHeader } from '@/components/page-header';
+import { StatusToast } from '@/components/status-toast';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { podeVer, temFeature } from '@/lib/acesso';
 import { isAccessError } from '@/services/api';
+
 import { AbasSituacao } from '../components/abas-situacao';
 import { AnonimizarLeadDialog } from '../components/anonimizar-lead-dialog';
-import { ConfirmarArquivarDialog } from '../components/confirmar-arquivar-dialog';
 import { BarraSelecao } from '../components/barra-selecao';
-import { EditarEmMassaDialog } from '../components/editar-em-massa-dialog';
 import { ChipsFiltro } from '../components/chips-filtro';
+import { ConfirmarArquivarDialog } from '../components/confirmar-arquivar-dialog';
+import { EditarEmMassaDialog } from '../components/editar-em-massa-dialog';
 import { ExcluirLeadDialog } from '../components/excluir-lead-dialog';
 import { ExportarDialog } from '../components/exportar-dialog';
-import { LeadsToolbar } from '../components/leads-toolbar';
 import { LeadsConteudo } from '../components/leads-conteudo';
+import { LeadsToolbar } from '../components/leads-toolbar';
 import { MesclarDialog } from '../components/mesclagem/mesclar-dialog';
 import { AVISOS_LEAD, BULK, CRM_FEATURES, PAPEIS_GESTAO, SITUACOES_LEAD } from '../constants';
 import { useAcoesDeArquivo } from '../hooks/use-acoes-de-arquivo';
@@ -27,13 +34,13 @@ import { useEstadoLista } from '../hooks/use-estado-lista';
 import { useFiltroPermitido } from '../hooks/use-filtro-permitido';
 import { useLeadsSearch } from '../hooks/use-leads-search';
 import { useNavegacaoLeads } from '../hooks/use-navegacao-leads';
+import { useFaixasScore } from '../hooks/use-score';
 import { useSelecaoLeads } from '../hooks/use-selecao-leads';
 import { useUsuarios } from '../hooks/use-usuarios';
-import { useFaixasScore } from '../hooks/use-score';
 import { situacaoDaBusca } from '../lib/arquivo';
-import { avisoDoResultado } from '../lib/massa';
+import { chavesComErro, chavesForaDosCampos, chipsDoFiltro, FILTRO_VAZIO } from '../lib/filtro';
 import { placeholderDaBusca } from '../lib/layout';
-import { FILTRO_VAZIO, chavesComErro, chavesForaDosCampos, chipsDoFiltro } from '../lib/filtro';
+import { avisoDoResultado } from '../lib/massa';
 import { ID_BOTAO_NOVO_LEAD } from '../rotas';
 
 const CAMPOS_VAZIOS = [];
@@ -126,6 +133,7 @@ export default function LeadsPage() {
   /** Ao fechar o dialog (por qualquer caminho): só as falhas seguem marcadas. */
   function fecharEdicaoEmMassa() {
     setEditandoEmMassa(false);
+
     if (!resultadoMassa) {
       return;
     }
@@ -133,11 +141,13 @@ export default function LeadsPage() {
     const falhas = resultadoMassa.resultados
       .filter((resultado) => !resultado.ok)
       .map((resultado) => resultado.id);
+
     if (falhas.length > 0) {
       selecao.manter(falhas);
     } else {
       selecao.limpar();
     }
+
     setAvisoMassa({ chave: chaveDaConsulta, texto: avisoDoResultado(resultadoMassa) });
     setResultadoMassa(null);
   }
@@ -155,7 +165,7 @@ export default function LeadsPage() {
   );
 
   const acoesDoCabecalho = (
-    <>
+    <div data-tour="crm-leads-actions" className="flex flex-wrap items-center gap-2">
       {/* A lixeira não se exporta (o back dá 400). */}
       {gestao && !naLixeira && (
         <Button onClick={() => setExportando(true)} variant="outline">
@@ -164,7 +174,7 @@ export default function LeadsPage() {
         </Button>
       )}
       {botaoNovo(true)}
-    </>
+    </div>
   );
 
   const lista = (
@@ -190,12 +200,13 @@ export default function LeadsPage() {
         onRemover={(chip) => atualizar({ filtro: chip.remover(), pagina: 1 })}
       />
 
-      <p
-        className={aviso ? 'mb-4 border border-border px-3 py-2 text-sm' : 'sr-only'}
-        role="status"
-      >
-        {aviso}
-      </p>
+      <StatusToast
+        message={aviso}
+        onDismiss={() => {
+          setAvisoMassa(null);
+          setAvisoAnonimizar(null);
+        }}
+      />
       <ApiErrorAlert
         className="mb-4"
         error={arquivo.erro}
@@ -217,33 +228,35 @@ export default function LeadsPage() {
         />
       )}
 
-      <LeadsConteudo
-        acoesDeArquivo={comArquivo ? arquivo.acoes : undefined}
-        onAnonimizar={podeAnonimizar ? setAAnonimizar : undefined}
-        onMesclar={podeMesclar ? (lead) => setAMesclar([lead]) : undefined}
-        selecao={emMassa || podeMesclar ? selecao.tabela : null}
-        atualizar={atualizar}
-        botaoNovo={botaoNovo(false)}
-        carregando={camposQuery.isPending || leadsQuery.isPending}
-        colunas={visiveis}
-        erro={erro}
-        estado={estado}
-        identificador={identificador}
-        leadsQuery={leadsQuery}
-        nomePorId={nomePorId}
-        ocultosNoFiltro={ocultosNoFiltro}
-        onAbrir={abrirLead}
-        onExcluir={setLeadAExcluir}
-        podeImportar={gestao}
-        situacao={situacao}
-      />
+      <div data-tour="crm-leads-content">
+        <LeadsConteudo
+          acoesDeArquivo={comArquivo ? arquivo.acoes : undefined}
+          onAnonimizar={podeAnonimizar ? setAAnonimizar : undefined}
+          onMesclar={podeMesclar ? (lead) => setAMesclar([lead]) : undefined}
+          selecao={emMassa || podeMesclar ? selecao.tabela : null}
+          atualizar={atualizar}
+          botaoNovo={botaoNovo(false)}
+          carregando={camposQuery.isPending || leadsQuery.isPending}
+          colunas={visiveis}
+          erro={erro}
+          estado={estado}
+          identificador={identificador}
+          leadsQuery={leadsQuery}
+          nomePorId={nomePorId}
+          ocultosNoFiltro={ocultosNoFiltro}
+          onAbrir={abrirLead}
+          onExcluir={setLeadAExcluir}
+          podeImportar={gestao}
+          situacao={situacao}
+        />
+      </div>
     </>
   );
 
   if (isAccessError(erro)) {
     return (
       <>
-        <PageHeader title="Leads" description="Contatos e oportunidades do CRM." />
+        <PageHeader eyebrow="CRM" title="Leads" description="Contatos e oportunidades do CRM." />
         <AcessoIndisponivel error={erro} />
       </>
     );
@@ -253,6 +266,7 @@ export default function LeadsPage() {
     <>
       <PageHeader
         actions={acoesDoCabecalho}
+        eyebrow="CRM"
         title="Leads"
         description="Contatos e oportunidades do CRM."
       />

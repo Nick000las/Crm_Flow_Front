@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
+
 import { textoDaCelulaCiclo } from './celula-ciclo.js';
 import { COLUNAS_PADRAO, lerValorDaColuna, montarColunas } from './colunas.js';
 
@@ -11,6 +12,7 @@ function coluna(id, opcoes) {
 
 function texto(id, lead, opcoes = { comDataConversao: true }) {
   const col = coluna(id, opcoes);
+
   return textoDaCelulaCiclo(col, lerValorDaColuna(lead, col), FUSO);
 }
 
@@ -18,6 +20,7 @@ describe('célula do ciclo de vida (FC4)', () => {
   test('sem dataConversao, só Ciclo e Abertas; o chip diz "Cliente"', () => {
     const semData = { comDataConversao: false };
     const ids = montarColunas([], semData).map((item) => item.id);
+
     assert.equal(ids.includes('clienteDesde'), false);
     assert.equal(ids.includes('ultimaCompra'), false);
     assert.equal(ids.includes('cicloDeVida'), true);
@@ -25,16 +28,19 @@ describe('célula do ciclo de vida (FC4)', () => {
     assert.equal(COLUNAS_PADRAO.includes('cicloDeVida'), false);
 
     const lead = { ciclo_de_vida: 'cliente', oportunidades_abertas: 1 };
+
     assert.equal(texto('cicloDeVida', lead, semData), 'Cliente');
   });
 
   test('cada ciclo', () => {
     assert.equal(texto('cicloDeVida', { ciclo_de_vida: 'lead' }), 'Lead');
     assert.equal(texto('cicloDeVida', { ciclo_de_vida: 'oportunidade' }), 'Em negociação');
+
     assert.equal(
       texto('cicloDeVida', { ciclo_de_vida: 'cliente', cliente_desde: '2026-03-10T14:00:00.000Z' }),
       'Cliente desde 03/2026',
     );
+
     assert.equal(
       texto('cicloDeVida', { ciclo_de_vida: 'cliente', cliente_desde: null }),
       'Cliente',
@@ -48,10 +54,12 @@ describe('célula do ciclo de vida (FC4)', () => {
 
   test('datas no fuso; ausente ou null fica vazio', () => {
     assert.equal(texto('clienteDesde', { cliente_desde: '2026-03-10T14:00:00.000Z' }), '03/2026');
+
     assert.equal(
       texto('ultimaCompra', { ultima_compra: '2026-10-02T17:20:00.000Z' }),
       '02/10/2026',
     );
+
     assert.equal(texto('ultimaCompra', {}), null);
     assert.equal(texto('clienteDesde', { cliente_desde: null }), null);
   });

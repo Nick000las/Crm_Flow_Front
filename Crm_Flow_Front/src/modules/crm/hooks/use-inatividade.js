@@ -1,6 +1,12 @@
+/**
+ * @file A resposta é a lista inteira: vira o cache. Mudar os dias muda quem está esfriando — a
+ * lista e os leads abertos recarregam o `esfriando_desde`.
+ */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
 import { temFeature } from '@/lib/acesso';
+
 import { obterInatividade, salvarInatividade } from '../api/inatividade.api';
 import { CRM_FEATURES } from '../constants';
 import { crmKeys } from '../query-keys';
@@ -28,6 +34,7 @@ export function useSalvarInatividade() {
     mutationFn: (status) => salvarInatividade(authApi, status),
     onSuccess: (lista) => {
       queryClient.setQueryData(crmKeys.inatividade(), lista);
+
       return Promise.all(
         [crmKeys.leads(), crmKeys.leadsAbertos()].map((queryKey) =>
           queryClient.invalidateQueries({ queryKey }),

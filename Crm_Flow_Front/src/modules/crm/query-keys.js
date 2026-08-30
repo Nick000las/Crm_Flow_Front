@@ -1,4 +1,8 @@
 /**
+ * @file Fábrica única das query keys do CRM. Invalidar por prefixo (`crmKeys.leads()`) alcança
+ * todas as páginas/filtros de uma vez.
+ */
+/**
  * Fábrica única das query keys do CRM. Invalidar por prefixo
  * (`crmKeys.leads()`) alcança todas as páginas/filtros de uma vez.
  */

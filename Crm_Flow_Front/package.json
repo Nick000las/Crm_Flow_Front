@@ -9,10 +9,12 @@
     "lint": "eslint . --max-warnings=0 && prettier --check .",
     "test": "node --test",
     "preview": "vite preview",
-    "lint:fix": "prettier --write . && eslint . --fix && prettier --write .",
+    "lint:fix": "node tooling/format.js",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "pnpm lint && pnpm test && pnpm build"
+    "check": "pnpm lint && pnpm test && pnpm build",
+    "test:e2e": "playwright test",
+    "test:lint": "node --test tooling/eslint/*.test.js"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
@@ -25,7 +27,9 @@
     "button": "link:@/components/ui/button",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "driver.js": "^1.14.0",
     "lucide-react": "^1.33.0",
+    "motion": "^14.14.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
@@ -37,6 +41,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.65.1",
+    "@stylistic/eslint-plugin": "^6.0.1",
     "@tailwindcss/vite": "^4.3.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
@@ -45,10 +51,15 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.3",
+    "eslint-plugin-simple-import-sort": "^14.0.0",
     "globals": "^17.7.0",
+    "jsdom": "^26.1.0",
     "prettier": "^3.9.10",
     "shadcn": "^4.18.0",
     "tailwindcss": "^4.3.3",
     "vite": "^8.2.0"
+  },
+  "engines": {
+    "node": "^20.19.0 || ^22.13.0 || >=24"
   }
 }

@@ -1,4 +1,10 @@
+/**
+ * @file Estado de página para 403 `MODULE_NOT_ENABLED` / `FEATURE_NOT_ENABLED` (detectar com
+ * `isAccessError`). Normalmente a navegação já esconde a tela (`podeVer`); isto cobre o link
+ * direto e a sessão desatualizada (flag desligada depois do login).
+ */
 import { Ban, Clock } from 'lucide-react';
+
 import { ModulePlaceholder } from '@/components/module-placeholder';
 import { ACCESS_ERROR_CODES } from '@/services/api';
 

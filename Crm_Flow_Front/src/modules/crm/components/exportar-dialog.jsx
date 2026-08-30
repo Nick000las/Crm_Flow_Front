@@ -1,5 +1,10 @@
-import { ArrowDown, ArrowUp } from 'lucide-react';
+/**
+ * @file Export de leads (DONO/MASTER). Padrão: as colunas visíveis da tabela e os filtros
+ * aplicados — exporta o que se está vendo.
+ */
 import { useState } from 'react';
+import { ArrowDown, ArrowUp } from 'lucide-react';
+
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -14,6 +19,7 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+
 import { EXPORTACAO, FORMATOS_EXPORTACAO, SITUACOES_LEAD } from '../constants';
 import { useExportarLeads } from '../hooks/use-exportacao';
 import { alternarItem, colunasSelecionadas, itensIniciais, moverItem } from '../lib/colunas-export';
@@ -53,7 +59,6 @@ function ListaDeColunas({ itens, onAlternar, onMover }) {
               </label>
               <Button
                 aria-label={`Subir ${item.label}`}
-                className="rounded-none"
                 disabled={indice === 0}
                 onClick={() => onMover(indice, SUBIR)}
                 size="icon-xs"
@@ -64,7 +69,6 @@ function ListaDeColunas({ itens, onAlternar, onMover }) {
               </Button>
               <Button
                 aria-label={`Descer ${item.label}`}
-                className="rounded-none"
                 disabled={indice === itens.length - 1}
                 onClick={() => onMover(indice, DESCER)}
                 size="icon-xs"
@@ -96,6 +100,7 @@ function FormExportar({ campos, idsVisiveis, busca, filtro, situacao, comMassa, 
     const filtroDoPedido = usarFiltros
       ? { ...(busca && { busca }), ...paraCorpoDeBusca(filtro), ...(comSituacao && { situacao }) }
       : undefined;
+
     // Sem `crm.massa` o formato não vai: o back só gera .xlsx (csv daria 403).
     exportar.mutate(
       { colunas, filtro: filtroDoPedido, ...(comMassa && { formato }) },
@@ -126,9 +131,7 @@ function FormExportar({ campos, idsVisiveis, busca, filtro, situacao, comMassa, 
       <label className="flex items-center gap-2 text-sm" htmlFor="exportar-usar-filtros">
         <Switch checked={usarFiltros} id="exportar-usar-filtros" onCheckedChange={setUsarFiltros} />
         Usar a busca e os filtros atuais
-        <span className="font-mono text-xs text-muted-foreground tabular-nums">
-          ({totalFiltros})
-        </span>
+        <span className="text-xs text-muted-foreground tabular-nums">({totalFiltros})</span>
       </label>
       <p className="-mt-2 text-xs text-muted-foreground">
         Até {EXPORTACAO.MAX_LINHAS.toLocaleString('pt-BR')} leads por planilha.
@@ -146,8 +149,10 @@ function FormExportar({ campos, idsVisiveis, busca, filtro, situacao, comMassa, 
           aria-busy={exportar.isPending}
           disabled={colunas.length === 0 || exportar.isPending}
           onClick={handleExportar}
+          loading={exportar.isPending}
+          loadingText="Gerando arquivo…"
         >
-          {exportar.isPending ? 'Gerando arquivo…' : `Exportar .${formato}`}
+          {`Exportar .${formato}`}
         </Button>
       </DialogFooter>
     </div>
@@ -172,7 +177,7 @@ function FormExportar({ campos, idsVisiveis, busca, filtro, situacao, comMassa, 
 export function ExportarDialog({ open, onOpenChange, ...form }) {
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="rounded-none sm:max-w-md">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Exportar leads</DialogTitle>
           <DialogDescription>
@@ -181,7 +186,7 @@ export function ExportarDialog({ open, onOpenChange, ...form }) {
               : 'Gera uma planilha .xlsx com as colunas escolhidas.'}
           </DialogDescription>
         </DialogHeader>
-        {open && <FormExportar {...form} onExportado={() => onOpenChange(false)} />}
+        <FormExportar {...form} onExportado={() => onOpenChange(false)} />
       </DialogContent>
     </Dialog>
   );

@@ -1,3 +1,6 @@
+/**
+ * @file Alça de arrastar de uma linha. Recebe as props de `useLinhaOrdenavel().puxador`.
+ */
 import { GripVertical } from 'lucide-react';
 
 /**

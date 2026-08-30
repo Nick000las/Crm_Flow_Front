@@ -1,4 +1,9 @@
 /**
+ * @file Regras de campo (`crm.regras`). Leitura para qualquer papel (o form aplica as regras de
+ * todo mundo); escrita só DONO/MASTER. A regra do sistema só aceita `{ ativo }` — o resto dá
+ * 409.
+ */
+/**
  * Regras de campo (`crm.regras`). Leitura para qualquer papel (o form
  * aplica as regras de todo mundo); escrita só DONO/MASTER. A regra do
  * sistema só aceita `{ ativo }` — o resto dá 409.

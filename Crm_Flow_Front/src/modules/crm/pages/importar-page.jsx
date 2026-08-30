@@ -1,15 +1,33 @@
+/**
+ * @file Import de planilha em 4 passos. O estado do wizard é uma máquina de passos explícita
+ * (`wizardReducer`); só o `jobId` vai para a URL, para o acompanhamento sobreviver a um F5 — a
+ * planilha em si não sobrevive, e nem precisa: depois de confirmar, o back já tem tudo.
+ */
 import { useReducer } from 'react';
 import { useSearchParams } from 'react-router-dom';
+
 import { PageHeader } from '@/components/page-header';
+
 import { ImportacaoArquivo } from '../components/importacao-arquivo';
 import { ImportacaoMapear } from '../components/importacao-mapear';
 import { ImportacaoPassos } from '../components/importacao-passos';
 import { ImportacaoProcessar } from '../components/importacao-processar';
 import { ImportacaoRevisar } from '../components/importacao-revisar';
 import { useConfirmarImportacao, useValidarImportacao } from '../hooks/use-importacao';
-import { PASSO, estadoInicial, mapeamentoParaEnvio, wizardReducer } from '../lib/importacao';
+import { estadoInicial, mapeamentoParaEnvio, PASSO, wizardReducer } from '../lib/importacao';
 
 const PARAM_JOB = 'job';
+
+const ORIENTACAO_PASSO = {
+  [PASSO.ARQUIVO]:
+    'Envie uma planilha .xlsx com cabeçalho na primeira linha. Nada será gravado antes da revisão.',
+  [PASSO.MAPEAR]:
+    'Relacione as colunas da planilha aos campos do CRM e escolha como tratar leads duplicados.',
+  [PASSO.REVISAR]:
+    'Confira o resumo de linhas válidas, avisos e duplicidades antes de confirmar a importação.',
+  [PASSO.PROCESSAR]:
+    'Acompanhe o processamento em segundo plano. Você pode recarregar esta página sem perder o progresso.',
+};
 
 /**
  * Import de planilha em 4 passos. O estado do wizard é uma máquina de
@@ -59,57 +77,62 @@ export default function ImportarPage() {
 
   return (
     <>
-      <PageHeader title="Importar" description="Traga leads de uma planilha .xlsx." />
+      <PageHeader eyebrow="CRM" title="Importar" description="Traga leads de uma planilha .xlsx." />
       <ImportacaoPassos atual={estado.passo} />
-
-      {estado.passo === PASSO.ARQUIVO && (
-        <ImportacaoArquivo
-          onLido={(arquivo, preview) => dispatch({ tipo: 'arquivoLido', arquivo, preview })}
-        />
+      {ORIENTACAO_PASSO[estado.passo] && (
+        <p className="mb-4 text-sm text-muted-foreground">{ORIENTACAO_PASSO[estado.passo]}</p>
       )}
 
-      {estado.passo === PASSO.MAPEAR && (
-        <ImportacaoMapear
-          baseLegalLote={estado.baseLegalLote}
-          estrategia={estado.estrategia}
-          mapeamento={estado.mapeamento}
-          nomeArquivo={estado.arquivo.name}
-          onBaseLegalLote={(baseLegalLote) => {
-            validar.reset();
-            dispatch({ tipo: 'baseLegalLote', baseLegalLote });
-          }}
-          onEstrategia={(estrategia) => {
-            validar.reset();
-            dispatch({ tipo: 'estrategia', estrategia });
-          }}
-          onMapear={(coluna, chave) => {
-            validar.reset();
-            dispatch({ tipo: 'mapear', coluna, chave });
-          }}
-          onTrocarArquivo={reiniciar}
-          onValidar={handleValidar}
-          preview={estado.preview}
-          validacao={validar}
-        />
-      )}
+      <div data-tour="crm-import-stage">
+        {estado.passo === PASSO.ARQUIVO && (
+          <ImportacaoArquivo
+            onLido={(arquivo, preview) => dispatch({ tipo: 'arquivoLido', arquivo, preview })}
+          />
+        )}
 
-      {estado.passo === PASSO.REVISAR && (
-        <ImportacaoRevisar
-          baseLegalLote={estado.baseLegalLote}
-          confirmacao={confirmar}
-          estrategia={estado.estrategia}
-          onConfirmar={handleConfirmar}
-          onVoltar={() => {
-            confirmar.reset();
-            dispatch({ tipo: 'voltar' });
-          }}
-          validacao={estado.validacao}
-        />
-      )}
+        {estado.passo === PASSO.MAPEAR && (
+          <ImportacaoMapear
+            baseLegalLote={estado.baseLegalLote}
+            estrategia={estado.estrategia}
+            mapeamento={estado.mapeamento}
+            nomeArquivo={estado.arquivo.name}
+            onBaseLegalLote={(baseLegalLote) => {
+              validar.reset();
+              dispatch({ tipo: 'baseLegalLote', baseLegalLote });
+            }}
+            onEstrategia={(estrategia) => {
+              validar.reset();
+              dispatch({ tipo: 'estrategia', estrategia });
+            }}
+            onMapear={(coluna, chave) => {
+              validar.reset();
+              dispatch({ tipo: 'mapear', coluna, chave });
+            }}
+            onTrocarArquivo={reiniciar}
+            onValidar={handleValidar}
+            preview={estado.preview}
+            validacao={validar}
+          />
+        )}
 
-      {estado.passo === PASSO.PROCESSAR && (
-        <ImportacaoProcessar jobId={estado.jobId} onNovaImportacao={reiniciar} />
-      )}
+        {estado.passo === PASSO.REVISAR && (
+          <ImportacaoRevisar
+            baseLegalLote={estado.baseLegalLote}
+            confirmacao={confirmar}
+            estrategia={estado.estrategia}
+            onConfirmar={handleConfirmar}
+            onVoltar={() => {
+              confirmar.reset();
+              dispatch({ tipo: 'voltar' });
+            }}
+            validacao={estado.validacao}
+          />
+        )}
+
+        {estado.passo === PASSO.PROCESSAR && (
+          <ImportacaoProcessar jobId={estado.jobId} onNovaImportacao={reiniciar} />
+        )}
+      </div>
     </>
   );
 }

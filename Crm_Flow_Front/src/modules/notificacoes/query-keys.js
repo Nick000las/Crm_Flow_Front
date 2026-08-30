@@ -1,3 +1,6 @@
+/**
+ * @file Query keys das notificações. Invalidar `all()` recarrega contador e páginas.
+ */
 /** Query keys das notificações. Invalidar `all()` recarrega contador e páginas. */
 export const notificacoesKeys = {
   all: () => ['notificacoes'],

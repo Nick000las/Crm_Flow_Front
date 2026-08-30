@@ -1,4 +1,10 @@
+/**
+ * @file Edição em massa (`crm.massa`, qualquer papel): status, origem, responsável e tags dos
+ * leads marcados. Cada lead passa pelas regras do PUT (ex.: Perdido exige motivo); quem falha
+ * aparece no resultado e continua marcado.
+ */
 import { useMemo, useState } from 'react';
+
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -11,14 +17,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Form } from '@/components/ui/form';
+
 import { useEditarEmMassa } from '../hooks/use-lead-mutations';
 import { RESPONSAVEL_NENHUM } from '../lib/filtro';
 import { podeEditarCampo } from '../lib/form-lead';
 import { tituloDoLead } from '../lib/layout';
 import {
-  FORM_MASSA_VAZIO,
   alteracoesDoForm,
   falhasDoResultado,
+  FORM_MASSA_VAZIO,
   resumoDoResultado,
 } from '../lib/massa';
 import { opcoesDoSeletor, sugestoesDoCampo } from '../lib/opcoes';
@@ -64,7 +72,10 @@ function Alteracao({ id, rotulo, ativa, onAtivar, erro, desabilitado, children }
 function Resultado({ resposta, falhas }) {
   return (
     <div className="grid gap-3">
-      <p className="border border-border px-3 py-2 font-mono text-xs tabular-nums" role="status">
+      <p
+        className="rounded-lg border border-border bg-surface px-3 py-2 text-xs tabular-nums"
+        role="status"
+      >
         {resumoDoResultado(resposta)}
       </p>
       {falhas.length > 0 && (
@@ -103,8 +114,10 @@ function FormMassa({ leads, campos, usuarios, identificador, onResultado, onFech
     if (!resposta) {
       return [];
     }
+
     const tituloPorId = new Map(leads.map((lead) => [lead.id, tituloDoLead(lead, identificador)]));
     const rotuloPorChave = new Map(campos.map((campo) => [campo.chave, campo.label]));
+
     return falhasDoResultado(resposta.resultados, tituloPorId, rotuloPorChave);
   }, [resposta, leads, identificador, campos]);
 
@@ -115,9 +128,12 @@ function FormMassa({ leads, campos, usuarios, identificador, onResultado, onFech
 
   function handleSubmit(event) {
     event.preventDefault();
+
     const resultado = alteracoesDoForm(form);
+
     if ('erros' in resultado) {
       setErros(resultado.erros);
+
       return;
     }
 
@@ -140,6 +156,7 @@ function FormMassa({ leads, campos, usuarios, identificador, onResultado, onFech
 
   const selecao = (chave, rotulo) => {
     const campo = campoPorChave.get(chave);
+
     // Oculto (não vem) ou só de ver (permissão por campo): o back daria 403 no pedido inteiro.
     if (!campo || !podeEditarCampo(campo)) {
       return null;
@@ -171,7 +188,7 @@ function FormMassa({ leads, campos, usuarios, identificador, onResultado, onFech
   const campoTags = tags && podeEditarCampo(tags) ? tags : null;
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       <div className="border border-border">
         {selecao('status')}
         {selecao('fonteLead')}
@@ -253,13 +270,13 @@ function FormMassa({ leads, campos, usuarios, identificador, onResultado, onFech
         <DialogClose render={<Button disabled={ocupado} type="button" variant="outline" />}>
           Cancelar
         </DialogClose>
-        <Button aria-busy={ocupado} disabled={ocupado} type="submit">
+        <Button aria-busy={ocupado} disabled={ocupado} type="submit" loading={ocupado}>
           {ocupado
             ? 'Aplicando…'
             : `Aplicar a ${leads.length} ${leads.length === 1 ? 'lead' : 'leads'}`}
         </Button>
       </DialogFooter>
-    </form>
+    </Form>
   );
 }
 
@@ -284,7 +301,7 @@ export function EditarEmMassaDialog({ open, onOpenChange, ...form }) {
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="rounded-none sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Editar em massa</DialogTitle>
           <DialogDescription>
@@ -293,7 +310,7 @@ export function EditarEmMassaDialog({ open, onOpenChange, ...form }) {
             como está.
           </DialogDescription>
         </DialogHeader>
-        {open && <FormMassa {...form} onFechar={() => onOpenChange(false)} />}
+        <FormMassa {...form} onFechar={() => onOpenChange(false)} />
       </DialogContent>
     </Dialog>
   );

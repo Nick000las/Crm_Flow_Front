@@ -1,4 +1,7 @@
 /**
+ * @file Só DONO/MASTER. A configuração inteira; 400 em `fields["mapeamento.<dado>"]`.
+ */
+/**
  * Enriquecimento por CNPJ (`crm.cnpj`).
  *
  * @typedef {{ campoReceita: string, chave: string, label: string, tipo: string, camada: number, valor: unknown }} SugestaoCnpj

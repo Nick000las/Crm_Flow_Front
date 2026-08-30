@@ -1,3 +1,6 @@
+/**
+ * @file Nomes das opções ativas, para autocompletar a entrada livre.
+ */
 import { CAMADA } from '../constants.js';
 
 /**
@@ -43,12 +46,14 @@ export function opcaoDoCampo(campo, valor) {
 
   const key = String(valor);
   const daLista = campo?.opcoesLista?.find((opcao) => opcao.key === key);
+
   if (daLista) {
     return daLista;
   }
 
   // Opção da Camada 3 já é o texto que o usuário escreveu.
   const label = campo?.camada === CAMADA.CAMADA_3 ? key : humanizar(key);
+
   return { key, label, color: null, category: null, ativo: true };
 }
 
@@ -95,6 +100,7 @@ export function opcoesDoSeletor(campo, valorAtual) {
   }
 
   const atual = opcaoDoCampo(campo, valorAtual);
+
   return [...itens, { valor: atual.key, rotulo: rotuloComSituacao(atual) }];
 }
 

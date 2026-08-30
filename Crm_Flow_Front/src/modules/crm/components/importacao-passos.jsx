@@ -1,4 +1,9 @@
+/**
+ * @file `1 Arquivo · 2 Mapear · 3 Revisar · 4 Processar`. Informativo: a navegação entre passos
+ * é pelos botões de cada um.
+ */
 import { cn } from '@/lib/utils';
+
 import { PASSOS } from '../lib/importacao';
 
 /**
@@ -13,6 +18,7 @@ export function ImportacaoPassos({ atual }) {
   return (
     <ol
       aria-label="Etapas da importação"
+      data-tour="crm-import-steps"
       className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm"
     >
       {PASSOS.map((passo, indice) => {
@@ -30,7 +36,7 @@ export function ImportacaoPassos({ atual }) {
           >
             <span
               className={cn(
-                'grid size-5 place-items-center border font-mono text-[11px] tabular-nums',
+                'grid size-5 place-items-center border text-[11px] tabular-nums',
                 ativo ? 'border-foreground' : 'border-border',
                 feito && 'bg-muted',
               )}

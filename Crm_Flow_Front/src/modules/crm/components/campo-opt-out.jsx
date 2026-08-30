@@ -1,4 +1,9 @@
+/**
+ * @file Opt-out de marketing (LGPD, `crm.lgpd`) — não é campo de `/fields`: vai no payload como
+ * `optOutMarketing` (sim/não) e o back carimba a data. Religar mantém a data da primeira vez.
+ */
 import { Checkbox } from '@/components/ui/checkbox';
+
 import { formatarInstante } from '../lib/formatadores';
 
 /**

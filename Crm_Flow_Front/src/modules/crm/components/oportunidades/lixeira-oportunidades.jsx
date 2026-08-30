@@ -1,7 +1,14 @@
+/**
+ * @file Oportunidades excluídas da pessoa. Montada só ao abrir, então só aí busca. Não existe
+ * "excluir de vez" pela tela.
+ */
 import { RotateCcw } from 'lucide-react';
+
 import { ApiErrorAlert } from '@/components/api-error-alert';
+import { LoadingState } from '@/components/loading-state';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+
 import { useAcaoDaOportunidade, useLixeiraDeOportunidades } from '../../hooks/use-oportunidades';
 
 /**
@@ -22,16 +29,16 @@ export function LixeiraOportunidades({ leadId, pipelines, podeRestaurar, onResta
   if (lixeiraQuery.error) {
     return <ApiErrorAlert error={lixeiraQuery.error} id="oportunidades-lixeira-erro" />;
   }
+
   if (lixeiraQuery.isPending) {
     return (
       <div aria-busy="true">
-        <span className="sr-only" role="status">
-          Carregando lixeira…
-        </span>
-        <Skeleton className="h-10 rounded-none" />
+        <LoadingState label="Carregando lixeira…" />
+        <Skeleton className="h-10" />
       </div>
     );
   }
+
   if (lixeiraQuery.data.length === 0) {
     return <p className="text-sm text-muted-foreground">A lixeira está vazia.</p>;
   }
@@ -50,14 +57,13 @@ export function LixeiraOportunidades({ leadId, pipelines, podeRestaurar, onResta
 
           return (
             <li
-              className="flex items-center justify-between gap-2 border border-border px-3 py-2 text-sm"
+              className="flex items-center justify-between gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm"
               key={oportunidade.id}
             >
               <span className="min-w-0 break-words">{titulo}</span>
               {podeRestaurar && (
                 <Button
                   aria-label={`Restaurar ${titulo}`}
-                  className="rounded-none"
                   disabled={acao.isPending}
                   onClick={() =>
                     acao.mutate(

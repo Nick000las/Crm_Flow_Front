@@ -1,7 +1,13 @@
+/**
+ * @file Período da assertividade (só meses fechados). O pai valida (`erros`) e dá o último mês
+ * fechado em `max`.
+ */
 import { useId } from 'react';
+
+import { FieldError } from '@/components/field-error';
 import { Input } from '@/components/ui/input';
 
-const ROTULO = 'font-mono text-[11px] uppercase tracking-wide text-muted-foreground';
+const ROTULO = 'text-[11px] uppercase tracking-wide text-muted-foreground';
 
 function Campo({ rotulo, erro, children, id }) {
   return (
@@ -10,11 +16,7 @@ function Campo({ rotulo, erro, children, id }) {
         {rotulo}
       </label>
       {children}
-      {erro && (
-        <p className="text-xs text-destructive" id={`${id}-erro`}>
-          {erro}
-        </p>
-      )}
+      <FieldError id={`${id}-erro`} message={erro} />
     </div>
   );
 }
@@ -36,12 +38,12 @@ export function FiltroAssertividade({ de, ate, max, erros = {}, onPeriodo }) {
   const ids = { de: `${base}-de`, ate: `${base}-ate` };
 
   return (
-    <div className="flex flex-wrap items-start gap-3">
+    <div data-tour="crm-forecast-filters" className="flex flex-wrap items-start gap-3">
       <Campo erro={erros.de} id={ids.de} rotulo="De">
         <Input
           aria-describedby={erros.de ? `${ids.de}-erro` : undefined}
           aria-invalid={Boolean(erros.de)}
-          className="h-9 rounded-none font-mono"
+
           id={ids.de}
           max={max}
           onChange={(event) => onPeriodo({ de: event.target.value, ate })}
@@ -53,7 +55,7 @@ export function FiltroAssertividade({ de, ate, max, erros = {}, onPeriodo }) {
         <Input
           aria-describedby={erros.ate ? `${ids.ate}-erro` : undefined}
           aria-invalid={Boolean(erros.ate)}
-          className="h-9 rounded-none font-mono"
+
           id={ids.ate}
           max={max}
           onChange={(event) => onPeriodo({ de, ate: event.target.value })}

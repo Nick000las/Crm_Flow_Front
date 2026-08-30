@@ -1,3 +1,6 @@
+/**
+ * @file Restaurar devolve o lead para onde estava: arquivado volta arquivado.
+ */
 import { AVISOS_LEAD, SITUACOES_LEAD } from '../constants.js';
 
 const SITUACOES = new Set(Object.values(SITUACOES_LEAD));
@@ -39,6 +42,7 @@ export function estaArquivado(lead) {
  */
 export function diasAtePurga(purgaEm, agora = new Date()) {
   const instante = purgaEm ? Date.parse(purgaEm) : Number.NaN;
+
   if (Number.isNaN(instante)) {
     return null;
   }
@@ -49,9 +53,11 @@ export function diasAtePurga(purgaEm, agora = new Date()) {
 /** "Exclui em 12 dias" — a coluna da lixeira. Vazio sem data. */
 export function textoDaPurga(purgaEm, agora) {
   const dias = diasAtePurga(purgaEm, agora);
+
   if (dias === null) {
     return '';
   }
+
   if (dias === 0) {
     return 'Exclui hoje';
   }

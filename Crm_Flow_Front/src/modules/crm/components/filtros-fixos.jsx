@@ -1,12 +1,17 @@
+/**
+ * @file Filtros que não dependem de `/fields`: responsável, valor, data de criação e, com
+ * `crm.score`, a faixa de score (as faixas vêm da configuração).
+ */
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+
 import { useFaixasScore } from '../hooks/use-score';
 import { ORDEM_CICLOS, ROTULOS_CICLO, TEXTOS_FILTRO_CICLO } from '../lib/ciclo-textos';
 import { RESPONSAVEL_NENHUM } from '../lib/filtro';
 import { SelectSimples } from './select-simples';
 import { ListaDeOpcoes } from './valor-do-filtro';
 
-const INPUT_CLASS = 'h-9 rounded-none font-mono tabular-nums';
+const INPUT_CLASS = 'tabular-nums';
 const OPCOES_CICLO = ORDEM_CICLOS.map((valor) => ({ valor, rotulo: ROTULOS_CICLO[valor] }));
 
 function Faixa({ legenda, nome, de, ate, tipo, erros, onChange }) {

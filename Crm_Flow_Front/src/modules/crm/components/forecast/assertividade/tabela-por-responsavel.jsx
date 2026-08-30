@@ -1,3 +1,8 @@
+/**
+ * @file Assertividade por responsável do mês aberto. "Sem responsável" e "Responsável removido"
+ * são linhas comuns, sem link.
+ */
+import { Card } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -6,10 +11,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { COLUNAS_RESPONSAVEL, TEXTOS_ASSERTIVIDADE } from '../../../lib/assertividade-textos';
 
-const HEAD_CLASS =
-  'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
+import { COLUNAS_RESPONSAVEL, TEXTOS_ASSERTIVIDADE } from '../../../lib/assertividade-textos';
 
 /**
  * Assertividade por responsável do mês aberto. "Sem responsável" e
@@ -24,7 +27,7 @@ export function TabelaPorResponsavel({ titulo, linhas }) {
   const vazia = !linhas || linhas.length === 0;
 
   return (
-    <div className="overflow-x-auto border border-border">
+    <Card layout="plain" className="overflow-x-auto">
       <Table>
         <caption className="border-b border-border p-3 text-left text-sm font-medium">
           {titulo}
@@ -41,16 +44,14 @@ export function TabelaPorResponsavel({ titulo, linhas }) {
           <>
             <TableHeader>
               <TableRow>
-                <TableHead className={HEAD_CLASS} scope="col">
-                  {COLUNAS_RESPONSAVEL.responsavel}
-                </TableHead>
-                <TableHead className={`${HEAD_CLASS} text-right`} scope="col">
+                <TableHead scope="col">{COLUNAS_RESPONSAVEL.responsavel}</TableHead>
+                <TableHead className="text-right" scope="col">
                   {COLUNAS_RESPONSAVEL.previsto}
                 </TableHead>
-                <TableHead className={`${HEAD_CLASS} text-right`} scope="col">
+                <TableHead className="text-right" scope="col">
                   {COLUNAS_RESPONSAVEL.realizado}
                 </TableHead>
-                <TableHead className={`${HEAD_CLASS} text-right`} scope="col">
+                <TableHead className="text-right" scope="col">
                   {COLUNAS_RESPONSAVEL.assertividade}
                 </TableHead>
               </TableRow>
@@ -61,14 +62,10 @@ export function TabelaPorResponsavel({ titulo, linhas }) {
                   <TableCell className="font-medium" scope="row">
                     {linha.rotulo}
                   </TableCell>
-                  <TableCell className="text-right font-mono tabular-nums">
-                    {linha.previsto}
-                  </TableCell>
-                  <TableCell className="text-right font-mono tabular-nums">
-                    {linha.realizado}
-                  </TableCell>
+                  <TableCell className="text-right tabular-nums">{linha.previsto}</TableCell>
+                  <TableCell className="text-right tabular-nums">{linha.realizado}</TableCell>
                   <TableCell className="text-right">
-                    <span className="font-mono tabular-nums">{linha.pct}</span>
+                    <span className="tabular-nums">{linha.pct}</span>
                     {linha.rotuloFaixa && (
                       <span className="ml-2 text-xs text-muted-foreground">
                         {linha.rotuloFaixa}
@@ -81,6 +78,6 @@ export function TabelaPorResponsavel({ titulo, linhas }) {
           </>
         )}
       </Table>
-    </div>
+    </Card>
   );
 }

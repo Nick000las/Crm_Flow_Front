@@ -1,7 +1,14 @@
+/**
+ * @file Renderiza card activity, na área de Kanban, expondo os estados e eventos necessários à
+ * interface.
+ */
 import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { LoadingState } from '@/components/loading-state';
 import { History } from 'lucide-react';
+
+import { LoadingState } from '@/components/loading-state';
+import { Alert } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+
 const ACTIONS = {
   'card.create': 'criou o card',
   'card.complete': 'marcou a entrega como concluída',
@@ -9,11 +16,11 @@ const ACTIONS = {
   'card.move': 'moveu o card',
   'card.archive': 'arquivou o card',
   'card.restore': 'restaurou o card',
+  'comment.update': 'editou um comentário',
   'comment.create': 'comentou no card',
   'card.delete': 'excluiu o card',
-  'card.link': 'vinculou uma pessoa ao card',
-  'card.unlink': 'removeu o vínculo com a pessoa',
 };
+
 export function CardActivity({ cardId, authApi, revision }) {
   const [rows, setRows] = useState([]);
   const [completedRequest, setCompletedRequest] = useState(null);
@@ -21,8 +28,10 @@ export function CardActivity({ cardId, authApi, revision }) {
   const [retry, setRetry] = useState(0);
   const requestKey = `${cardId}:${revision}:${retry}`;
   const loading = completedRequest !== requestKey;
+
   useEffect(() => {
     let active = true;
+
     authApi
       .get(`/kanban/cards/${cardId}/activities`)
       .then((data) => {
@@ -41,10 +50,12 @@ export function CardActivity({ cardId, authApi, revision }) {
           setCompletedRequest(requestKey);
         }
       });
+
     return () => {
       active = false;
     };
   }, [cardId, authApi, revision, retry, requestKey]);
+
   return (
     <section className="kb-activity">
       <h3>
@@ -53,9 +64,9 @@ export function CardActivity({ cardId, authApi, revision }) {
       {loading && <LoadingState inline label="Carregando histórico…" />}
       {error && (
         <>
-          <p className="kb-error" role="alert">
+          <Alert variant="destructive" role="alert">
             {error}
-          </p>
+          </Alert>
           <Button
             variant="outline"
             onClick={() => {

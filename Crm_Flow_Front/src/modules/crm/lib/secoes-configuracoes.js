@@ -1,3 +1,7 @@
+/**
+ * @file Subseções da área Configurações do CRM (spec "Configurações e Features", tabela de
+ * subseções).
+ */
 import { podeVer } from '../../../lib/acesso.js';
 import { CRM_FEATURES, PAPEIS_GESTAO } from '../constants.js';
 import { ROTAS_CRM } from '../rotas.js';

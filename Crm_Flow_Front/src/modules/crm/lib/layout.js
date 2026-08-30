@@ -1,12 +1,16 @@
+/**
+ * @file 400 do back por parte do layout: `fields.secoes.0.nome` vira `secoes`. O que não for de
+ * uma parte conhecida volta em `geral`.
+ */
 import {
   CAMADA,
+  CHAVE_VALOR,
   CHAVES_IDENTIFICADOR,
   LIMITES_LAYOUT,
   REFERENCIAS_FIXAS,
   TIPOS_CAMPO,
-  CHAVE_VALOR,
 } from '../constants.js';
-import { TIPO_COLUNA, lerValorDoCampo } from './colunas.js';
+import { lerValorDoCampo, TIPO_COLUNA } from './colunas.js';
 import {
   formatarCep,
   formatarCnpj,
@@ -58,6 +62,7 @@ export const PARTES_LAYOUT = Object.freeze([
   'colunas',
 ]);
 export const SEM_NOME = 'Lead sem nome';
+
 const SEPARADOR_SUBTITULO = ' · ';
 const REF_CRIADO_EM = 'lead.criadoEm';
 
@@ -97,6 +102,7 @@ export function textoDoValor(item, valor, nomePorId) {
     valor === undefined ||
     valor === '' ||
     (Array.isArray(valor) && valor.length === 0);
+
   if (vazio) {
     return null;
   }
@@ -104,6 +110,7 @@ export function textoDoValor(item, valor, nomePorId) {
   if (item.ref === REF_CRIADO_EM) {
     return formatarInstante(valor);
   }
+
   switch (item.tipo) {
     // M11: documentos gravados sem máscara; o front aplica.
     case TIPOS_CAMPO.CPF:
@@ -155,6 +162,7 @@ export function tituloDoLead(lead, identificador) {
   const doIdentificador = identificador
     ? textoDoValor(identificador, valorDoItem(lead, identificador))
     : null;
+
   return doIdentificador || lead.nome?.trim() || SEM_NOME;
 }
 
@@ -181,6 +189,7 @@ export function subtituloDoLead(lead, itens, nomePorId) {
  */
 export function colunaDoItem(item) {
   const fixa = COLUNA_DA_REF[item.ref];
+
   return fixa
     ? { id: fixa.id, label: item.label, tipo: fixa.tipo }
     : { id: item.chave, label: item.label, tipo: item.tipo, campo: /** @type {any} */ (item) };
@@ -204,6 +213,7 @@ export function identificadorPermitido(campo) {
   if (campo.camada === CAMADA.CAMADA_3) {
     return campo.tipo === TIPOS_CAMPO.TEXTO;
   }
+
   return CHAVES_IDENTIFICADOR.includes(campo.chave);
 }
 
@@ -288,12 +298,15 @@ export function validarLayout(layout) {
   if (!layout.identificador) {
     erros.identificador = MENSAGENS_LAYOUT.IDENTIFICADOR;
   }
+
   if (layout.subtitulo.length > LIMITES_LAYOUT.SUBTITULO) {
     erros.subtitulo = MENSAGENS_LAYOUT.SUBTITULO;
   }
+
   if (layout.destaques.length > LIMITES_LAYOUT.DESTAQUES) {
     erros.destaques = MENSAGENS_LAYOUT.DESTAQUES;
   }
+
   if (layout.colunas.length === 0) {
     erros.colunas = MENSAGENS_LAYOUT.COLUNAS;
   }
@@ -321,6 +334,7 @@ export function layoutParaEnvio(layout) {
 
 /** Já entram na busca de qualquer jeito (o identificador do tenant é somado a elas). */
 const CHAVES_SEMPRE_BUSCADAS = Object.freeze(['nome', 'email', 'telefone']);
+
 export const PLACEHOLDER_BUSCA = 'Buscar por nome, e-mail ou telefone';
 
 /**
@@ -333,6 +347,7 @@ export function placeholderDaBusca(identificador) {
   if (!identificador || CHAVES_SEMPRE_BUSCADAS.includes(identificador.chave)) {
     return PLACEHOLDER_BUSCA;
   }
+
   return `Buscar por ${identificador.label}, nome, e-mail ou telefone`;
 }
 
@@ -350,6 +365,7 @@ export function errosPorParte(fields) {
   for (const [chave, mensagens] of Object.entries(fields ?? {})) {
     const parte = PARTES_LAYOUT.find((nome) => chave === nome || chave.startsWith(`${nome}.`));
     const mensagem = mensagens?.[0];
+
     if (!mensagem) {
       continue;
     }

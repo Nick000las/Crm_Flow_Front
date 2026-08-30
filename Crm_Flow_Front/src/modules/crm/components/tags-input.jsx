@@ -1,6 +1,13 @@
-import { X } from 'lucide-react';
+/**
+ * @file Seleção múltipla de entrada livre (caso de `tags`): Enter adiciona, ✕ remove, Backspace
+ * no campo vazio remove a última. `sugestoes` vira um `<datalist>` — o navegador autocompleta
+ * sem prender a texto conhecido.
+ */
 import { useState } from 'react';
+import { X } from 'lucide-react';
+
 import { Input } from '@/components/ui/input';
+import { isComposingKeyEvent } from '@/lib/keyboard-shortcuts';
 
 const TECLAS_ADICIONAR = new Set(['Enter', ',']);
 
@@ -23,13 +30,25 @@ export function TagsInput({ value, onChange, id, sugestoes = [], ...controle }) 
 
   function adicionar() {
     const tag = texto.trim();
+
     setTexto('');
+
     if (tag && !value.includes(tag)) {
       onChange([...value, tag]);
     }
   }
 
   function handleKeyDown(event) {
+    if (
+      isComposingKeyEvent(event) ||
+      event.repeat ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.altKey
+    ) {
+      return;
+    }
+
     if (TECLAS_ADICIONAR.has(event.key)) {
       event.preventDefault();
       adicionar();
@@ -64,7 +83,7 @@ export function TagsInput({ value, onChange, id, sugestoes = [], ...controle }) 
       )}
       <Input
         {...controle}
-        className="h-9 rounded-none"
+
         id={id}
         list={disponiveis.length > 0 ? listaId : undefined}
         onBlur={adicionar}

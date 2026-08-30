@@ -1,6 +1,12 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+/**
+ * @file Status do job, com polling enquanto `processando`. Ao concluir, a lista de leads é
+ * invalidada — ela mudou.
+ */
 import { useEffect } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
+
 import {
   buscarImportacao,
   confirmarImportacao,
@@ -15,11 +21,13 @@ const INTERVALO_POLLING_MS = 2_000;
 
 export function usePreviewImportacao() {
   const { authApi } = useAuth();
+
   return useMutation({ mutationFn: (arquivo) => previsualizarImportacao(authApi, arquivo) });
 }
 
 export function useValidarImportacao() {
   const { authApi } = useAuth();
+
   return useMutation({ mutationFn: (dados) => validarImportacao(authApi, dados) });
 }
 

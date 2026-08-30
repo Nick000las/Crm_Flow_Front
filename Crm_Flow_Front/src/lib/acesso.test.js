@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import { paginaVisivel, podeVer, temFeature } from './acesso.js';
 
 const dono = { role: 'DONO', modulosAtivos: ['crm'] };
@@ -78,9 +79,11 @@ test('página com subseções só aparece se alguma subseção pronta for visív
   assert.equal(paginaVisivel(configuracoes, dono), true);
   assert.equal(paginaVisivel(configuracoes, operador), false);
   assert.equal(paginaVisivel(configuracoes, { ...operador, featuresAtivas: ['crm.layout'] }), true);
+
   assert.equal(
     paginaVisivel(configuracoes, { ...operador, featuresAtivas: ['crm.listas'] }),
     false,
   );
+
   assert.equal(paginaVisivel({ roles: ['DONO'] }, operador), false);
 });

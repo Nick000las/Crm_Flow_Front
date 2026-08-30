@@ -1,3 +1,6 @@
+/**
+ * @file Forma dos tipos do M11 (UX: o back confere o DV e responde 400 no campo).
+ */
 import {
   ACESSOS_CAMPO,
   CAMADA,
@@ -119,6 +122,7 @@ export function idNoForm(campo) {
  */
 export function lerNumeroDigitado(texto) {
   const limpo = String(texto).replace(/\s/g, '');
+
   if (limpo === '') {
     return null;
   }
@@ -137,8 +141,10 @@ export function paraValorDeForm(tipo, valor) {
     case TIPOS_CAMPO.NUMERO:
     case TIPOS_CAMPO.MONETARIO: {
       const numero = paraNumero(valor);
+
       return numero === null ? '' : String(numero).replace('.', ',');
     }
+
     case TIPOS_CAMPO.TELEFONE:
       // O back devolve só dígitos; o input mostra com máscara.
       return formatarTelefone(valor) ?? '';
@@ -161,6 +167,7 @@ export function paraValorDeForm(tipo, valor) {
       return Object.fromEntries(
         PARTES_ENDERECO.map((parte) => {
           const texto = textoDe(valor?.[parte]);
+
           return [parte, parte === 'cep' ? mascararCep(texto) : texto];
         }),
       );
@@ -173,6 +180,7 @@ export function paraValorDeForm(tipo, valor) {
 function periodoDeApi(valor) {
   const de = textoDe(valor?.de).trim();
   const ate = textoDe(valor?.ate).trim();
+
   return de || ate ? { de, ate } : null;
 }
 
@@ -180,12 +188,15 @@ function periodoDeApi(valor) {
 function enderecoDeApi(valor) {
   const partes = PARTES_ENDERECO.flatMap((parte) => {
     const texto = textoDe(valor?.[parte]).trim();
+
     if (!texto) {
       return [];
     }
+
     if (parte === 'cep') {
       return [[parte, texto.replace(/\D/g, '')]];
     }
+
     return [[parte, parte === 'uf' ? texto.toUpperCase() : texto]];
   });
 
@@ -205,10 +216,12 @@ export function paraValorDeApi(tipo, valor) {
     case TIPOS_CAMPO.MONETARIO: {
       // Reais com até 2 casas, como o back aceita.
       const numero = lerNumeroDigitado(valor ?? '');
+
       return numero === null || Number.isNaN(numero)
         ? numero
         : Math.round(numero * CENTAVOS) / CENTAVOS;
     }
+
     case TIPOS_CAMPO.BOOLEANO:
       return typeof valor === 'boolean' ? valor : null;
     case TIPOS_CAMPO.SELECAO_MULTIPLA:
@@ -223,6 +236,7 @@ export function paraValorDeApi(tipo, valor) {
       return enderecoDeApi(valor);
     default: {
       const texto = String(valor ?? '').trim();
+
       return texto === '' ? null : texto;
     }
   }
@@ -245,6 +259,7 @@ export function valoresIniciais(campos, lead, padroes = {}) {
       // Tags voltam como keys; o form edita pelo nome, e o back casa o nome
       // de volta com a key (ou cria a tag, se for texto novo).
       const editavel = ehListaLivre(campo) ? valor.map((key) => rotuloOpcao(key, campo)) : valor;
+
       return [idNoForm(campo), editavel];
     }),
   );
@@ -255,6 +270,7 @@ export function valoresIniciais(campos, lead, padroes = {}) {
   if (!lead) {
     for (const campo of campos) {
       const padrao = padroes[campo.chave];
+
       if (padrao !== undefined && padrao !== null && padrao !== '') {
         valores[idNoForm(campo)] = padrao;
       }
@@ -282,7 +298,9 @@ function atribuir(payload, campo, valor) {
  */
 export function payloadDeUmCampo(campo, valor) {
   const payload = {};
+
   atribuir(payload, campo, valor);
+
   return payload;
 }
 
@@ -317,6 +335,7 @@ export function marcarCalculados(campos, comScore) {
   if (!comScore) {
     return campos;
   }
+
   return campos.map((campo) =>
     campo.chave === CHAVE_SCORE ? { ...campo, calculado: true } : campo,
   );
@@ -338,6 +357,7 @@ export function marcarSemAcessoComercial(campos, lead) {
   if (lead?.status !== null) {
     return campos;
   }
+
   return campos.map((campo) =>
     campo.camada !== CAMADA.CAMADA_3 && CHAVES_COMERCIAIS.has(campo.chave)
       ? { ...campo, semAcessoComercial: true }
@@ -366,11 +386,13 @@ export function versaoDoLead(lead) {
  */
 export function camposDoStatus(campos, valores) {
   const status = campoDoStatus(campos);
+
   if (!status) {
     return campos;
   }
 
   const ganho = categoriaDoStatus(campos, valores[idNoForm(status)]) === CATEGORIAS_STATUS.GANHO;
+
   return ganho ? campos : campos.filter((campo) => campo.chave !== CHAVE_DATA_CONVERSAO);
 }
 
@@ -390,6 +412,7 @@ export function montarPayloadCriacao(campos, valores) {
 
   for (const campo of camposDoPayload(campos, valores)) {
     const valor = paraValorDeApi(campo.tipo, valores[idNoForm(campo)]);
+
     if (valor !== null) {
       atribuir(payload, campo, valor);
     }
@@ -398,6 +421,7 @@ export function montarPayloadCriacao(campos, valores) {
   if (valores[CHAVE_RESPONSAVEL]) {
     payload[CHAVE_RESPONSAVEL] = valores[CHAVE_RESPONSAVEL];
   }
+
   // Opt-out: só quando marcado (desmarcado é o padrão de quem nunca saiu).
   if (valores[CHAVE_OPT_OUT] === true) {
     payload[CHAVE_OPT_OUT] = true;
@@ -410,6 +434,7 @@ function iguais(a, b) {
   if (Array.isArray(a) && Array.isArray(b)) {
     return a.length === b.length && a.every((item, indice) => item === b[indice]);
   }
+
   // Endereço e período: mesma ordem de chaves dos dois lados (`*DeApi`).
   if (a && b && typeof a === 'object' && typeof b === 'object') {
     return JSON.stringify(a) === JSON.stringify(b);
@@ -442,6 +467,7 @@ export function montarPayloadEdicao(campos, iniciais, valores) {
 
   const responsavelAntes = iniciais[CHAVE_RESPONSAVEL] || null;
   const responsavelDepois = valores[CHAVE_RESPONSAVEL] || null;
+
   if (responsavelAntes !== responsavelDepois) {
     payload[CHAVE_RESPONSAVEL] = responsavelDepois;
   }
@@ -497,6 +523,7 @@ export function validarNoCliente(campos, valores) {
     (campo) => paraValorDeApi(TIPOS_CAMPO.TEXTO, valores[idNoForm(campo)]) !== null,
   );
   const ondeAvisar = contatos.find(podeEditarCampo);
+
   if (!temContato && ondeAvisar) {
     erros[idNoForm(ondeAvisar)] ??= MENSAGENS.CONTATO;
   }
@@ -520,6 +547,7 @@ export function errosDoServidor(fields, campos) {
       .filter((campo) => campo.camada !== CAMADA.CAMADA_3)
       .map((campo) => [campo.chave, idNoForm(campo)]),
   );
+
   idPorChave.set(CHAVE_RESPONSAVEL, CHAVE_RESPONSAVEL);
   idPorChave.set(CHAVE_OPT_OUT, CHAVE_OPT_OUT);
 
@@ -528,6 +556,7 @@ export function errosDoServidor(fields, campos) {
 
   for (const [chave, mensagens] of Object.entries(fields ?? {})) {
     const mensagem = mensagens?.[0];
+
     if (!mensagem) {
       continue;
     }
@@ -553,13 +582,17 @@ export function erroComercial(chave, valor) {
   if (typeof valor !== 'number') {
     return null;
   }
+
   if (chave === CHAVE_VALOR) {
     return valor < 0 ? MENSAGENS.VALOR_NEGATIVO : null;
   }
+
   if (chave === 'probabilidadeFechamento') {
     const valida = Number.isInteger(valor) && valor >= 0 && valor <= PROBABILIDADE_MAXIMA;
+
     return valida ? null : MENSAGENS.PROBABILIDADE_INVALIDA;
   }
+
   return null;
 }
 
@@ -572,15 +605,19 @@ function erroDoTipo(tipo, valor) {
   if (TAMANHO_DOCUMENTO[tipo]) {
     return valor.length === TAMANHO_DOCUMENTO[tipo] ? null : MENSAGEM_DOCUMENTO[tipo];
   }
+
   if (tipo === TIPOS_CAMPO.INTERVALO_DATAS) {
     if (!valor.de || !valor.ate) {
       return MENSAGENS.PERIODO_INCOMPLETO;
     }
+
     return valor.de > valor.ate ? MENSAGENS.PERIODO_INVERTIDO : null;
   }
+
   if (tipo === TIPOS_CAMPO.ENDERECO && valor.cep) {
     return valor.cep.length === TAMANHO_DOCUMENTO[TIPOS_CAMPO.CEP] ? null : MENSAGENS.CEP_INVALIDO;
   }
+
   return null;
 }
 

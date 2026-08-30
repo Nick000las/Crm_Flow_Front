@@ -1,3 +1,6 @@
+/**
+ * @file 'AAAA-MM' → 'nov/26'. Entrada inválida volta igual.
+ */
 import { AGRUPAR_FORECAST, BLOCOS_FORECAST, MOTIVOS_IGNORADA, TIPOS_MES } from '../constants.js';
 
 /** Rótulos dos blocos fora dos meses (chaves de `blocos` na resposta). */
@@ -77,7 +80,9 @@ export function avisoDoCampoDesligado(chave, ehGestao) {
   if (!Object.hasOwn(AVISOS_CAMPO_DESLIGADO, chave)) {
     return null;
   }
+
   const aviso = AVISOS_CAMPO_DESLIGADO[chave];
+
   return ehGestao ? aviso : aviso.replace('Ligue', 'Peça ao responsável pela conta para ligar');
 }
 
@@ -99,9 +104,11 @@ export function textoGanhasSemValor(n) {
   if (n <= 0) {
     return null;
   }
+
   if (n === 1) {
     return '1 venda sem valor não entra na soma';
   }
+
   return `${n} vendas sem valor não entram na soma`;
 }
 
@@ -113,9 +120,11 @@ export function textoAtualizadas(n) {
   if (n === 0) {
     return 'Nenhuma atualizada';
   }
+
   if (n === 1) {
     return '1 atualizada';
   }
+
   return `${n} atualizadas`;
 }
 
@@ -168,14 +177,19 @@ function lerMes(mes) {
   if (typeof mes !== 'string') {
     return null;
   }
+
   const m = /^(\d{4})-(\d{2})$/.exec(mes);
+
   if (!m) {
     return null;
   }
+
   const indice = Number(m[2]) - 1;
+
   if (indice < 0 || indice > 11) {
     return null;
   }
+
   return { ano: m[1], indice };
 }
 
@@ -186,9 +200,11 @@ function lerMes(mes) {
  */
 export function rotuloDoMes(mes) {
   const lido = lerMes(mes);
+
   if (!lido) {
     return mes;
   }
+
   return `${MESES_COMPLETOS[lido.indice]} de ${lido.ano}`;
 }
 
@@ -199,8 +215,10 @@ export function rotuloDoMes(mes) {
  */
 export function rotuloCurtoDoMes(mes) {
   const lido = lerMes(mes);
+
   if (!lido) {
     return mes;
   }
+
   return `${MESES_CURTOS[lido.indice]}/${lido.ano.slice(2)}`;
 }

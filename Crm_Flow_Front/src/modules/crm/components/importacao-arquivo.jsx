@@ -1,8 +1,15 @@
-import { FileUp } from 'lucide-react';
+/**
+ * @file Passo 1: escolher a planilha (botão ou arrastar). Valida extensão e tamanho antes de
+ * enviar; o back lê e devolve o preview.
+ */
 import { useRef, useState } from 'react';
+import { FileUp } from 'lucide-react';
+
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+
 import { IMPORTACAO } from '../constants';
 import { usePreviewImportacao } from '../hooks/use-importacao';
 import { validarArquivo } from '../lib/importacao';
@@ -28,10 +35,13 @@ export function ImportacaoArquivo({ onLido }) {
     if (!arquivo) {
       return;
     }
+
     preview.reset();
 
     const motivo = validarArquivo(arquivo);
+
     setErroLocal(motivo);
+
     if (!motivo) {
       preview.mutate(arquivo, { onSuccess: (dados) => onLido(arquivo, dados) });
     }
@@ -44,7 +54,11 @@ export function ImportacaoArquivo({ onLido }) {
           'grid justify-items-center gap-3 border border-dashed px-6 py-14 text-center transition-colors duration-200',
           arrastando ? 'border-foreground bg-muted/50' : 'border-border',
         )}
-        onDragLeave={() => setArrastando(false)}
+        onDragLeave={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget)) {
+            setArrastando(false);
+          }
+        }}
         onDragOver={(event) => {
           event.preventDefault();
           setArrastando(true);
@@ -64,10 +78,12 @@ export function ImportacaoArquivo({ onLido }) {
           disabled={preview.isPending}
           onClick={() => inputRef.current?.click()}
           variant="outline"
+          loading={preview.isPending}
+          loadingText="Lendo planilha…"
         >
-          {preview.isPending ? 'Lendo planilha…' : 'Escolher arquivo'}
+          {'Escolher arquivo'}
         </Button>
-        <input
+        <Input
           accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
           className="hidden"
           onChange={(event) => {

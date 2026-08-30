@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import {
   destinoDaNotificacao,
   rotuloDoSino,
@@ -19,6 +20,7 @@ test('CRM: /crm/leads vira a lista com o filtro na URL', () => {
   const url = new URL(destino, 'http://x');
 
   assert.equal(url.pathname, '/crm');
+
   assert.deepEqual(JSON.parse(url.searchParams.get('f')), {
     filtros: [],
     usuarioResponsavelId: 'u-1',
@@ -46,6 +48,7 @@ test('CRM: crm.leads_atribuidos abre a lista filtrada pelo responsável', () => 
   const url = new URL(destino, 'http://x');
 
   assert.equal(url.pathname, '/crm');
+
   assert.deepEqual(JSON.parse(url.searchParams.get('f')), {
     filtros: [],
     usuarioResponsavelId: 'u-1',
@@ -58,10 +61,12 @@ test('CRM sem filtro vai para a lista limpa', () => {
 
 test('módulo sem regra usa dados.rota interna; externa ou ausente não navega', () => {
   assert.equal(destinoDaNotificacao({ modulo: 'agenda', dados: { rota: '/agenda' } }), '/agenda');
+
   assert.equal(
     destinoDaNotificacao({ modulo: 'agenda', dados: { rota: 'https://mal.example' } }),
     null,
   );
+
   assert.equal(destinoDaNotificacao({ modulo: 'agenda', dados: { rota: '//mal.example' } }), null);
   assert.equal(destinoDaNotificacao({ modulo: 'agenda', dados: null }), null);
 });

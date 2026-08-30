@@ -1,5 +1,12 @@
+/**
+ * @file Lista ordenada de campos escolhidos (subtítulo, destaques, colunas, campos de uma
+ * seção): arrastar ou ↑/↓, remover, e "Adicionar campo" com o que ainda não está na lista. Ref
+ * que deixou de existir aparece como "Campo indisponível" — dá para ver e tirar.
+ */
 import { X } from 'lucide-react';
+
 import { cn } from '@/lib/utils';
+
 import { moverPara } from '../../lib/ordem';
 import { BotaoIcone } from '../botao-icone';
 import { BotoesOrdem } from '../ordenavel/botoes-ordem';
@@ -68,6 +75,7 @@ export function SeletorOrdenado({ id, legenda, ajuda, valor, opcoes, max, erro, 
 
   function mover(de, para) {
     const proximos = moverPara(valor, de, para);
+
     if (proximos !== valor) {
       onChange(proximos);
     }
@@ -76,25 +84,25 @@ export function SeletorOrdenado({ id, legenda, ajuda, valor, opcoes, max, erro, 
   return (
     <fieldset
       aria-describedby={[ajuda && ajudaId, erro && erroId].filter(Boolean).join(' ') || undefined}
-      className="grid gap-2"
+      className="flex min-w-0 flex-col gap-2"
     >
       <legend className="mb-1 flex w-full items-baseline justify-between gap-2 text-sm font-medium">
         {legenda}
         {max !== undefined && (
-          <span className="font-mono text-[11px] font-normal text-muted-foreground tabular-nums">
+          <span className="text-[11px] font-normal text-muted-foreground tabular-nums">
             {valor.length}/{max}
           </span>
         )}
       </legend>
       {ajuda && (
-        <p className="-mt-1 text-xs text-muted-foreground" id={ajudaId}>
+        <p className="-mt-1 min-h-8 text-xs text-muted-foreground" id={ajudaId}>
           {ajuda}
         </p>
       )}
 
       {valor.length > 0 && (
         <ListaOrdenavel ids={valor} onMover={mover} rotuloDe={rotuloDe}>
-          <ol className="border border-border">
+          <ol className="mb-auto border border-border">
             {valor.map((ref, indice) => (
               <ItemEscolhido
                 indice={indice}

@@ -1,6 +1,12 @@
+/**
+ * @file Corpo da lista: escolhe entre erro, carregando, os estados vazios e a tabela paginada.
+ * `acoesDeArquivo` só vem com `crm.arquivo`; `onMesclar`, com `crm.duplicidade` para
+ * DONO/MASTER; `selecao`, com isso ou `crm.massa`.
+ */
 import { ApiErrorAlert } from '@/components/api-error-alert';
+
 import { SITUACOES_LEAD } from '../constants';
-import { FILTRO_VAZIO, contarFiltros, filtroSemChaves } from '../lib/filtro';
+import { contarFiltros, FILTRO_VAZIO, filtroSemChaves } from '../lib/filtro';
 import { FiltroComCampoOculto } from './filtro-com-campo-oculto';
 import { LeadsTable, LeadsTableSkeleton } from './leads-table';
 import { LeadsNaoEncontrados, LeadsVazio, PaginaSemLeads, SituacaoVazia } from './leads-vazio';
@@ -70,9 +76,11 @@ export function LeadsConteudo({
       />
     );
   }
+
   if (erro) {
     return <ApiErrorAlert error={erro} id={ERRO_ID} />;
   }
+
   if (carregando) {
     return <LeadsTableSkeleton colunas={colunas} identificador={identificador} />;
   }
@@ -85,9 +93,11 @@ export function LeadsConteudo({
     if (consultaRestrita) {
       return <LeadsNaoEncontrados onLimpar={() => atualizar(SEM_FILTRO)} />;
     }
+
     if (situacao !== SITUACOES_LEAD.ATIVOS) {
       return <SituacaoVazia situacao={situacao} />;
     }
+
     return <LeadsVazio acaoNovo={botaoNovo} podeImportar={podeImportar} />;
   }
 

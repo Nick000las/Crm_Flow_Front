@@ -1,7 +1,26 @@
-import { Construction, KanbanSquare, LayoutDashboard, Settings } from 'lucide-react';
+/**
+ * @file A página casa pelo caminho exato ou por um prefixo de `ativoEm`. Casar por prefixo do
+ * próprio `path` não serve: `/crm` acenderia em `/crm/campos`.
+ */
+import {
+  Activity,
+  Construction,
+  ContactRound,
+  KanbanSquare,
+  LayoutDashboard,
+  LayoutGrid,
+  Settings,
+  Settings2,
+  SlidersHorizontal,
+  TrendingUp,
+  Upload,
+  Users,
+} from 'lucide-react';
+
 import { CRM_FEATURES, PAPEIS_GESTAO } from '@/modules/crm/constants';
-import { ROTAS_CRM } from '@/modules/crm/rotas';
 import { SECOES_CONFIGURACOES } from '@/modules/crm/lib/secoes-configuracoes';
+import { ROTAS_CRM } from '@/modules/crm/rotas';
+
 import { paginaVisivel, podeVer } from './acesso';
 
 /**
@@ -12,6 +31,7 @@ import { paginaVisivel, podeVer } from './acesso';
  * @property {string} key
  * @property {string} label
  * @property {string} path
+ * @property {import('lucide-react').LucideIcon} [icon]
  * @property {readonly string[]} [roles] papéis que veem a página; omitido = todos
  * @property {string | readonly string[]} [feature] feature flag(s) que liberam a
  *   página (todas); omitido = sempre. Ver `podeVer`.
@@ -24,6 +44,7 @@ import { paginaVisivel, podeVer } from './acesso';
  * @property {string} key
  * @property {string} [moduleKey] chave do módulo contratável no back (`tenant_modules`)
  * @property {string} label
+ * @property {string} [subtitle]
  * @property {import('lucide-react').LucideIcon} icon
  * @property {string} path
  * @property {ModulePage[]} pages
@@ -32,8 +53,17 @@ import { paginaVisivel, podeVer } from './acesso';
 /** @type {ModuleEntry[]} */
 export const MODULES = [
   {
+    key: 'dashboard',
+    label: 'Dashboard',
+    subtitle: 'Visão executiva',
+    icon: LayoutDashboard,
+    path: '/dashboard',
+    pages: [{ key: 'overview', label: 'Visão geral', path: '/dashboard', icon: Activity }],
+  },
+  {
     key: 'kanban',
     label: 'Kanban',
+    subtitle: 'Quadros e fluxos',
     icon: KanbanSquare,
     path: '/kanban',
     pages: [
@@ -41,35 +71,32 @@ export const MODULES = [
         key: 'workspace',
         label: 'Quadros disponíveis',
         path: '/kanban',
+        icon: LayoutGrid,
         ativoEm: ['/kanban/pipeline'],
       },
       {
         key: 'boards',
         label: 'Gerenciar quadros',
         path: '/kanban/quadros',
+        icon: SlidersHorizontal,
         roles: ['DONO', 'MASTER'],
       },
     ],
   },
   {
-    key: 'dashboard',
-    label: 'Dashboard',
-    icon: LayoutDashboard,
-    path: '/dashboard',
-    pages: [{ key: 'overview', label: 'Visão geral', path: '/dashboard' }],
-  },
-  {
     key: 'crm',
     moduleKey: 'crm',
     label: 'CRM',
-    icon: KanbanSquare,
+    subtitle: 'Gestão comercial',
+    icon: ContactRound,
     path: '/crm',
     pages: [
-      { key: 'leads', label: 'Leads', path: '/crm', ativoEm: ['/crm/leads'] },
+      { key: 'leads', label: 'Leads', path: '/crm', icon: Users, ativoEm: ['/crm/leads'] },
       {
         key: 'forecast',
         label: 'Forecast',
         path: ROTAS_CRM.FORECAST,
+        icon: TrendingUp,
         // Todos os papéis; o que cada um vê muda pela permissão de campo.
         feature: CRM_FEATURES.FORECAST,
         ativoEm: [ROTAS_CRM.FORECAST],
@@ -78,6 +105,7 @@ export const MODULES = [
         key: 'importar',
         label: 'Importar',
         path: '/crm/importar',
+        icon: Upload,
         roles: PAPEIS_GESTAO,
       },
       {
@@ -85,6 +113,7 @@ export const MODULES = [
         label: 'Configurações',
         // A página leva à primeira subseção visível.
         path: '/crm/configuracoes',
+        icon: Settings2,
         ativoEm: ['/crm/configuracoes'],
         // O papel vale por subseção (OPERADOR edita só o próprio layout).
         secoes: SECOES_CONFIGURACOES,

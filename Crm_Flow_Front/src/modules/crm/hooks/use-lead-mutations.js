@@ -1,6 +1,13 @@
+/**
+ * @file Arquivar, desarquivar ou restaurar: mudam a situação do lead, então a lista invalida; a
+ * resposta já é o lead, e vira o detalhe (o selo "Arquivado" do drawer troca sem nova ida).
+ * Arquivar revoga os links de formulário ativos (FM6), e desarquivar não os reativa.
+ */
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
 import { semChave } from '@/lib/objetos';
+
 import {
   acaoDeArquivo,
   atualizarLead,
@@ -43,6 +50,7 @@ export function useAtualizarLead(id) {
       queryClient.setQueryData(crmKeys.lead(id), semChave(resposta, 'avisos'));
       // Cada edição vira um evento no histórico (`crm.atividades`).
       queryClient.invalidateQueries({ queryKey: crmKeys.historico(id) });
+
       return invalidar();
     },
   });
@@ -59,6 +67,7 @@ export function useExcluirLead() {
       queryClient.removeQueries({ queryKey: crmKeys.lead(id) });
       // FM6: os links ativos de formulário são revogados.
       queryClient.invalidateQueries({ queryKey: crmKeys.linksDeFormulario(id) });
+
       return invalidar();
     },
   });
@@ -102,6 +111,7 @@ function useAcaoDeArquivo(acao) {
       queryClient.setQueryData(crmKeys.lead(id), lead);
       queryClient.invalidateQueries({ queryKey: crmKeys.historico(id) });
       queryClient.invalidateQueries({ queryKey: crmKeys.linksDeFormulario(id) });
+
       return invalidar();
     },
   });

@@ -1,6 +1,10 @@
+/**
+ * @file Endereço (M11): uma parte por input; o payload leva só as preenchidas.
+ */
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+
 import { PARTES_ENDERECO, ROTULOS_PARTE_ENDERECO } from '../constants';
 import { useUsuarios } from '../hooks/use-usuarios';
 import { mascararCep } from '../lib/formatadores';
@@ -35,7 +39,7 @@ export function CampoIntervalo({ value, onChange, controle }) {
     'aria-describedby': controle['aria-describedby'],
     'aria-invalid': controle['aria-invalid'],
     disabled: controle.disabled,
-    className: cn(INPUT_CLASS, 'font-mono'),
+    className: INPUT_CLASS,
     type: 'date',
   };
 
@@ -82,6 +86,7 @@ export function CampoEndereco({ value, onChange, controle }) {
   function alterar(parte, texto) {
     const proximo =
       parte === 'cep' ? mascararCep(texto) : parte === 'uf' ? texto.toUpperCase() : texto;
+
     onChange({ ...value, [parte]: proximo });
   }
 
@@ -99,7 +104,7 @@ export function CampoEndereco({ value, onChange, controle }) {
               {...ATRIBUTOS_PARTE[parte]}
               aria-describedby={controle['aria-describedby']}
               aria-invalid={controle['aria-invalid']}
-              className={cn(INPUT_CLASS, (parte === 'cep' || parte === 'uf') && 'font-mono')}
+              className={cn(INPUT_CLASS, (parte === 'cep' || parte === 'uf') && '')}
               disabled={controle.disabled}
               id={id}
               onChange={(event) => alterar(parte, event.target.value)}
