@@ -1,9 +1,5 @@
 import { useEffect, useState } from 'react';
-import {
-  api,
-  isAbortError,
-  toApiError,
-} from '../../../services/api.js';
+import { api, isAbortError, toApiError } from '../../../services/api.js';
 
 /**
  * Hook de dado do módulo CRM — chama o backend, nunca importa de outro módulo.
@@ -29,10 +25,11 @@ export function useLeads(accessToken) {
 
     const controller = new AbortController();
 
-    api.get('/crm/leads', {
-      accessToken,
-      signal: controller.signal,
-    })
+    api
+      .get('/crm/leads', {
+        accessToken,
+        signal: controller.signal,
+      })
       .then((data) => {
         if (!controller.signal.aborted) {
           setResult({

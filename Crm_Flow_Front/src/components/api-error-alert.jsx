@@ -2,13 +2,10 @@ import { CircleAlert } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { isAbortError, toApiError } from '@/services/api-error';
 
-export function ApiErrorAlert({
-  error,
-  className,
-  id,
-  title = 'Não foi possível continuar',
-}) {
-  if (!error || isAbortError(error)) return null;
+export function ApiErrorAlert({ error, className, id, title = 'Não foi possível continuar' }) {
+  if (!error || isAbortError(error)) {
+    return null;
+  }
 
   const apiError = toApiError(error);
   const fieldMessages = Object.values(apiError.fields).flat();
@@ -26,13 +23,9 @@ export function ApiErrorAlert({
       <div className="grid gap-0.5 text-sm">
         <p className="font-medium">{title}</p>
         <p>{apiError.message}</p>
-        {fieldMessages.length > 0 && (
-          <p className="sr-only">{fieldMessages.join('. ')}</p>
-        )}
+        {fieldMessages.length > 0 && <p className="sr-only">{fieldMessages.join('. ')}</p>}
         {apiError.requestId && (
-          <p className="mt-1 text-xs opacity-80">
-            Referência: {apiError.requestId}
-          </p>
+          <p className="mt-1 text-xs opacity-80">Referência: {apiError.requestId}</p>
         )}
       </div>
     </div>

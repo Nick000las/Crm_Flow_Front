@@ -26,8 +26,8 @@ Acesse `http://localhost:5173`. A rota inicial redireciona para o login.
 
 ## Configuração
 
-| Variável | Padrão | Descrição |
-| --- | --- | --- |
+| Variável       | Padrão                  | Descrição                                       |
+| -------------- | ----------------------- | ----------------------------------------------- |
 | `VITE_API_URL` | `http://localhost:3000` | URL pública do backend acessível pelo navegador |
 
 Somente variáveis públicas podem usar o prefixo `VITE_`. Segredos JWT e dados
@@ -48,10 +48,10 @@ As chamadas são centralizadas em `src/services/api.js`. O cliente:
 Os métodos retornam diretamente o corpo da resposta já convertido de JSON:
 
 ```js
-import { api } from '@/services/api'
+import { api } from '@/services/api';
 
-const leads = await api.get('/crm/leads', { accessToken })
-const newLead = await api.post('/crm/leads', lead, { accessToken })
+const leads = await api.get('/crm/leads', { accessToken });
+const newLead = await api.post('/crm/leads', lead, { accessToken });
 ```
 
 Erros do backend preservam `status`, `code`, `message`, `fields`, `details` e

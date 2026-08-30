@@ -14,9 +14,7 @@ export function Password({ email, onSuccess }) {
   const [submitError, setSubmitError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const passwordError = submitError
-    ? getFieldError(submitError, 'senha')
-    : null;
+  const passwordError = submitError ? getFieldError(submitError, 'senha') : null;
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -88,7 +86,7 @@ export function Password({ email, onSuccess }) {
           className="h-10 w-full"
           type="submit"
           disabled={isSubmitting}
-          aria-busy={isSubmitting}
+          loading={isSubmitting}
         >
           {isSubmitting ? 'Entrando...' : 'Entrar'}
         </Button>

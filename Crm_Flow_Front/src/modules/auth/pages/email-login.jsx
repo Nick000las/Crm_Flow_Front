@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { CheckCircle2 } from 'lucide-react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
@@ -13,20 +12,14 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
-import api, { getFieldError, isAbortError, toApiError } from '@/services/api';
+import { LOGIN_STEP, useLoginFlow } from '@/hooks/use-login-flow';
 import { CreatePassword } from './create-password';
+import { MfaCode } from './mfa-code';
 import { Password } from './password';
 import { VerificationCode } from './verification-code';
 
 const EMAIL_ERROR_ID = 'email-error';
 const SUBMIT_ERROR_ID = 'login-submit-error';
-const LOGIN_STEP = {
-  EMAIL: 'email',
-  VERIFICATION_CODE: 'verificationCode',
-  PASSWORD: 'password',
-  CREATE_PASSWORD: 'createPassword',
-  SUCCESS: 'success',
-};
 const STEP_CONTENT = {
   [LOGIN_STEP.EMAIL]: {
     title: 'Bem-vindo de volta',
@@ -35,6 +28,10 @@ const STEP_CONTENT = {
   [LOGIN_STEP.PASSWORD]: {
     title: 'Digite sua senha',
     description: 'Use a senha vinculada à sua conta.',
+  },
+  [LOGIN_STEP.MFA_CODE]: {
+    title: 'Confirme sua identidade',
+    description: 'Informe o código de 6 dígitos enviado para seu e-mail.',
   },
   [LOGIN_STEP.VERIFICATION_CODE]: {
     title: 'Verifique seu e-mail',
@@ -52,83 +49,26 @@ const STEP_CONTENT = {
 
 export default function EmailLogin() {
   const { login } = useAuth();
-  const [step, setStep] = useState(LOGIN_STEP.EMAIL);
-  const [email, setEmail] = useState('');
-  const [submitError, setSubmitError] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const emailError = submitError ? getFieldError(submitError, 'email') : null;
+  const {
+    step,
+    email,
+    submitError,
+    setSubmitError,
+    isSubmitting,
+    emailError,
+    handleLoginResponse,
+    handleSubmit,
+    restartLogin,
+  } = useLoginFlow(login);
   const content = STEP_CONTENT[step];
 
-  async function handleLoginResponse(response, submittedEmail = email) {
-    const nextStep = response?.nextStep;
-
-    if (
-      nextStep === LOGIN_STEP.PASSWORD ||
-      nextStep === LOGIN_STEP.VERIFICATION_CODE ||
-      nextStep === LOGIN_STEP.CREATE_PASSWORD
-    ) {
-      setEmail(submittedEmail);
-      setStep(nextStep);
-      return;
-    }
-
-    if (nextStep) {
-      throw new Error(`Etapa de autenticação desconhecida: ${nextStep}`);
-    }
-
-    await login(response);
-    setStep(LOGIN_STEP.SUCCESS);
-  }
-
-  async function handleSubmit(event) {
-    event.preventDefault();
-
-    const formData = new FormData(event.currentTarget);
-    const submittedEmail = String(formData.get('email') ?? '').trim();
-
-    setSubmitError(null);
-    setIsSubmitting(true);
-
-    try {
-      const response = await api.post('/auth/login', {
-        email: submittedEmail,
-      });
-
-      await handleLoginResponse(response, submittedEmail);
-    } catch (error) {
-      if (!isAbortError(error)) {
-        setSubmitError(toApiError(error));
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  function restartLogin() {
-    setStep(LOGIN_STEP.EMAIL);
-    setEmail('');
-    setSubmitError(null);
-  }
-
   return (
-    <main className="relative grid min-h-svh place-items-center overflow-hidden bg-muted/40 px-4 py-10">
-      <div
-        className="absolute -left-24 -top-24 size-72 rounded-full bg-primary/10 blur-3xl"
-        aria-hidden="true"
-      />
-      <div
-        className="absolute -bottom-28 -right-20 size-80 rounded-full bg-primary/10 blur-3xl"
-        aria-hidden="true"
-      />
-
-      <Card className="relative w-full max-w-md gap-0 py-0 shadow-xl shadow-black/5">
+    <main className="grid min-h-svh place-items-center bg-muted/40 px-4 py-10">
+      <Card className="relative w-full max-w-md gap-0 py-0">
         <CardHeader className="gap-0 px-6 pb-0 pt-8 sm:px-8">
-          <div
-            className="mb-8 flex items-center gap-2.5 font-semibold"
-            aria-label="Flow CRM"
-          >
+          <div className="mb-8 flex items-center gap-2.5 font-semibold" aria-label="Flow CRM">
             <span
-              className="grid size-9 place-items-center rounded-lg bg-primary text-sm font-bold text-primary-foreground shadow-sm"
+              className="grid size-9 place-items-center rounded-md bg-primary text-sm font-bold text-primary-foreground"
               aria-hidden="true"
             >
               F
@@ -136,15 +76,10 @@ export default function EmailLogin() {
             <span>Flow CRM</span>
           </div>
 
-          <CardTitle
-            id="login-title"
-            className="text-2xl font-semibold tracking-tight sm:text-3xl"
-          >
+          <CardTitle id="login-title" className="text-2xl font-semibold tracking-tight sm:text-3xl">
             {content.title}
           </CardTitle>
-          <CardDescription className="mt-2 leading-relaxed">
-            {content.description}
-          </CardDescription>
+          <CardDescription className="mt-2 leading-relaxed">{content.description}</CardDescription>
         </CardHeader>
 
         {step === LOGIN_STEP.EMAIL && (
@@ -178,7 +113,7 @@ export default function EmailLogin() {
                 className="h-10 w-full"
                 type="submit"
                 disabled={isSubmitting}
-                aria-busy={isSubmitting}
+                loading={isSubmitting}
               >
                 {isSubmitting ? 'Enviando...' : 'Continuar'}
               </Button>
@@ -186,28 +121,20 @@ export default function EmailLogin() {
           </CardContent>
         )}
 
-        {step === LOGIN_STEP.PASSWORD && (
-          <Password email={email} onSuccess={handleLoginResponse} />
-        )}
+        {step === LOGIN_STEP.PASSWORD && <Password email={email} onSuccess={handleLoginResponse} />}
+
+        {step === LOGIN_STEP.MFA_CODE && <MfaCode onSuccess={handleLoginResponse} />}
 
         {step === LOGIN_STEP.VERIFICATION_CODE && (
-          <VerificationCode
-            email={email}
-            onSuccess={handleLoginResponse}
-          />
+          <VerificationCode email={email} onSuccess={handleLoginResponse} />
         )}
 
-        {step === LOGIN_STEP.CREATE_PASSWORD && (
-          <CreatePassword onSuccess={handleLoginResponse} />
-        )}
+        {step === LOGIN_STEP.CREATE_PASSWORD && <CreatePassword onSuccess={handleLoginResponse} />}
 
         {step === LOGIN_STEP.SUCCESS && (
           <CardContent className="px-6 py-10 sm:px-8">
             <div className="grid justify-items-center gap-3 text-center">
-              <CheckCircle2
-                className="size-12 text-primary"
-                aria-hidden="true"
-              />
+              <CheckCircle2 className="size-12 text-primary" aria-hidden="true" />
               <p className="font-medium">Login realizado com sucesso.</p>
             </div>
           </CardContent>

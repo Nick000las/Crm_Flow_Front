@@ -12,17 +12,13 @@ const SUBMIT_ERROR_ID = 'verification-code-submit-error';
 export function VerificationCode({ email, onSuccess }) {
   const [submitError, setSubmitError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const verificationCodeError = submitError
-    ? getFieldError(submitError, 'verificationCode')
-    : null;
+  const verificationCodeError = submitError ? getFieldError(submitError, 'verificationCode') : null;
 
   async function handleSubmit(event) {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
-    const verificationCode = String(
-      formData.get('verificationCode') ?? ''
-    ).trim();
+    const verificationCode = String(formData.get('verificationCode') ?? '').trim();
 
     setSubmitError(null);
     setIsSubmitting(true);
@@ -57,19 +53,14 @@ export function VerificationCode({ email, onSuccess }) {
             autoComplete="one-time-code"
             pattern="[0-9]*"
             placeholder="Digite o código enviado para seu e-mail"
-            aria-describedby={
-              verificationCodeError ? VERIFICATION_CODE_ERROR_ID : undefined
-            }
+            aria-describedby={verificationCodeError ? VERIFICATION_CODE_ERROR_ID : undefined}
             aria-invalid={Boolean(verificationCodeError)}
             disabled={isSubmitting}
             onChange={() => setSubmitError(null)}
             required
           />
           {verificationCodeError && (
-            <p
-              className="text-sm text-destructive"
-              id={VERIFICATION_CODE_ERROR_ID}
-            >
+            <p className="text-sm text-destructive" id={VERIFICATION_CODE_ERROR_ID}>
               {verificationCodeError}
             </p>
           )}
@@ -81,7 +72,7 @@ export function VerificationCode({ email, onSuccess }) {
           className="h-10 w-full"
           type="submit"
           disabled={isSubmitting}
-          aria-busy={isSubmitting}
+          loading={isSubmitting}
         >
           {isSubmitting ? 'Enviando...' : 'Enviar'}
         </Button>
