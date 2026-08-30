@@ -10,7 +10,14 @@ import {
   sugestoesDoCampo,
 } from './opcoes.js';
 
-const opcao = (key, label, extra = {}) => ({ key, label, color: null, category: null, ativo: true, ...extra });
+const opcao = (key, label, extra = {}) => ({
+  key,
+  label,
+  color: null,
+  category: null,
+  ativo: true,
+  ...extra,
+});
 
 const status = {
   chave: 'status',
@@ -64,7 +71,10 @@ describe('seletor e filtro', () => {
   });
 
   test('a inativa que o lead já tem continua no seletor, marcada', () => {
-    assert.deepEqual(opcoesDoSeletor(status, 'frio').at(-1), { valor: 'frio', rotulo: 'Frio (inativa)' });
+    assert.deepEqual(opcoesDoSeletor(status, 'frio').at(-1), {
+      valor: 'frio',
+      rotulo: 'Frio (inativa)',
+    });
     assert.equal(opcoesDoSeletor(status, 'novo').length, 2);
   });
 

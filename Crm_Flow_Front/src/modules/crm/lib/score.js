@@ -51,7 +51,9 @@ const INTEIRO = /^-?\d+$/;
 /** Texto → inteiro; '' → `null` (sem limite); inválido → `NaN`. */
 function lerInteiro(texto) {
   const limpo = String(texto ?? '').trim();
-  if (limpo === '') return null;
+  if (limpo === '') {
+    return null;
+  }
   return INTEIRO.test(limpo) ? Number(limpo) : Number.NaN;
 }
 
@@ -67,13 +69,19 @@ const paraTexto = (numero) => (numero === null || numero === undefined ? '' : St
  * @returns {FaixaScore | null}
  */
 export function faixaDoScore(faixas, score) {
-  if (!faixas || score === null || score === undefined || score === '') return null;
+  if (!faixas || score === null || score === undefined || score === '') {
+    return null;
+  }
   const valor = Number(score);
-  if (!Number.isFinite(valor)) return null;
+  if (!Number.isFinite(valor)) {
+    return null;
+  }
 
   return (
     faixas.find(
-      (faixa) => (faixa.minimo === null || valor >= faixa.minimo) && (faixa.maximo === null || valor <= faixa.maximo),
+      (faixa) =>
+        (faixa.minimo === null || valor >= faixa.minimo) &&
+        (faixa.maximo === null || valor <= faixa.maximo),
     ) ?? null
   );
 }
@@ -81,7 +89,9 @@ export function faixaDoScore(faixas, score) {
 /** "+20", "-10", "0" — os pontos de uma regra com sinal. */
 export function textoDosPontos(pontos) {
   const numero = lerInteiro(pontos);
-  if (numero === null || Number.isNaN(numero)) return String(pontos ?? '');
+  if (numero === null || Number.isNaN(numero)) {
+    return String(pontos ?? '');
+  }
   return numero > 0 ? `+${numero}` : String(numero);
 }
 
@@ -131,9 +141,13 @@ export function novaFaixa(chaveLocal) {
  */
 export function validarRegraScore(regra, campos) {
   const erros = {};
-  if (!regra.nome.trim()) erros.nome = MENSAGENS_SCORE.NOME;
+  if (!regra.nome.trim()) {
+    erros.nome = MENSAGENS_SCORE.NOME;
+  }
   const pontos = lerInteiro(regra.pontos);
-  if (pontos === null || Number.isNaN(pontos) || Math.abs(pontos) > SCORE.PONTOS_MAX) erros.pontos = MENSAGENS_SCORE.PONTOS;
+  if (pontos === null || Number.isNaN(pontos) || Math.abs(pontos) > SCORE.PONTOS_MAX) {
+    erros.pontos = MENSAGENS_SCORE.PONTOS;
+  }
 
   return { ...erros, ...validarCondicoes(regra.condicoes, campos, SCORE.MAX_CONDICOES) };
 }
@@ -141,22 +155,34 @@ export function validarRegraScore(regra, campos) {
 /** @param {FaixaNoForm} faixa */
 function validarFaixa(faixa) {
   const erros = {};
-  if (!faixa.rotulo.trim()) erros.rotulo = MENSAGENS_SCORE.ROTULO;
+  if (!faixa.rotulo.trim()) {
+    erros.rotulo = MENSAGENS_SCORE.ROTULO;
+  }
   const minimo = lerInteiro(faixa.minimo);
   const maximo = lerInteiro(faixa.maximo);
-  if (Number.isNaN(minimo)) erros.minimo = MENSAGENS_SCORE.LIMITE;
-  if (Number.isNaN(maximo)) erros.maximo = MENSAGENS_SCORE.LIMITE;
+  if (Number.isNaN(minimo)) {
+    erros.minimo = MENSAGENS_SCORE.LIMITE;
+  }
+  if (Number.isNaN(maximo)) {
+    erros.maximo = MENSAGENS_SCORE.LIMITE;
+  }
   if (!erros.minimo && !erros.maximo && minimo !== null && maximo !== null && minimo > maximo) {
     erros.item = MENSAGENS_SCORE.MINIMO_MAIOR;
   }
-  if (!corValida(faixa.cor)) erros.cor = MENSAGENS_SCORE.COR;
+  if (!corValida(faixa.cor)) {
+    erros.cor = MENSAGENS_SCORE.COR;
+  }
   return erros;
 }
 
 /** Sobreposição entre faixas válidas (o mesmo critério do back). */
 function sobreposicao(faixas) {
   const ordenadas = faixas
-    .map((faixa) => ({ rotulo: faixa.rotulo.trim(), minimo: lerInteiro(faixa.minimo), maximo: lerInteiro(faixa.maximo) }))
+    .map((faixa) => ({
+      rotulo: faixa.rotulo.trim(),
+      minimo: lerInteiro(faixa.minimo),
+      maximo: lerInteiro(faixa.maximo),
+    }))
     .sort((a, b) => (a.minimo ?? -Infinity) - (b.minimo ?? -Infinity));
 
   for (let indice = 1; indice < ordenadas.length; indice++) {
@@ -183,22 +209,39 @@ export function scoreParaEnvio(valores, campos) {
 
   for (const regra of valores.regras) {
     const daRegra = validarRegraScore(regra, campos);
-    if (Object.keys(daRegra).length > 0) erros.regras[regra.chaveLocal] = daRegra;
+    if (Object.keys(daRegra).length > 0) {
+      erros.regras[regra.chaveLocal] = daRegra;
+    }
   }
   for (const faixa of valores.faixas) {
     const daFaixa = validarFaixa(faixa);
-    if (Object.keys(daFaixa).length > 0) erros.faixas[faixa.chaveLocal] = daFaixa;
+    if (Object.keys(daFaixa).length > 0) {
+      erros.faixas[faixa.chaveLocal] = daFaixa;
+    }
   }
-  if (valores.regras.length > SCORE.MAX_REGRAS) erros.geral.push(MENSAGENS_SCORE.MAX_REGRAS);
-  if (valores.faixas.length === 0) erros.geral.push(MENSAGENS_SCORE.SEM_FAIXA);
-  if (valores.faixas.length > SCORE.MAX_FAIXAS) erros.geral.push(MENSAGENS_SCORE.MAX_FAIXAS);
+  if (valores.regras.length > SCORE.MAX_REGRAS) {
+    erros.geral.push(MENSAGENS_SCORE.MAX_REGRAS);
+  }
+  if (valores.faixas.length === 0) {
+    erros.geral.push(MENSAGENS_SCORE.SEM_FAIXA);
+  }
+  if (valores.faixas.length > SCORE.MAX_FAIXAS) {
+    erros.geral.push(MENSAGENS_SCORE.MAX_FAIXAS);
+  }
   if (Object.keys(erros.faixas).length === 0) {
     const sobrepostas = sobreposicao(valores.faixas);
-    if (sobrepostas) erros.geral.push(sobrepostas);
+    if (sobrepostas) {
+      erros.geral.push(sobrepostas);
+    }
   }
 
-  const temErro = erros.geral.length > 0 || Object.keys(erros.regras).length > 0 || Object.keys(erros.faixas).length > 0;
-  if (temErro) return { erros };
+  const temErro =
+    erros.geral.length > 0 ||
+    Object.keys(erros.regras).length > 0 ||
+    Object.keys(erros.faixas).length > 0;
+  if (temErro) {
+    return { erros };
+  }
 
   return {
     corpo: {
@@ -253,7 +296,10 @@ export function chaveDaConfig({ regras, faixas }) {
 }
 
 const numeroFormatter = new Intl.NumberFormat('pt-BR');
-const instanteFormatter = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+const instanteFormatter = new Intl.DateTimeFormat('pt-BR', {
+  dateStyle: 'short',
+  timeStyle: 'short',
+});
 
 /**
  * "Recalculando… 1.500 de 3.000 leads" ou "Último recálculo: 27/10/2026, 14:02".
@@ -262,13 +308,19 @@ const instanteFormatter = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short',
  * @returns {string | null}
  */
 export function textoDoRecalculo(recalculo) {
-  if (!recalculo) return null;
+  if (!recalculo) {
+    return null;
+  }
   if (recalculo.emAndamento) {
     return `Recalculando… ${numeroFormatter.format(recalculo.processados)} de ${numeroFormatter.format(recalculo.total)} leads`;
   }
-  if (!recalculo.concluidoEm) return null;
+  if (!recalculo.concluidoEm) {
+    return null;
+  }
   const data = new Date(recalculo.concluidoEm);
-  return Number.isNaN(data.getTime()) ? null : `Último recálculo: ${instanteFormatter.format(data)}`;
+  return Number.isNaN(data.getTime())
+    ? null
+    : `Último recálculo: ${instanteFormatter.format(data)}`;
 }
 
 /**
@@ -279,7 +331,9 @@ export function textoDoRecalculo(recalculo) {
  * @param {boolean} comScore
  */
 export function filtroComScore(filtro, comScore) {
-  if (comScore || !filtro.faixaScore) return filtro;
+  if (comScore || !filtro.faixaScore) {
+    return filtro;
+  }
 
   return Object.fromEntries(Object.entries(filtro).filter(([chave]) => chave !== 'faixaScore'));
 }

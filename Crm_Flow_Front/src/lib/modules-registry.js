@@ -31,6 +31,21 @@ import { paginaVisivel, podeVer } from './acesso';
 /** @type {ModuleEntry[]} */
 export const MODULES = [
   {
+    key: 'kanban',
+    label: 'Kanban',
+    icon: KanbanSquare,
+    path: '/kanban',
+    pages: [
+      { key: 'workspace', label: 'Quadros disponíveis', path: '/kanban' },
+      {
+        key: 'boards',
+        label: 'Gerenciar quadros',
+        path: '/kanban/quadros',
+        roles: ['DONO', 'MASTER'],
+      },
+    ],
+  },
+  {
     key: 'dashboard',
     label: 'Dashboard',
     icon: LayoutDashboard,
@@ -105,8 +120,7 @@ export function modulosVisiveis(user) {
  */
 export function isPageActive(page, pathname) {
   return (
-    pathname === page.path ||
-    (page.ativoEm ?? []).some((prefixo) => pathname.startsWith(prefixo))
+    pathname === page.path || (page.ativoEm ?? []).some((prefixo) => pathname.startsWith(prefixo))
   );
 }
 

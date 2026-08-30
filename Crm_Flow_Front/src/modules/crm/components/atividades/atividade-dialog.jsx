@@ -19,7 +19,12 @@ import { semChave } from '@/lib/objetos';
 import { getFieldError, isAccessError } from '@/services/api';
 import { LIMITES_ATIVIDADE } from '../../constants';
 import { useCriarAtividade, useEditarAtividade } from '../../hooks/use-atividades';
-import { opcoesDeTipo, payloadDaAtividade, validarAtividade, valoresDaAtividade } from '../../lib/atividades';
+import {
+  opcoesDeTipo,
+  payloadDaAtividade,
+  validarAtividade,
+  valoresDaAtividade,
+} from '../../lib/atividades';
 import { CampoForm } from '../campo-form';
 import { SelectSimples } from '../select-simples';
 
@@ -35,13 +40,17 @@ function FormAtividade({ leadId, atividade, tipos, onSalvo }) {
   const editar = useEditarAtividade(leadId);
   const mutacao = editando ? editar : criar;
 
-  const erroDe = (campo) => errosCliente[campo] ?? (mutacao.error ? getFieldError(mutacao.error, campo) : null);
-  const erroSemCampo = mutacao.error && !CAMPOS_DO_SERVIDOR.some((campo) => getFieldError(mutacao.error, campo));
+  const erroDe = (campo) =>
+    errosCliente[campo] ?? (mutacao.error ? getFieldError(mutacao.error, campo) : null);
+  const erroSemCampo =
+    mutacao.error && !CAMPOS_DO_SERVIDOR.some((campo) => getFieldError(mutacao.error, campo));
 
   function alterar(campo, valor) {
     setValores((atuais) => ({ ...atuais, [campo]: valor }));
     setErrosCliente((atuais) => semChave(atuais, campo));
-    if (mutacao.error) mutacao.reset();
+    if (mutacao.error) {
+      mutacao.reset();
+    }
   }
 
   function handleSubmit(event) {
@@ -58,10 +67,15 @@ function FormAtividade({ leadId, atividade, tipos, onSalvo }) {
       return;
     }
     if (editando) {
-      editar.mutate({ id: atividade.id, parcial: corpo }, { onSuccess: () => onSalvo('Atividade atualizada.') });
+      editar.mutate(
+        { id: atividade.id, parcial: corpo },
+        { onSuccess: () => onSalvo('Atividade atualizada.') },
+      );
       return;
     }
-    const aviso = corpo.concluida ? 'Atividade registrada como concluída.' : 'Atividade registrada.';
+    const aviso = corpo.concluida
+      ? 'Atividade registrada como concluída.'
+      : 'Atividade registrada.';
     criar.mutate(corpo, { onSuccess: () => onSalvo(aviso) });
   }
 
@@ -111,7 +125,9 @@ function FormAtividade({ leadId, atividade, tipos, onSalvo }) {
             id="atividade-ja-aconteceu"
             onCheckedChange={(ligado) => alterar('jaAconteceu', ligado)}
           />
-          <Label htmlFor="atividade-ja-aconteceu">Já aconteceu (registra como concluída agora)</Label>
+          <Label htmlFor="atividade-ja-aconteceu">
+            Já aconteceu (registra como concluída agora)
+          </Label>
         </div>
       )}
 
@@ -129,10 +145,14 @@ function FormAtividade({ leadId, atividade, tipos, onSalvo }) {
         </CampoForm>
       )}
 
-      {erroSemCampo && <ApiErrorAlert error={mutacao.error} id="atividade-erro" title="Não foi possível salvar" />}
+      {erroSemCampo && (
+        <ApiErrorAlert error={mutacao.error} id="atividade-erro" title="Não foi possível salvar" />
+      )}
 
       <DialogFooter>
-        <DialogClose render={<Button disabled={mutacao.isPending} type="button" variant="outline" />}>
+        <DialogClose
+          render={<Button disabled={mutacao.isPending} type="button" variant="outline" />}
+        >
           Cancelar
         </DialogClose>
         <Button aria-busy={mutacao.isPending} disabled={mutacao.isPending} type="submit">
@@ -157,19 +177,33 @@ function FormAtividade({ leadId, atividade, tipos, onSalvo }) {
  *   onSalvo: (aviso: string | null) => void,
  * }} props `onSalvo(null)` = nada mudou
  */
-export function AtividadeDialog({ leadId, open, onOpenChange, atividade, tipos, erroDosTipos, onSalvo }) {
+export function AtividadeDialog({
+  leadId,
+  open,
+  onOpenChange,
+  atividade,
+  tipos,
+  erroDosTipos,
+  onSalvo,
+}) {
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent className="rounded-none sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{atividade ? 'Editar atividade' : 'Registrar atividade'}</DialogTitle>
-          <DialogDescription>Ligação, reunião, tarefa: o que foi ou vai ser feito com este lead.</DialogDescription>
+          <DialogDescription>
+            Ligação, reunião, tarefa: o que foi ou vai ser feito com este lead.
+          </DialogDescription>
         </DialogHeader>
         {open &&
           (isAccessError(erroDosTipos) ? (
             <AcessoIndisponivel error={erroDosTipos} />
           ) : erroDosTipos ? (
-            <ApiErrorAlert error={erroDosTipos} id="atividade-tipos-erro" title="Não foi possível carregar os tipos" />
+            <ApiErrorAlert
+              error={erroDosTipos}
+              id="atividade-tipos-erro"
+              title="Não foi possível carregar os tipos"
+            />
           ) : (
             <FormAtividade
               atividade={atividade}

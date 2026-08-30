@@ -14,20 +14,16 @@ const SUBMIT_ERROR_ID = 'mfa-code-submit-error';
  * emitido por `/auth/login/password` já carrega o contexto do usuário, e o
  * cliente HTTP envia cookies por padrão (`credentials: 'include'`).
  */
-export function MfaCode({ onSuccess }) {
+export function MfaCode({ onSuccess, sessionScope = 'tenant' }) {
   const [submitError, setSubmitError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const mfaCodeError = submitError
-    ? getFieldError(submitError, 'verificationCode')
-    : null;
+  const mfaCodeError = submitError ? getFieldError(submitError, 'verificationCode') : null;
 
   async function handleSubmit(event) {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
-    const verificationCode = String(
-      formData.get('verificationCode') ?? '',
-    ).trim();
+    const verificationCode = String(formData.get('verificationCode') ?? '').trim();
 
     setSubmitError(null);
     setIsSubmitting(true);
@@ -35,6 +31,7 @@ export function MfaCode({ onSuccess }) {
     try {
       const response = await api.post('/auth/mfa/verify', {
         verificationCode,
+        scope: sessionScope,
       });
 
       // 2º argumento é `submittedEmail` — o passo de MFA não conhece o e-mail,
@@ -86,7 +83,7 @@ export function MfaCode({ onSuccess }) {
           className="h-10 w-full"
           type="submit"
           disabled={isSubmitting}
-          aria-busy={isSubmitting}
+          loading={isSubmitting}
         >
           {isSubmitting ? 'Verificando...' : 'Verificar'}
         </Button>

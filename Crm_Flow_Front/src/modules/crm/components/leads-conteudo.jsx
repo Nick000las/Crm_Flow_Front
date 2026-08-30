@@ -18,7 +18,10 @@ const SEM_FILTRO = Object.freeze({ busca: '', filtro: FILTRO_VAZIO, pagina: 1 })
  */
 function FiltroComCampoOculto({ onTirar }) {
   return (
-    <div className="flex flex-wrap items-center gap-3 border border-border px-4 py-3 text-sm" role="alert">
+    <div
+      className="flex flex-wrap items-center gap-3 border border-border px-4 py-3 text-sm"
+      role="alert"
+    >
       <EyeOff aria-hidden="true" className="size-4 text-muted-foreground" />
       <p className="flex-1">Este filtro usa um campo que você não pode ver.</p>
       <Button onClick={onTirar} size="sm" variant="outline">
@@ -82,20 +85,30 @@ export function LeadsConteudo({
   if (erro && ocultosNoFiltro.length > 0) {
     return (
       <FiltroComCampoOculto
-        onTirar={() => atualizar({ filtro: filtroSemChaves(estado.filtro, ocultosNoFiltro), pagina: 1 })}
+        onTirar={() =>
+          atualizar({ filtro: filtroSemChaves(estado.filtro, ocultosNoFiltro), pagina: 1 })
+        }
       />
     );
   }
-  if (erro) return <ApiErrorAlert error={erro} id={ERRO_ID} />;
-  if (carregando) return <LeadsTableSkeleton colunas={colunas} identificador={identificador} />;
+  if (erro) {
+    return <ApiErrorAlert error={erro} id={ERRO_ID} />;
+  }
+  if (carregando) {
+    return <LeadsTableSkeleton colunas={colunas} identificador={identificador} />;
+  }
 
   const { itens, total } = leadsQuery.data;
 
   if (total === 0) {
     const consultaRestrita = estado.busca || contarFiltros(estado.filtro) > 0;
 
-    if (consultaRestrita) return <LeadsNaoEncontrados onLimpar={() => atualizar(SEM_FILTRO)} />;
-    if (situacao !== SITUACOES_LEAD.ATIVOS) return <SituacaoVazia situacao={situacao} />;
+    if (consultaRestrita) {
+      return <LeadsNaoEncontrados onLimpar={() => atualizar(SEM_FILTRO)} />;
+    }
+    if (situacao !== SITUACOES_LEAD.ATIVOS) {
+      return <SituacaoVazia situacao={situacao} />;
+    }
     return <LeadsVazio acaoNovo={botaoNovo} podeImportar={podeImportar} />;
   }
 
@@ -120,7 +133,12 @@ export function LeadsConteudo({
         onMesclar={onMesclar}
         selecao={selecao}
       />
-      <Paginacao onChange={atualizar} pagina={estado.pagina} tamanho={estado.tamanho} total={total} />
+      <Paginacao
+        onChange={atualizar}
+        pagina={estado.pagina}
+        tamanho={estado.tamanho}
+        total={total}
+      />
     </>
   );
 }

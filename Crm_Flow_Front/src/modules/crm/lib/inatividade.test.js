@@ -15,8 +15,24 @@ const AGORA = new Date('2026-10-18T12:00:00.000Z');
 
 const lista = [
   { id: '1', key: 'novo', label: 'Novo', color: null, category: 'aberto', ativo: true, dias: 1 },
-  { id: '2', key: 'proposta', label: 'Proposta', color: null, category: 'aberto', ativo: true, dias: null },
-  { id: '3', key: 'ganho', label: 'Ganho', color: null, category: 'ganho', ativo: true, dias: null },
+  {
+    id: '2',
+    key: 'proposta',
+    label: 'Proposta',
+    color: null,
+    category: 'aberto',
+    ativo: true,
+    dias: null,
+  },
+  {
+    id: '3',
+    key: 'ganho',
+    label: 'Ganho',
+    color: null,
+    category: 'ganho',
+    ativo: true,
+    dias: null,
+  },
 ];
 
 test('filtroDaBusca: sem a flag, esfriando sai; com a flag, fica', () => {
@@ -58,8 +74,14 @@ test('valores do form a partir da lista', () => {
 
 test('ligar sem dias sugere o padrão; desligar guarda o digitado', () => {
   assert.deepEqual(alternarStatus({ ligado: false, dias: '' }, true), { ligado: true, dias: '7' });
-  assert.deepEqual(alternarStatus({ ligado: false, dias: '12' }, true), { ligado: true, dias: '12' });
-  assert.deepEqual(alternarStatus({ ligado: true, dias: '12' }, false), { ligado: false, dias: '12' });
+  assert.deepEqual(alternarStatus({ ligado: false, dias: '12' }, true), {
+    ligado: true,
+    dias: '12',
+  });
+  assert.deepEqual(alternarStatus({ ligado: true, dias: '12' }, false), {
+    ligado: false,
+    dias: '12',
+  });
 });
 
 test('errosLocais: inteiro de 1 a 365 só nos ligados', () => {

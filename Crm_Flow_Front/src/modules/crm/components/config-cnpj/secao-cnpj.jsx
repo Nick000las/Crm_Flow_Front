@@ -21,14 +21,18 @@ const OPCOES_MODO = Object.freeze([
 ]);
 
 const EFEITO_DO_MODO = Object.freeze({
-  manual: 'Quem cadastra clica em "Buscar dados na Receita" ao lado do CNPJ e revisa antes de salvar.',
-  automatico: 'Ao salvar um lead com CNPJ, o CRM consulta a Receita em segundo plano e preenche os campos mapeados.',
+  manual:
+    'Quem cadastra clica em "Buscar dados na Receita" ao lado do CNPJ e revisa antes de salvar.',
+  automatico:
+    'Ao salvar um lead com CNPJ, o CRM consulta a Receita em segundo plano e preenche os campos mapeados.',
 });
 
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">Carregando configuração…</span>
+      <span className="sr-only" role="status">
+        Carregando configuração…
+      </span>
       {Array.from({ length: 5 }, (_, indice) => (
         <Skeleton className="h-12 rounded-none" key={indice} />
       ))}
@@ -48,16 +52,21 @@ function FormCnpj({ config, campos, podeEditar, onSalvo }) {
   const ocupado = salvar.isPending || !podeEditar;
   // Erro de destino vai para a linha do dado; o resto, para o alerta.
   const temErroDeLinha =
-    salvar.error && Object.keys(salvar.error.fields ?? {}).some((campo) => campo.startsWith(PREFIXO_ERRO));
+    salvar.error &&
+    Object.keys(salvar.error.fields ?? {}).some((campo) => campo.startsWith(PREFIXO_ERRO));
 
   function alterar(parcial) {
     setValores((atuais) => ({ ...atuais, ...parcial }));
-    if (salvar.error) salvar.reset();
+    if (salvar.error) {
+      salvar.reset();
+    }
   }
 
   function handleSubmit(event) {
     event.preventDefault();
-    if (mudou) salvar.mutate(configParaEnvio(valores), { onSuccess: () => onSalvo('Configuração salva.') });
+    if (mudou) {
+      salvar.mutate(configParaEnvio(valores), { onSuccess: () => onSalvo('Configuração salva.') });
+    }
   }
 
   return (
@@ -108,8 +117,13 @@ function FormCnpj({ config, campos, podeEditar, onSalvo }) {
           {config.camposReceita.map((dado) => {
             const id = `cnpj-mapa-${dado.chave}`;
             const erroId = `${id}-erro`;
-            const erro = salvar.error ? getFieldError(salvar.error, `${PREFIXO_ERRO}${dado.chave}`) : null;
-            const opcoes = camposCompativeis(dado, campos).map((campo) => ({ valor: campo.id, rotulo: campo.label }));
+            const erro = salvar.error
+              ? getFieldError(salvar.error, `${PREFIXO_ERRO}${dado.chave}`)
+              : null;
+            const opcoes = camposCompativeis(dado, campos).map((campo) => ({
+              valor: campo.id,
+              rotulo: campo.label,
+            }));
 
             return (
               <li
@@ -124,7 +138,9 @@ function FormCnpj({ config, campos, podeEditar, onSalvo }) {
                   aria-invalid={erro ? true : undefined}
                   disabled={ocupado || !valores.ativo}
                   id={id}
-                  onChange={(idDoCampo) => alterar({ mapeamento: { ...valores.mapeamento, [dado.chave]: idDoCampo } })}
+                  onChange={(idDoCampo) =>
+                    alterar({ mapeamento: { ...valores.mapeamento, [dado.chave]: idDoCampo } })
+                  }
                   opcoes={opcoes}
                   vazio="Não preencher"
                   value={valores.mapeamento[dado.chave] ?? ''}
@@ -140,7 +156,9 @@ function FormCnpj({ config, campos, podeEditar, onSalvo }) {
         </ul>
       </fieldset>
 
-      {!temErroDeLinha && <ApiErrorAlert error={salvar.error} id="cnpj-erro" title="Não foi possível salvar" />}
+      {!temErroDeLinha && (
+        <ApiErrorAlert error={salvar.error} id="cnpj-erro" title="Não foi possível salvar" />
+      )}
 
       {podeEditar && (
         <div className="flex flex-wrap gap-2 border-t border-border pt-4">
@@ -177,9 +195,15 @@ export function SecaoCnpj() {
   const [aviso, setAviso] = useState(null);
   const erro = configQuery.error ?? camposQuery.error;
 
-  if (isAccessError(erro)) return <AcessoIndisponivel error={erro} />;
-  if (erro) return <ApiErrorAlert error={erro} id="cnpj-carregar-erro" />;
-  if (configQuery.isPending || camposQuery.isPending) return <Carregando />;
+  if (isAccessError(erro)) {
+    return <AcessoIndisponivel error={erro} />;
+  }
+  if (erro) {
+    return <ApiErrorAlert error={erro} id="cnpj-carregar-erro" />;
+  }
+  if (configQuery.isPending || camposQuery.isPending) {
+    return <Carregando />;
+  }
 
   const config = configQuery.data;
 
@@ -187,8 +211,8 @@ export function SecaoCnpj() {
     <div className="grid gap-4">
       <div className="grid max-w-2xl gap-1 text-sm text-muted-foreground">
         <p>
-          Com o CNPJ do lead, o CRM busca razão social, endereço e outros dados públicos na Receita e preenche os
-          campos escolhidos abaixo.
+          Com o CNPJ do lead, o CRM busca razão social, endereço e outros dados públicos na Receita
+          e preenche os campos escolhidos abaixo.
         </p>
         {!config.configurado && <p>A empresa ainda usa a configuração padrão.</p>}
         {!podeEditar && <p>Só DONO e MASTER alteram o enriquecimento.</p>}

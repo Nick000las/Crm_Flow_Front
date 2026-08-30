@@ -20,7 +20,9 @@ const OPCOES_ACAO = Object.values(ACOES_DUPLICIDADE).map((valor) => ({
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">Carregando regras…</span>
+      <span className="sr-only" role="status">
+        Carregando regras…
+      </span>
       {Array.from({ length: 4 }, (_, indice) => (
         <Skeleton className="h-12 rounded-none" key={indice} />
       ))}
@@ -39,12 +41,16 @@ function FormRegras({ regras, podeEditar, onSalvo }) {
 
   function alterar(campo, parcial) {
     setValores((atuais) => ({ ...atuais, [campo]: { ...atuais[campo], ...parcial } }));
-    if (salvar.error) salvar.reset();
+    if (salvar.error) {
+      salvar.reset();
+    }
   }
 
   function handleSubmit(event) {
     event.preventDefault();
-    if (mudancas) salvar.mutate(mudancas, { onSuccess: () => onSalvo('Regras de duplicidade salvas.') });
+    if (mudancas) {
+      salvar.mutate(mudancas, { onSuccess: () => onSalvo('Regras de duplicidade salvas.') });
+    }
   }
 
   return (
@@ -84,11 +90,19 @@ function FormRegras({ regras, podeEditar, onSalvo }) {
         })}
       </ul>
 
-      <ApiErrorAlert error={salvar.error} id="duplicidade-erro" title="Não foi possível salvar as regras" />
+      <ApiErrorAlert
+        error={salvar.error}
+        id="duplicidade-erro"
+        title="Não foi possível salvar as regras"
+      />
 
       {podeEditar && (
         <div className="flex flex-wrap gap-2 border-t border-border pt-4">
-          <Button aria-busy={salvar.isPending} disabled={!mudancas || salvar.isPending} type="submit">
+          <Button
+            aria-busy={salvar.isPending}
+            disabled={!mudancas || salvar.isPending}
+            type="submit"
+          >
             {salvar.isPending ? 'Salvando…' : 'Salvar regras'}
           </Button>
           <Button
@@ -119,9 +133,15 @@ export function SecaoDuplicidade() {
   const regrasQuery = useRegrasDuplicidade();
   const [aviso, setAviso] = useState(null);
 
-  if (isAccessError(regrasQuery.error)) return <AcessoIndisponivel error={regrasQuery.error} />;
-  if (regrasQuery.error) return <ApiErrorAlert error={regrasQuery.error} id="duplicidade-carregar-erro" />;
-  if (regrasQuery.isPending) return <Carregando />;
+  if (isAccessError(regrasQuery.error)) {
+    return <AcessoIndisponivel error={regrasQuery.error} />;
+  }
+  if (regrasQuery.error) {
+    return <ApiErrorAlert error={regrasQuery.error} id="duplicidade-carregar-erro" />;
+  }
+  if (regrasQuery.isPending) {
+    return <Carregando />;
+  }
 
   const { regras, configurado } = regrasQuery.data;
 
@@ -129,8 +149,9 @@ export function SecaoDuplicidade() {
     <div className="grid gap-4">
       <div className="grid max-w-2xl gap-1 text-sm text-muted-foreground">
         <p>
-          Ao criar, editar ou importar um lead, o CRM procura outro com o mesmo dado. <strong>Avisar</strong> mostra
-          os parecidos e deixa salvar mesmo assim; <strong>Bloquear</strong> não deixa salvar.
+          Ao criar, editar ou importar um lead, o CRM procura outro com o mesmo dado.{' '}
+          <strong>Avisar</strong> mostra os parecidos e deixa salvar mesmo assim;{' '}
+          <strong>Bloquear</strong> não deixa salvar.
         </p>
         {!configurado && <p>A empresa ainda usa as regras padrão do CRM.</p>}
         {!podeEditar && <p>Só DONO e MASTER alteram as regras.</p>}

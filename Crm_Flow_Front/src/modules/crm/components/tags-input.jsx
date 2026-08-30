@@ -24,7 +24,9 @@ export function TagsInput({ value, onChange, id, sugestoes = [], ...controle }) 
   function adicionar() {
     const tag = texto.trim();
     setTexto('');
-    if (tag && !value.includes(tag)) onChange([...value, tag]);
+    if (tag && !value.includes(tag)) {
+      onChange([...value, tag]);
+    }
   }
 
   function handleKeyDown(event) {

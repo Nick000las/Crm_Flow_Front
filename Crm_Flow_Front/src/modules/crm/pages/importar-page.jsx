@@ -46,12 +46,15 @@ export default function ImportarPage() {
   function handleConfirmar(acoes) {
     const { jobId } = estado.validacao;
 
-    confirmar.mutate({ jobId, acoes }, {
-      onSuccess: () => {
-        setSearchParams({ [PARAM_JOB]: jobId }, { replace: true });
-        dispatch({ tipo: 'confirmado' });
+    confirmar.mutate(
+      { jobId, acoes },
+      {
+        onSuccess: () => {
+          setSearchParams({ [PARAM_JOB]: jobId }, { replace: true });
+          dispatch({ tipo: 'confirmado' });
+        },
       },
-    });
+    );
   }
 
   return (
@@ -60,7 +63,9 @@ export default function ImportarPage() {
       <ImportacaoPassos atual={estado.passo} />
 
       {estado.passo === PASSO.ARQUIVO && (
-        <ImportacaoArquivo onLido={(arquivo, preview) => dispatch({ tipo: 'arquivoLido', arquivo, preview })} />
+        <ImportacaoArquivo
+          onLido={(arquivo, preview) => dispatch({ tipo: 'arquivoLido', arquivo, preview })}
+        />
       )}
 
       {estado.passo === PASSO.MAPEAR && (

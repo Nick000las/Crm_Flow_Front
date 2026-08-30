@@ -34,7 +34,9 @@ export function SalvarViewDialog({ open, onOpenChange, filtros }) {
   const erroNome = salvar.error ? getFieldError(salvar.error, 'nome') : null;
 
   function handleOpenChange(proximo) {
-    if (salvar.isPending) return;
+    if (salvar.isPending) {
+      return;
+    }
     if (!proximo) {
       setNome('');
       salvar.reset();
@@ -53,7 +55,9 @@ export function SalvarViewDialog({ open, onOpenChange, filtros }) {
         <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Salvar visão atual</DialogTitle>
-            <DialogDescription>A busca e os filtros atuais ficam salvos só para você.</DialogDescription>
+            <DialogDescription>
+              A busca e os filtros atuais ficam salvos só para você.
+            </DialogDescription>
           </DialogHeader>
 
           <CampoForm erro={erroNome} id={NOME_ID} label="Nome" obrigatorio>
@@ -64,7 +68,9 @@ export function SalvarViewDialog({ open, onOpenChange, filtros }) {
                 className="h-9 rounded-none"
                 onChange={(event) => {
                   setNome(event.target.value);
-                  if (salvar.error) salvar.reset();
+                  if (salvar.error) {
+                    salvar.reset();
+                  }
                 }}
                 value={nome}
               />
@@ -72,13 +78,21 @@ export function SalvarViewDialog({ open, onOpenChange, filtros }) {
           </CampoForm>
 
           {/* Erro sem campo (rede, 5xx) — o de nome já aparece inline. */}
-          {!erroNome && <ApiErrorAlert error={salvar.error} id={ERRO_ID} title="Não foi possível salvar" />}
+          {!erroNome && (
+            <ApiErrorAlert error={salvar.error} id={ERRO_ID} title="Não foi possível salvar" />
+          )}
 
           <DialogFooter>
-            <DialogClose render={<Button disabled={salvar.isPending} type="button" variant="outline" />}>
+            <DialogClose
+              render={<Button disabled={salvar.isPending} type="button" variant="outline" />}
+            >
               Cancelar
             </DialogClose>
-            <Button aria-busy={salvar.isPending} disabled={salvar.isPending || !nome.trim()} type="submit">
+            <Button
+              aria-busy={salvar.isPending}
+              disabled={salvar.isPending || !nome.trim()}
+              type="submit"
+            >
               {salvar.isPending ? 'Salvando…' : 'Salvar'}
             </Button>
           </DialogFooter>

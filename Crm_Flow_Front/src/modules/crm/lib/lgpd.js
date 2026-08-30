@@ -20,7 +20,8 @@ export function confirmacaoBate(digitado, esperado) {
   return String(digitado ?? '').trim() === esperado;
 }
 
-const plural = (quantidade, singular, plural_) => `${quantidade} ${quantidade === 1 ? singular : plural_}`;
+const plural = (quantidade, singular, plural_) =>
+  `${quantidade} ${quantidade === 1 ? singular : plural_}`;
 
 /**
  * "Lead anonimizado (2 leads, 3 atividades, 5 eventos)." — o resumo da resposta.
@@ -28,7 +29,9 @@ const plural = (quantidade, singular, plural_) => `${quantidade} ${quantidade ==
  * @param {{ leads: number, atividades: number, eventos: number } | null | undefined} resultado
  */
 export function resumoDaAnonimizacao(resultado) {
-  if (!resultado) return 'Lead anonimizado.';
+  if (!resultado) {
+    return 'Lead anonimizado.';
+  }
   const partes = [
     plural(resultado.leads, 'lead', 'leads'),
     plural(resultado.atividades, 'atividade', 'atividades'),
@@ -46,7 +49,9 @@ export function resumoDaAnonimizacao(resultado) {
  * @param {string} chaveBaseLegal
  */
 export function exigeLote(config, mapeamento, chaveBaseLegal) {
-  if (!config?.obrigatoria) return false;
+  if (!config?.obrigatoria) {
+    return false;
+  }
   return !Object.values(mapeamento).includes(chaveBaseLegal);
 }
 

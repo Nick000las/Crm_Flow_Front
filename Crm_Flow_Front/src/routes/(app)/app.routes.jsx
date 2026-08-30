@@ -7,12 +7,23 @@ import ImportarPage from '@/modules/crm/pages/importar-page';
 import LeadsPage from '@/modules/crm/pages/leads-page';
 import { ROTAS_CRM } from '@/modules/crm/rotas';
 import DashboardPage from '@/modules/dashboard/pages/dashboard-page';
+import KanbanLayout from '@/modules/kanban/pages/kanban-layout';
+import BoardsManagementRoute from '@/modules/kanban/pages/boards-management-route';
+import KanbanEntryPage from '@/modules/kanban/pages/kanban-entry-page';
 import { RequireRole } from '../require-role';
 
 /** Rotas autenticadas. O portão de acesso mora na rota-pai (AppLayout). */
 export const appRoutes = [
   { index: true, element: <Navigate to="dashboard" replace /> },
   { path: 'dashboard', element: <DashboardPage /> },
+  {
+    path: 'kanban',
+    element: <KanbanLayout />,
+    children: [
+      { index: true, element: <KanbanEntryPage /> },
+      { path: 'quadros', element: <BoardsManagementRoute /> },
+    ],
+  },
   {
     path: 'crm',
     children: [

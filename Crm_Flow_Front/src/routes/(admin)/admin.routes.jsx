@@ -1,4 +1,6 @@
 import { Navigate } from 'react-router-dom';
+import { LoadingState } from '@/components/loading-state';
+import { SessionRecovery } from '@/components/session-recovery';
 import { useAdminAuth } from '@/hooks/use-admin-auth';
 import AdminLoginPage from '@/modules/admin/pages/admin-login-page';
 import TenantDetailPage from '@/modules/admin/pages/tenant-detail-page';
@@ -12,12 +14,20 @@ import AdminLayout from './admin-layout';
  * É um hook, e não uma constante, porque o portão depende da sessão master.
  */
 export function useAdminRoutes() {
-  const { isAuthenticated } = useAdminAuth();
+  const { isAuthenticated, loading, sessionError, retrySession } = useAdminAuth();
+  const sessionPending = loading || sessionError;
+  const sessionLoading = loading ? (
+    <LoadingState label="Carregando sessão administrativa…" />
+  ) : (
+    <SessionRecovery error={sessionError} onRetry={retrySession} />
+  );
 
   return [
     {
       path: 'login',
-      element: isAuthenticated ? (
+      element: sessionPending ? (
+        sessionLoading
+      ) : isAuthenticated ? (
         <Navigate to="/admin" replace />
       ) : (
         <AdminLoginPage />
@@ -27,7 +37,9 @@ export function useAdminRoutes() {
       // Mesmo portão de `app-routes.jsx`: sem sessão master o elemento-pai
       // redireciona e os filhos nunca chegam a renderizar. O catch-all daqui
       // cobre qualquer rota desconhecida sob `/admin`.
-      element: isAuthenticated ? (
+      element: sessionPending ? (
+        sessionLoading
+      ) : isAuthenticated ? (
         <AdminLayout />
       ) : (
         <Navigate to="/admin/login" replace />

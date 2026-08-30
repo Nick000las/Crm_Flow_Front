@@ -1,5 +1,5 @@
-const FILENAME_STAR = /filename\*\s*=\s*([^']*)'[^']*'([^;]+)/i
-const FILENAME_PLAIN = /filename\s*=\s*(?:"([^"]*)"|([^;]+))/i
+const FILENAME_STAR = /filename\*\s*=\s*([^']*)'[^']*'([^;]+)/i;
+const FILENAME_PLAIN = /filename\s*=\s*(?:"([^"]*)"|([^;]+))/i;
 
 /**
  * Extrai o nome do arquivo de um cabeçalho `Content-Disposition`.
@@ -9,20 +9,22 @@ const FILENAME_PLAIN = /filename\s*=\s*(?:"([^"]*)"|([^;]+))/i
  * @returns {string | null}
  */
 export function parseFilename(header) {
-  if (!header) return null
+  if (!header) {
+    return null;
+  }
 
-  const star = FILENAME_STAR.exec(header)
+  const star = FILENAME_STAR.exec(header);
 
   if (star) {
     try {
-      return decodeURIComponent(star[2].trim())
+      return decodeURIComponent(star[2].trim());
     } catch {
       // cai para o `filename` simples
     }
   }
 
-  const plain = FILENAME_PLAIN.exec(header)
-  const name = (plain?.[1] ?? plain?.[2] ?? '').trim()
+  const plain = FILENAME_PLAIN.exec(header);
+  const name = (plain?.[1] ?? plain?.[2] ?? '').trim();
 
-  return name || null
+  return name || null;
 }

@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { MENSAGEM_LOTE, confirmacaoBate, exigeLote, problemaDoLote, resumoDaAnonimizacao, textoDeConfirmacao } from './lgpd.js';
+import {
+  MENSAGEM_LOTE,
+  confirmacaoBate,
+  exigeLote,
+  problemaDoLote,
+  resumoDaAnonimizacao,
+  textoDeConfirmacao,
+} from './lgpd.js';
 
 test('confirmação: o nome do lead, ou ANONIMIZAR sem nome', () => {
   assert.equal(textoDeConfirmacao({ nome: ' Ana Souza ' }), 'Ana Souza');

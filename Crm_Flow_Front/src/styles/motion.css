@@ -1,0 +1,126 @@
+:root {
+  --motion-duration-fast: 120ms;
+  --motion-duration-standard: 180ms;
+  --motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+}
+
+@keyframes surface-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes content-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes feedback-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :where(.kb-editor, .confirmation-dialog)[open] {
+    animation: surface-enter var(--motion-duration-standard) var(--motion-ease-standard);
+  }
+  :where(.kb-editor, .confirmation-dialog)::backdrop {
+    animation: feedback-enter var(--motion-duration-fast) ease-out;
+  }
+  :where([data-slot='dialog-content'], [data-slot='dialog-overlay']) {
+    animation-duration: var(--motion-duration-standard);
+    animation-timing-function: var(--motion-ease-standard);
+  }
+  :where([data-slot='button'], .kb-actions button, .kb-add, .kb-editor button, .kb-card-title) {
+    transition:
+      background-color var(--motion-duration-fast) ease-out,
+      color var(--motion-duration-fast) ease-out,
+      border-color var(--motion-duration-fast) ease-out,
+      opacity var(--motion-duration-fast) ease-out,
+      transform var(--motion-duration-fast) var(--motion-ease-standard);
+  }
+  :where(.kb-gallery-card, .kb-card) {
+    transition:
+      border-color var(--motion-duration-fast) ease-out,
+      box-shadow var(--motion-duration-fast) ease-out,
+      opacity var(--motion-duration-fast) ease-out,
+      transform var(--motion-duration-fast) var(--motion-ease-standard);
+  }
+  :where(.kb-card, .kb-comment) {
+    animation: content-enter var(--motion-duration-standard) var(--motion-ease-standard);
+  }
+  :where(.kb-label, [role='alert'], [role='status']) {
+    animation: feedback-enter var(--motion-duration-fast) ease-out;
+  }
+  .kb-gallery-open svg {
+    transition: transform var(--motion-duration-fast) var(--motion-ease-standard);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .kb-gallery-card:hover {
+      transform: translateY(-2px);
+    }
+    .kb-gallery-card:hover .kb-gallery-open svg {
+      transform: translateX(3px);
+    }
+  }
+}
+
+.kb-card:focus-within {
+  border-color: var(--primary);
+}
+.kb-card[data-dragging='true'] {
+  opacity: 0.5;
+  cursor: grabbing;
+}
+.kb-card[aria-busy='true'] {
+  border-color: var(--primary);
+}
+@media (hover: hover) and (pointer: fine) {
+  .kb-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 3px 10px #0000000d;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(
+    .page-transition,
+    .kb-editor,
+    .confirmation-dialog,
+    .kb-card,
+    .kb-gallery-card,
+    .kb-gallery-open svg,
+    .kb-comment,
+    .kb-label,
+    .kb-actions button,
+    .kb-add,
+    .kb-editor button,
+    [role='alert'],
+    [role='status'],
+    [data-slot='button'],
+    [data-slot='dialog-content'],
+    [data-slot='dialog-overlay'],
+    [data-slot='select-content'],
+    [data-slot='tooltip-content']
+  ) {
+    animation: none !important;
+    transition: none !important;
+  }
+  [data-slot='button'] {
+    transform: none !important;
+    translate: none !important;
+  }
+}

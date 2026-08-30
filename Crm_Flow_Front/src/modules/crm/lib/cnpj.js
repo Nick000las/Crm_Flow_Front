@@ -52,7 +52,15 @@ const FORMATO_DO_DADO = Object.freeze({
 
 /** Dado "endereço completo" e as partes que ele junta numa linha só. */
 const DADO_ENDERECO = 'endereco';
-const PARTES_DO_ENDERECO = Object.freeze(['logradouro', 'numero', 'complemento', 'bairro', 'municipio', 'uf', 'cep']);
+const PARTES_DO_ENDERECO = Object.freeze([
+  'logradouro',
+  'numero',
+  'complemento',
+  'bairro',
+  'municipio',
+  'uf',
+  'cep',
+]);
 
 /** As partes soltas da Receita viram uma linha ("Rua X, 10 - Centro, São Paulo/SP, 01311-902"). */
 function enderecoEmLinha(dados) {
@@ -79,17 +87,23 @@ function enderecoEmLinha(dados) {
  * @returns {{ chave: string, label: string, texto: string }[]}
  */
 export function dadosParaLeitura(dados, camposReceita, sugeridos = new Set()) {
-  if (!dados) return [];
+  if (!dados) {
+    return [];
+  }
 
   return camposReceita.flatMap(({ chave, label }) => {
-    if (sugeridos.has(chave) || PARTES_DO_ENDERECO.includes(chave)) return [];
+    if (sugeridos.has(chave) || PARTES_DO_ENDERECO.includes(chave)) {
+      return [];
+    }
     if (chave === DADO_ENDERECO) {
       const texto = enderecoEmLinha(dados);
       return texto ? [{ chave, label, texto }] : [];
     }
 
     const valor = dados[chave];
-    if (valor === undefined || valor === null || valor === '' || typeof valor === 'object') return [];
+    if (valor === undefined || valor === null || valor === '' || typeof valor === 'object') {
+      return [];
+    }
     const formatar = FORMATO_DO_DADO[chave];
     return [{ chave, label, texto: (formatar && formatar(valor)) || String(valor) }];
   });
@@ -120,7 +134,9 @@ export function situacaoDestacada(dados) {
  */
 export function itensDaSugestao(sugestao, campos, valores) {
   return sugestao.map((item) => {
-    const campo = campos.find((atual) => atual.chave === item.chave && atual.camada === item.camada);
+    const campo = campos.find(
+      (atual) => atual.chave === item.chave && atual.camada === item.camada,
+    );
     const id = idNoForm({ chave: item.chave, camada: item.camada });
     // Sem o campo no form, o `tipo` do destino (vem na sugestão) ainda formata o valor.
     const texto = textoDoValor(campo ?? { tipo: item.tipo }, item.valor) ?? String(item.valor);
@@ -170,7 +186,9 @@ export function itensDaSugestao(sugestao, campos, valores) {
 export function aplicarSugestoes(valores, itens, marcados) {
   const proximos = { ...valores };
   for (const item of itens) {
-    if (item.disponivel && marcados.has(item.id)) proximos[item.id] = item.valorDeForm;
+    if (item.disponivel && marcados.has(item.id)) {
+      proximos[item.id] = item.valorDeForm;
+    }
   }
   return proximos;
 }

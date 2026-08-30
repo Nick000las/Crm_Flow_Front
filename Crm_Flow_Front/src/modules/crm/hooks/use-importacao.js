@@ -47,7 +47,8 @@ export function useImportacao(jobId) {
     queryKey: crmKeys.importJob(jobId),
     queryFn: ({ signal }) => buscarImportacao(authApi, jobId, { signal }),
     enabled: Boolean(jobId),
-    refetchInterval: (atual) => (emProcessamento(atual.state.data?.status) ? INTERVALO_POLLING_MS : false),
+    refetchInterval: (atual) =>
+      emProcessamento(atual.state.data?.status) ? INTERVALO_POLLING_MS : false,
   });
   const status = query.data?.status;
 

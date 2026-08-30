@@ -9,7 +9,9 @@
  * @param {number} para
  */
 export function moverPara(itens, de, para) {
-  if (de === para || para < 0 || para >= itens.length) return itens;
+  if (de === para || para < 0 || para >= itens.length) {
+    return itens;
+  }
 
   const proximos = [...itens];
   const [movido] = proximos.splice(de, 1);

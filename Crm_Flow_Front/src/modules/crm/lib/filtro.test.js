@@ -50,7 +50,10 @@ describe('URL e contagem', () => {
     assert.deepEqual(lerFiltro('{quebrado'), FILTRO_VAZIO);
     assert.deepEqual(
       lerFiltro({
-        filtros: [{ chave: 'x', operador: 'hackear' }, { chave: 'email', operador: 'vazio', valor: 1 }],
+        filtros: [
+          { chave: 'x', operador: 'hackear' },
+          { chave: 'email', operador: 'vazio', valor: 1 },
+        ],
         valorMin: 'muito',
         criadoDe: 'ontem',
       }),
@@ -112,7 +115,14 @@ describe('linhas do construtor', () => {
 describe('filtroDoRascunho', () => {
   const rascunho = (linhas, fixos = {}) => ({
     linhas,
-    fixos: { usuarioResponsavelId: '', valorMin: '', valorMax: '', criadoDe: '', criadoAte: '', ...fixos },
+    fixos: {
+      usuarioResponsavelId: '',
+      valorMin: '',
+      valorMax: '',
+      criadoDe: '',
+      criadoAte: '',
+      ...fixos,
+    },
   });
 
   test('converte cada tipo para o contrato do back', () => {
@@ -192,19 +202,34 @@ describe('filtroDoRascunho', () => {
 describe('chips', () => {
   test('descreve cada operador de forma legível', () => {
     assert.equal(
-      descreverItem({ chave: 'status', operador: 'e_um_dos', valor: ['novo', 'ganho'] }, porChave('status')),
+      descreverItem(
+        { chave: 'status', operador: 'e_um_dos', valor: ['novo', 'ganho'] },
+        porChave('status'),
+      ),
       'Status é um de Novo, Ganho',
     );
     assert.equal(
-      descreverItem({ chave: 'renda', operador: 'entre', valor: { de: 1000, ate: 5000 } }, porChave('renda')),
+      descreverItem(
+        { chave: 'renda', operador: 'entre', valor: { de: 1000, ate: 5000 } },
+        porChave('renda'),
+      ),
       'Renda de 1.000 a 5.000',
     );
-    assert.equal(descreverItem({ chave: 'email', operador: 'vazio' }, porChave('email')), 'E-mail está vazio');
-    assert.equal(descreverItem({ chave: 'vip', operador: 'igual', valor: true }, porChave('vip')), 'VIP é Sim');
+    assert.equal(
+      descreverItem({ chave: 'email', operador: 'vazio' }, porChave('email')),
+      'E-mail está vazio',
+    );
+    assert.equal(
+      descreverItem({ chave: 'vip', operador: 'igual', valor: true }, porChave('vip')),
+      'VIP é Sim',
+    );
   });
 
   test('campo desligado ainda vira chip, pela chave', () => {
-    assert.equal(descreverItem({ chave: 'sumiu', operador: 'vazio' }, undefined), 'sumiu está vazio');
+    assert.equal(
+      descreverItem({ chave: 'sumiu', operador: 'vazio' }, undefined),
+      'sumiu está vazio',
+    );
   });
 
   test('cada chip remove só a si mesmo', () => {
@@ -218,18 +243,20 @@ describe('chips', () => {
     };
     const chips = chipsDoFiltro(filtro, campos, new Map([['u1', 'Ana']]));
 
-    assert.deepEqual(chips.map((chip) => chip.id), ['filtro-0', 'filtro-1', 'responsavel', 'valor']);
+    assert.deepEqual(
+      chips.map((chip) => chip.id),
+      ['filtro-0', 'filtro-1', 'responsavel', 'valor'],
+    );
     assert.equal(chips[2].texto, 'Responsável é Ana');
-    assert.deepEqual(chips[0].remover().filtros, [{ chave: 'vip', operador: 'igual', valor: true }]);
+    assert.deepEqual(chips[0].remover().filtros, [
+      { chave: 'vip', operador: 'igual', valor: true },
+    ]);
     assert.equal(chips[3].remover().valorMin, undefined);
     assert.equal(chips[3].remover().usuarioResponsavelId, 'u1');
   });
 
   test('chavesComErro lê fields de filtro do back', () => {
-    assert.deepEqual(
-      [...chavesComErro({ 'filtros.renda': ['x'], nome: ['y'] })],
-      ['renda'],
-    );
+    assert.deepEqual([...chavesComErro({ 'filtros.renda': ['x'], nome: ['y'] })], ['renda']);
   });
 });
 
@@ -252,13 +279,23 @@ describe('tipos do M2', () => {
   test('monetário é lido como número e descrito em BRL', () => {
     const { filtro } = filtroDoRascunho(
       {
-        linhas: [{ id: 'a', chave: 'ticket', operador: 'entre', valor: { de: '1.500,50', ate: '' } }],
-        fixos: { usuarioResponsavelId: '', valorMin: '', valorMax: '', criadoDe: '', criadoAte: '' },
+        linhas: [
+          { id: 'a', chave: 'ticket', operador: 'entre', valor: { de: '1.500,50', ate: '' } },
+        ],
+        fixos: {
+          usuarioResponsavelId: '',
+          valorMin: '',
+          valorMax: '',
+          criadoDe: '',
+          criadoAte: '',
+        },
       },
       [ticket],
     );
 
-    assert.deepEqual(filtro.filtros, [{ chave: 'ticket', operador: 'entre', valor: { de: 1500.5 } }]);
+    assert.deepEqual(filtro.filtros, [
+      { chave: 'ticket', operador: 'entre', valor: { de: 1500.5 } },
+    ]);
     assert.match(descreverItem(filtro.filtros[0], ticket), /^Ticket a partir de R\$\s1\.500,50$/);
   });
 });
@@ -306,7 +343,9 @@ describe('semResponsavel', () => {
 
   test('conta como o filtro de responsável e vira chip removível', () => {
     const filtro = lerFiltro({ filtros: [], esfriando: true, semResponsavel: true });
-    const chip = chipsDoFiltro(filtro, campos, new Map()).find((item) => item.id === 'sem-responsavel');
+    const chip = chipsDoFiltro(filtro, campos, new Map()).find(
+      (item) => item.id === 'sem-responsavel',
+    );
 
     assert.equal(contarFiltros(filtro), 2);
     assert.equal(paraCorpoDeBusca(filtro).semResponsavel, true);
@@ -322,7 +361,10 @@ describe('semResponsavel', () => {
     assert.deepEqual(filtroDoRascunho(rascunho, campos).filtro, filtro);
 
     const trocado = { ...rascunho, fixos: { ...rascunho.fixos, usuarioResponsavelId: 'u1' } };
-    assert.deepEqual(filtroDoRascunho(trocado, campos).filtro, { filtros: [], usuarioResponsavelId: 'u1' });
+    assert.deepEqual(filtroDoRascunho(trocado, campos).filtro, {
+      filtros: [],
+      usuarioResponsavelId: 'u1',
+    });
   });
 });
 
@@ -345,9 +387,15 @@ describe('tipos do M11 no filtro', () => {
       descreverItem({ chave: 'cnpj', operador: 'igual', valor: '12345678000190' }, cnpj),
       'CNPJ é 12.345.678/0001-90',
     );
-    assert.equal(descreverItem({ chave: 'dono', operador: 'e_um_dos', valor: ['u1'] }, dono, nomes), 'Dono é um de Bia');
     assert.equal(
-      descreverItem({ chave: 'viagem', operador: 'entre', valor: { de: '2026-02-01', ate: '2026-02-10' } }, viagem),
+      descreverItem({ chave: 'dono', operador: 'e_um_dos', valor: ['u1'] }, dono, nomes),
+      'Dono é um de Bia',
+    );
+    assert.equal(
+      descreverItem(
+        { chave: 'viagem', operador: 'entre', valor: { de: '2026-02-01', ate: '2026-02-10' } },
+        viagem,
+      ),
       'Viagem de 01/02/2026 a 10/02/2026',
     );
   });
@@ -355,7 +403,10 @@ describe('tipos do M11 no filtro', () => {
 
 test('filtro por campo oculto: acha a chave e tira do filtro e do rascunho', () => {
   const campos = [{ chave: 'status', label: 'Status', tipo: 'texto', camada: 1 }];
-  const fields = { 'filtros.renda': ['"renda" não é um campo ativo para filtro'], 'filtros.status': ['x'] };
+  const fields = {
+    'filtros.renda': ['"renda" não é um campo ativo para filtro'],
+    'filtros.status': ['x'],
+  };
   const filtro = {
     filtros: [
       { chave: 'status', operador: 'contem', valor: 'a' },
@@ -364,7 +415,9 @@ test('filtro por campo oculto: acha a chave e tira do filtro e do rascunho', () 
   };
 
   assert.deepEqual(chavesForaDosCampos(fields, campos), ['renda']);
-  assert.deepEqual(filtroSemChaves(filtro, ['renda']).filtros, [{ chave: 'status', operador: 'contem', valor: 'a' }]);
+  assert.deepEqual(filtroSemChaves(filtro, ['renda']).filtros, [
+    { chave: 'status', operador: 'contem', valor: 'a' },
+  ]);
   assert.deepEqual(
     rascunhoDoFiltro(filtro, campos).linhas.map((linha) => linha.chave),
     ['status'],

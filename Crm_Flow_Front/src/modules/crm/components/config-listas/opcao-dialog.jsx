@@ -20,7 +20,10 @@ import { CampoForm } from '../campo-form';
 import { SelectSimples } from '../select-simples';
 
 const CAMPOS_DO_SERVIDOR = ['label', 'color', 'category'];
-const OPCOES_CATEGORIA = Object.values(CATEGORIAS_STATUS).map((valor) => ({ valor, rotulo: ROTULOS_CATEGORIA[valor] }));
+const OPCOES_CATEGORIA = Object.values(CATEGORIAS_STATUS).map((valor) => ({
+  valor,
+  rotulo: ROTULOS_CATEGORIA[valor],
+}));
 // Valor do seletor de cor quando a opção não tem cor (ele não aceita vazio).
 const COR_INICIAL_DO_SELETOR = '#6b7280';
 
@@ -58,13 +61,17 @@ function FormOpcao({ tipo, opcao, onSalvo }) {
   const atualizar = useAtualizarOpcao();
   const mutacao = editando ? atualizar : criar;
 
-  const erroDe = (campo) => errosCliente[campo] ?? (mutacao.error ? getFieldError(mutacao.error, campo) : null);
-  const erroSemCampo = mutacao.error && !CAMPOS_DO_SERVIDOR.some((campo) => getFieldError(mutacao.error, campo));
+  const erroDe = (campo) =>
+    errosCliente[campo] ?? (mutacao.error ? getFieldError(mutacao.error, campo) : null);
+  const erroSemCampo =
+    mutacao.error && !CAMPOS_DO_SERVIDOR.some((campo) => getFieldError(mutacao.error, campo));
 
   function alterar(campo, valor) {
     setValores((atuais) => ({ ...atuais, [campo]: valor }));
     setErrosCliente((atuais) => semChave(atuais, campo));
-    if (mutacao.error) mutacao.reset();
+    if (mutacao.error) {
+      mutacao.reset();
+    }
   }
 
   function handleSubmit(event) {
@@ -80,8 +87,11 @@ function FormOpcao({ tipo, opcao, onSalvo }) {
       onSalvo(null);
       return;
     }
-    if (editando) atualizar.mutate({ tipo, id: opcao.id, parcial: corpo }, { onSuccess: onSalvo });
-    else criar.mutate({ tipo, corpo }, { onSuccess: onSalvo });
+    if (editando) {
+      atualizar.mutate({ tipo, id: opcao.id, parcial: corpo }, { onSuccess: onSalvo });
+    } else {
+      criar.mutate({ tipo, corpo }, { onSuccess: onSalvo });
+    }
   }
 
   return (
@@ -100,13 +110,19 @@ function FormOpcao({ tipo, opcao, onSalvo }) {
 
       {editando && (
         <p className="-mt-2 text-xs text-muted-foreground">
-          Chave <span className="font-mono text-foreground select-all">{opcao.key}</span> — é o que fica gravado
-          nos leads; não muda ao renomear.
+          Chave <span className="font-mono text-foreground select-all">{opcao.key}</span> — é o que
+          fica gravado nos leads; não muda ao renomear.
         </p>
       )}
 
       <CampoForm erro={erroDe('color')} id="opcao-cor" label="Cor">
-        {(controle) => <CampoCor controle={controle} onChange={(cor) => alterar('color', cor)} value={valores.color} />}
+        {(controle) => (
+          <CampoCor
+            controle={controle}
+            onChange={(cor) => alterar('color', cor)}
+            value={valores.color}
+          />
+        )}
       </CampoForm>
 
       {temCategoria(tipo) && (
@@ -122,10 +138,14 @@ function FormOpcao({ tipo, opcao, onSalvo }) {
         </CampoForm>
       )}
 
-      {erroSemCampo && <ApiErrorAlert error={mutacao.error} id="opcao-erro" title="Não foi possível salvar" />}
+      {erroSemCampo && (
+        <ApiErrorAlert error={mutacao.error} id="opcao-erro" title="Não foi possível salvar" />
+      )}
 
       <DialogFooter>
-        <DialogClose render={<Button disabled={mutacao.isPending} type="button" variant="outline" />}>
+        <DialogClose
+          render={<Button disabled={mutacao.isPending} type="button" variant="outline" />}
+        >
           Cancelar
         </DialogClose>
         <Button aria-busy={mutacao.isPending} disabled={mutacao.isPending} type="submit">
@@ -154,7 +174,9 @@ export function OpcaoDialog({ tipo, rotuloDaLista, open, onOpenChange, opcao, on
       <DialogContent className="rounded-none sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{opcao ? 'Editar opção' : 'Nova opção'}</DialogTitle>
-          <DialogDescription>{rotuloDaLista} — aparece nos seletores do lead e nos filtros.</DialogDescription>
+          <DialogDescription>
+            {rotuloDaLista} — aparece nos seletores do lead e nos filtros.
+          </DialogDescription>
         </DialogHeader>
         {open && (
           <FormOpcao

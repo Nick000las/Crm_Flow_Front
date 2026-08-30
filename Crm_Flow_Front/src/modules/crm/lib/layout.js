@@ -1,4 +1,10 @@
-import { CAMADA, CHAVES_IDENTIFICADOR, LIMITES_LAYOUT, REFERENCIAS_FIXAS, TIPOS_CAMPO } from '../constants.js';
+import {
+  CAMADA,
+  CHAVES_IDENTIFICADOR,
+  LIMITES_LAYOUT,
+  REFERENCIAS_FIXAS,
+  TIPOS_CAMPO,
+} from '../constants.js';
 import { TIPO_COLUNA, lerValorDoCampo } from './colunas.js';
 import {
   formatarCep,
@@ -43,7 +49,13 @@ import { rotuloOpcao } from './opcoes.js';
 /** O que o editor está editando: o padrão da empresa ou o layout próprio. */
 export const MODO = Object.freeze({ PADRAO: 'padrao', MEU: 'meu' });
 
-export const PARTES_LAYOUT = Object.freeze(['identificador', 'subtitulo', 'destaques', 'secoes', 'colunas']);
+export const PARTES_LAYOUT = Object.freeze([
+  'identificador',
+  'subtitulo',
+  'destaques',
+  'secoes',
+  'colunas',
+]);
 export const SEM_NOME = 'Lead sem nome';
 const SEPARADOR_SUBTITULO = ' · ';
 const REF_CRIADO_EM = 'lead.criadoEm';
@@ -79,10 +91,18 @@ export const MENSAGENS_LAYOUT = Object.freeze({
  * @returns {string | null}
  */
 export function textoDoValor(item, valor, nomePorId) {
-  const vazio = valor === null || valor === undefined || valor === '' || (Array.isArray(valor) && valor.length === 0);
-  if (vazio) return null;
+  const vazio =
+    valor === null ||
+    valor === undefined ||
+    valor === '' ||
+    (Array.isArray(valor) && valor.length === 0);
+  if (vazio) {
+    return null;
+  }
 
-  if (item.ref === REF_CRIADO_EM) return formatarInstante(valor);
+  if (item.ref === REF_CRIADO_EM) {
+    return formatarInstante(valor);
+  }
   switch (item.tipo) {
     // M11: documentos gravados sem máscara; o front aplica.
     case TIPOS_CAMPO.CPF:
@@ -108,7 +128,10 @@ export function textoDoValor(item, valor, nomePorId) {
     case TIPOS_CAMPO.SELECAO:
       return rotuloOpcao(valor, item);
     case TIPOS_CAMPO.SELECAO_MULTIPLA:
-      return [valor].flat().map((opcao) => rotuloOpcao(opcao, item)).join(', ');
+      return [valor]
+        .flat()
+        .map((opcao) => rotuloOpcao(opcao, item))
+        .join(', ');
     case TIPOS_CAMPO.USUARIO:
       return nomePorId?.get(String(valor)) ?? null;
     default:
@@ -128,7 +151,9 @@ export function valorDoItem(lead, item) {
  * @param {ItemLayout | null | undefined} identificador
  */
 export function tituloDoLead(lead, identificador) {
-  const doIdentificador = identificador ? textoDoValor(identificador, valorDoItem(lead, identificador)) : null;
+  const doIdentificador = identificador
+    ? textoDoValor(identificador, valorDoItem(lead, identificador))
+    : null;
   return doIdentificador || lead.nome?.trim() || SEM_NOME;
 }
 
@@ -175,7 +200,9 @@ export function idsDasColunas(itens) {
  * @param {{ chave: string, tipo: string, camada: number }} campo
  */
 export function identificadorPermitido(campo) {
-  if (campo.camada === CAMADA.CAMADA_3) return campo.tipo === TIPOS_CAMPO.TEXTO;
+  if (campo.camada === CAMADA.CAMADA_3) {
+    return campo.tipo === TIPOS_CAMPO.TEXTO;
+  }
   return CHAVES_IDENTIFICADOR.includes(campo.chave);
 }
 
@@ -189,8 +216,19 @@ export function identificadorPermitido(campo) {
 export function opcoesDoEditor(campos) {
   const deCampos = campos
     .filter((campo) => campo.id)
-    .map((campo) => ({ ref: campo.id, label: campo.label, tipo: campo.tipo, chave: campo.chave, camada: campo.camada }));
-  const fixas = Object.entries(REFERENCIAS_FIXAS).map(([ref, fixa]) => ({ ref, label: fixa.label, tipo: fixa.tipo, chave: fixa.chave }));
+    .map((campo) => ({
+      ref: campo.id,
+      label: campo.label,
+      tipo: campo.tipo,
+      chave: campo.chave,
+      camada: campo.camada,
+    }));
+  const fixas = Object.entries(REFERENCIAS_FIXAS).map(([ref, fixa]) => ({
+    ref,
+    label: fixa.label,
+    tipo: fixa.tipo,
+    chave: fixa.chave,
+  }));
 
   return [...deCampos, ...fixas];
 }
@@ -225,10 +263,9 @@ export function layoutDoEditor(fonte) {
  */
 export function parcialDoMeu(base, editado) {
   return Object.fromEntries(
-    PARTES_LAYOUT.filter((parte) => JSON.stringify(base[parte]) !== JSON.stringify(editado[parte])).map((parte) => [
-      parte,
-      editado[parte],
-    ]),
+    PARTES_LAYOUT.filter(
+      (parte) => JSON.stringify(base[parte]) !== JSON.stringify(editado[parte]),
+    ).map((parte) => [parte, editado[parte]]),
   );
 }
 
@@ -243,22 +280,38 @@ export function validarLayout(layout) {
   const nomes = layout.secoes.map((secao) => secao.nome.trim().toLocaleLowerCase('pt-BR'));
   const camposEmSecoes = layout.secoes.flatMap((secao) => secao.campos);
 
-  if (!layout.identificador) erros.identificador = MENSAGENS_LAYOUT.IDENTIFICADOR;
-  if (layout.subtitulo.length > LIMITES_LAYOUT.SUBTITULO) erros.subtitulo = MENSAGENS_LAYOUT.SUBTITULO;
-  if (layout.destaques.length > LIMITES_LAYOUT.DESTAQUES) erros.destaques = MENSAGENS_LAYOUT.DESTAQUES;
-  if (layout.colunas.length === 0) erros.colunas = MENSAGENS_LAYOUT.COLUNAS;
+  if (!layout.identificador) {
+    erros.identificador = MENSAGENS_LAYOUT.IDENTIFICADOR;
+  }
+  if (layout.subtitulo.length > LIMITES_LAYOUT.SUBTITULO) {
+    erros.subtitulo = MENSAGENS_LAYOUT.SUBTITULO;
+  }
+  if (layout.destaques.length > LIMITES_LAYOUT.DESTAQUES) {
+    erros.destaques = MENSAGENS_LAYOUT.DESTAQUES;
+  }
+  if (layout.colunas.length === 0) {
+    erros.colunas = MENSAGENS_LAYOUT.COLUNAS;
+  }
 
-  if (layout.secoes.length > LIMITES_LAYOUT.SECOES) erros.secoes = MENSAGENS_LAYOUT.SECOES;
-  else if (nomes.some((nome) => nome === '')) erros.secoes = MENSAGENS_LAYOUT.NOME_SECAO;
-  else if (new Set(nomes).size !== nomes.length) erros.secoes = MENSAGENS_LAYOUT.SECAO_REPETIDA;
-  else if (new Set(camposEmSecoes).size !== camposEmSecoes.length) erros.secoes = MENSAGENS_LAYOUT.CAMPO_EM_DUAS_SECOES;
+  if (layout.secoes.length > LIMITES_LAYOUT.SECOES) {
+    erros.secoes = MENSAGENS_LAYOUT.SECOES;
+  } else if (nomes.some((nome) => nome === '')) {
+    erros.secoes = MENSAGENS_LAYOUT.NOME_SECAO;
+  } else if (new Set(nomes).size !== nomes.length) {
+    erros.secoes = MENSAGENS_LAYOUT.SECAO_REPETIDA;
+  } else if (new Set(camposEmSecoes).size !== camposEmSecoes.length) {
+    erros.secoes = MENSAGENS_LAYOUT.CAMPO_EM_DUAS_SECOES;
+  }
 
   return erros;
 }
 
 /** Nome das seções aparadas, como o back grava. @param {LayoutRefs} layout */
 export function layoutParaEnvio(layout) {
-  return { ...layout, secoes: layout.secoes.map((secao) => ({ ...secao, nome: secao.nome.trim() })) };
+  return {
+    ...layout,
+    secoes: layout.secoes.map((secao) => ({ ...secao, nome: secao.nome.trim() })),
+  };
 }
 
 /** Já entram na busca de qualquer jeito (o identificador do tenant é somado a elas). */
@@ -272,7 +325,9 @@ export const PLACEHOLDER_BUSCA = 'Buscar por nome, e-mail ou telefone';
  * @param {ItemLayout | null | undefined} identificador
  */
 export function placeholderDaBusca(identificador) {
-  if (!identificador || CHAVES_SEMPRE_BUSCADAS.includes(identificador.chave)) return PLACEHOLDER_BUSCA;
+  if (!identificador || CHAVES_SEMPRE_BUSCADAS.includes(identificador.chave)) {
+    return PLACEHOLDER_BUSCA;
+  }
   return `Buscar por ${identificador.label}, nome, e-mail ou telefone`;
 }
 
@@ -290,10 +345,15 @@ export function errosPorParte(fields) {
   for (const [chave, mensagens] of Object.entries(fields ?? {})) {
     const parte = PARTES_LAYOUT.find((nome) => chave === nome || chave.startsWith(`${nome}.`));
     const mensagem = mensagens?.[0];
-    if (!mensagem) continue;
+    if (!mensagem) {
+      continue;
+    }
 
-    if (parte) porParte[parte] ??= mensagem;
-    else geral.push(mensagem);
+    if (parte) {
+      porParte[parte] ??= mensagem;
+    } else {
+      geral.push(mensagem);
+    }
   }
 
   return { porParte, geral };

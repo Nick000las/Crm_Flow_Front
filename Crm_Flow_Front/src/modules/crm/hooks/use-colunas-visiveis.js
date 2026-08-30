@@ -40,12 +40,12 @@ export function useColunasVisiveis(tenantId, colunas, padrao) {
 
   const alternar = useCallback(
     (id) => {
-      const proximos = ids.includes(id)
-        ? ids.filter((atual) => atual !== id)
-        : [...ids, id];
+      const proximos = ids.includes(id) ? ids.filter((atual) => atual !== id) : [...ids, id];
 
       // A tabela nunca fica sem coluna.
-      if (proximos.length === 0) return;
+      if (proximos.length === 0) {
+        return;
+      }
 
       setEscolha(proximos);
       salvar(chave, proximos);

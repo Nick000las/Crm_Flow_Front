@@ -88,7 +88,11 @@ function FormRegraScore({ regra, campos, errosDoServidor, onConfirmar }) {
       />
 
       <label className="flex items-center gap-2 text-sm" htmlFor="score-regra-ativa">
-        <Switch checked={valores.ativo} id="score-regra-ativa" onCheckedChange={(ativo) => alterar({ ativo })} />
+        <Switch
+          checked={valores.ativo}
+          id="score-regra-ativa"
+          onCheckedChange={(ativo) => alterar({ ativo })}
+        />
         Regra ligada
       </label>
 
@@ -119,14 +123,22 @@ function FormRegraScore({ regra, campos, errosDoServidor, onConfirmar }) {
  *   onConfirmar: (regra: import('../../lib/score').RegraScoreNoForm) => void,
  * }} props aberto enquanto houver `regra`
  */
-export function RegraScoreDialog({ regra, nova, campos, errosDoServidor, onOpenChange, onConfirmar }) {
+export function RegraScoreDialog({
+  regra,
+  nova,
+  campos,
+  errosDoServidor,
+  onOpenChange,
+  onConfirmar,
+}) {
   return (
     <Dialog onOpenChange={onOpenChange} open={Boolean(regra)}>
       <DialogContent className="max-h-[90vh] overflow-y-auto rounded-none sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>{nova ? 'Nova regra' : 'Editar regra'}</DialogTitle>
           <DialogDescription>
-            O lead que casa com as condições soma (ou perde) estes pontos. Salve a pontuação para valer.
+            O lead que casa com as condições soma (ou perde) estes pontos. Salve a pontuação para
+            valer.
           </DialogDescription>
         </DialogHeader>
         {regra && (

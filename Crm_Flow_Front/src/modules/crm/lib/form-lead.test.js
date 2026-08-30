@@ -13,13 +13,69 @@ import {
 } from './form-lead.js';
 
 const campos = [
-  { chave: 'nome', coluna: 'nome', label: 'Nome', tipo: 'texto', camada: 1, obrigatorio: true, ordem: 0 },
-  { chave: 'email', coluna: 'email', label: 'E-mail', tipo: 'email', camada: 1, obrigatorio: false, ordem: 1 },
-  { chave: 'telefone', coluna: 'telefone', label: 'Telefone', tipo: 'telefone', camada: 1, obrigatorio: false, ordem: 2 },
-  { chave: 'status', coluna: 'status', label: 'Status', tipo: 'selecao', camada: 1, obrigatorio: false, ordem: 4 },
-  { chave: 'tags', coluna: 'tags', label: 'Tags', tipo: 'selecao_multipla', camada: 1, obrigatorio: false, ordem: 5 },
-  { chave: 'leadScore', coluna: 'lead_score', label: 'Score', tipo: 'numero', camada: 2, obrigatorio: false, ordem: 8 },
-  { chave: 'dataConversao', coluna: 'data_conversao', label: 'Conversão', tipo: 'data', camada: 2, obrigatorio: false, ordem: 9 },
+  {
+    chave: 'nome',
+    coluna: 'nome',
+    label: 'Nome',
+    tipo: 'texto',
+    camada: 1,
+    obrigatorio: true,
+    ordem: 0,
+  },
+  {
+    chave: 'email',
+    coluna: 'email',
+    label: 'E-mail',
+    tipo: 'email',
+    camada: 1,
+    obrigatorio: false,
+    ordem: 1,
+  },
+  {
+    chave: 'telefone',
+    coluna: 'telefone',
+    label: 'Telefone',
+    tipo: 'telefone',
+    camada: 1,
+    obrigatorio: false,
+    ordem: 2,
+  },
+  {
+    chave: 'status',
+    coluna: 'status',
+    label: 'Status',
+    tipo: 'selecao',
+    camada: 1,
+    obrigatorio: false,
+    ordem: 4,
+  },
+  {
+    chave: 'tags',
+    coluna: 'tags',
+    label: 'Tags',
+    tipo: 'selecao_multipla',
+    camada: 1,
+    obrigatorio: false,
+    ordem: 5,
+  },
+  {
+    chave: 'leadScore',
+    coluna: 'lead_score',
+    label: 'Score',
+    tipo: 'numero',
+    camada: 2,
+    obrigatorio: false,
+    ordem: 8,
+  },
+  {
+    chave: 'dataConversao',
+    coluna: 'data_conversao',
+    label: 'Conversão',
+    tipo: 'data',
+    camada: 2,
+    obrigatorio: false,
+    ordem: 9,
+  },
   { chave: 'renda', label: 'Renda', tipo: 'numero', camada: 3, obrigatorio: false, ordem: 10 },
   { chave: 'vip', label: 'VIP', tipo: 'booleano', camada: 3, obrigatorio: false, ordem: 11 },
 ];
@@ -112,7 +168,11 @@ describe('montarPayloadEdicao (diff)', () => {
   });
 
   test('envia só o que mudou', () => {
-    const payload = montarPayloadEdicao(campos, iniciais, { ...iniciais, status: 'ganho', valor: '2000' });
+    const payload = montarPayloadEdicao(campos, iniciais, {
+      ...iniciais,
+      status: 'ganho',
+      valor: '2000',
+    });
 
     assert.deepEqual(payload, { status: 'ganho', valor: 2000 });
   });
@@ -198,12 +258,49 @@ describe('errosDoServidor', () => {
 
 describe('tipos do M2', () => {
   const novos = [
-    { chave: 'nome', coluna: 'nome', label: 'Nome', tipo: 'texto', camada: 1, obrigatorio: true, ordem: 0 },
-    { chave: 'email', coluna: 'email', label: 'E-mail', tipo: 'email', camada: 1, obrigatorio: false, ordem: 1 },
-    { chave: 'ticket', label: 'Ticket', tipo: 'monetario', camada: 3, obrigatorio: false, ordem: 2 },
-    { chave: 'whats', label: 'WhatsApp', tipo: 'telefone', camada: 3, obrigatorio: false, ordem: 3 },
+    {
+      chave: 'nome',
+      coluna: 'nome',
+      label: 'Nome',
+      tipo: 'texto',
+      camada: 1,
+      obrigatorio: true,
+      ordem: 0,
+    },
+    {
+      chave: 'email',
+      coluna: 'email',
+      label: 'E-mail',
+      tipo: 'email',
+      camada: 1,
+      obrigatorio: false,
+      ordem: 1,
+    },
+    {
+      chave: 'ticket',
+      label: 'Ticket',
+      tipo: 'monetario',
+      camada: 3,
+      obrigatorio: false,
+      ordem: 2,
+    },
+    {
+      chave: 'whats',
+      label: 'WhatsApp',
+      tipo: 'telefone',
+      camada: 3,
+      obrigatorio: false,
+      ordem: 3,
+    },
     { chave: 'site', label: 'Site', tipo: 'url', camada: 3, obrigatorio: false, ordem: 4 },
-    { chave: 'notas', label: 'Notas', tipo: 'texto_longo', camada: 3, obrigatorio: false, ordem: 5 },
+    {
+      chave: 'notas',
+      label: 'Notas',
+      tipo: 'texto_longo',
+      camada: 3,
+      obrigatorio: false,
+      ordem: 5,
+    },
   ];
 
   test('monetário vai em reais com até 2 casas; telefone e texto como digitados', () => {
@@ -226,7 +323,12 @@ describe('tipos do M2', () => {
   });
 
   test('telefone gravado em dígitos abre com máscara e não vira diff sozinho', () => {
-    const leadNovo = { id: 'l2', nome: 'Ana', email: 'ana@x.com', custom_fields: { whats: '11923456789', ticket: '99.90' } };
+    const leadNovo = {
+      id: 'l2',
+      nome: 'Ana',
+      email: 'ana@x.com',
+      custom_fields: { whats: '11923456789', ticket: '99.90' },
+    };
     const iniciais = valoresIniciais(novos, leadNovo);
 
     assert.equal(iniciais['custom.whats'], '(11) 92345-6789');
@@ -241,7 +343,11 @@ describe('obrigatoriedade configurada pelo DONO', () => {
   );
 
   test('status e tags obrigatórios barram no cliente, inclusive tags vazio', () => {
-    const erros = validarNoCliente(comStatusETags, { ...valoresIniciais(comStatusETags), nome: 'Ana', email: 'a@x.com' });
+    const erros = validarNoCliente(comStatusETags, {
+      ...valoresIniciais(comStatusETags),
+      nome: 'Ana',
+      email: 'a@x.com',
+    });
 
     assert.equal(erros.status, MENSAGENS.OBRIGATORIO);
     assert.equal(erros.tags, MENSAGENS.OBRIGATORIO);
@@ -250,7 +356,18 @@ describe('obrigatoriedade configurada pelo DONO', () => {
   test('o 400 de nativo obrigatório cai no próprio campo do form', () => {
     const { porCampo, gerais } = errosDoServidor(
       { status: ['Campo obrigatório'], fonteLead: ['Campo obrigatório'] },
-      [...campos, { chave: 'fonteLead', coluna: 'fonte_lead', label: 'Origem', tipo: 'selecao', camada: 1, obrigatorio: true, ordem: 3 }],
+      [
+        ...campos,
+        {
+          chave: 'fonteLead',
+          coluna: 'fonte_lead',
+          label: 'Origem',
+          tipo: 'selecao',
+          camada: 1,
+          obrigatorio: true,
+          ordem: 3,
+        },
+      ],
     );
 
     assert.deepEqual(porCampo, { status: 'Campo obrigatório', fonteLead: 'Campo obrigatório' });
@@ -262,12 +379,21 @@ describe('telefone com DDD', () => {
   const base = () => ({ ...valoresIniciais(campos), nome: 'Ana' });
 
   test('aceita fixo (10) e celular (11) com ou sem máscara', () => {
-    assert.equal(validarNoCliente(campos, { ...base(), telefone: '(11) 2345-6789' }).telefone, undefined);
-    assert.equal(validarNoCliente(campos, { ...base(), telefone: '11923456789' }).telefone, undefined);
+    assert.equal(
+      validarNoCliente(campos, { ...base(), telefone: '(11) 2345-6789' }).telefone,
+      undefined,
+    );
+    assert.equal(
+      validarNoCliente(campos, { ...base(), telefone: '11923456789' }).telefone,
+      undefined,
+    );
   });
 
   test('recusa número sem DDD antes de ir ao back', () => {
-    assert.equal(validarNoCliente(campos, { ...base(), telefone: '2345-6789' }).telefone, MENSAGENS.TELEFONE_INVALIDO);
+    assert.equal(
+      validarNoCliente(campos, { ...base(), telefone: '2345-6789' }).telefone,
+      MENSAGENS.TELEFONE_INVALIDO,
+    );
   });
 });
 
@@ -278,7 +404,9 @@ describe('listas do tenant', () => {
         ...campo,
         lista: 'tag',
         opcoes: null,
-        opcoesLista: [{ key: 'quente', label: 'Lead quente', color: null, category: null, ativo: true }],
+        opcoesLista: [
+          { key: 'quente', label: 'Lead quente', color: null, category: null, ativo: true },
+        ],
       };
     }
     return campo;
@@ -293,7 +421,10 @@ describe('listas do tenant', () => {
 
   test('tag nova vai como texto; o back cria e devolve a key', () => {
     const iniciais = valoresIniciais(comListas, lead);
-    const payload = montarPayloadEdicao(comListas, iniciais, { ...iniciais, tags: ['Lead quente', 'Feira 2026'] });
+    const payload = montarPayloadEdicao(comListas, iniciais, {
+      ...iniciais,
+      tags: ['Lead quente', 'Feira 2026'],
+    });
 
     assert.deepEqual(payload, { tags: ['Lead quente', 'Feira 2026'] });
   });
@@ -301,7 +432,15 @@ describe('listas do tenant', () => {
   test('400 de opção desativada cai no próprio campo', () => {
     const { porCampo } = errosDoServidor({ motivoPerda: ['Opção desativada'] }, [
       ...comListas,
-      { chave: 'motivoPerda', coluna: 'motivo_perda', label: 'Motivo', tipo: 'selecao', camada: 2, obrigatorio: false, ordem: 20 },
+      {
+        chave: 'motivoPerda',
+        coluna: 'motivo_perda',
+        label: 'Motivo',
+        tipo: 'selecao',
+        camada: 2,
+        obrigatorio: false,
+        ordem: 20,
+      },
     ]);
 
     assert.deepEqual(porCampo, { motivoPerda: 'Opção desativada' });
@@ -311,7 +450,15 @@ describe('listas do tenant', () => {
 describe('primeiroNome (campo do sistema)', () => {
   const comPrimeiroNome = [
     ...campos,
-    { chave: 'primeiroNome', coluna: 'primeiro_nome', label: 'Primeiro nome', tipo: 'texto', camada: 1, obrigatorio: false, ordem: 1 },
+    {
+      chave: 'primeiroNome',
+      coluna: 'primeiro_nome',
+      label: 'Primeiro nome',
+      tipo: 'texto',
+      camada: 1,
+      obrigatorio: false,
+      ordem: 1,
+    },
   ];
   const iniciais = valoresIniciais(comPrimeiroNome, { ...lead, primeiro_nome: 'Ana' });
 
@@ -320,7 +467,10 @@ describe('primeiroNome (campo do sistema)', () => {
   });
 
   test('esvaziar envia null: o back volta ao derivado do Nome', () => {
-    const payload = montarPayloadEdicao(comPrimeiroNome, iniciais, { ...iniciais, primeiroNome: '' });
+    const payload = montarPayloadEdicao(comPrimeiroNome, iniciais, {
+      ...iniciais,
+      primeiroNome: '',
+    });
 
     assert.deepEqual(payload, { primeiroNome: null });
   });
@@ -328,12 +478,58 @@ describe('primeiroNome (campo do sistema)', () => {
 
 describe('tipos do M11', () => {
   const m11 = [
-    { chave: 'nome', coluna: 'nome', label: 'Nome', tipo: 'texto', camada: 1, obrigatorio: false, ordem: 0 },
-    { chave: 'email', coluna: 'email', label: 'E-mail', tipo: 'email', camada: 1, obrigatorio: false, ordem: 1 },
-    { chave: 'cpf', coluna: 'cpf', label: 'CPF', tipo: 'cpf', camada: 2, obrigatorio: false, ordem: 2 },
-    { chave: 'cnpj', coluna: 'cnpj', label: 'CNPJ', tipo: 'cnpj', camada: 2, obrigatorio: false, ordem: 3 },
-    { chave: 'viagem', label: 'Viagem', tipo: 'intervalo_datas', camada: 3, obrigatorio: false, ordem: 4 },
-    { chave: 'entrega', label: 'Entrega', tipo: 'endereco', camada: 3, obrigatorio: false, ordem: 5 },
+    {
+      chave: 'nome',
+      coluna: 'nome',
+      label: 'Nome',
+      tipo: 'texto',
+      camada: 1,
+      obrigatorio: false,
+      ordem: 0,
+    },
+    {
+      chave: 'email',
+      coluna: 'email',
+      label: 'E-mail',
+      tipo: 'email',
+      camada: 1,
+      obrigatorio: false,
+      ordem: 1,
+    },
+    {
+      chave: 'cpf',
+      coluna: 'cpf',
+      label: 'CPF',
+      tipo: 'cpf',
+      camada: 2,
+      obrigatorio: false,
+      ordem: 2,
+    },
+    {
+      chave: 'cnpj',
+      coluna: 'cnpj',
+      label: 'CNPJ',
+      tipo: 'cnpj',
+      camada: 2,
+      obrigatorio: false,
+      ordem: 3,
+    },
+    {
+      chave: 'viagem',
+      label: 'Viagem',
+      tipo: 'intervalo_datas',
+      camada: 3,
+      obrigatorio: false,
+      ordem: 4,
+    },
+    {
+      chave: 'entrega',
+      label: 'Entrega',
+      tipo: 'endereco',
+      camada: 3,
+      obrigatorio: false,
+      ordem: 5,
+    },
     { chave: 'horario', label: 'Horário', tipo: 'hora', camada: 3, obrigatorio: false, ordem: 6 },
   ];
   const leadM11 = {
@@ -392,11 +588,20 @@ describe('tipos do M11', () => {
 });
 
 describe('permissão por campo (crm.permissoes)', () => {
-  const comAcesso = (acessos) => campos.map((campo) => (acessos[campo.chave] ? { ...campo, acesso: acessos[campo.chave] } : campo));
+  const comAcesso = (acessos) =>
+    campos.map((campo) =>
+      acessos[campo.chave] ? { ...campo, acesso: acessos[campo.chave] } : campo,
+    );
 
   test('campo só de ver não vai na criação nem na edição, mesmo alterado', () => {
     const restritos = comAcesso({ status: 'view', renda: 'view' });
-    const valores = { ...valoresIniciais(restritos), nome: 'Ana', email: 'a@x.com', status: 'novo', renda: '10' };
+    const valores = {
+      ...valoresIniciais(restritos),
+      nome: 'Ana',
+      email: 'a@x.com',
+      status: 'novo',
+      renda: '10',
+    };
 
     assert.deepEqual(montarPayloadCriacao(restritos, valores), { nome: 'Ana', email: 'a@x.com' });
 
@@ -407,7 +612,10 @@ describe('permissão por campo (crm.permissoes)', () => {
 
   test('não cobra obrigatório de campo só de ver', () => {
     const restritos = comAcesso({ nome: 'view' });
-    assert.equal(validarNoCliente(restritos, { ...valoresIniciais(restritos), email: 'a@x.com' }).nome, undefined);
+    assert.equal(
+      validarNoCliente(restritos, { ...valoresIniciais(restritos), email: 'a@x.com' }).nome,
+      undefined,
+    );
   });
 
   test('contato: e-mail oculto ou só de ver manda o aviso para o telefone', () => {
@@ -420,12 +628,18 @@ describe('permissão por campo (crm.permissoes)', () => {
     assert.equal(erros.email, undefined);
 
     // O e-mail só de ver já preenchido conta como contato.
-    assert.equal(validarNoCliente(emailSoVer, valoresIniciais(emailSoVer, lead)).telefone, undefined);
+    assert.equal(
+      validarNoCliente(emailSoVer, valoresIniciais(emailSoVer, lead)).telefone,
+      undefined,
+    );
   });
 
   test('sem contato editável no form, o back decide', () => {
     const semContato = campos.filter((campo) => !['email', 'telefone'].includes(campo.chave));
-    assert.equal(validarNoCliente(semContato, { ...valoresIniciais(semContato), nome: 'Ana' }).email, undefined);
+    assert.equal(
+      validarNoCliente(semContato, { ...valoresIniciais(semContato), nome: 'Ana' }).email,
+      undefined,
+    );
   });
 });
 
@@ -434,7 +648,10 @@ describe('Lead score calculado (crm.score)', () => {
     const valores = { ...valoresIniciais(campos), nome: 'Ana', email: 'a@x.com', leadScore: '50' };
 
     assert.equal(montarPayloadCriacao(marcarCalculados(campos, false), valores).leadScore, 50);
-    assert.equal(montarPayloadCriacao(marcarCalculados(campos, true), valores).leadScore, undefined);
+    assert.equal(
+      montarPayloadCriacao(marcarCalculados(campos, true), valores).leadScore,
+      undefined,
+    );
 
     const iniciais = valoresIniciais(campos, lead);
     const editados = { ...iniciais, leadScore: '99' };
@@ -445,30 +662,64 @@ describe('Lead score calculado (crm.score)', () => {
 describe('LGPD (crm.lgpd)', () => {
   const comLgpd = [
     ...campos,
-    { chave: 'baseLegal', coluna: 'legal_basis', label: 'Base legal', tipo: 'selecao', camada: 2, obrigatorio: false, ordem: 20 },
-    { chave: 'baseLegalEm', coluna: 'legal_basis_at', label: 'Data da base legal', tipo: 'data', camada: 2, obrigatorio: false, ordem: 21, somenteLeitura: true },
+    {
+      chave: 'baseLegal',
+      coluna: 'legal_basis',
+      label: 'Base legal',
+      tipo: 'selecao',
+      camada: 2,
+      obrigatorio: false,
+      ordem: 20,
+    },
+    {
+      chave: 'baseLegalEm',
+      coluna: 'legal_basis_at',
+      label: 'Data da base legal',
+      tipo: 'data',
+      camada: 2,
+      obrigatorio: false,
+      ordem: 21,
+      somenteLeitura: true,
+    },
   ];
 
   test('campo somenteLeitura não vai no payload', () => {
-    const valores = { ...valoresIniciais(comLgpd), nome: 'Ana', email: 'a@x.com', baseLegalEm: '2026-10-01' };
+    const valores = {
+      ...valoresIniciais(comLgpd),
+      nome: 'Ana',
+      email: 'a@x.com',
+      baseLegalEm: '2026-10-01',
+    };
     assert.equal(montarPayloadCriacao(comLgpd, valores).baseLegalEm, undefined);
   });
 
   test('opt-out: na criação só vai marcado; na edição, quando muda', () => {
     const base = { ...valoresIniciais(comLgpd), nome: 'Ana', email: 'a@x.com' };
     assert.equal(montarPayloadCriacao(comLgpd, base).optOutMarketing, undefined);
-    assert.equal(montarPayloadCriacao(comLgpd, { ...base, optOutMarketing: true }).optOutMarketing, true);
+    assert.equal(
+      montarPayloadCriacao(comLgpd, { ...base, optOutMarketing: true }).optOutMarketing,
+      true,
+    );
 
-    const iniciais = valoresIniciais(comLgpd, { ...lead, marketing_opt_out_at: '2026-10-01T00:00:00Z' });
+    const iniciais = valoresIniciais(comLgpd, {
+      ...lead,
+      marketing_opt_out_at: '2026-10-01T00:00:00Z',
+    });
     assert.equal(iniciais.optOutMarketing, true);
     assert.deepEqual(montarPayloadEdicao(comLgpd, iniciais, iniciais), {});
-    assert.deepEqual(montarPayloadEdicao(comLgpd, iniciais, { ...iniciais, optOutMarketing: false }), {
-      optOutMarketing: false,
-    });
+    assert.deepEqual(
+      montarPayloadEdicao(comLgpd, iniciais, { ...iniciais, optOutMarketing: false }),
+      {
+        optOutMarketing: false,
+      },
+    );
   });
 
   test('base padrão só na criação', () => {
-    assert.equal(valoresIniciais(comLgpd, undefined, { baseLegal: 'consentimento' }).baseLegal, 'consentimento');
+    assert.equal(
+      valoresIniciais(comLgpd, undefined, { baseLegal: 'consentimento' }).baseLegal,
+      'consentimento',
+    );
     assert.equal(valoresIniciais(comLgpd, lead, { baseLegal: 'consentimento' }).baseLegal, '');
   });
 });

@@ -1,11 +1,20 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { destinoDaNotificacao, rotuloDoSino, textoDoContador, totalDePaginasNotificacoes } from './notificacoes.js';
+import {
+  destinoDaNotificacao,
+  rotuloDoSino,
+  textoDoContador,
+  totalDePaginasNotificacoes,
+} from './notificacoes.js';
 
 test('CRM: /crm/leads vira a lista com o filtro na URL', () => {
   const destino = destinoDaNotificacao({
     modulo: 'crm',
-    dados: { rota: '/crm/leads', filtro: { esfriando: true, usuarioResponsavelId: 'u-1' }, total: 3 },
+    dados: {
+      rota: '/crm/leads',
+      filtro: { esfriando: true, usuarioResponsavelId: 'u-1' },
+      total: 3,
+    },
   });
   const url = new URL(destino, 'http://x');
 
@@ -27,12 +36,20 @@ test('CRM com leadId (crm.lead_atribuido) abre o lead', () => {
 test('CRM: crm.leads_atribuidos abre a lista filtrada pelo responsável', () => {
   const destino = destinoDaNotificacao({
     modulo: 'crm',
-    dados: { rota: '/crm/leads', filtro: { usuarioResponsavelId: 'u-1' }, importJobId: 'j-1', total: 3 },
+    dados: {
+      rota: '/crm/leads',
+      filtro: { usuarioResponsavelId: 'u-1' },
+      importJobId: 'j-1',
+      total: 3,
+    },
   });
   const url = new URL(destino, 'http://x');
 
   assert.equal(url.pathname, '/crm');
-  assert.deepEqual(JSON.parse(url.searchParams.get('f')), { filtros: [], usuarioResponsavelId: 'u-1' });
+  assert.deepEqual(JSON.parse(url.searchParams.get('f')), {
+    filtros: [],
+    usuarioResponsavelId: 'u-1',
+  });
 });
 
 test('CRM sem filtro vai para a lista limpa', () => {
@@ -41,7 +58,10 @@ test('CRM sem filtro vai para a lista limpa', () => {
 
 test('módulo sem regra usa dados.rota interna; externa ou ausente não navega', () => {
   assert.equal(destinoDaNotificacao({ modulo: 'agenda', dados: { rota: '/agenda' } }), '/agenda');
-  assert.equal(destinoDaNotificacao({ modulo: 'agenda', dados: { rota: 'https://mal.example' } }), null);
+  assert.equal(
+    destinoDaNotificacao({ modulo: 'agenda', dados: { rota: 'https://mal.example' } }),
+    null,
+  );
   assert.equal(destinoDaNotificacao({ modulo: 'agenda', dados: { rota: '//mal.example' } }), null);
   assert.equal(destinoDaNotificacao({ modulo: 'agenda', dados: null }), null);
 });

@@ -55,7 +55,10 @@ test('faixaDoScore: string decimal, negativo, limites inclusivos e sem score', (
   assert.equal(faixaDoScore(PADRAO, '30')?.chave, 'morno');
   assert.equal(faixaDoScore(PADRAO, null), null);
   assert.equal(faixaDoScore(null, 50), null);
-  assert.equal(faixaDoScore([{ chave: 'a', rotulo: 'A', minimo: 0, maximo: 10, cor: '#000000' }], 50), null);
+  assert.equal(
+    faixaDoScore([{ chave: 'a', rotulo: 'A', minimo: 0, maximo: 10, cor: '#000000' }], 50),
+    null,
+  );
 });
 
 test('ida e volta: regra sem id, faixa salva mantém a chave, nova vai sem', () => {
@@ -64,15 +67,34 @@ test('ida e volta: regra sem id, faixa salva mantém a chave, nova vai sem', () 
 
   const comNova = {
     ...valores,
-    faixas: [...valores.faixas.slice(0, 2), { ...novaFaixa('n1'), rotulo: 'Muito quente', minimo: '70', cor: '#000000' }],
+    faixas: [
+      ...valores.faixas.slice(0, 2),
+      { ...novaFaixa('n1'), rotulo: 'Muito quente', minimo: '70', cor: '#000000' },
+    ],
   };
   const { corpo } = /** @type {any} */ (scoreParaEnvio(comNova, CAMPOS));
 
   assert.deepEqual(corpo.regras, [
-    { nome: 'Veio do site', ativo: true, pontos: 20, condicoes: [{ campoId: 'f-origem', operador: 'igual', valor: 'site' }] },
+    {
+      nome: 'Veio do site',
+      ativo: true,
+      pontos: 20,
+      condicoes: [{ campoId: 'f-origem', operador: 'igual', valor: 'site' }],
+    },
   ]);
-  assert.deepEqual(corpo.faixas[0], { chave: 'frio', rotulo: 'Frio', minimo: null, maximo: 29, cor: '#3B82F6' });
-  assert.deepEqual(corpo.faixas[2], { rotulo: 'Muito quente', minimo: 70, maximo: null, cor: '#000000' });
+  assert.deepEqual(corpo.faixas[0], {
+    chave: 'frio',
+    rotulo: 'Frio',
+    minimo: null,
+    maximo: 29,
+    cor: '#3B82F6',
+  });
+  assert.deepEqual(corpo.faixas[2], {
+    rotulo: 'Muito quente',
+    minimo: 70,
+    maximo: null,
+    cor: '#000000',
+  });
   assert.equal(scoreMudou(comNova, CONFIG, CAMPOS), true);
 });
 
@@ -80,14 +102,20 @@ test('validação: pontos, mínimo maior que o máximo, cor e sobreposição', (
   const valores = valoresDoScore(CONFIG, CAMPOS);
   const regraRuim = { ...novaRegraScore('n1'), nome: 'X', pontos: '1001' };
   const faixaRuim = { ...novaFaixa('n2'), rotulo: 'Y', minimo: '50', maximo: '10', cor: 'azul' };
-  const { erros } = /** @type {any} */ (scoreParaEnvio({ regras: [regraRuim], faixas: [faixaRuim] }, CAMPOS));
+  const { erros } = /** @type {any} */ (
+    scoreParaEnvio({ regras: [regraRuim], faixas: [faixaRuim] }, CAMPOS)
+  );
 
   assert.equal(erros.regras.n1.pontos, MENSAGENS_SCORE.PONTOS);
   assert.equal(erros.faixas.n2.item, MENSAGENS_SCORE.MINIMO_MAIOR);
   assert.equal(erros.faixas.n2.cor, MENSAGENS_SCORE.COR);
 
-  const sobrepostas = valores.faixas.map((faixa) => (faixa.chave === 'morno' ? { ...faixa, maximo: '75' } : faixa));
-  const resultado = /** @type {any} */ (scoreParaEnvio({ regras: [], faixas: sobrepostas }, CAMPOS));
+  const sobrepostas = valores.faixas.map((faixa) =>
+    faixa.chave === 'morno' ? { ...faixa, maximo: '75' } : faixa,
+  );
+  const resultado = /** @type {any} */ (
+    scoreParaEnvio({ regras: [], faixas: sobrepostas }, CAMPOS)
+  );
   assert.deepEqual(resultado.erros.geral, ['As faixas "Morno" e "Quente" se sobrepõem']);
 
   assert.deepEqual(
@@ -98,7 +126,11 @@ test('validação: pontos, mínimo maior que o máximo, cor e sobreposição', (
 
 test('400 das faixas volta para a faixa certa; o da lista, para o geral', () => {
   const { porItem, outros } = errosPorItem(
-    { 'faixas.1.rotulo': ['Dê um nome à faixa'], 'faixas.0': ['"Frio": o mínimo passa do máximo'], faixas: ['Sobrepõem'] },
+    {
+      'faixas.1.rotulo': ['Dê um nome à faixa'],
+      'faixas.0': ['"Frio": o mínimo passa do máximo'],
+      faixas: ['Sobrepõem'],
+    },
     'faixas',
     ['faixa-frio', 'faixa-morno'],
   );
@@ -122,7 +154,10 @@ test('textos: pontos com sinal e progresso do recálculo', () => {
 });
 
 test('chave da config ignora o progresso do recálculo', () => {
-  const rodando = { ...CONFIG, recalculo: { total: 10, processados: 5, emAndamento: true, concluidoEm: null } };
+  const rodando = {
+    ...CONFIG,
+    recalculo: { total: 10, processados: 5, emAndamento: true, concluidoEm: null },
+  };
   assert.equal(chaveDaConfig(CONFIG), chaveDaConfig(rodando));
 });
 

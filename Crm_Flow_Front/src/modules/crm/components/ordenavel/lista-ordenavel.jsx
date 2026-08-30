@@ -6,7 +6,11 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 import { INSTRUCOES_ORDEM, anunciosDeOrdem } from './textos-ordem';
 
 // Um clique no puxador não deve virar arrasto sem querer.
@@ -39,7 +43,9 @@ export function ListaOrdenavel({ ids, rotuloDe, onMover, children }) {
   const posicaoDe = (id) => ids.indexOf(id) + 1;
 
   function handleDragEnd({ active, over }) {
-    if (over && active.id !== over.id) onMover(ids.indexOf(active.id), ids.indexOf(over.id));
+    if (over && active.id !== over.id) {
+      onMover(ids.indexOf(active.id), ids.indexOf(over.id));
+    }
   }
 
   return (

@@ -6,7 +6,8 @@ const POR_CODIGO = Object.freeze({
   [ACCESS_ERROR_CODES.MODULE_NOT_ENABLED]: {
     icon: Ban,
     title: 'Módulo não contratado',
-    description: 'Este módulo não está ativo para a sua empresa. Fale com o responsável pela conta.',
+    description:
+      'Este módulo não está ativo para a sua empresa. Fale com o responsável pela conta.',
   },
   [ACCESS_ERROR_CODES.FEATURE_NOT_ENABLED]: {
     icon: Clock,

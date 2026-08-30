@@ -85,9 +85,13 @@ export function ConstrutorFiltro({ filtro, campos, usuarios, chavesComErro, onAp
                 key={linha.id}
                 linha={linha}
                 onChange={(proxima) =>
-                  alterarLinhas((linhas) => linhas.map((atual) => (atual.id === linha.id ? proxima : atual)))
+                  alterarLinhas((linhas) =>
+                    linhas.map((atual) => (atual.id === linha.id ? proxima : atual)),
+                  )
                 }
-                onRemover={() => alterarLinhas((linhas) => linhas.filter((atual) => atual.id !== linha.id))}
+                onRemover={() =>
+                  alterarLinhas((linhas) => linhas.filter((atual) => atual.id !== linha.id))
+                }
               />
             ))}
           </ul>

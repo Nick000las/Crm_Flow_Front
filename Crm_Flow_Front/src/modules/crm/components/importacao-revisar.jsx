@@ -4,7 +4,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ACOES_DUPLICIDADE, ROTULOS_ESTRATEGIA } from '../constants';
 import { useConfigLgpd } from '../hooks/use-lgpd';
-import { SEGUIR_ESTRATEGIA, acoesParaEnvio, descreverCandidato, opcoesDeAcaoImport } from '../lib/duplicidade';
+import {
+  SEGUIR_ESTRATEGIA,
+  acoesParaEnvio,
+  descreverCandidato,
+  opcoesDeAcaoImport,
+} from '../lib/duplicidade';
 import { ImportacaoErros } from './importacao-erros';
 import { SelectSimples } from './select-simples';
 
@@ -23,7 +28,9 @@ function LinhasDuplicadas({ duplicados, estrategia, escolhas, onEscolher }) {
     <section aria-labelledby="importacao-duplicadas-titulo" className="grid gap-2">
       <h3 className="text-sm font-medium" id="importacao-duplicadas-titulo">
         Parecidas com leads existentes{' '}
-        <span className="font-mono text-xs text-muted-foreground tabular-nums">({duplicados.length})</span>
+        <span className="font-mono text-xs text-muted-foreground tabular-nums">
+          ({duplicados.length})
+        </span>
       </h3>
       <ul className="border border-border">
         {visiveis.map((duplicado) => {
@@ -94,9 +101,17 @@ function LinhasDuplicadas({ duplicados, estrategia, escolhas, onEscolher }) {
  *   onVoltar: () => void,
  * }} props
  */
-export function ImportacaoRevisar({ validacao, estrategia, baseLegalLote = '', confirmacao, onConfirmar, onVoltar }) {
+export function ImportacaoRevisar({
+  validacao,
+  estrategia,
+  baseLegalLote = '',
+  confirmacao,
+  onConfirmar,
+  onVoltar,
+}) {
   const lgpd = useConfigLgpd().data ?? null;
-  const rotuloDoLote = lgpd?.basesLegais.find((base) => base.key === baseLegalLote)?.label ?? baseLegalLote;
+  const rotuloDoLote =
+    lgpd?.basesLegais.find((base) => base.key === baseLegalLote)?.label ?? baseLegalLote;
   const { jobId, totalLinhas, linhasValidas, erros } = validacao;
   const duplicados = validacao.duplicados ?? [];
   const [escolhas, setEscolhas] = useState({});
@@ -105,23 +120,30 @@ export function ImportacaoRevisar({ validacao, estrategia, baseLegalLote = '', c
   return (
     <div className="grid gap-6">
       <p className="text-lg" role="status">
-        <span className="font-mono tabular-nums">{linhasValidas.toLocaleString('pt-BR')}</span> válidas de{' '}
+        <span className="font-mono tabular-nums">{linhasValidas.toLocaleString('pt-BR')}</span>{' '}
+        válidas de{' '}
         <span className="font-mono tabular-nums">{totalLinhas.toLocaleString('pt-BR')}</span> linhas
       </p>
 
       {!jobId && (
         <p className="border border-border p-3 text-sm">
-          Nenhuma linha pode ser importada. Volte, ajuste o mapeamento ou corrija a planilha e tente de novo.
+          Nenhuma linha pode ser importada. Volte, ajuste o mapeamento ou corrija a planilha e tente
+          de novo.
         </p>
       )}
 
       {baseLegalLote && (
         <p className="text-sm text-muted-foreground">
-          Base legal do lote: <span className="text-foreground">{rotuloDoLote}</span> (nas linhas sem base).
+          Base legal do lote: <span className="text-foreground">{rotuloDoLote}</span> (nas linhas
+          sem base).
         </p>
       )}
 
-      <ImportacaoErros erros={erros} nomeRelatorio="erros-validacao.csv" titulo="Linhas com problema" />
+      <ImportacaoErros
+        erros={erros}
+        nomeRelatorio="erros-validacao.csv"
+        titulo="Linhas com problema"
+      />
       {jobId && duplicados.length > 0 && (
         <LinhasDuplicadas
           duplicados={duplicados}
@@ -135,7 +157,9 @@ export function ImportacaoRevisar({ validacao, estrategia, baseLegalLote = '', c
       )}
 
       {jobId && erros.length > 0 && (
-        <p className="text-sm text-muted-foreground">Ao confirmar, só as linhas válidas são importadas.</p>
+        <p className="text-sm text-muted-foreground">
+          Ao confirmar, só as linhas válidas são importadas.
+        </p>
       )}
 
       <ApiErrorAlert
@@ -154,7 +178,11 @@ export function ImportacaoRevisar({ validacao, estrategia, baseLegalLote = '', c
             disabled={confirmacao.isPending}
             onClick={() => onConfirmar(acoesParaEnvio(escolhas))}
           >
-            {confirmacao.isPending ? 'Confirmando…' : filaFora ? 'Tentar novamente' : 'Confirmar importação'}
+            {confirmacao.isPending
+              ? 'Confirmando…'
+              : filaFora
+                ? 'Tentar novamente'
+                : 'Confirmar importação'}
           </Button>
         )}
       </div>

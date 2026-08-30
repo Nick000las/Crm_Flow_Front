@@ -1,4 +1,12 @@
-import { Archive, ArchiveRestore, Combine, MoreHorizontal, Pencil, ShieldOff, Trash2 } from 'lucide-react';
+import {
+  Archive,
+  ArchiveRestore,
+  Combine,
+  MoreHorizontal,
+  Pencil,
+  ShieldOff,
+  Trash2,
+} from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -25,7 +33,15 @@ import { estaArquivado } from '../lib/arquivo';
  *   onAnonimizar?: () => void,
  * }} props
  */
-export function AcoesLead({ lead, onEditar, onExcluir, onArquivar, onDesarquivar, onMesclar, onAnonimizar }) {
+export function AcoesLead({
+  lead,
+  onEditar,
+  onExcluir,
+  onArquivar,
+  onDesarquivar,
+  onMesclar,
+  onAnonimizar,
+}) {
   const arquivado = estaArquivado(lead);
   const anonimizado = Boolean(lead.anonimizado_em);
 

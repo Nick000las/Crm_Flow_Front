@@ -24,12 +24,15 @@ const SUBMIT_ERROR_ID = 'disable-mfa-submit-error';
 export function DisableMfaDialog({ open, onOpenChange, authApi, onDisabled }) {
   const [submitError, setSubmitError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const passwordError = submitError
-    ? getFieldError(submitError, 'senha')
-    : null;
+  const passwordError = submitError ? getFieldError(submitError, 'senha') : null;
 
   function handleOpenChange(nextOpen) {
-    if (!nextOpen) setSubmitError(null);
+    if (isSubmitting) {
+      return;
+    }
+    if (!nextOpen) {
+      setSubmitError(null);
+    }
     onOpenChange(nextOpen);
   }
 
@@ -46,7 +49,7 @@ export function DisableMfaDialog({ open, onOpenChange, authApi, onDisabled }) {
       await authApi.delete('/auth/mfa', { json: { senha } });
 
       await onDisabled();
-      handleOpenChange(false);
+      onOpenChange(false);
     } catch (error) {
       if (!isAbortError(error)) {
         setSubmitError(toApiError(error));
@@ -58,7 +61,7 @@ export function DisableMfaDialog({ open, onOpenChange, authApi, onDisabled }) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" showCloseButton={!isSubmitting}>
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Desativar verificação em duas etapas</DialogTitle>
@@ -77,9 +80,7 @@ export function DisableMfaDialog({ open, onOpenChange, authApi, onDisabled }) {
                 type="password"
                 autoComplete="current-password"
                 placeholder="Digite sua senha"
-                aria-describedby={
-                  passwordError ? PASSWORD_ERROR_ID : undefined
-                }
+                aria-describedby={passwordError ? PASSWORD_ERROR_ID : undefined}
                 aria-invalid={Boolean(passwordError)}
                 disabled={isSubmitting}
                 onChange={() => setSubmitError(null)}
@@ -103,7 +104,12 @@ export function DisableMfaDialog({ open, onOpenChange, authApi, onDisabled }) {
                 </Button>
               }
             />
-            <Button type="submit" disabled={isSubmitting} aria-busy={isSubmitting}>
+            <Button
+              variant="destructive"
+              type="submit"
+              disabled={isSubmitting}
+              loading={isSubmitting}
+            >
               {isSubmitting ? 'Desativando...' : 'Desativar'}
             </Button>
           </DialogFooter>

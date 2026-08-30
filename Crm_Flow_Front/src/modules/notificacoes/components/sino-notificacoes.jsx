@@ -8,7 +8,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { formatarInstante } from '@/modules/crm/lib/formatadores';
-import { useMarcarComoLida, useMarcarTodasComoLidas, useNotificacoes } from '../hooks/use-notificacoes';
+import {
+  useMarcarComoLida,
+  useMarcarTodasComoLidas,
+  useNotificacoes,
+} from '../hooks/use-notificacoes';
 import {
   TAMANHO_NOTIFICACOES,
   destinoDaNotificacao,
@@ -22,7 +26,9 @@ const PRIMEIRA_PAGINA = 1;
 function Carregando() {
   return (
     <div aria-busy="true" className="grid gap-1.5">
-      <span className="sr-only" role="status">Carregando notificações…</span>
+      <span className="sr-only" role="status">
+        Carregando notificações…
+      </span>
       {Array.from({ length: 3 }, (_, indice) => (
         <Skeleton className="h-12 rounded-none" key={indice} />
       ))}
@@ -49,7 +55,9 @@ function ItemNotificacao({ notificacao, onAbrir }) {
           {naoLida && <span className="sr-only">Não lida: </span>}
           {notificacao.titulo}
         </span>
-        {notificacao.corpo && <span className="text-xs text-muted-foreground">{notificacao.corpo}</span>}
+        {notificacao.corpo && (
+          <span className="text-xs text-muted-foreground">{notificacao.corpo}</span>
+        )}
         <span className="font-mono text-[10px] text-muted-foreground tabular-nums">
           {formatarInstante(notificacao.created_at)}
         </span>
@@ -91,7 +99,9 @@ export function SinoNotificacoes({ triggerClassName }) {
 
   function abrir(notificacao) {
     // Não espera o back: a navegação não depende de marcar como lida.
-    if (!notificacao.lida_em) marcarLida.mutate(notificacao.id);
+    if (!notificacao.lida_em) {
+      marcarLida.mutate(notificacao.id);
+    }
 
     const destino = destinoDaNotificacao(notificacao);
     if (destino) {
@@ -139,7 +149,11 @@ export function SinoNotificacoes({ triggerClassName }) {
         {query.isPending ? (
           <Carregando />
         ) : query.error ? (
-          <ApiErrorAlert error={query.error} id="notificacoes-erro" title="Não foi possível carregar" />
+          <ApiErrorAlert
+            error={query.error}
+            id="notificacoes-erro"
+            title="Não foi possível carregar"
+          />
         ) : dados.itens.length === 0 ? (
           <div className="grid justify-items-center gap-2 border border-dashed border-border px-4 py-8 text-center">
             <BellOff className="size-5 text-muted-foreground" aria-hidden="true" />
@@ -157,7 +171,10 @@ export function SinoNotificacoes({ triggerClassName }) {
           </ul>
         )}
 
-        <ApiErrorAlert error={marcarTodas.error ?? marcarLida.error} id="notificacoes-marcar-erro" />
+        <ApiErrorAlert
+          error={marcarTodas.error ?? marcarLida.error}
+          id="notificacoes-marcar-erro"
+        />
 
         <div className="flex items-center justify-between gap-2 border-t border-border pt-2">
           <Button

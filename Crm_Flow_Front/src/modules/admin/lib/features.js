@@ -10,7 +10,9 @@ export function agruparFeaturesPorModulo(catalogo) {
   const grupos = new Map();
 
   for (const { moduleKey, featureKey } of catalogo) {
-    if (!grupos.has(moduleKey)) grupos.set(moduleKey, []);
+    if (!grupos.has(moduleKey)) {
+      grupos.set(moduleKey, []);
+    }
     grupos.get(moduleKey).push(featureKey);
   }
 

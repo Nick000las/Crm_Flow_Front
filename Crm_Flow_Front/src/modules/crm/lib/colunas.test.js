@@ -12,7 +12,14 @@ const campos = [
   { chave: 'nome', coluna: 'nome', label: 'Nome', tipo: 'texto', camada: 1, ordem: 0 },
   { chave: 'email', coluna: 'email', label: 'E-mail', tipo: 'texto', camada: 1, ordem: 1 },
   { chave: 'telefone', coluna: 'telefone', label: 'Telefone', tipo: 'texto', camada: 1, ordem: 2 },
-  { chave: 'fonteLead', coluna: 'fonte_lead', label: 'Origem', tipo: 'selecao', camada: 1, ordem: 3 },
+  {
+    chave: 'fonteLead',
+    coluna: 'fonte_lead',
+    label: 'Origem',
+    tipo: 'selecao',
+    camada: 1,
+    ordem: 3,
+  },
   { chave: 'status', coluna: 'status', label: 'Status', tipo: 'selecao', camada: 1, ordem: 4 },
   { chave: 'renda', label: 'Renda', tipo: 'numero', camada: 3, ordem: 10 },
 ];

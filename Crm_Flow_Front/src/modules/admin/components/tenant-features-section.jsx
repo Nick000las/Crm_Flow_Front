@@ -1,13 +1,7 @@
 import { useState } from 'react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { isAbortError, toApiError } from '@/services/api';
@@ -67,8 +61,8 @@ export function TenantFeaturesSection({ tenant, adminApi, onSaved }) {
       <CardHeader>
         <CardTitle>Feature flags</CardTitle>
         <CardDescription>
-          Libera funcionalidades novas para este tenant antes dos demais.
-          Desligar volta ao comportamento anterior na hora.
+          Libera funcionalidades novas para este tenant antes dos demais. Desligar volta ao
+          comportamento anterior na hora.
         </CardDescription>
       </CardHeader>
 
@@ -82,9 +76,7 @@ export function TenantFeaturesSection({ tenant, adminApi, onSaved }) {
           ) : carregando ? (
             <p className="text-sm text-muted-foreground">Carregando...</p>
           ) : grupos.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Nenhum módulo declara feature flags.
-            </p>
+            <p className="text-sm text-muted-foreground">Nenhum módulo declara feature flags.</p>
           ) : (
             grupos.map(({ moduleKey, features }) => (
               <fieldset className="grid gap-3" key={moduleKey}>

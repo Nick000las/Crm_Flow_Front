@@ -14,7 +14,9 @@ import { SelectSimples } from '../select-simples';
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">Carregando privacidade…</span>
+      <span className="sr-only" role="status">
+        Carregando privacidade…
+      </span>
       {Array.from({ length: 3 }, (_, indice) => (
         <Skeleton className="h-12 rounded-none" key={indice} />
       ))}
@@ -22,10 +24,16 @@ function Carregando() {
   );
 }
 
-const valoresDaConfig = ({ basePadrao, obrigatoria }) => ({ basePadrao: basePadrao ?? '', obrigatoria });
+const valoresDaConfig = ({ basePadrao, obrigatoria }) => ({
+  basePadrao: basePadrao ?? '',
+  obrigatoria,
+});
 
 /** Corpo do PUT (`.strict()` no back: só estas duas chaves). */
-const paraEnvio = ({ basePadrao, obrigatoria }) => ({ basePadrao: basePadrao || null, obrigatoria });
+const paraEnvio = ({ basePadrao, obrigatoria }) => ({
+  basePadrao: basePadrao || null,
+  obrigatoria,
+});
 
 /**
  * O form da configuração. Montado com `key` pela resposta: depois de salvar,
@@ -34,17 +42,22 @@ const paraEnvio = ({ basePadrao, obrigatoria }) => ({ basePadrao: basePadrao || 
 function FormLgpd({ config, podeEditar, onSalvo }) {
   const [valores, setValores] = useState(() => valoresDaConfig(config));
   const salvar = useSalvarLgpd();
-  const mudou = JSON.stringify(paraEnvio(valores)) !== JSON.stringify(paraEnvio(valoresDaConfig(config)));
+  const mudou =
+    JSON.stringify(paraEnvio(valores)) !== JSON.stringify(paraEnvio(valoresDaConfig(config)));
   const travado = salvar.isPending || !podeEditar;
 
   function alterar(parcial) {
     setValores((atuais) => ({ ...atuais, ...parcial }));
-    if (salvar.error) salvar.reset();
+    if (salvar.error) {
+      salvar.reset();
+    }
   }
 
   function handleSubmit(event) {
     event.preventDefault();
-    if (mudou) salvar.mutate(paraEnvio(valores), { onSuccess: () => onSalvo('Configuração salva.') });
+    if (mudou) {
+      salvar.mutate(paraEnvio(valores), { onSuccess: () => onSalvo('Configuração salva.') });
+    }
   }
 
   return (
@@ -64,7 +77,8 @@ function FormLgpd({ config, podeEditar, onSalvo }) {
           value={valores.basePadrao}
         />
         <p className="text-xs text-muted-foreground" id="lgpd-base-padrao-ajuda">
-          Vem escolhida no cadastro de lead; quem cadastra pode trocar. Lead criado sem base recebe a padrão.
+          Vem escolhida no cadastro de lead; quem cadastra pode trocar. Lead criado sem base recebe
+          a padrão.
         </p>
       </div>
 
@@ -80,8 +94,8 @@ function FormLgpd({ config, podeEditar, onSalvo }) {
           Base legal obrigatória
         </label>
         <p className="text-xs text-muted-foreground" id="lgpd-obrigatoria-ajuda">
-          Sem base (e sem padrão), o lead não é salvo; no import, escolha a base do lote. É o mesmo "obrigatório" do
-          campo Base legal em Configurações › Campos.
+          Sem base (e sem padrão), o lead não é salvo; no import, escolha a base do lote. É o mesmo
+          "obrigatório" do campo Base legal em Configurações › Campos.
         </p>
       </div>
 
@@ -121,9 +135,15 @@ export function SecaoLgpd() {
   const [aviso, setAviso] = useState(null);
   const erro = configQuery.error;
 
-  if (isAccessError(erro)) return <AcessoIndisponivel error={erro} />;
-  if (erro) return <ApiErrorAlert error={erro} id="lgpd-carregar-erro" />;
-  if (configQuery.isPending) return <Carregando />;
+  if (isAccessError(erro)) {
+    return <AcessoIndisponivel error={erro} />;
+  }
+  if (erro) {
+    return <ApiErrorAlert error={erro} id="lgpd-carregar-erro" />;
+  }
+  if (configQuery.isPending) {
+    return <Carregando />;
+  }
 
   const config = configQuery.data;
 
@@ -131,8 +151,9 @@ export function SecaoLgpd() {
     <div className="grid gap-4">
       <div className="grid max-w-2xl gap-1 text-sm text-muted-foreground">
         <p>
-          Todo lead guarda a base legal (LGPD), a data em que ela foi registrada, a origem do registro e o opt-out de
-          marketing. Salvar mostra esses campos no detalhe, na tabela e nos filtros.
+          Todo lead guarda a base legal (LGPD), a data em que ela foi registrada, a origem do
+          registro e o opt-out de marketing. Salvar mostra esses campos no detalhe, na tabela e nos
+          filtros.
         </p>
         <p>
           {podeEditar
@@ -145,7 +166,12 @@ export function SecaoLgpd() {
         {aviso}
       </p>
 
-      <FormLgpd config={config} key={JSON.stringify(config)} onSalvo={setAviso} podeEditar={podeEditar} />
+      <FormLgpd
+        config={config}
+        key={JSON.stringify(config)}
+        onSalvo={setAviso}
+        podeEditar={podeEditar}
+      />
     </div>
   );
 }

@@ -1,6 +1,13 @@
 import { CAMADA, ROTULOS_CATEGORIA, TIPOS_CAMPO, TIPOS_REGRA } from '../constants.js';
 import { lerValorDoCampo } from './colunas.js';
-import { OPERADOR, descreverItem, itemDaLinha, linhaDoItem, operadoresDoCampo, valorVazio } from './filtro.js';
+import {
+  OPERADOR,
+  descreverItem,
+  itemDaLinha,
+  linhaDoItem,
+  operadoresDoCampo,
+  valorVazio,
+} from './filtro.js';
 import { idNoForm, paraValorDeApi } from './form-lead.js';
 import { ehListaLivre, opcaoDoCampo, rotuloOpcao } from './opcoes.js';
 
@@ -33,7 +40,8 @@ import { ehListaLivre, opcaoDoCampo, rotuloOpcao } from './opcoes.js';
 const TAMANHO_DIA = 10;
 
 const textoNormalizado = (valor) => String(valor).trim().toLowerCase();
-const diaDe = (valor) => (valor instanceof Date ? valor.toISOString() : String(valor)).slice(0, TAMANHO_DIA);
+const diaDe = (valor) =>
+  (valor instanceof Date ? valor.toISOString() : String(valor)).slice(0, TAMANHO_DIA);
 const somenteDigitos = (texto) => texto.replace(/\D/g, '');
 /** CNPJ (M11, alfanumérico): sem pontuação e em maiúsculas — `chaveDocumento` do back. */
 const chaveDocumento = (texto) => texto.replace(/[^0-9A-Za-z]/g, '').toUpperCase();
@@ -44,22 +52,33 @@ const MINUTOS_NA_HORA = 60;
 /** `9:05`, `09:05` ou `09:05:30` → `09:05`; inválida → `null` (`normalizarHora` do back). */
 function normalizarHora(texto) {
   const partes = PADRAO_HORA.exec(texto.trim());
-  if (!partes) return null;
+  if (!partes) {
+    return null;
+  }
   const [horas, minutos] = [Number(partes[1]), Number(partes[2])];
-  if (horas >= HORAS_NO_DIA || minutos >= MINUTOS_NA_HORA) return null;
+  if (horas >= HORAS_NO_DIA || minutos >= MINUTOS_NA_HORA) {
+    return null;
+  }
   return `${String(horas).padStart(2, '0')}:${partes[2]}`;
 }
 
-const objetoSimples = (valor) => typeof valor === 'object' && valor !== null && !Array.isArray(valor);
+const objetoSimples = (valor) =>
+  typeof valor === 'object' && valor !== null && !Array.isArray(valor);
 
 /**
  * Vazio para fins de obrigatoriedade: ausente, `null`, texto vazio, lista
  * vazia ou objeto (endereço, período) sem nenhuma parte preenchida.
  */
 export function valorAusente(valor) {
-  if (valor === undefined || valor === null || valor === '') return true;
-  if (Array.isArray(valor)) return valor.length === 0;
-  if (objetoSimples(valor)) return Object.values(valor).every(valorAusente);
+  if (valor === undefined || valor === null || valor === '') {
+    return true;
+  }
+  if (Array.isArray(valor)) {
+    return valor.length === 0;
+  }
+  if (objetoSimples(valor)) {
+    return Object.values(valor).every(valorAusente);
+  }
   return false;
 }
 
@@ -100,9 +119,15 @@ function comparavel(tipo, valor) {
  */
 export function avaliarCondicao(tipo, operador, valorRegra, valorLead) {
   const ausente = valorAusente(valorLead);
-  if (operador === OPERADOR.VAZIO) return ausente;
-  if (operador === OPERADOR.NAO_VAZIO) return !ausente;
-  if (ausente) return false;
+  if (operador === OPERADOR.VAZIO) {
+    return ausente;
+  }
+  if (operador === OPERADOR.NAO_VAZIO) {
+    return !ausente;
+  }
+  if (ausente) {
+    return false;
+  }
 
   const lista = Array.isArray(valorLead) ? valorLead : null;
   switch (operador) {
@@ -111,17 +136,25 @@ export function avaliarCondicao(tipo, operador, valorRegra, valorLead) {
     case OPERADOR.CONTEM:
       return lista
         ? lista.includes(valorRegra)
-        : textoNormalizado(comparavel(tipo, valorLead)).includes(textoNormalizado(comparavel(tipo, valorRegra)));
+        : textoNormalizado(comparavel(tipo, valorLead)).includes(
+            textoNormalizado(comparavel(tipo, valorRegra)),
+          );
     case OPERADOR.E_UM_DOS: {
-      const opcoes = (Array.isArray(valorRegra) ? valorRegra : []).map((item) => comparavel(tipo, item));
-      return lista ? lista.some((item) => opcoes.includes(item)) : opcoes.includes(comparavel(tipo, valorLead));
+      const opcoes = (Array.isArray(valorRegra) ? valorRegra : []).map((item) =>
+        comparavel(tipo, item),
+      );
+      return lista
+        ? lista.some((item) => opcoes.includes(item))
+        : opcoes.includes(comparavel(tipo, valorLead));
     }
     case OPERADOR.ENTRE: {
       const { de, ate } = valorRegra ?? {};
       if (tipo === TIPOS_CAMPO.INTERVALO_DATAS) {
         // Sobreposição: o período começa até o fim da regra e termina depois do início dela.
-        const comecaAntesDoFim = ate === undefined || ate === null || diaDe(valorLead.de) <= diaDe(ate);
-        const terminaDepoisDoInicio = de === undefined || de === null || diaDe(valorLead.ate) >= diaDe(de);
+        const comecaAntesDoFim =
+          ate === undefined || ate === null || diaDe(valorLead.de) <= diaDe(ate);
+        const terminaDepoisDoInicio =
+          de === undefined || de === null || diaDe(valorLead.ate) >= diaDe(de);
         return comecaAntesDoFim && terminaDepoisDoInicio;
       }
       const atual = comparavel(tipo, valorLead);
@@ -143,8 +176,10 @@ function regraCasa(regra, lead, { categoriaDoStatus = null }) {
   if (regra.kind === TIPOS_REGRA.POR_STATUS) {
     const { status = [], categorias = [] } = regra.condicao;
     return (
-      (lead.status != null && status.includes(lead.status)) ||
-      (categoriaDoStatus != null && categorias.includes(categoriaDoStatus))
+      (lead.status !== null && lead.status !== undefined && status.includes(lead.status)) ||
+      (categoriaDoStatus !== null &&
+        categoriaDoStatus !== undefined &&
+        categorias.includes(categoriaDoStatus))
     );
   }
   const { campo, operador, valor } = regra.condicao;
@@ -166,15 +201,23 @@ export function avaliarRegras(regras, lead, contexto = {}) {
   const visibilidade = new Map();
 
   for (const regra of regras) {
-    if (!regra.ativo) continue;
+    if (!regra.ativo) {
+      continue;
+    }
     const casa = regraCasa(regra, lead, contexto);
     const { chave } = regra.alvo;
-    if (regra.efeito.visivel) visibilidade.set(chave, (visibilidade.get(chave) ?? false) || casa);
-    if (regra.efeito.obrigatorio && casa) obrigatorios.add(chave);
+    if (regra.efeito.visivel) {
+      visibilidade.set(chave, (visibilidade.get(chave) ?? false) || casa);
+    }
+    if (regra.efeito.obrigatorio && casa) {
+      obrigatorios.add(chave);
+    }
   }
 
   const ocultos = [...visibilidade].filter(([, visivel]) => !visivel).map(([chave]) => chave);
-  for (const chave of ocultos) obrigatorios.delete(chave);
+  for (const chave of ocultos) {
+    obrigatorios.delete(chave);
+  }
   return { obrigatorios: [...obrigatorios].sort(), ocultos: ocultos.sort() };
 }
 
@@ -197,7 +240,9 @@ export function categoriaDoStatus(campos, status) {
 
 /** Tags: o form edita pelo nome; a regra compara pela key. */
 function keysDasTags(campo, nomes) {
-  const porNome = new Map((campo.opcoesLista ?? []).map((opcao) => [textoNormalizado(opcao.label), opcao.key]));
+  const porNome = new Map(
+    (campo.opcoesLista ?? []).map((opcao) => [textoNormalizado(opcao.label), opcao.key]),
+  );
   return nomes.map((nome) => porNome.get(textoNormalizado(nome)) ?? nome);
 }
 
@@ -216,11 +261,18 @@ export function leadParaAvaliar(todosCampos, leadAtual, camposDoForm, valores) {
   const lead = {};
   const customFields = {};
   const atribuir = (campo, valor) => {
-    if (campo.camada === CAMADA.CAMADA_3) customFields[campo.chave] = valor;
-    else lead[campo.chave] = valor;
+    if (campo.camada === CAMADA.CAMADA_3) {
+      customFields[campo.chave] = valor;
+    } else {
+      lead[campo.chave] = valor;
+    }
   };
 
-  if (leadAtual) for (const campo of todosCampos) atribuir(campo, lerValorDoCampo(leadAtual, campo));
+  if (leadAtual) {
+    for (const campo of todosCampos) {
+      atribuir(campo, lerValorDoCampo(leadAtual, campo));
+    }
+  }
   for (const campo of camposDoForm) {
     const bruto = valores[idNoForm(campo)];
     const valor = ehListaLivre(campo) && Array.isArray(bruto) ? keysDasTags(campo, bruto) : bruto;
@@ -242,7 +294,9 @@ export function leadParaAvaliar(todosCampos, leadAtual, camposDoForm, valores) {
  */
 export function avaliarNoForm(regras, todosCampos, leadAtual, camposDoForm, valores) {
   const lead = leadParaAvaliar(todosCampos, leadAtual, camposDoForm, valores);
-  return avaliarRegras(regras, lead, { categoriaDoStatus: categoriaDoStatus(todosCampos, lead.status) });
+  return avaliarRegras(regras, lead, {
+    categoriaDoStatus: categoriaDoStatus(todosCampos, lead.status),
+  });
 }
 
 /**
@@ -258,7 +312,9 @@ export function camposComRegras(campos, { obrigatorios, ocultos }) {
 
   return campos
     .filter((campo) => !ocultas.has(campo.chave))
-    .map((campo) => (!campo.obrigatorio && exigidas.has(campo.chave) ? { ...campo, obrigatorio: true } : campo));
+    .map((campo) =>
+      !campo.obrigatorio && exigidas.has(campo.chave) ? { ...campo, obrigatorio: true } : campo,
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -280,7 +336,9 @@ export function descreverRegra(regra, campos) {
     const doStatus = campoDoStatus(campos);
     const partes = [
       ...status.map((key) => rotuloOpcao(key, doStatus)),
-      ...categorias.map((categoria) => `um status ${(ROTULOS_CATEGORIA[categoria] ?? categoria).toLowerCase()}`),
+      ...categorias.map(
+        (categoria) => `um status ${(ROTULOS_CATEGORIA[categoria] ?? categoria).toLowerCase()}`,
+      ),
     ];
     return `Obrigatório quando o status é ${juntarComOu(partes)}`;
   }
@@ -289,7 +347,12 @@ export function descreverRegra(regra, campos) {
   const doSchema = campos.find((atual) => atual.id === campo.id) ?? campo;
   const condicao = descreverItem({ chave: campo.chave, operador, valor }, doSchema);
   const { obrigatorio, visivel } = regra.efeito;
-  const efeito = obrigatorio && visivel ? 'Obrigatório e só aparece' : obrigatorio ? 'Obrigatório' : 'Só aparece';
+  const efeito =
+    obrigatorio && visivel
+      ? 'Obrigatório e só aparece'
+      : obrigatorio
+        ? 'Obrigatório'
+        : 'Só aparece';
   return `${efeito} quando ${condicao}`;
 }
 
@@ -317,7 +380,9 @@ const CONDICAO_VAZIA = Object.freeze({ campoId: '', operador: '', valor: null })
 
 /** Condição vazia para um campo: o primeiro operador do tipo dele. */
 export function condicaoDoCampo(campo) {
-  if (!campo) return { ...CONDICAO_VAZIA };
+  if (!campo) {
+    return { ...CONDICAO_VAZIA };
+  }
   const [operador] = operadoresDoCampo(campo);
   return { campoId: campo.id, operador, valor: valorVazio(operador, campo) };
 }
@@ -338,10 +403,16 @@ export function valoresDaRegra(regra, campos, kind = TIPOS_REGRA.POR_STATUS) {
     obrigatorio: true,
     visivel: false,
   };
-  if (!regra) return base;
+  if (!regra) {
+    return base;
+  }
 
   if (regra.kind === TIPOS_REGRA.POR_STATUS) {
-    return { ...base, status: regra.condicao.status ?? [], categorias: regra.condicao.categorias ?? [] };
+    return {
+      ...base,
+      status: regra.condicao.status ?? [],
+      categorias: regra.condicao.categorias ?? [],
+    };
   }
 
   const { campo, operador, valor } = regra.condicao;
@@ -365,8 +436,13 @@ export function valoresDaRegra(regra, campos, kind = TIPOS_REGRA.POR_STATUS) {
  */
 export function valorDaCondicao(condicao, campos) {
   const campo = campos.find((atual) => atual.id === condicao.campoId);
-  if (!campo) return { erro: MENSAGENS_REGRA.CAMPO_CONDICAO };
-  const resultado = itemDaLinha({ chave: campo.chave, operador: condicao.operador, valor: condicao.valor }, campo);
+  if (!campo) {
+    return { erro: MENSAGENS_REGRA.CAMPO_CONDICAO };
+  }
+  const resultado = itemDaLinha(
+    { chave: campo.chave, operador: condicao.operador, valor: condicao.valor },
+    campo,
+  );
   return 'erro' in resultado ? resultado : { valor: resultado.item.valor };
 }
 
@@ -377,21 +453,31 @@ export function valorDaCondicao(condicao, campos) {
  */
 export function validarRegra(valores, campos) {
   const erros = {};
-  if (!valores.campoId) erros.campoId = MENSAGENS_REGRA.CAMPO;
+  if (!valores.campoId) {
+    erros.campoId = MENSAGENS_REGRA.CAMPO;
+  }
 
   if (valores.kind === TIPOS_REGRA.POR_STATUS) {
-    if (valores.status.length === 0 && valores.categorias.length === 0) erros.condicao = MENSAGENS_REGRA.STATUS;
+    if (valores.status.length === 0 && valores.categorias.length === 0) {
+      erros.condicao = MENSAGENS_REGRA.STATUS;
+    }
     return erros;
   }
 
   const { campoId } = valores.condicao;
-  if (!campoId || !campos.some((campo) => campo.id === campoId)) erros['condicao.campoId'] = MENSAGENS_REGRA.CAMPO_CONDICAO;
-  else if (campoId === valores.campoId) erros['condicao.campoId'] = MENSAGENS_REGRA.MESMO_CAMPO;
-  else {
+  if (!campoId || !campos.some((campo) => campo.id === campoId)) {
+    erros['condicao.campoId'] = MENSAGENS_REGRA.CAMPO_CONDICAO;
+  } else if (campoId === valores.campoId) {
+    erros['condicao.campoId'] = MENSAGENS_REGRA.MESMO_CAMPO;
+  } else {
     const resultado = valorDaCondicao(valores.condicao, campos);
-    if ('erro' in resultado) erros['condicao.valor'] = resultado.erro;
+    if ('erro' in resultado) {
+      erros['condicao.valor'] = resultado.erro;
+    }
   }
-  if (!valores.obrigatorio && !valores.visivel) erros.efeito = MENSAGENS_REGRA.EFEITO;
+  if (!valores.obrigatorio && !valores.visivel) {
+    erros.efeito = MENSAGENS_REGRA.EFEITO;
+  }
 
   return erros;
 }
@@ -431,11 +517,16 @@ function corpoCompleto(valores, campos) {
  */
 export function payloadDaRegra(valores, campos, original = null) {
   const corpo = corpoCompleto(valores, campos);
-  if (!original) return corpo;
+  if (!original) {
+    return corpo;
+  }
 
   const antes = corpoCompleto(valoresDaRegra(original, campos), campos);
   const parcial = Object.fromEntries(
-    Object.entries(corpo).filter(([parte, valor]) => parte !== 'kind' && JSON.stringify(valor) !== JSON.stringify(antes[parte])),
+    Object.entries(corpo).filter(
+      ([parte, valor]) =>
+        parte !== 'kind' && JSON.stringify(valor) !== JSON.stringify(antes[parte]),
+    ),
   );
   return Object.keys(parcial).length > 0 ? parcial : null;
 }

@@ -40,7 +40,10 @@ export function CampoTextoLongo({ value, onChange, controle }) {
         onChange={(event) => onChange(event.target.value)}
         value={value}
       />
-      <p className="justify-self-end font-mono text-[11px] text-muted-foreground tabular-nums" id={contadorId}>
+      <p
+        className="justify-self-end font-mono text-[11px] text-muted-foreground tabular-nums"
+        id={contadorId}
+      >
         {value.length.toLocaleString('pt-BR')}/{LIMITE_TEXTO_LONGO.toLocaleString('pt-BR')}
       </p>
     </div>
@@ -88,8 +91,17 @@ export function CampoTelefone({ value, onChange, controle }) {
 const DOCUMENTOS = Object.freeze({
   [TIPOS_CAMPO.CPF]: { mascarar: mascararCpf, placeholder: '000.000.000-00', inputMode: 'numeric' },
   // CNPJ alfanumérico (M11): teclado de texto, não numérico.
-  [TIPOS_CAMPO.CNPJ]: { mascarar: mascararCnpj, placeholder: '00.000.000/0000-00', inputMode: 'text' },
-  [TIPOS_CAMPO.CEP]: { mascarar: mascararCep, placeholder: '00000-000', inputMode: 'numeric', autoComplete: 'postal-code' },
+  [TIPOS_CAMPO.CNPJ]: {
+    mascarar: mascararCnpj,
+    placeholder: '00.000.000/0000-00',
+    inputMode: 'text',
+  },
+  [TIPOS_CAMPO.CEP]: {
+    mascarar: mascararCep,
+    placeholder: '00000-000',
+    inputMode: 'numeric',
+    autoComplete: 'postal-code',
+  },
 });
 
 /** CPF, CNPJ e CEP: máscara ao digitar; o payload vai sem ela (`paraValorDeApi`). */

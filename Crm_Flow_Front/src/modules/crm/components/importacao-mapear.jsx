@@ -16,17 +16,22 @@ import { problemasDoMapeamento } from '../lib/importacao';
 import { exigeLote, problemaDoLote } from '../lib/lgpd';
 import { SelectSimples } from './select-simples';
 
-const HEAD_CLASS = 'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
+const HEAD_CLASS =
+  'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
 const AMOSTRAS = 3;
 const NAO_IMPORTAR = 'Não importar';
 
 function textoDaAmostra(valor) {
-  if (valor === null || valor === undefined || valor === '') return '—';
+  if (valor === null || valor === undefined || valor === '') {
+    return '—';
+  }
   return String(valor);
 }
 
 function Avisos({ problemas }) {
-  if (problemas.length === 0) return null;
+  if (problemas.length === 0) {
+    return null;
+  }
 
   return (
     <div className="flex gap-2 border border-border p-3 text-sm" role="status">
@@ -43,13 +48,19 @@ function Avisos({ problemas }) {
 function Estrategia({ valor, onChange }) {
   return (
     <fieldset className="grid gap-2">
-      <legend className="mb-1 text-sm font-medium">Quando o lead já existir (mesmo e-mail ou telefone)</legend>
+      <legend className="mb-1 text-sm font-medium">
+        Quando o lead já existir (mesmo e-mail ou telefone)
+      </legend>
       {ESTRATEGIAS_DUPLICATA.map((estrategia) => {
         const { rotulo, descricao } = ROTULOS_ESTRATEGIA[estrategia];
         const id = `estrategia-${estrategia}`;
 
         return (
-          <label className="flex cursor-pointer items-start gap-2 border border-border p-3 text-sm has-checked:border-foreground" htmlFor={id} key={estrategia}>
+          <label
+            className="flex cursor-pointer items-start gap-2 border border-border p-3 text-sm has-checked:border-foreground"
+            htmlFor={id}
+            key={estrategia}
+          >
             <input
               checked={valor === estrategia}
               className="mt-0.5 accent-foreground"
@@ -147,7 +158,10 @@ export function ImportacaoMapear({
   const lgpd = useConfigLgpd().data ?? null;
   const opcoes = preview.campos.map((campo) => ({ valor: campo.chave, rotulo: campo.label }));
   const doLote = problemaDoLote(lgpd, mapeamento, baseLegalLote, CAMPOS_LGPD.BASE_LEGAL);
-  const problemas = [...problemasDoMapeamento(mapeamento, preview.campos), ...(doLote ? [doLote] : [])];
+  const problemas = [
+    ...problemasDoMapeamento(mapeamento, preview.campos),
+    ...(doLote ? [doLote] : []),
+  ];
   // O back devolve os problemas de mapeamento como lista em `fields.mapeamento`.
   const problemasDoBack = validacao.error ? (validacao.error.fields?.mapeamento ?? []) : [];
 
@@ -155,16 +169,25 @@ export function ImportacaoMapear({
     <div className="grid gap-6">
       <p className="text-sm text-muted-foreground">
         <span className="font-mono text-foreground">{nomeArquivo}</span> ·{' '}
-        <span className="font-mono tabular-nums">{preview.totalLinhas.toLocaleString('pt-BR')}</span> linhas
+        <span className="font-mono tabular-nums">
+          {preview.totalLinhas.toLocaleString('pt-BR')}
+        </span>{' '}
+        linhas
       </p>
 
       <div className="overflow-x-auto border border-border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className={HEAD_CLASS} scope="col">Coluna da planilha</TableHead>
-              <TableHead className={HEAD_CLASS} scope="col">Campo do CRM</TableHead>
-              <TableHead className={HEAD_CLASS} scope="col">Amostras</TableHead>
+              <TableHead className={HEAD_CLASS} scope="col">
+                Coluna da planilha
+              </TableHead>
+              <TableHead className={HEAD_CLASS} scope="col">
+                Campo do CRM
+              </TableHead>
+              <TableHead className={HEAD_CLASS} scope="col">
+                Amostras
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -203,9 +226,15 @@ export function ImportacaoMapear({
           valor={baseLegalLote}
         />
       )}
-      {validacao.error && !getFieldError(validacao.error, 'mapeamento') && !getFieldError(validacao.error, 'baseLegalLote') && (
-        <ApiErrorAlert error={validacao.error} id="importacao-validar-erro" title="Não foi possível validar" />
-      )}
+      {validacao.error &&
+        !getFieldError(validacao.error, 'mapeamento') &&
+        !getFieldError(validacao.error, 'baseLegalLote') && (
+          <ApiErrorAlert
+            error={validacao.error}
+            id="importacao-validar-erro"
+            title="Não foi possível validar"
+          />
+        )}
 
       <Estrategia onChange={onEstrategia} valor={estrategia} />
 

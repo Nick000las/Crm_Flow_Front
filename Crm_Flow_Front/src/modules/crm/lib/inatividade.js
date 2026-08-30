@@ -27,7 +27,9 @@ const INTEIRO = /^\d+$/;
  * @param {boolean} comInatividade
  */
 export function filtroDaBusca(filtro, comInatividade) {
-  if (comInatividade || !filtro.esfriando) return filtro;
+  if (comInatividade || !filtro.esfriando) {
+    return filtro;
+  }
 
   return Object.fromEntries(Object.entries(filtro).filter(([chave]) => chave !== 'esfriando'));
 }
@@ -41,7 +43,9 @@ export function filtroDaBusca(filtro, comInatividade) {
  */
 export function diasEsfriando(esfriandoDesde, agora = new Date()) {
   const instante = esfriandoDesde ? Date.parse(esfriandoDesde) : Number.NaN;
-  if (Number.isNaN(instante)) return null;
+  if (Number.isNaN(instante)) {
+    return null;
+  }
 
   return Math.max(0, Math.floor((agora.getTime() - instante) / MS_POR_DIA));
 }
@@ -49,8 +53,12 @@ export function diasEsfriando(esfriandoDesde, agora = new Date()) {
 /** "Esfriando há 3 dias" — o selo da tabela e do drawer. Vazio sem data. */
 export function textoEsfriando(esfriandoDesde, agora) {
   const dias = diasEsfriando(esfriandoDesde, agora);
-  if (dias === null) return '';
-  if (dias === 0) return 'Esfriando desde hoje';
+  if (dias === null) {
+    return '';
+  }
+  if (dias === 0) {
+    return 'Esfriando desde hoje';
+  }
 
   return `Esfriando há ${dias} ${dias === 1 ? 'dia' : 'dias'}`;
 }
@@ -66,7 +74,10 @@ export function statusEsfria(status) {
  */
 export function valoresDaInatividade(lista) {
   return Object.fromEntries(
-    lista.map(({ key, dias }) => [key, { ligado: dias !== null, dias: dias === null ? '' : String(dias) }]),
+    lista.map(({ key, dias }) => [
+      key,
+      { ligado: dias !== null, dias: dias === null ? '' : String(dias) },
+    ]),
   );
 }
 
@@ -79,7 +90,10 @@ export function valoresDaInatividade(lista) {
  * @returns {ValorInatividade}
  */
 export function alternarStatus(atual, ligado) {
-  return { ligado, dias: ligado && atual.dias === '' ? String(INATIVIDADE.DIAS_PADRAO) : atual.dias };
+  return {
+    ligado,
+    dias: ligado && atual.dias === '' ? String(INATIVIDADE.DIAS_PADRAO) : atual.dias,
+  };
 }
 
 /** @param {string} texto */
@@ -98,11 +112,20 @@ function lerDias(texto) {
 export function errosLocais(valores) {
   return Object.fromEntries(
     Object.entries(valores).flatMap(([key, { ligado, dias }]) => {
-      if (!ligado) return [];
+      if (!ligado) {
+        return [];
+      }
       const numero = lerDias(dias);
       const valido = numero >= INATIVIDADE.DIAS_MIN && numero <= INATIVIDADE.DIAS_MAX;
 
-      return valido ? [] : [[key, `Use um número inteiro de ${INATIVIDADE.DIAS_MIN} a ${INATIVIDADE.DIAS_MAX} dias`]];
+      return valido
+        ? []
+        : [
+            [
+              key,
+              `Use um número inteiro de ${INATIVIDADE.DIAS_MIN} a ${INATIVIDADE.DIAS_MAX} dias`,
+            ],
+          ];
     }),
   );
 }
@@ -119,7 +142,9 @@ export function inatividadeParaEnvio(valores, lista) {
   const mudancas = Object.fromEntries(
     lista.flatMap((status) => {
       const valor = valores[status.key];
-      if (!valor || !statusEsfria(status)) return [];
+      if (!valor || !statusEsfria(status)) {
+        return [];
+      }
 
       const dias = valor.ligado ? lerDias(valor.dias) : null;
       return dias === status.dias ? [] : [[status.key, dias]];

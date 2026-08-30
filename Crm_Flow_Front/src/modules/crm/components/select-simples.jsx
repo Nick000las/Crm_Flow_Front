@@ -35,7 +35,11 @@ export function SelectSimples({
   const textoVazio = vazio ?? placeholder;
 
   return (
-    <Select disabled={disabled} onValueChange={(valor) => onChange(valor ?? '')} value={value || null}>
+    <Select
+      disabled={disabled}
+      onValueChange={(valor) => onChange(valor ?? '')}
+      value={value || null}
+    >
       <SelectTrigger {...trigger} className={cn('h-9 w-full rounded-none', className)}>
         <SelectValue placeholder={textoVazio}>
           {(valor) => rotuloPorValor.get(valor) ?? textoVazio}

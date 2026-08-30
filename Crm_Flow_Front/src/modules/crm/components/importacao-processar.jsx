@@ -30,7 +30,10 @@ function Progresso({ job }) {
         className="h-2 w-full border border-border"
         role="progressbar"
       >
-        <div className="h-full bg-foreground transition-[width] duration-200" style={{ width: `${percentual}%` }} />
+        <div
+          className="h-full bg-foreground transition-[width] duration-200"
+          style={{ width: `${percentual}%` }}
+        />
       </div>
       <p className="font-mono text-xs text-muted-foreground tabular-nums">
         {formatar(job.linhas_processadas)} / {formatar(job.total_linhas)} linhas · {percentual}%
@@ -44,7 +47,9 @@ function Contadores({ job }) {
     <dl className="grid grid-cols-2 border border-border sm:grid-cols-4">
       {CONTADORES.map(({ chave, rotulo }) => (
         <div className="grid gap-1 border-border p-3 not-last:border-r" key={chave}>
-          <dt className="font-mono text-[11px] tracking-wide text-muted-foreground uppercase">{rotulo}</dt>
+          <dt className="font-mono text-[11px] tracking-wide text-muted-foreground uppercase">
+            {rotulo}
+          </dt>
           <dd className="font-mono text-xl tabular-nums">{formatar(job[chave])}</dd>
         </div>
       ))}
@@ -54,9 +59,11 @@ function Contadores({ job }) {
 
 const MENSAGEM_POR_STATUS = Object.freeze({
   [IMPORT_JOB_STATUS.PENDENTE]: 'A importação ainda não entrou na fila. Confirme para começar.',
-  [IMPORT_JOB_STATUS.PROCESSANDO]: 'Importando… pode sair desta tela: o processamento continua e o link acompanha.',
+  [IMPORT_JOB_STATUS.PROCESSANDO]:
+    'Importando… pode sair desta tela: o processamento continua e o link acompanha.',
   [IMPORT_JOB_STATUS.CONCLUIDO]: 'Importação concluída.',
-  [IMPORT_JOB_STATUS.FALHOU]: 'A importação falhou no meio do processamento. As linhas já gravadas continuam nos leads.',
+  [IMPORT_JOB_STATUS.FALHOU]:
+    'A importação falhou no meio do processamento. As linhas já gravadas continuam nos leads.',
 });
 
 /**
@@ -69,11 +76,22 @@ export function ImportacaoProcessar({ jobId, onNovaImportacao }) {
   const { data: job, error, isPending } = useImportacao(jobId);
   const confirmar = useConfirmarImportacao();
 
-  if (error) return <ApiErrorAlert error={error} id="importacao-status-erro" title="Não foi possível acompanhar" />;
-  if (isPending) return <Skeleton className="h-24 rounded-none" />;
+  if (error) {
+    return (
+      <ApiErrorAlert
+        error={error}
+        id="importacao-status-erro"
+        title="Não foi possível acompanhar"
+      />
+    );
+  }
+  if (isPending) {
+    return <Skeleton className="h-24 rounded-none" />;
+  }
 
   const pendente = job.status === IMPORT_JOB_STATUS.PENDENTE;
-  const terminou = job.status === IMPORT_JOB_STATUS.CONCLUIDO || job.status === IMPORT_JOB_STATUS.FALHOU;
+  const terminou =
+    job.status === IMPORT_JOB_STATUS.CONCLUIDO || job.status === IMPORT_JOB_STATUS.FALHOU;
   const filaFora = confirmar.error?.code === 'QUEUE_UNAVAILABLE';
 
   return (
@@ -99,8 +117,16 @@ export function ImportacaoProcessar({ jobId, onNovaImportacao }) {
 
       <div className="flex flex-wrap gap-2">
         {pendente && (
-          <Button aria-busy={confirmar.isPending} disabled={confirmar.isPending} onClick={() => confirmar.mutate(jobId)}>
-            {confirmar.isPending ? 'Confirmando…' : filaFora ? 'Tentar novamente' : 'Confirmar importação'}
+          <Button
+            aria-busy={confirmar.isPending}
+            disabled={confirmar.isPending}
+            onClick={() => confirmar.mutate(jobId)}
+          >
+            {confirmar.isPending
+              ? 'Confirmando…'
+              : filaFora
+                ? 'Tentar novamente'
+                : 'Confirmar importação'}
           </Button>
         )}
         {terminou && (

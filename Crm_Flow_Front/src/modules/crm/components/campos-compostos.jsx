@@ -80,7 +80,8 @@ const ATRIBUTOS_PARTE = Object.freeze({
 /** Endereço (M11): uma parte por input; o payload leva só as preenchidas. */
 export function CampoEndereco({ value, onChange, controle }) {
   function alterar(parte, texto) {
-    const proximo = parte === 'cep' ? mascararCep(texto) : parte === 'uf' ? texto.toUpperCase() : texto;
+    const proximo =
+      parte === 'cep' ? mascararCep(texto) : parte === 'uf' ? texto.toUpperCase() : texto;
     onChange({ ...value, [parte]: proximo });
   }
 

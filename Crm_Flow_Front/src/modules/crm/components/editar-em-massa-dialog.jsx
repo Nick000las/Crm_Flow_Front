@@ -38,10 +38,19 @@ function Alteracao({ id, rotulo, ativa, onAtivar, erro, desabilitado, children }
     <fieldset className="grid gap-2 border-b border-border px-3 py-3 last:border-b-0">
       <legend className="sr-only">{rotulo}</legend>
       <label className="flex items-center gap-2 text-sm font-medium" htmlFor={`${id}-ativa`}>
-        <Checkbox checked={ativa} disabled={desabilitado} id={`${id}-ativa`} onCheckedChange={onAtivar} />
+        <Checkbox
+          checked={ativa}
+          disabled={desabilitado}
+          id={`${id}-ativa`}
+          onCheckedChange={onAtivar}
+        />
         Alterar {rotulo.toLowerCase()}
       </label>
-      {ativa && children({ 'aria-describedby': erro ? erroId : undefined, 'aria-invalid': erro ? true : undefined })}
+      {ativa &&
+        children({
+          'aria-describedby': erro ? erroId : undefined,
+          'aria-invalid': erro ? true : undefined,
+        })}
       {erro && (
         <p className="text-xs text-destructive" id={erroId}>
           {erro}
@@ -69,7 +78,9 @@ function Resultado({ resposta, falhas }) {
               </li>
             ))}
           </ul>
-          <p className="text-xs text-muted-foreground">Eles continuam marcados na lista para você corrigir.</p>
+          <p className="text-xs text-muted-foreground">
+            Eles continuam marcados na lista para você corrigir.
+          </p>
         </div>
       )}
     </div>
@@ -81,12 +92,17 @@ function FormMassa({ leads, campos, usuarios, identificador, onResultado, onFech
   const [form, setForm] = useState(FORM_MASSA_VAZIO);
   const [erros, setErros] = useState({});
   const editar = useEditarEmMassa();
-  const campoPorChave = useMemo(() => new Map(campos.map((campo) => [campo.chave, campo])), [campos]);
+  const campoPorChave = useMemo(
+    () => new Map(campos.map((campo) => [campo.chave, campo])),
+    [campos],
+  );
   const resposta = editar.data;
   const ocupado = editar.isPending;
 
   const falhas = useMemo(() => {
-    if (!resposta) return [];
+    if (!resposta) {
+      return [];
+    }
     const tituloPorId = new Map(leads.map((lead) => [lead.id, tituloDoLead(lead, identificador)]));
     const rotuloPorChave = new Map(campos.map((campo) => [campo.chave, campo.label]));
     return falhasDoResultado(resposta.resultados, tituloPorId, rotuloPorChave);
@@ -105,7 +121,10 @@ function FormMassa({ leads, campos, usuarios, identificador, onResultado, onFech
       return;
     }
 
-    editar.mutate({ ids: leads.map((lead) => lead.id), alteracoes: resultado.alteracoes }, { onSuccess: onResultado });
+    editar.mutate(
+      { ids: leads.map((lead) => lead.id), alteracoes: resultado.alteracoes },
+      { onSuccess: onResultado },
+    );
   }
 
   if (resposta) {
@@ -122,7 +141,9 @@ function FormMassa({ leads, campos, usuarios, identificador, onResultado, onFech
   const selecao = (chave, rotulo) => {
     const campo = campoPorChave.get(chave);
     // Oculto (não vem) ou só de ver (permissão por campo): o back daria 403 no pedido inteiro.
-    if (!campo || !podeEditarCampo(campo)) return null;
+    if (!campo || !podeEditarCampo(campo)) {
+      return null;
+    }
 
     return (
       <Alteracao
@@ -229,9 +250,13 @@ function FormMassa({ leads, campos, usuarios, identificador, onResultado, onFech
       <ApiErrorAlert error={editar.error} id="massa-erro" title="Não foi possível aplicar" />
 
       <DialogFooter>
-        <DialogClose render={<Button disabled={ocupado} type="button" variant="outline" />}>Cancelar</DialogClose>
+        <DialogClose render={<Button disabled={ocupado} type="button" variant="outline" />}>
+          Cancelar
+        </DialogClose>
         <Button aria-busy={ocupado} disabled={ocupado} type="submit">
-          {ocupado ? 'Aplicando…' : `Aplicar a ${leads.length} ${leads.length === 1 ? 'lead' : 'leads'}`}
+          {ocupado
+            ? 'Aplicando…'
+            : `Aplicar a ${leads.length} ${leads.length === 1 ? 'lead' : 'leads'}`}
         </Button>
       </DialogFooter>
     </form>
@@ -263,8 +288,9 @@ export function EditarEmMassaDialog({ open, onOpenChange, ...form }) {
         <DialogHeader>
           <DialogTitle>Editar em massa</DialogTitle>
           <DialogDescription>
-            Marque o que muda {total === 1 ? 'no lead selecionado' : `nos ${total} leads selecionados`}. O resto
-            fica como está.
+            Marque o que muda{' '}
+            {total === 1 ? 'no lead selecionado' : `nos ${total} leads selecionados`}. O resto fica
+            como está.
           </DialogDescription>
         </DialogHeader>
         {open && <FormMassa {...form} onFechar={() => onOpenChange(false)} />}

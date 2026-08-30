@@ -46,9 +46,12 @@ export function candidatosDoErro(erro) {
 /** "E-mail e telefone iguais" — por que o lead parece duplicado. */
 export function descreverCandidato(candidato) {
   const labels = (candidato.campos ?? []).map((campo) => campo.label);
-  if (labels.length === 0) return 'Parecido';
+  if (labels.length === 0) {
+    return 'Parecido';
+  }
 
-  const juntos = labels.length === 1 ? labels[0] : `${labels.slice(0, -1).join(', ')} e ${labels.at(-1)}`;
+  const juntos =
+    labels.length === 1 ? labels[0] : `${labels.slice(0, -1).join(', ')} e ${labels.at(-1)}`;
   return `${juntos} ${labels.length === 1 ? 'igual' : 'iguais'}`;
 }
 
@@ -64,12 +67,18 @@ export function consultaDeDuplicados(campos, valores, leadId) {
   const corpo = {};
 
   for (const campo of campos) {
-    if (campo.camada === CAMADA.CAMADA_3 || !DE_CAMPO.has(campo.chave)) continue;
+    if (campo.camada === CAMADA.CAMADA_3 || !DE_CAMPO.has(campo.chave)) {
+      continue;
+    }
     const valor = paraValorDeApi(campo.tipo, valores[idNoForm(campo)]);
-    if (typeof valor === 'string') corpo[campo.chave] = valor;
+    if (typeof valor === 'string') {
+      corpo[campo.chave] = valor;
+    }
   }
 
-  if (Object.keys(corpo).length === 0) return null;
+  if (Object.keys(corpo).length === 0) {
+    return null;
+  }
   return leadId ? { ...corpo, leadId } : corpo;
 }
 
@@ -94,7 +103,10 @@ export function valoresDasRegras(regras) {
  */
 export function regrasParaEnvio(editadas, originais) {
   const mudadas = originais
-    .filter(({ campo, ativo, acao }) => editadas[campo] && (editadas[campo].ativo !== ativo || editadas[campo].acao !== acao))
+    .filter(
+      ({ campo, ativo, acao }) =>
+        editadas[campo] && (editadas[campo].ativo !== ativo || editadas[campo].acao !== acao),
+    )
     .map(({ campo }) => ({ campo, ...editadas[campo] }));
 
   return mudadas.length > 0 ? mudadas : null;
@@ -129,6 +141,8 @@ export function opcoesDeAcaoImport(duplicado) {
  * @param {Record<string, string>} escolhas
  */
 export function acoesParaEnvio(escolhas) {
-  const acoes = Object.fromEntries(Object.entries(escolhas).filter(([, acao]) => acao !== SEGUIR_ESTRATEGIA));
+  const acoes = Object.fromEntries(
+    Object.entries(escolhas).filter(([, acao]) => acao !== SEGUIR_ESTRATEGIA),
+  );
   return Object.keys(acoes).length > 0 ? acoes : null;
 }

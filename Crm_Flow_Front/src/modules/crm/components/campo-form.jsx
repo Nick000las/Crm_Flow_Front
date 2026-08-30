@@ -39,7 +39,9 @@ export function CampoForm({
   const erroId = `${id}-erro`;
   const ajudaId = `${id}-ajuda`;
   const travadoId = `${id}-travado`;
-  const descricao = [motivoTravado && travadoId, ajuda && ajudaId, erro && erroId].filter(Boolean).join(' ') || undefined;
+  const descricao =
+    [motivoTravado && travadoId, ajuda && ajudaId, erro && erroId].filter(Boolean).join(' ') ||
+    undefined;
   const rotulo = (
     <>
       {label}

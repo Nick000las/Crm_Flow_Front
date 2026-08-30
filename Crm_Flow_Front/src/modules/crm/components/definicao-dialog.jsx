@@ -15,7 +15,12 @@ import { semChave } from '@/lib/objetos';
 import { getFieldError } from '@/services/api';
 import { ROTULOS_TIPO } from '../constants';
 import { useCriarDefinicao, useEditarDefinicao } from '../hooks/use-campos-config';
-import { payloadDaDefinicao, usaOpcoes, validarDefinicao, valoresDaDefinicao } from '../lib/campos-config';
+import {
+  payloadDaDefinicao,
+  usaOpcoes,
+  validarDefinicao,
+  valoresDaDefinicao,
+} from '../lib/campos-config';
 import { CampoForm } from './campo-form';
 import { OpcoesEditor } from './opcoes-editor';
 import { SelectSimples } from './select-simples';
@@ -43,7 +48,9 @@ function FormDefinicao({ definicao, proximaOrdem, onSalvo }) {
   function alterar(campo, valor) {
     setValores((atuais) => ({ ...atuais, [campo]: valor }));
     setErrosCliente((atuais) => semChave(atuais, campo));
-    if (mutacao.error) mutacao.reset();
+    if (mutacao.error) {
+      mutacao.reset();
+    }
   }
 
   function handleSubmit(event) {
@@ -56,8 +63,11 @@ function FormDefinicao({ definicao, proximaOrdem, onSalvo }) {
 
     const payload = payloadDaDefinicao(valores);
     const opcoesMutacao = { onSuccess: onSalvo };
-    if (editando) editar.mutate({ id: definicao.id, definicao: payload }, opcoesMutacao);
-    else criar.mutate({ ...payload, ordem: proximaOrdem }, opcoesMutacao);
+    if (editando) {
+      editar.mutate({ id: definicao.id, definicao: payload }, opcoesMutacao);
+    } else {
+      criar.mutate({ ...payload, ordem: proximaOrdem }, opcoesMutacao);
+    }
   }
 
   return (
@@ -76,8 +86,8 @@ function FormDefinicao({ definicao, proximaOrdem, onSalvo }) {
 
       {editando && (
         <p className="text-xs text-muted-foreground">
-          Chave <span className="font-mono text-foreground select-all">{definicao.chave}</span> — gerada na
-          criação, não muda ao renomear.
+          Chave <span className="font-mono text-foreground select-all">{definicao.chave}</span> —
+          gerada na criação, não muda ao renomear.
         </p>
       )}
 
@@ -106,10 +116,14 @@ function FormDefinicao({ definicao, proximaOrdem, onSalvo }) {
         />
       )}
 
-      {erroSemCampo && <ApiErrorAlert error={mutacao.error} id="definicao-erro" title="Não foi possível salvar" />}
+      {erroSemCampo && (
+        <ApiErrorAlert error={mutacao.error} id="definicao-erro" title="Não foi possível salvar" />
+      )}
 
       <DialogFooter>
-        <DialogClose render={<Button disabled={mutacao.isPending} type="button" variant="outline" />}>
+        <DialogClose
+          render={<Button disabled={mutacao.isPending} type="button" variant="outline" />}
+        >
           Cancelar
         </DialogClose>
         <Button aria-busy={mutacao.isPending} disabled={mutacao.isPending} type="submit">
@@ -137,7 +151,9 @@ export function DefinicaoDialog({ open, onOpenChange, definicao, proximaOrdem, o
       <DialogContent className="rounded-none sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{definicao ? 'Editar campo' : 'Novo campo personalizado'}</DialogTitle>
-          <DialogDescription>Aparece no formulário do lead, nos filtros e nas colunas da tabela.</DialogDescription>
+          <DialogDescription>
+            Aparece no formulário do lead, nos filtros e nas colunas da tabela.
+          </DialogDescription>
         </DialogHeader>
         {open && (
           <FormDefinicao

@@ -47,9 +47,15 @@ export function valoresDaOpcao(tipo, opcao) {
 export function validarOpcao(tipo, valores) {
   const erros = {};
 
-  if (!valores.label.trim()) erros.label = MENSAGENS_LISTA.NOME;
-  if (valores.color && !corValida(valores.color)) erros.color = MENSAGENS_LISTA.COR;
-  if (temCategoria(tipo) && !valores.category) erros.category = MENSAGENS_LISTA.CATEGORIA;
+  if (!valores.label.trim()) {
+    erros.label = MENSAGENS_LISTA.NOME;
+  }
+  if (valores.color && !corValida(valores.color)) {
+    erros.color = MENSAGENS_LISTA.COR;
+  }
+  if (temCategoria(tipo) && !valores.category) {
+    erros.category = MENSAGENS_LISTA.CATEGORIA;
+  }
 
   return erros;
 }
@@ -88,7 +94,9 @@ export function payloadDaOpcao(tipo, valores, original) {
  * @param {OpcaoConfigurada} opcao
  */
 export function motivoNaoExclui(opcao) {
-  if (opcao.usos <= 0) return null;
+  if (opcao.usos <= 0) {
+    return null;
+  }
 
   const leads = opcao.usos === 1 ? '1 lead' : `${opcao.usos.toLocaleString('pt-BR')} leads`;
   return `Em uso por ${leads}. Desative em vez de excluir.`;
@@ -99,7 +107,10 @@ export function motivoNaoExclui(opcao) {
 
 /** @param {Listas} listas @param {string} tipo @param {OpcaoConfigurada} atualizada */
 export function substituirOpcao(listas, tipo, atualizada) {
-  return { ...listas, [tipo]: listas[tipo].map((opcao) => (opcao.id === atualizada.id ? atualizada : opcao)) };
+  return {
+    ...listas,
+    [tipo]: listas[tipo].map((opcao) => (opcao.id === atualizada.id ? atualizada : opcao)),
+  };
 }
 
 /** @param {Listas} listas @param {string} tipo @param {OpcaoConfigurada} nova */

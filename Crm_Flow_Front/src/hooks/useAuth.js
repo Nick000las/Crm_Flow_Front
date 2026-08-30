@@ -1,4 +1,5 @@
 import api from '@/services/api';
+import { queryClient } from '@/lib/query-client';
 import { createAuthSession, getResponseUser } from './create-auth-session.js';
 
 /**
@@ -12,11 +13,12 @@ const sessaoTenant = createAuthSession({
   nome: 'Auth',
   // Refresh token em cookie httpOnly: a sessão sobrevive ao F5.
   persistente: true,
-  // Sempre `/auth/me`, nunca o usuário da resposta do login: é ele que traz
+  onSessionChange: () => queryClient.clear(),
+  // Sempre `/me`, nunca o usuário da resposta do login: é ele que traz
   // `modulosAtivos` e `featuresAtivas`, usados para esconder da navegação
   // módulo não contratado e funcionalidade com feature flag desligada.
   async resolverUsuario(accessToken) {
-    const response = await api.get('/auth/me', { accessToken });
+    const response = await api.get('/me', { accessToken, cache: 'no-store' });
 
     return getResponseUser(response);
   },

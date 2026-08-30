@@ -27,7 +27,9 @@ export function useCamposConfigurados() {
  */
 function invalidarConsumidores(queryClient) {
   return Promise.all(
-    [crmKeys.campos(), crmKeys.leads()].map((queryKey) => queryClient.invalidateQueries({ queryKey })),
+    [crmKeys.campos(), crmKeys.leads()].map((queryKey) =>
+      queryClient.invalidateQueries({ queryKey }),
+    ),
   );
 }
 
@@ -39,7 +41,9 @@ export function useAtualizarCampoConfigurado() {
   return useMutation({
     mutationFn: ({ id, parcial }) => atualizarCampoConfigurado(authApi, id, parcial),
     onSuccess: (atualizado) => {
-      queryClient.setQueryData(CHAVE, (lista) => (lista ? substituirCampo(lista, atualizado) : lista));
+      queryClient.setQueryData(CHAVE, (lista) =>
+        lista ? substituirCampo(lista, atualizado) : lista,
+      );
       return invalidarConsumidores(queryClient);
     },
   });

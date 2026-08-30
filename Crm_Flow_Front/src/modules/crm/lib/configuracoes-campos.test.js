@@ -37,7 +37,9 @@ describe('bloqueios', () => {
   });
 
   test('sem canHide, os quatro contextos travam', () => {
-    const { visibilidade } = bloqueios(campo({ capacidades: { canHide: false, canMakeOptional: false, canRename: true } }));
+    const { visibilidade } = bloqueios(
+      campo({ capacidades: { canHide: false, canMakeOptional: false, canRename: true } }),
+    );
 
     assert.deepEqual(Object.values(visibilidade), Array(4).fill(MOTIVOS.ESSENCIAL));
   });
@@ -51,7 +53,9 @@ describe('bloqueios', () => {
 
   test('obrigatoriedade fixa e Criação desligada travam "Obrigatório"', () => {
     assert.equal(
-      bloqueios(campo({ capacidades: { canHide: false, canMakeOptional: false, canRename: false } })).obrigatorio,
+      bloqueios(
+        campo({ capacidades: { canHide: false, canMakeOptional: false, canRename: false } }),
+      ).obrigatorio,
       MOTIVOS.OBRIGATORIEDADE_FIXA,
     );
     assert.equal(
@@ -62,7 +66,8 @@ describe('bloqueios', () => {
 
   test('sem canRename, renomear trava', () => {
     assert.equal(
-      bloqueios(campo({ capacidades: { canHide: true, canMakeOptional: true, canRename: false } })).renomear,
+      bloqueios(campo({ capacidades: { canHide: true, canMakeOptional: true, canRename: false } }))
+        .renomear,
       MOTIVOS.NAO_RENOMEIA,
     );
   });
@@ -79,7 +84,9 @@ describe('corpos do PUT', () => {
     assert.equal(parcialDoNome(renomeado, ' Companhia '), null);
     assert.deepEqual(parcialDoNome(renomeado, 'Empresa'), { label: null });
     assert.deepEqual(parcialDoNome(renomeado, ' Razão social '), { label: 'Razão social' });
-    assert.deepEqual(parcialDoNome(campo({ labelPadrao: null, label: 'Renda' }), 'Salário'), { label: 'Salário' });
+    assert.deepEqual(parcialDoNome(campo({ labelPadrao: null, label: 'Renda' }), 'Salário'), {
+      label: 'Salário',
+    });
   });
 });
 
@@ -96,7 +103,10 @@ describe('ordem', () => {
   test('ordenarPorIds e substituirCampo montam o estado otimista', () => {
     const lista = [campo({ id: 'a' }), campo({ id: 'b' })];
 
-    assert.deepEqual(ordenarPorIds(lista, ['b', 'a']).map((item) => item.id), ['b', 'a']);
+    assert.deepEqual(
+      ordenarPorIds(lista, ['b', 'a']).map((item) => item.id),
+      ['b', 'a'],
+    );
     assert.equal(substituirCampo(lista, campo({ id: 'b', label: 'Nova' }))[1].label, 'Nova');
   });
 });

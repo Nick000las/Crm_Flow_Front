@@ -1,13 +1,7 @@
 import { useState } from 'react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -17,10 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { isAbortError, toApiError } from '@/services/api';
-import {
-  TENANT_STATUS_OPTIONS,
-  getTenantStatusLabel,
-} from '../lib/tenant-status';
+import { TENANT_STATUS_OPTIONS, getTenantStatusLabel } from '../lib/tenant-status';
 import { TenantStatusBadge } from './tenant-status-badge';
 
 const SUBMIT_ERROR_ID = 'tenant-status-error';
@@ -83,9 +74,7 @@ export function TenantStatusSection({ tenant, adminApi, onSaved }) {
               value={status}
             >
               <SelectTrigger className="h-10 w-full sm:w-64" id="tenant-status">
-                <SelectValue>
-                  {(valor) => getTenantStatusLabel(valor)}
-                </SelectValue>
+                <SelectValue>{(valor) => getTenantStatusLabel(valor)}</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {opcoes.map((opcao) => (
@@ -100,11 +89,7 @@ export function TenantStatusSection({ tenant, adminApi, onSaved }) {
           <ApiErrorAlert error={submitError} id={SUBMIT_ERROR_ID} />
 
           <div>
-            <Button
-              aria-busy={isSubmitting}
-              disabled={isSubmitting || inalterado}
-              type="submit"
-            >
+            <Button loading={isSubmitting} disabled={isSubmitting || inalterado} type="submit">
               {isSubmitting ? 'Aplicando...' : 'Aplicar status'}
             </Button>
           </div>

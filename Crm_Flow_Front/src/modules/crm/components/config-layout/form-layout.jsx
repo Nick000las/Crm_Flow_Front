@@ -4,7 +4,13 @@ import { Button } from '@/components/ui/button';
 import { toApiError } from '@/services/api';
 import { LIMITES_LAYOUT } from '../../constants';
 import { useSalvarMeu, useSalvarPadrao } from '../../hooks/use-layout';
-import { MODO, errosPorParte, layoutParaEnvio, parcialDoMeu, validarLayout } from '../../lib/layout';
+import {
+  MODO,
+  errosPorParte,
+  layoutParaEnvio,
+  parcialDoMeu,
+  validarLayout,
+} from '../../lib/layout';
 import { CampoForm } from '../campo-form';
 import { SelectSimples } from '../select-simples';
 import { EditorSecoes } from './editor-secoes';
@@ -41,7 +47,9 @@ export function FormLayout({ modo, base, opcoes, automatica, onSalvo }) {
   function alterar(parte, valor) {
     setLayout((atual) => ({ ...atual, [parte]: valor }));
     setErrosCliente((atuais) => ({ ...atuais, [parte]: undefined }));
-    if (mutacao.error) mutacao.reset();
+    if (mutacao.error) {
+      mutacao.reset();
+    }
   }
 
   function handleSubmit(event) {
@@ -53,19 +61,31 @@ export function FormLayout({ modo, base, opcoes, automatica, onSalvo }) {
     }
 
     const envio = layoutParaEnvio(layout);
-    const opcoesMutacao = { onSuccess: () => onSalvo(modo === MODO.PADRAO ? 'Padrão da empresa salvo.' : 'Seu layout foi salvo.') };
-    if (modo === MODO.PADRAO) salvarPadrao.mutate(envio, opcoesMutacao);
-    else salvarMeu.mutate(parcialDoMeu(base, envio), opcoesMutacao);
+    const opcoesMutacao = {
+      onSuccess: () =>
+        onSalvo(modo === MODO.PADRAO ? 'Padrão da empresa salvo.' : 'Seu layout foi salvo.'),
+    };
+    if (modo === MODO.PADRAO) {
+      salvarPadrao.mutate(envio, opcoesMutacao);
+    } else {
+      salvarMeu.mutate(parcialDoMeu(base, envio), opcoesMutacao);
+    }
   }
 
   // Colunas não repetem o identificador: ele já é a 1ª coluna, sempre.
   const opcoesDeColuna = opcoes.tabela.filter((opcao) => opcao.ref !== layout.identificador);
-  const temErroGeral = mutacao.error && (doServidor.geral.length > 0 || Object.keys(doServidor.porParte).length === 0);
+  const temErroGeral =
+    mutacao.error && (doServidor.geral.length > 0 || Object.keys(doServidor.porParte).length === 0);
 
   return (
     <form className="grid gap-8" noValidate onSubmit={handleSubmit}>
       <div className="grid gap-6 md:grid-cols-2">
-        <CampoForm erro={erroDe('identificador')} id="layout-identificador" label="Identificador" obrigatorio>
+        <CampoForm
+          erro={erroDe('identificador')}
+          id="layout-identificador"
+          label="Identificador"
+          obrigatorio
+        >
           {(controle) => (
             <SelectSimples
               {...controle}
@@ -119,11 +139,25 @@ export function FormLayout({ modo, base, opcoes, automatica, onSalvo }) {
         secoes={layout.secoes}
       />
 
-      {temErroGeral && <ApiErrorAlert error={mutacao.error} id="layout-erro" title="Não foi possível salvar o layout" />}
+      {temErroGeral && (
+        <ApiErrorAlert
+          error={mutacao.error}
+          id="layout-erro"
+          title="Não foi possível salvar o layout"
+        />
+      )}
 
       <div className="flex flex-wrap gap-2 border-t border-border pt-4">
-        <Button aria-busy={mutacao.isPending} disabled={!alterado || mutacao.isPending} type="submit">
-          {mutacao.isPending ? 'Salvando…' : modo === MODO.PADRAO ? 'Salvar padrão da empresa' : 'Salvar meu layout'}
+        <Button
+          aria-busy={mutacao.isPending}
+          disabled={!alterado || mutacao.isPending}
+          type="submit"
+        >
+          {mutacao.isPending
+            ? 'Salvando…'
+            : modo === MODO.PADRAO
+              ? 'Salvar padrão da empresa'
+              : 'Salvar meu layout'}
         </Button>
         <Button
           disabled={!alterado || mutacao.isPending}

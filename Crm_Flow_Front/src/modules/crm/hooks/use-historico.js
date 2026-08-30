@@ -20,9 +20,15 @@ export function useHistorico(leadId, categorias = []) {
   return useInfiniteQuery({
     queryKey: [...crmKeys.historico(leadId), categorias],
     queryFn: ({ pageParam, signal }) =>
-      listarHistorico(authApi, leadId, { pagina: pageParam, tamanho: TAMANHO_HISTORICO, categorias }, { signal }),
+      listarHistorico(
+        authApi,
+        leadId,
+        { pagina: pageParam, tamanho: TAMANHO_HISTORICO, categorias },
+        { signal },
+      ),
     initialPageParam: 1,
-    getNextPageParam: ({ pagina, tamanho, total }) => (pagina * tamanho < total ? pagina + 1 : undefined),
+    getNextPageParam: ({ pagina, tamanho, total }) =>
+      pagina * tamanho < total ? pagina + 1 : undefined,
     placeholderData: keepPreviousData,
   });
 }

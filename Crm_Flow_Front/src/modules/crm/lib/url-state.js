@@ -78,8 +78,11 @@ export function escreverEstadoLista(atuais, mudancas) {
 }
 
 function definirOuRemover(params, nome, valor, padrao) {
-  if (valor === padrao) params.delete(nome);
-  else params.set(nome, String(valor));
+  if (valor === padrao) {
+    params.delete(nome);
+  } else {
+    params.set(nome, String(valor));
+  }
 }
 
 /**

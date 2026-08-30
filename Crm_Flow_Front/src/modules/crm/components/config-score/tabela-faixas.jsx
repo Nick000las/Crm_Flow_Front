@@ -1,11 +1,19 @@
 import { Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { SCORE } from '../../constants';
 import { BotaoIcone } from '../botao-icone';
 
-const HEAD_CLASS = 'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
+const HEAD_CLASS =
+  'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
 const INPUT_CLASS = 'h-9 rounded-none';
 const NUMERO_CLASS = 'h-9 w-24 rounded-none font-mono tabular-nums';
 // Valor do seletor de cor quando o hex digitado ainda não é válido (ele não aceita outro formato).
@@ -15,7 +23,9 @@ const HEX = /^#[0-9A-Fa-f]{6}$/;
 /** As mensagens de uma faixa, numa linha só (o 400 aponta campo ou a faixa inteira). */
 function ErrosDaFaixa({ id, erros }) {
   const mensagens = [...new Set(Object.values(erros ?? {}))];
-  if (mensagens.length === 0) return null;
+  if (mensagens.length === 0) {
+    return null;
+  }
 
   return (
     <p className="mt-1 text-xs text-destructive" id={id}>
@@ -39,7 +49,15 @@ function ErrosDaFaixa({ id, erros }) {
  *   onAdicionar: () => void,
  * }} props
  */
-export function TabelaFaixas({ faixas, erros, ocupado, podeEditar, onAlterar, onRemover, onAdicionar }) {
+export function TabelaFaixas({
+  faixas,
+  erros,
+  ocupado,
+  podeEditar,
+  onAlterar,
+  onRemover,
+  onAdicionar,
+}) {
   const travado = ocupado || !podeEditar;
 
   return (
@@ -86,7 +104,9 @@ export function TabelaFaixas({ faixas, erros, ocupado, podeEditar, onAlterar, on
                       {...comum('rotulo')}
                       aria-label={`Nome da faixa ${indice + 1}`}
                       className={INPUT_CLASS}
-                      onChange={(event) => onAlterar(faixa.chaveLocal, { rotulo: event.target.value })}
+                      onChange={(event) =>
+                        onAlterar(faixa.chaveLocal, { rotulo: event.target.value })
+                      }
                       value={faixa.rotulo}
                     />
                     <ErrosDaFaixa erros={daFaixa} id={erroId} />
@@ -97,7 +117,9 @@ export function TabelaFaixas({ faixas, erros, ocupado, podeEditar, onAlterar, on
                       aria-label={`${nome}: de (vazio = sem limite)`}
                       className={NUMERO_CLASS}
                       inputMode="numeric"
-                      onChange={(event) => onAlterar(faixa.chaveLocal, { minimo: event.target.value })}
+                      onChange={(event) =>
+                        onAlterar(faixa.chaveLocal, { minimo: event.target.value })
+                      }
                       placeholder="sem limite"
                       value={faixa.minimo}
                     />
@@ -108,7 +130,9 @@ export function TabelaFaixas({ faixas, erros, ocupado, podeEditar, onAlterar, on
                       aria-label={`${nome}: até (vazio = sem limite)`}
                       className={NUMERO_CLASS}
                       inputMode="numeric"
-                      onChange={(event) => onAlterar(faixa.chaveLocal, { maximo: event.target.value })}
+                      onChange={(event) =>
+                        onAlterar(faixa.chaveLocal, { maximo: event.target.value })
+                      }
                       placeholder="sem limite"
                       value={faixa.maximo}
                     />
@@ -119,7 +143,9 @@ export function TabelaFaixas({ faixas, erros, ocupado, podeEditar, onAlterar, on
                         aria-label={`${nome}: escolher cor`}
                         className="size-9 shrink-0 cursor-pointer border border-input bg-transparent p-0.5 disabled:cursor-not-allowed"
                         disabled={travado}
-                        onChange={(event) => onAlterar(faixa.chaveLocal, { cor: event.target.value.toUpperCase() })}
+                        onChange={(event) =>
+                          onAlterar(faixa.chaveLocal, { cor: event.target.value.toUpperCase() })
+                        }
                         type="color"
                         value={HEX.test(faixa.cor) ? faixa.cor.toLowerCase() : COR_DO_SELETOR}
                       />
@@ -128,7 +154,9 @@ export function TabelaFaixas({ faixas, erros, ocupado, podeEditar, onAlterar, on
                         aria-label={`${nome}: cor (#RRGGBB)`}
                         className="h-9 w-24 rounded-none font-mono uppercase"
                         maxLength={7}
-                        onChange={(event) => onAlterar(faixa.chaveLocal, { cor: event.target.value.trim() })}
+                        onChange={(event) =>
+                          onAlterar(faixa.chaveLocal, { cor: event.target.value.trim() })
+                        }
                         value={faixa.cor}
                       />
                     </div>

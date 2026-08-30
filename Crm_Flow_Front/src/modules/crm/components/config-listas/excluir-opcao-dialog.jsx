@@ -26,8 +26,12 @@ export function ExcluirOpcaoDialog({ tipo, opcao, onOpenChange, onExcluida }) {
   const excluir = useExcluirOpcao();
 
   function handleOpenChange(proximo) {
-    if (excluir.isPending) return;
-    if (!proximo) excluir.reset();
+    if (excluir.isPending) {
+      return;
+    }
+    if (!proximo) {
+      excluir.reset();
+    }
     onOpenChange(proximo);
   }
 
@@ -54,7 +58,11 @@ export function ExcluirOpcaoDialog({ tipo, opcao, onOpenChange, onExcluida }) {
           </AlertDialogDescription>
         </AlertDialogHeader>
 
-        <ApiErrorAlert error={excluir.error} id="excluir-opcao-erro" title="Não foi possível excluir" />
+        <ApiErrorAlert
+          error={excluir.error}
+          id="excluir-opcao-erro"
+          title="Não foi possível excluir"
+        />
 
         <AlertDialogFooter>
           <AlertDialogCancel disabled={excluir.isPending}>Cancelar</AlertDialogCancel>

@@ -46,7 +46,10 @@ export function tituloDoEvento(evento) {
     case TIPOS_EVENTO.ATUALIZADO:
       return { titulo: `${autor} alterou`, comAutor: true };
     case TIPOS_EVENTO.MESCLADO:
-      return { titulo: `Mesclado com ${evento.detalhes?.nomeDescartado || 'outro lead'}`, comAutor: false };
+      return {
+        titulo: `Mesclado com ${evento.detalhes?.nomeDescartado || 'outro lead'}`,
+        comAutor: false,
+      };
     case TIPOS_EVENTO.ENRIQUECIDO: {
       // `detalhes.cnpj` só vem para quem vê o CNPJ.
       const cnpj = evento.detalhes?.cnpj ? ` (CNPJ ${formatarCnpj(evento.detalhes.cnpj)})` : '';
@@ -64,7 +67,9 @@ export function tituloDoEvento(evento) {
  * @param {EventoLead} evento
  */
 export function detalheDoEvento(evento) {
-  if (evento.tipo !== TIPOS_EVENTO.CRIADO) return null;
+  if (evento.tipo !== TIPOS_EVENTO.CRIADO) {
+    return null;
+  }
   const distribuicao = evento.detalhes?.distribuicao;
 
   switch (distribuicao?.origem) {
@@ -82,7 +87,10 @@ export function detalheDoEvento(evento) {
 }
 
 const vazio = (valor) =>
-  valor === null || valor === undefined || valor === '' || (Array.isArray(valor) && valor.length === 0);
+  valor === null ||
+  valor === undefined ||
+  valor === '' ||
+  (Array.isArray(valor) && valor.length === 0);
 
 function resumir(texto) {
   return texto.length > MAX_VALOR ? `${texto.slice(0, MAX_VALOR - 1)}…` : texto;
@@ -99,11 +107,17 @@ function resumir(texto) {
  * @param {Map<string, string>} nomePorId
  */
 function ladoDoDiff(item, valor, nome, nomePorId) {
-  if (vazio(valor)) return null;
-  if (nome) return resumir(nome);
+  if (vazio(valor)) {
+    return null;
+  }
+  if (nome) {
+    return resumir(nome);
+  }
 
   const texto = textoDoValor(item, valor, nomePorId);
-  if (texto) return resumir(texto);
+  if (texto) {
+    return resumir(texto);
+  }
   return item.tipo === 'usuario' ? USUARIO_REMOVIDO : resumir(String(valor));
 }
 
@@ -129,6 +143,8 @@ export function itemDoDiff(item, nomePorId) {
  * @param {Map<string, string>} nomePorId
  */
 export function itensDoEvento(evento, nomePorId) {
-  if (evento.tipo === TIPOS_EVENTO.ANONIMIZADO) return [];
+  if (evento.tipo === TIPOS_EVENTO.ANONIMIZADO) {
+    return [];
+  }
   return (evento.diff ?? []).map((item) => itemDoDiff(item, nomePorId));
 }

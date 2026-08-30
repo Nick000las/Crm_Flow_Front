@@ -103,7 +103,9 @@ const MAX_CHAVE_FAIXA = 60;
 const CHAVE_ERRO_FAIXA = 'faixaScore';
 
 const chaveDeFaixa = (valor) =>
-  typeof valor === 'string' && valor.trim() && valor.length <= MAX_CHAVE_FAIXA ? valor.trim() : undefined;
+  typeof valor === 'string' && valor.trim() && valor.length <= MAX_CHAVE_FAIXA
+    ? valor.trim()
+    : undefined;
 
 let proximoIdLinha = 0;
 const gerarIdLinha = () => `linha-${(proximoIdLinha += 1)}`;
@@ -149,7 +151,9 @@ export function lerFiltro(entrada) {
       return FILTRO_VAZIO;
     }
   }
-  if (!bruto || typeof bruto !== 'object') return FILTRO_VAZIO;
+  if (!bruto || typeof bruto !== 'object') {
+    return FILTRO_VAZIO;
+  }
 
   const filtros = (Array.isArray(bruto.filtros) ? bruto.filtros : [])
     .filter((item) => typeof item?.chave === 'string' && OPERADORES_VALIDOS.has(item.operador))
@@ -244,10 +248,18 @@ export function operadorSemValor(operador) {
 
 /** Valor vazio no formato que o controle do operador edita. */
 export function valorVazio(operador, campo) {
-  if (SEM_VALOR.has(operador)) return null;
-  if (operador === OPERADOR.ENTRE) return { de: '', ate: '' };
-  if (operador === OPERADOR.E_UM_DOS) return [];
-  if (campo?.tipo === TIPOS_CAMPO.BOOLEANO) return 'true';
+  if (SEM_VALOR.has(operador)) {
+    return null;
+  }
+  if (operador === OPERADOR.ENTRE) {
+    return { de: '', ate: '' };
+  }
+  if (operador === OPERADOR.E_UM_DOS) {
+    return [];
+  }
+  if (campo?.tipo === TIPOS_CAMPO.BOOLEANO) {
+    return 'true';
+  }
 
   return '';
 }
@@ -273,14 +285,17 @@ export function trocarOperador(linha, operador, campo) {
   return { ...linha, operador, valor: mesmoFormato ? linha.valor : valorVazio(operador, campo) };
 }
 
-const numeroParaTexto = (valor) => (typeof valor === 'number' ? String(valor).replace('.', ',') : '');
+const numeroParaTexto = (valor) =>
+  typeof valor === 'number' ? String(valor).replace('.', ',') : '';
 
 /** Item aplicado → linha editável (também a condição de uma regra de campo). */
 export function linhaDoItem(item, campo) {
   const base = { id: gerarIdLinha(), chave: item.chave, operador: item.operador };
   const numerico = ehNumerico(campo);
 
-  if (SEM_VALOR.has(item.operador)) return { ...base, valor: null };
+  if (SEM_VALOR.has(item.operador)) {
+    return { ...base, valor: null };
+  }
   if (item.operador === OPERADOR.ENTRE) {
     const faixa = item.valor ?? {};
     const converter = numerico ? numeroParaTexto : (valor) => valor ?? '';
@@ -289,9 +304,14 @@ export function linhaDoItem(item, campo) {
   if (item.operador === OPERADOR.E_UM_DOS) {
     return { ...base, valor: Array.isArray(item.valor) ? item.valor : [] };
   }
-  if (numerico) return { ...base, valor: numeroParaTexto(item.valor) };
+  if (numerico) {
+    return { ...base, valor: numeroParaTexto(item.valor) };
+  }
 
-  return { ...base, valor: item.valor === undefined || item.valor === null ? '' : String(item.valor) };
+  return {
+    ...base,
+    valor: item.valor === undefined || item.valor === null ? '' : String(item.valor),
+  };
 }
 
 /**
@@ -310,7 +330,9 @@ export function rascunhoDoFiltro(filtro, campos) {
       .filter((item) => campoPorChave.has(item.chave))
       .map((item) => linhaDoItem(item, campoPorChave.get(item.chave))),
     fixos: {
-      usuarioResponsavelId: filtro.semResponsavel ? RESPONSAVEL_NENHUM : (filtro.usuarioResponsavelId ?? ''),
+      usuarioResponsavelId: filtro.semResponsavel
+        ? RESPONSAVEL_NENHUM
+        : (filtro.usuarioResponsavelId ?? ''),
       valorMin: numeroParaTexto(filtro.valorMin),
       valorMax: numeroParaTexto(filtro.valorMax),
       criadoDe: filtro.criadoDe ?? '',
@@ -327,8 +349,12 @@ export function rascunhoVazio() {
 
 /** Converte um limite de faixa; `undefined` = sem limite, `NaN` = inválido. */
 function lerLimite(texto, numerico) {
-  if (texto === '' || texto === null || texto === undefined) return undefined;
-  if (!numerico) return String(texto);
+  if (texto === '' || texto === null || texto === undefined) {
+    return undefined;
+  }
+  if (!numerico) {
+    return String(texto);
+  }
 
   return lerNumeroDigitado(texto) ?? undefined;
 }
@@ -343,13 +369,19 @@ export function itemDaLinha(linha, campo) {
   const { chave, operador, valor } = linha;
   const numerico = ehNumerico(campo);
 
-  if (SEM_VALOR.has(operador)) return { item: { chave, operador } };
+  if (SEM_VALOR.has(operador)) {
+    return { item: { chave, operador } };
+  }
 
   if (operador === OPERADOR.ENTRE) {
     const de = lerLimite(valor?.de, numerico);
     const ate = lerLimite(valor?.ate, numerico);
-    if (Number.isNaN(de) || Number.isNaN(ate)) return { erro: MENSAGENS_FILTRO.NUMERO };
-    if (de === undefined && ate === undefined) return { erro: MENSAGENS_FILTRO.LIMITE };
+    if (Number.isNaN(de) || Number.isNaN(ate)) {
+      return { erro: MENSAGENS_FILTRO.NUMERO };
+    }
+    if (de === undefined && ate === undefined) {
+      return { erro: MENSAGENS_FILTRO.LIMITE };
+    }
     return { item: { chave, operador, valor: omitirIndefinidos({ de, ate }) } };
   }
 
@@ -361,8 +393,12 @@ export function itemDaLinha(linha, campo) {
 
   if (numerico) {
     const numero = lerNumeroDigitado(valor ?? '');
-    if (numero === null) return { erro: MENSAGENS_FILTRO.VALOR };
-    if (Number.isNaN(numero)) return { erro: MENSAGENS_FILTRO.NUMERO };
+    if (numero === null) {
+      return { erro: MENSAGENS_FILTRO.VALOR };
+    }
+    if (Number.isNaN(numero)) {
+      return { erro: MENSAGENS_FILTRO.NUMERO };
+    }
     return { item: { chave, operador, valor: numero } };
   }
 
@@ -390,19 +426,30 @@ export function filtroDoRascunho({ linhas, fixos }, campos) {
   for (const linha of linhas) {
     const campo = campoPorChave.get(linha.chave);
     // Campo que deixou de existir (desligado depois de salvo) sai em silêncio.
-    if (!campo) continue;
+    if (!campo) {
+      continue;
+    }
 
     const resultado = itemDaLinha(linha, campo);
-    if ('erro' in resultado) erros[linha.id] = resultado.erro;
-    else filtros.push(resultado.item);
+    if ('erro' in resultado) {
+      erros[linha.id] = resultado.erro;
+    } else {
+      filtros.push(resultado.item);
+    }
   }
 
   const valorMin = lerLimite(fixos.valorMin, true);
   const valorMax = lerLimite(fixos.valorMax, true);
-  if (Number.isNaN(valorMin)) erros.valorMin = MENSAGENS_FILTRO.NUMERO;
-  if (Number.isNaN(valorMax)) erros.valorMax = MENSAGENS_FILTRO.NUMERO;
+  if (Number.isNaN(valorMin)) {
+    erros.valorMin = MENSAGENS_FILTRO.NUMERO;
+  }
+  if (Number.isNaN(valorMax)) {
+    erros.valorMax = MENSAGENS_FILTRO.NUMERO;
+  }
 
-  if (Object.keys(erros).length > 0) return { erros };
+  if (Object.keys(erros).length > 0) {
+    return { erros };
+  }
 
   return {
     filtro: lerFiltro({
@@ -430,20 +477,34 @@ function descreverFaixa(de, ate, formatar) {
   const temDe = de !== undefined && de !== null && de !== '';
   const temAte = ate !== undefined && ate !== null && ate !== '';
 
-  if (temDe && temAte) return `de ${formatar(de)} a ${formatar(ate)}`;
-  if (temDe) return `a partir de ${formatar(de)}`;
+  if (temDe && temAte) {
+    return `de ${formatar(de)} a ${formatar(ate)}`;
+  }
+  if (temDe) {
+    return `a partir de ${formatar(de)}`;
+  }
   return `até ${formatar(ate)}`;
 }
 
 function formatadorDoCampo(campo, nomePorId) {
-  if (campo?.tipo === TIPOS_CAMPO.MONETARIO) return (valor) => formatarMoeda(valor) ?? String(valor);
-  if (ehNumerico(campo)) return (valor) => formatarNumero(valor) ?? String(valor);
-  if (campo && tipoBase(campo.tipo) === TIPOS_CAMPO.DATA) return (valor) => formatarData(valor) ?? String(valor);
+  if (campo?.tipo === TIPOS_CAMPO.MONETARIO) {
+    return (valor) => formatarMoeda(valor) ?? String(valor);
+  }
+  if (ehNumerico(campo)) {
+    return (valor) => formatarNumero(valor) ?? String(valor);
+  }
+  if (campo && tipoBase(campo.tipo) === TIPOS_CAMPO.DATA) {
+    return (valor) => formatarData(valor) ?? String(valor);
+  }
   if (campo?.tipo === TIPOS_CAMPO.USUARIO) {
     return (valor) => nomePorId?.get(String(valor)) ?? String(valor).slice(0, TAMANHO_ID_CURTO);
   }
-  if (MASCARA_NO_CHIP[campo?.tipo]) return (valor) => MASCARA_NO_CHIP[campo.tipo](valor) ?? String(valor);
-  if (campo?.tipo === TIPOS_CAMPO.BOOLEANO) return (valor) => (valor ? 'Sim' : 'Não');
+  if (MASCARA_NO_CHIP[campo?.tipo]) {
+    return (valor) => MASCARA_NO_CHIP[campo.tipo](valor) ?? String(valor);
+  }
+  if (campo?.tipo === TIPOS_CAMPO.BOOLEANO) {
+    return (valor) => (valor ? 'Sim' : 'Não');
+  }
   if (campo?.tipo === TIPOS_CAMPO.SELECAO || campo?.tipo === TIPOS_CAMPO.SELECAO_MULTIPLA) {
     return (valor) => rotuloOpcao(valor, campo);
   }
@@ -462,11 +523,15 @@ export function descreverItem(item, campo, nomePorId) {
   const operador = ROTULOS_OPERADOR[item.operador];
   const formatar = formatadorDoCampo(campo, nomePorId);
 
-  if (SEM_VALOR.has(item.operador)) return `${label} ${operador}`;
+  if (SEM_VALOR.has(item.operador)) {
+    return `${label} ${operador}`;
+  }
   if (item.operador === OPERADOR.ENTRE) {
     return `${label} ${descreverFaixa(item.valor?.de, item.valor?.ate, formatar)}`;
   }
-  if (Array.isArray(item.valor)) return `${label} ${operador} ${item.valor.map(formatar).join(', ')}`;
+  if (Array.isArray(item.valor)) {
+    return `${label} ${operador} ${item.valor.map(formatar).join(', ')}`;
+  }
 
   return `${label} ${operador} ${formatar(item.valor)}`;
 }
@@ -483,8 +548,12 @@ export function descreverItem(item, campo, nomePorId) {
  */
 export function chipsDoFiltro(filtro, campos, nomePorId, faixas = null) {
   const campoPorChave = new Map(campos.map((campo) => [campo.chave, campo]));
-  const sem = (...chaves) => () =>
-    lerFiltro(Object.fromEntries(Object.entries(filtro).filter(([chave]) => !chaves.includes(chave))));
+  const sem =
+    (...chaves) =>
+    () =>
+      lerFiltro(
+        Object.fromEntries(Object.entries(filtro).filter(([chave]) => !chaves.includes(chave))),
+      );
 
   const chips = filtro.filtros.map((item, indice) => ({
     id: `filtro-${indice}`,

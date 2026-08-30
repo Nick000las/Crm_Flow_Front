@@ -12,11 +12,16 @@ import { formatarInstante } from '../lib/formatadores';
  */
 export function SeloEsfriando({ esfriandoDesde, className }) {
   const texto = textoEsfriando(esfriandoDesde);
-  if (!texto) return null;
+  if (!texto) {
+    return null;
+  }
 
   return (
     <Badge
-      className={cn('rounded-none border-border px-1.5 text-[11px] font-normal text-muted-foreground', className)}
+      className={cn(
+        'rounded-none border-border px-1.5 text-[11px] font-normal text-muted-foreground',
+        className,
+      )}
       title={`Esfriando desde ${formatarInstante(esfriandoDesde) ?? ''}`}
       variant="outline"
     >

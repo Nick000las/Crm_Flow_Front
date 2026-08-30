@@ -15,11 +15,12 @@ const ROLE_MASTER = 'MASTER';
  */
 const sessaoAdmin = createAuthSession({
   nome: 'AdminAuth',
+  persistente: true,
+  sessionScope: 'admin',
   async resolverUsuario(accessToken) {
-    // `/auth/settings` consulta o banco na hora; `/auth/me` só ecoa o payload
-    // do JWT. Para uma decisão de permissão vale a fonte que não depende do
-    // que foi assinado no token.
-    const settings = await api.get('/auth/settings', { accessToken });
+    // `/me` revalida usuário ativo e papel no banco antes de abrir a sessão.
+    const response = await api.get('/me?scope=admin', { accessToken, cache: 'no-store' });
+    const settings = response?.user;
 
     if (settings?.role !== ROLE_MASTER) {
       // `ApiError` e não `Error` para o `ApiErrorAlert` renderizar isso como

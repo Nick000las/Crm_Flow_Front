@@ -37,11 +37,15 @@ const vazio = (valor) => valor === null || valor === undefined || valor === '';
  * @returns {Opcao | null}
  */
 export function opcaoDoCampo(campo, valor) {
-  if (vazio(valor)) return null;
+  if (vazio(valor)) {
+    return null;
+  }
 
   const key = String(valor);
   const daLista = campo?.opcoesLista?.find((opcao) => opcao.key === key);
-  if (daLista) return daLista;
+  if (daLista) {
+    return daLista;
+  }
 
   // Opção da Camada 3 já é o texto que o usuário escreveu.
   const label = campo?.camada === CAMADA.CAMADA_3 ? key : humanizar(key);
@@ -56,7 +60,8 @@ export function rotuloOpcao(valor, campo) {
   return opcaoDoCampo(campo, valor)?.label ?? '';
 }
 
-const rotuloComSituacao = (opcao) => (opcao.ativo ? opcao.label : `${opcao.label}${SUFIXO_INATIVA}`);
+const rotuloComSituacao = (opcao) =>
+  opcao.ativo ? opcao.label : `${opcao.label}${SUFIXO_INATIVA}`;
 
 /**
  * Itens do seletor do formulário: só as ativas — mais a inativa que o lead
@@ -70,7 +75,9 @@ export function opcoesDoSeletor(campo, valorAtual) {
   const keys = campo.opcoes ?? [];
   const itens = keys.map((key) => ({ valor: key, rotulo: rotuloOpcao(key, campo) }));
 
-  if (vazio(valorAtual) || keys.includes(String(valorAtual))) return itens;
+  if (vazio(valorAtual) || keys.includes(String(valorAtual))) {
+    return itens;
+  }
 
   const atual = opcaoDoCampo(campo, valorAtual);
   return [...itens, { valor: atual.key, rotulo: rotuloComSituacao(atual) }];
@@ -86,7 +93,10 @@ export function opcoesDoSeletor(campo, valorAtual) {
  */
 export function opcoesDoFiltro(campo) {
   if (Array.isArray(campo.opcoesLista)) {
-    return campo.opcoesLista.map((opcao) => ({ valor: opcao.key, rotulo: rotuloComSituacao(opcao) }));
+    return campo.opcoesLista.map((opcao) => ({
+      valor: opcao.key,
+      rotulo: rotuloComSituacao(opcao),
+    }));
   }
 
   return (campo.opcoes ?? []).map((key) => ({ valor: key, rotulo: rotuloOpcao(key, campo) }));

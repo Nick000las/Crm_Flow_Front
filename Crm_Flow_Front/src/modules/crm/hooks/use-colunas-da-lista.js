@@ -26,7 +26,10 @@ export function useColunasDaLista(campos, tenantId) {
       ),
     [campos, identificador],
   );
-  const colunasPadrao = useMemo(() => (layout ? idsDasColunas(layout.colunas) : undefined), [layout]);
+  const colunasPadrao = useMemo(
+    () => (layout ? idsDasColunas(layout.colunas) : undefined),
+    [layout],
+  );
   const selecao = useColunasVisiveis(tenantId, colunas, colunasPadrao);
 
   return { identificador, colunas, ...selecao };

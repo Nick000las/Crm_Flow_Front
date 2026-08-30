@@ -25,18 +25,15 @@ const SUBMIT_ERROR_ID = 'delete-tenant-submit-error';
  * que pede a senha para reduzir proteção — aqui a confirmação é local, já que
  * o backend não exige credencial nesta rota.
  */
-export function DeleteTenantDialog({
-  open,
-  onOpenChange,
-  adminApi,
-  tenant,
-  onDeleted,
-}) {
+export function DeleteTenantDialog({ open, onOpenChange, adminApi, tenant, onDeleted }) {
   const [submitError, setSubmitError] = useState(null);
   const [confirmacaoError, setConfirmacaoError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   function handleOpenChange(nextOpen) {
+    if (isSubmitting) {
+      return;
+    }
     if (!nextOpen) {
       setSubmitError(null);
       setConfirmacaoError(null);
@@ -76,29 +73,23 @@ export function DeleteTenantDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" showCloseButton={!isSubmitting}>
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Excluir tenant</DialogTitle>
             <DialogDescription>
-              Remove {tenant.nome} e os dados associados. A ação não pode ser
-              desfeita.
+              Remove {tenant.nome} e os dados associados. A ação não pode ser desfeita.
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="delete-tenant-confirm">
-                Digite{' '}
-                <span className="font-mono text-foreground">
-                  {tenant.subdomain}
-                </span>{' '}
-                para confirmar
+                Digite <span className="font-mono text-foreground">{tenant.subdomain}</span> para
+                confirmar
               </Label>
               <Input
-                aria-describedby={
-                  confirmacaoError ? CONFIRM_ERROR_ID : undefined
-                }
+                aria-describedby={confirmacaoError ? CONFIRM_ERROR_ID : undefined}
                 aria-invalid={Boolean(confirmacaoError)}
                 autoComplete="off"
                 className="h-10 font-mono"
@@ -127,7 +118,7 @@ export function DeleteTenantDialog({
               }
             />
             <Button
-              aria-busy={isSubmitting}
+              loading={isSubmitting}
               disabled={isSubmitting}
               type="submit"
               variant="destructive"

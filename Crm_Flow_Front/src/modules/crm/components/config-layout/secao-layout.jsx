@@ -25,7 +25,9 @@ const CAMPOS_VAZIOS = [];
 function Carregando() {
   return (
     <div className="grid gap-3" aria-busy="true">
-      <span className="sr-only" role="status">Carregando layout…</span>
+      <span className="sr-only" role="status">
+        Carregando layout…
+      </span>
       {Array.from({ length: 4 }, (_, indice) => (
         <Skeleton className="h-16 rounded-none" key={indice} />
       ))}
@@ -41,7 +43,9 @@ function useOpcoesDoEditor() {
   return useMemo(() => {
     const naFicha = camposDoContexto(campos, CONTEXTO.FICHA);
     return {
-      identificador: naFicha.filter(identificadorPermitido).map((campo) => ({ valor: campo.id, rotulo: campo.label })),
+      identificador: naFicha
+        .filter(identificadorPermitido)
+        .map((campo) => ({ valor: campo.id, rotulo: campo.label })),
       ficha: opcoesDoEditor(naFicha),
       tabela: opcoesDoEditor(camposDoContexto(campos, CONTEXTO.TABELA)),
     };
@@ -62,9 +66,15 @@ export function SecaoLayout() {
   const [voltando, setVoltando] = useState(false);
   const [aviso, setAviso] = useState(null);
 
-  if (isAccessError(layoutQuery.error)) return <AcessoIndisponivel error={layoutQuery.error} />;
-  if (layoutQuery.error) return <ApiErrorAlert error={layoutQuery.error} id="config-layout-carregar-erro" />;
-  if (layoutQuery.isPending) return <Carregando />;
+  if (isAccessError(layoutQuery.error)) {
+    return <AcessoIndisponivel error={layoutQuery.error} />;
+  }
+  if (layoutQuery.error) {
+    return <ApiErrorAlert error={layoutQuery.error} id="config-layout-carregar-erro" />;
+  }
+  if (layoutQuery.isPending) {
+    return <Carregando />;
+  }
 
   const { padrao, padraoConfigurado, meu, efetivo } = layoutQuery.data;
   const base = layoutDoEditor(modo === MODO.PADRAO ? padrao : efetivo);
@@ -85,11 +95,20 @@ export function SecaoLayout() {
     <div className="grid gap-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="grid gap-1 text-sm text-muted-foreground">
-          <p>Como o lead aparece na tabela e no drawer: título, subtítulo, destaques, seções e colunas.</p>
+          <p>
+            Como o lead aparece na tabela e no drawer: título, subtítulo, destaques, seções e
+            colunas.
+          </p>
           {!padraoConfigurado && <p>A empresa ainda usa o layout inicial do CRM.</p>}
         </div>
         {meu && (
-          <Button onClick={() => { setAviso(null); setVoltando(true); }} variant="outline">
+          <Button
+            onClick={() => {
+              setAviso(null);
+              setVoltando(true);
+            }}
+            variant="outline"
+          >
             <RotateCcw aria-hidden="true" />
             Voltar ao padrão
           </Button>
@@ -101,7 +120,13 @@ export function SecaoLayout() {
       </p>
 
       {gestao ? (
-        <Tabs onValueChange={(proximo) => { setAviso(null); setModo(proximo); }} value={modo}>
+        <Tabs
+          onValueChange={(proximo) => {
+            setAviso(null);
+            setModo(proximo);
+          }}
+          value={modo}
+        >
           <TabsList className="mb-2" variant="line">
             <TabsTrigger value={MODO.PADRAO}>Padrão da empresa</TabsTrigger>
             <TabsTrigger value={MODO.MEU}>Só para mim</TabsTrigger>

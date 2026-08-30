@@ -18,9 +18,13 @@ export function anunciosDeOrdem(rotuloDe, posicaoDe, total) {
   return {
     onDragStart: ({ active }) => `${rotuloDe(active.id)} selecionado, ${posicao(active.id)}.`,
     onDragOver: ({ active, over }) =>
-      over ? `${rotuloDe(active.id)} na ${posicao(over.id)}.` : `${rotuloDe(active.id)} fora da lista.`,
+      over
+        ? `${rotuloDe(active.id)} na ${posicao(over.id)}.`
+        : `${rotuloDe(active.id)} fora da lista.`,
     onDragEnd: ({ active, over }) =>
-      over ? `${rotuloDe(active.id)} solto na ${posicao(over.id)}.` : `${rotuloDe(active.id)} solto.`,
+      over
+        ? `${rotuloDe(active.id)} solto na ${posicao(over.id)}.`
+        : `${rotuloDe(active.id)} solto.`,
     onDragCancel: ({ active }) => `Reordenação cancelada. ${rotuloDe(active.id)} voltou ao lugar.`,
   };
 }

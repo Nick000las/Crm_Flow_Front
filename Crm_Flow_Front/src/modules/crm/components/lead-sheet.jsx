@@ -41,7 +41,9 @@ const CAMPOS_VAZIOS = [];
 function Carregando() {
   return (
     <div className="grid gap-3 px-4" aria-busy="true">
-      <span className="sr-only" role="status">Carregando lead…</span>
+      <span className="sr-only" role="status">
+        Carregando lead…
+      </span>
       {Array.from({ length: 6 }, (_, indice) => (
         <Skeleton className="h-8 rounded-none" key={indice} />
       ))}
@@ -95,7 +97,12 @@ function SheetDoLead({ leadId }) {
   // LGPD: na criação, a base legal padrão do tenant já vem escolhida.
   const basePadrao = criando ? (lgpdQuery.data?.basePadrao ?? null) : null;
   const iniciais = useMemo(
-    () => valoresIniciais(campos, lead, basePadrao ? { [CAMPOS_LGPD.BASE_LEGAL]: basePadrao } : undefined),
+    () =>
+      valoresIniciais(
+        campos,
+        lead,
+        basePadrao ? { [CAMPOS_LGPD.BASE_LEGAL]: basePadrao } : undefined,
+      ),
     [campos, lead, basePadrao],
   );
   // Lead anonimizado (LGPD): não edita nem mescla (o back daria 409).
@@ -127,7 +134,9 @@ function SheetDoLead({ leadId }) {
     }
 
     const payload = montarPayloadEdicao(campos, iniciais, valores);
-    if (!payloadVazio(payload)) await atualizar.mutateAsync({ ...payload, ...extra });
+    if (!payloadVazio(payload)) {
+      await atualizar.mutateAsync({ ...payload, ...extra });
+    }
 
     setEditando(false);
     setAviso(payloadVazio(payload) ? null : AVISOS_LEAD.SALVO);
@@ -152,7 +161,9 @@ function SheetDoLead({ leadId }) {
   const erro = camposQuery.error ?? leadQuery.error;
   // Criando com `crm.lgpd`: espera a configuração, para a base padrão entrar no form.
   const carregando =
-    camposQuery.isPending || (!criando && leadQuery.isPending) || (criando && comLgpd && lgpdQuery.isPending);
+    camposQuery.isPending ||
+    (!criando && leadQuery.isPending) ||
+    (criando && comLgpd && lgpdQuery.isPending);
   const mostrarForm = criando || (editando && !anonimizado);
 
   return (

@@ -19,7 +19,9 @@ const LINHAS_SKELETON = 8;
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">Carregando campos…</span>
+      <span className="sr-only" role="status">
+        Carregando campos…
+      </span>
       {Array.from({ length: LINHAS_SKELETON }, (_, indice) => (
         <Skeleton className="h-11 rounded-none" key={indice} />
       ))}
@@ -42,9 +44,15 @@ export function SecaoCampos() {
   const [restaurando, setRestaurando] = useState(false);
   const [aviso, setAviso] = useState(null);
 
-  if (isAccessError(camposQuery.error)) return <AcessoIndisponivel error={camposQuery.error} />;
-  if (camposQuery.error) return <ApiErrorAlert error={camposQuery.error} id="config-campos-carregar-erro" />;
-  if (camposQuery.isPending) return <Carregando />;
+  if (isAccessError(camposQuery.error)) {
+    return <AcessoIndisponivel error={camposQuery.error} />;
+  }
+  if (camposQuery.error) {
+    return <ApiErrorAlert error={camposQuery.error} id="config-campos-carregar-erro" />;
+  }
+  if (camposQuery.isPending) {
+    return <Carregando />;
+  }
 
   const campos = camposQuery.data;
 
@@ -55,15 +63,17 @@ export function SecaoCampos() {
   }
 
   function editar(campo) {
-    abrir(() => (campo.camada === CAMADA.CAMADA_3 ? setPersonalizadoEmEdicao(campo) : setARenomear(campo)));
+    abrir(() =>
+      campo.camada === CAMADA.CAMADA_3 ? setPersonalizadoEmEdicao(campo) : setARenomear(campo),
+    );
   }
 
   return (
     <div className="grid gap-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <p className="max-w-2xl text-sm text-muted-foreground">
-          Escolha em que telas cada campo aparece e a ordem dele no formulário. Desligar uma tela não
-          apaga os dados já preenchidos.
+          Escolha em que telas cada campo aparece e a ordem dele no formulário. Desligar uma tela
+          não apaga os dados já preenchidos.
         </p>
         <div className="flex gap-2">
           <Button onClick={() => abrir(() => setRestaurando(true))} variant="outline">
@@ -104,7 +114,9 @@ export function SecaoCampos() {
       <RenomearCampoDialog
         campo={aRenomear}
         onOpenChange={(aberto) => !aberto && setARenomear(null)}
-        onSalvo={(atualizado) => atualizado && setAviso(`Campo renomeado para "${atualizado.label}".`)}
+        onSalvo={(atualizado) =>
+          atualizado && setAviso(`Campo renomeado para "${atualizado.label}".`)
+        }
       />
       <ExcluirDefinicaoDialog
         definicao={aExcluir}

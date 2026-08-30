@@ -1,4 +1,11 @@
-import { ACESSOS_CAMPO, CAMADA, CAMPOS_LGPD, CHAVE_SCORE, PARTES_ENDERECO, TIPOS_CAMPO } from '../constants.js';
+import {
+  ACESSOS_CAMPO,
+  CAMADA,
+  CAMPOS_LGPD,
+  CHAVE_SCORE,
+  PARTES_ENDERECO,
+  TIPOS_CAMPO,
+} from '../constants.js';
 import { lerValorDoCampo } from './colunas.js';
 import {
   documentoSemMascara,
@@ -79,7 +86,8 @@ const MENSAGEM_DOCUMENTO = Object.freeze({
 });
 
 const textoDe = (valor) => (typeof valor === 'string' ? valor : '');
-const diaDe = (valor) => (typeof valor === 'string' && DATA_ISO.test(valor) ? valor.slice(0, TAMANHO_DIA) : '');
+const diaDe = (valor) =>
+  typeof valor === 'string' && DATA_ISO.test(valor) ? valor.slice(0, TAMANHO_DIA) : '';
 
 /**
  * Id do campo no estado do form. A Camada 3 ganha prefixo para nunca colidir
@@ -99,14 +107,14 @@ export function idNoForm(campo) {
  */
 export function lerNumeroDigitado(texto) {
   const limpo = String(texto).replace(/\s/g, '');
-  if (limpo === '') return null;
+  if (limpo === '') {
+    return null;
+  }
 
   // Vírgula presente: pt-BR (ponto é milhar). Sem vírgula, ponto agrupando
   // de 3 em 3 (`2.000`, `1.234.567`) também é milhar; fora isso, é decimal.
   const usaMilharComPonto = limpo.includes(',') || MILHAR_COM_PONTO.test(limpo);
-  const normalizado = usaMilharComPonto
-    ? limpo.replaceAll('.', '').replace(',', '.')
-    : limpo;
+  const normalizado = usaMilharComPonto ? limpo.replaceAll('.', '').replace(',', '.') : limpo;
 
   return /^-?\d+(\.\d+)?$/.test(normalizado) ? Number(normalizado) : Number.NaN;
 }
@@ -160,8 +168,12 @@ function periodoDeApi(valor) {
 function enderecoDeApi(valor) {
   const partes = PARTES_ENDERECO.flatMap((parte) => {
     const texto = textoDe(valor?.[parte]).trim();
-    if (!texto) return [];
-    if (parte === 'cep') return [[parte, texto.replace(/\D/g, '')]];
+    if (!texto) {
+      return [];
+    }
+    if (parte === 'cep') {
+      return [[parte, texto.replace(/\D/g, '')]];
+    }
     return [[parte, parte === 'uf' ? texto.toUpperCase() : texto]];
   });
 
@@ -181,7 +193,9 @@ export function paraValorDeApi(tipo, valor) {
     case TIPOS_CAMPO.MONETARIO: {
       // Reais com até 2 casas, como o back aceita.
       const numero = lerNumeroDigitado(valor ?? '');
-      return numero === null || Number.isNaN(numero) ? numero : Math.round(numero * CENTAVOS) / CENTAVOS;
+      return numero === null || Number.isNaN(numero)
+        ? numero
+        : Math.round(numero * CENTAVOS) / CENTAVOS;
     }
     case TIPOS_CAMPO.BOOLEANO:
       return typeof valor === 'boolean' ? valor : null;
@@ -230,7 +244,9 @@ export function valoresIniciais(campos, lead, padroes = {}) {
   if (!lead) {
     for (const campo of campos) {
       const padrao = padroes[campo.chave];
-      if (padrao !== undefined && padrao !== null && padrao !== '') valores[idNoForm(campo)] = padrao;
+      if (padrao !== undefined && padrao !== null && padrao !== '') {
+        valores[idNoForm(campo)] = padrao;
+      }
     }
   }
 
@@ -269,8 +285,12 @@ export function podeEditarCampo(campo) {
  * @returns {Array<T & { calculado?: true }>}
  */
 export function marcarCalculados(campos, comScore) {
-  if (!comScore) return campos;
-  return campos.map((campo) => (campo.chave === CHAVE_SCORE ? { ...campo, calculado: true } : campo));
+  if (!comScore) {
+    return campos;
+  }
+  return campos.map((campo) =>
+    campo.chave === CHAVE_SCORE ? { ...campo, calculado: true } : campo,
+  );
 }
 
 /**
@@ -285,12 +305,18 @@ export function montarPayloadCriacao(campos, valores) {
 
   for (const campo of [...campos.filter(podeEditarCampo), CAMPO_VALOR]) {
     const valor = paraValorDeApi(campo.tipo, valores[idNoForm(campo)]);
-    if (valor !== null) atribuir(payload, campo, valor);
+    if (valor !== null) {
+      atribuir(payload, campo, valor);
+    }
   }
 
-  if (valores[CHAVE_RESPONSAVEL]) payload[CHAVE_RESPONSAVEL] = valores[CHAVE_RESPONSAVEL];
+  if (valores[CHAVE_RESPONSAVEL]) {
+    payload[CHAVE_RESPONSAVEL] = valores[CHAVE_RESPONSAVEL];
+  }
   // Opt-out: só quando marcado (desmarcado é o padrão de quem nunca saiu).
-  if (valores[CHAVE_OPT_OUT] === true) payload[CHAVE_OPT_OUT] = true;
+  if (valores[CHAVE_OPT_OUT] === true) {
+    payload[CHAVE_OPT_OUT] = true;
+  }
 
   return payload;
 }
@@ -300,7 +326,9 @@ function iguais(a, b) {
     return a.length === b.length && a.every((item, indice) => item === b[indice]);
   }
   // Endereço e período: mesma ordem de chaves dos dois lados (`*DeApi`).
-  if (a && b && typeof a === 'object' && typeof b === 'object') return JSON.stringify(a) === JSON.stringify(b);
+  if (a && b && typeof a === 'object' && typeof b === 'object') {
+    return JSON.stringify(a) === JSON.stringify(b);
+  }
 
   return a === b;
 }
@@ -322,12 +350,16 @@ export function montarPayloadEdicao(campos, iniciais, valores) {
     const antes = paraValorDeApi(campo.tipo, iniciais[id]);
     const depois = paraValorDeApi(campo.tipo, valores[id]);
 
-    if (!iguais(antes, depois)) atribuir(payload, campo, depois);
+    if (!iguais(antes, depois)) {
+      atribuir(payload, campo, depois);
+    }
   }
 
   const responsavelAntes = iniciais[CHAVE_RESPONSAVEL] || null;
   const responsavelDepois = valores[CHAVE_RESPONSAVEL] || null;
-  if (responsavelAntes !== responsavelDepois) payload[CHAVE_RESPONSAVEL] = responsavelDepois;
+  if (responsavelAntes !== responsavelDepois) {
+    payload[CHAVE_RESPONSAVEL] = responsavelDepois;
+  }
 
   // Opt-out: só quando muda (religar mantém a data da primeira vez, no back).
   if (Boolean(iniciais[CHAVE_OPT_OUT]) !== Boolean(valores[CHAVE_OPT_OUT])) {
@@ -357,23 +389,30 @@ export function validarNoCliente(campos, valores) {
     const id = idNoForm(campo);
     const valor = paraValorDeApi(campo.tipo, valores[id]);
 
-    if (Number.isNaN(valor)) erros[id] = MENSAGENS.NUMERO_INVALIDO;
-    else if (campo.tipo === TIPOS_CAMPO.TELEFONE && valor !== null && !telefoneValido(valor)) {
+    if (Number.isNaN(valor)) {
+      erros[id] = MENSAGENS.NUMERO_INVALIDO;
+    } else if (campo.tipo === TIPOS_CAMPO.TELEFONE && valor !== null && !telefoneValido(valor)) {
       erros[id] = MENSAGENS.TELEFONE_INVALIDO;
+    } else if (valor !== null && erroDoTipo(campo.tipo, valor)) {
+      erros[id] = erroDoTipo(campo.tipo, valor);
+    } else if (campo.obrigatorio && valor === null) {
+      erros[id] = MENSAGENS.OBRIGATORIO;
     }
-    else if (valor !== null && erroDoTipo(campo.tipo, valor)) erros[id] = erroDoTipo(campo.tipo, valor);
-    else if (campo.obrigatorio && valor === null) erros[id] = MENSAGENS.OBRIGATORIO;
   }
 
   // E-mail ou telefone: conta o que está no form (até o só de ver, que já
   // tem valor); o erro vai para o primeiro editável. Sem nenhum editável
   // (ocultos pela permissão), o back decide.
-  const contatos = CHAVES_CONTATO.map((chave) => campos.find((campo) => campo.chave === chave)).filter(Boolean);
+  const contatos = CHAVES_CONTATO.map((chave) =>
+    campos.find((campo) => campo.chave === chave),
+  ).filter(Boolean);
   const temContato = contatos.some(
     (campo) => paraValorDeApi(TIPOS_CAMPO.TEXTO, valores[idNoForm(campo)]) !== null,
   );
   const ondeAvisar = contatos.find(podeEditarCampo);
-  if (!temContato && ondeAvisar) erros[idNoForm(ondeAvisar)] ??= MENSAGENS.CONTATO;
+  if (!temContato && ondeAvisar) {
+    erros[idNoForm(ondeAvisar)] ??= MENSAGENS.CONTATO;
+  }
 
   return erros;
 }
@@ -403,10 +442,15 @@ export function errosDoServidor(fields, campos) {
 
   for (const [chave, mensagens] of Object.entries(fields ?? {})) {
     const mensagem = mensagens?.[0];
-    if (!mensagem) continue;
+    if (!mensagem) {
+      continue;
+    }
 
-    if (idPorChave.has(chave)) porCampo[idPorChave.get(chave)] = mensagem;
-    else gerais.push(mensagem);
+    if (idPorChave.has(chave)) {
+      porCampo[idPorChave.get(chave)] = mensagem;
+    } else {
+      gerais.push(mensagem);
+    }
   }
 
   return { porCampo, gerais };
@@ -422,7 +466,9 @@ function erroDoTipo(tipo, valor) {
     return valor.length === TAMANHO_DOCUMENTO[tipo] ? null : MENSAGEM_DOCUMENTO[tipo];
   }
   if (tipo === TIPOS_CAMPO.INTERVALO_DATAS) {
-    if (!valor.de || !valor.ate) return MENSAGENS.PERIODO_INCOMPLETO;
+    if (!valor.de || !valor.ate) {
+      return MENSAGENS.PERIODO_INCOMPLETO;
+    }
     return valor.de > valor.ate ? MENSAGENS.PERIODO_INVERTIDO : null;
   }
   if (tipo === TIPOS_CAMPO.ENDERECO && valor.cep) {

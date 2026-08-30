@@ -20,10 +20,7 @@ export function TenantStatusBadge({ status, className }) {
       )}
       variant="outline"
     >
-      <span
-        className="size-1.5 shrink-0 bg-current"
-        aria-hidden="true"
-      />
+      <span className="size-1.5 shrink-0 bg-current" aria-hidden="true" />
       {getTenantStatusLabel(status)}
     </Badge>
   );

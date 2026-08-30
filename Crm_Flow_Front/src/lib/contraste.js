@@ -28,9 +28,13 @@ function linear(canal) {
  */
 export function luminancia(hex) {
   const [, corpo] = HEX.exec(hex) ?? [];
-  if (!corpo) throw new TypeError(`Cor inválida: ${hex}`);
+  if (!corpo) {
+    throw new TypeError(`Cor inválida: ${hex}`);
+  }
 
-  const [r, g, b] = [0, 2, 4].map((inicio) => linear(Number.parseInt(corpo.slice(inicio, inicio + 2), 16)));
+  const [r, g, b] = [0, 2, 4].map((inicio) =>
+    linear(Number.parseInt(corpo.slice(inicio, inicio + 2), 16)),
+  );
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 

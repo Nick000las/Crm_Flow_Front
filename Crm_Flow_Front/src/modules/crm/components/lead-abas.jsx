@@ -23,7 +23,9 @@ export function LeadAbas({ comAtividades, lead, campos, layout, nomePorId }) {
   const [aba, setAba] = useState(ABA.DADOS);
   const detalhe = <LeadDetalhe campos={campos} layout={layout} lead={lead} nomePorId={nomePorId} />;
 
-  if (!comAtividades) return <div className="overflow-y-auto">{detalhe}</div>;
+  if (!comAtividades) {
+    return <div className="overflow-y-auto">{detalhe}</div>;
+  }
 
   return (
     <Tabs className="min-h-0 flex-1 gap-0" onValueChange={setAba} value={aba}>

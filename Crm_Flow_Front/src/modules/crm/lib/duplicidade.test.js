@@ -30,16 +30,26 @@ test('reconhece o 409 de duplicidade e o bloqueio', () => {
 });
 
 test('candidatosDoErro lê details.duplicados com segurança', () => {
-  const candidato = { id: 'l1', nome: 'Ana', campos: [{ campo: 'email', label: 'E-mail' }], acao: 'warn' };
+  const candidato = {
+    id: 'l1',
+    nome: 'Ana',
+    campos: [{ campo: 'email', label: 'E-mail' }],
+    acao: 'warn',
+  };
 
-  assert.deepEqual(candidatosDoErro({ details: { duplicados: [candidato, { nome: 'sem id' }] } }), [candidato]);
+  assert.deepEqual(candidatosDoErro({ details: { duplicados: [candidato, { nome: 'sem id' }] } }), [
+    candidato,
+  ]);
   assert.deepEqual(candidatosDoErro({ details: null }), []);
   assert.deepEqual(candidatosDoErro(undefined), []);
 });
 
 test('descreverCandidato junta os campos iguais', () => {
   assert.equal(descreverCandidato({ campos: [{ label: 'E-mail' }] }), 'E-mail igual');
-  assert.equal(descreverCandidato({ campos: [{ label: 'E-mail' }, { label: 'Telefone' }] }), 'E-mail e Telefone iguais');
+  assert.equal(
+    descreverCandidato({ campos: [{ label: 'E-mail' }, { label: 'Telefone' }] }),
+    'E-mail e Telefone iguais',
+  );
   assert.equal(
     descreverCandidato({ campos: [{ label: 'E-mail' }, { label: 'Telefone' }, { label: 'CNPJ' }] }),
     'E-mail, Telefone e CNPJ iguais',
@@ -48,15 +58,30 @@ test('descreverCandidato junta os campos iguais', () => {
 });
 
 test('consultaDeDuplicados pega só os campos das regras, preenchidos e fora da Camada 3', () => {
-  const valores = { nome: 'Ana', email: ' ana@x.com ', telefone: '', cnpj: '12.345.678/0001-90', 'custom.cpf': '123' };
+  const valores = {
+    nome: 'Ana',
+    email: ' ana@x.com ',
+    telefone: '',
+    cnpj: '12.345.678/0001-90',
+    'custom.cpf': '123',
+  };
 
-  assert.deepEqual(consultaDeDuplicados(CAMPOS, valores), { email: 'ana@x.com', cnpj: '12.345.678/0001-90' });
-  assert.deepEqual(consultaDeDuplicados(CAMPOS, { email: 'a@b.c' }, 'l1'), { email: 'a@b.c', leadId: 'l1' });
+  assert.deepEqual(consultaDeDuplicados(CAMPOS, valores), {
+    email: 'ana@x.com',
+    cnpj: '12.345.678/0001-90',
+  });
+  assert.deepEqual(consultaDeDuplicados(CAMPOS, { email: 'a@b.c' }, 'l1'), {
+    email: 'a@b.c',
+    leadId: 'l1',
+  });
   assert.equal(consultaDeDuplicados(CAMPOS, { nome: 'Ana' }), null);
 });
 
 test('checaDuplicidade', () => {
-  assert.deepEqual(CAMPOS.filter(checaDuplicidade).map((campo) => campo.chave), ['email', 'telefone', 'cnpj']);
+  assert.deepEqual(
+    CAMPOS.filter(checaDuplicidade).map((campo) => campo.chave),
+    ['email', 'telefone', 'cnpj'],
+  );
 });
 
 test('regrasParaEnvio manda só o que mudou', () => {
@@ -67,9 +92,10 @@ test('regrasParaEnvio manda só o que mudou', () => {
   const editadas = valoresDasRegras(originais);
 
   assert.equal(regrasParaEnvio(editadas, originais), null);
-  assert.deepEqual(regrasParaEnvio({ ...editadas, cnpj: { ativo: true, acao: 'block' } }, originais), [
-    { campo: 'cnpj', ativo: true, acao: 'block' },
-  ]);
+  assert.deepEqual(
+    regrasParaEnvio({ ...editadas, cnpj: { ativo: true, acao: 'block' } }, originais),
+    [{ campo: 'cnpj', ativo: true, acao: 'block' }],
+  );
 });
 
 test('import: "criar" some na linha bloqueada; ações só das escolhidas', () => {

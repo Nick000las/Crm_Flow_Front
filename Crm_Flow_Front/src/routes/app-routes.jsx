@@ -1,4 +1,6 @@
-import { Navigate, useRoutes } from 'react-router-dom';
+import { LoadingState } from '@/components/loading-state';
+import { Navigate, useRoutes, useLocation } from 'react-router-dom';
+import { SessionRecovery } from '@/components/session-recovery';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoutes } from './(admin)/admin.routes';
 import { useAuthRoutes } from './(auth)/auth.routes';
@@ -6,7 +8,9 @@ import AppLayout from './(app)/app-layout';
 import { appRoutes } from './(app)/app.routes';
 
 export default function AppRoutes() {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, sessionError, retrySession } = useAuth();
+  const { pathname } = useLocation();
+  const isAdminRoute = pathname === '/admin' || pathname.startsWith('/admin/');
   const authRoutes = useAuthRoutes();
   const adminRoutes = useAdminRoutes();
 
@@ -25,12 +29,16 @@ export default function AppRoutes() {
     },
   ]);
 
-  if (loading) {
+  if (!isAdminRoute && loading) {
     return (
       <main className="grid min-h-svh place-items-center bg-muted/40">
-        <p className="text-sm text-muted-foreground">Carregando...</p>
+        <LoadingState label="Carregando sessão…" />
       </main>
     );
+  }
+
+  if (!isAdminRoute && sessionError) {
+    return <SessionRecovery error={sessionError} onRetry={retrySession} />;
   }
 
   return element;

@@ -76,7 +76,9 @@ export function TenantsTable({ tenants, acaoVazio }) {
 }
 
 function formatarModulos(modulos) {
-  if (!Array.isArray(modulos) || modulos.length === 0) return '—';
+  if (!Array.isArray(modulos) || modulos.length === 0) {
+    return '—';
+  }
 
   return modulos.join(', ');
 }

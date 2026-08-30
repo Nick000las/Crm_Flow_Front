@@ -19,7 +19,9 @@ import { ValorDoFiltro } from './valor-do-filtro';
  */
 export function LinhaFiltro({ linha, campos, erro, erroDoServidor = false, onChange, onRemover }) {
   const campo = campos.find((atual) => atual.chave === linha.chave);
-  if (!campo) return null;
+  if (!campo) {
+    return null;
+  }
 
   const erroId = `${linha.id}-erro`;
   const invalido = Boolean(erro) || erroDoServidor;
@@ -38,7 +40,14 @@ export function LinhaFiltro({ linha, campos, erro, erroDoServidor = false, onCha
     >
       <SelectSimples
         aria-label="Campo"
-        onChange={(chave) => onChange(trocarCampo(linha, campos.find((atual) => atual.chave === chave)))}
+        onChange={(chave) =>
+          onChange(
+            trocarCampo(
+              linha,
+              campos.find((atual) => atual.chave === chave),
+            ),
+          )
+        }
         opcoes={opcoesCampo}
         value={linha.chave}
       />

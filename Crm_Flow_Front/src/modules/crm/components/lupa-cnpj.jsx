@@ -30,15 +30,21 @@ const MENSAGEM_POR_STATUS = Object.freeze({
   nao_suportado: MENSAGENS_CNPJ.NAO_SUPORTADO,
 });
 
-const LINK = 'underline underline-offset-2 outline-none focus-visible:ring-2 focus-visible:ring-ring/50';
+const LINK =
+  'underline underline-offset-2 outline-none focus-visible:ring-2 focus-visible:ring-ring/50';
 
 /** Situação cadastral fora de ATIVA ("BAIXADA"…): texto e cor, nunca só cor. */
 function SeloSituacao({ situacao }) {
-  if (!situacao) return null;
+  if (!situacao) {
+    return null;
+  }
 
   return (
     <p className="flex items-center gap-2 text-sm">
-      <Badge className="rounded-none border-destructive font-mono text-[11px] text-destructive" variant="outline">
+      <Badge
+        className="rounded-none border-destructive font-mono text-[11px] text-destructive"
+        variant="outline"
+      >
         {situacao}
       </Badge>
       <span className="text-muted-foreground">Situação cadastral na Receita</span>
@@ -62,10 +68,15 @@ function LinkConfiguracao({ secao, children }) {
  * configurar mais destinos.
  */
 function OutrosDados({ dados, comSugestoes, gestao }) {
-  if (comSugestoes && dados.length === 0) return null;
+  if (comSugestoes && dados.length === 0) {
+    return null;
+  }
 
   return (
-    <section aria-label="Dados da Receita sem campo no lead" className="grid gap-2 border border-border px-3 py-2">
+    <section
+      aria-label="Dados da Receita sem campo no lead"
+      className="grid gap-2 border border-border px-3 py-2"
+    >
       {dados.length > 0 && (
         <>
           <p className="font-mono text-[11px] tracking-wide text-muted-foreground uppercase">
@@ -82,8 +93,12 @@ function OutrosDados({ dados, comSugestoes, gestao }) {
         </>
       )}
       <p className="text-xs text-muted-foreground">
-        {comSugestoes ? MENSAGENS_CNPJ.CONFIGURAR_MAIS : `${MENSAGENS_CNPJ.SEM_SUGESTAO} Configure em`}{' '}
-        <LinkConfiguracao secao="enriquecimento">Configurações › Enriquecimento por CNPJ</LinkConfiguracao>
+        {comSugestoes
+          ? MENSAGENS_CNPJ.CONFIGURAR_MAIS
+          : `${MENSAGENS_CNPJ.SEM_SUGESTAO} Configure em`}{' '}
+        <LinkConfiguracao secao="enriquecimento">
+          Configurações › Enriquecimento por CNPJ
+        </LinkConfiguracao>
         {gestao && (
           <>
             {' (ou '}
@@ -100,7 +115,10 @@ function OutrosDados({ dados, comSugestoes, gestao }) {
 /** O que a Receita sugeriu para o form, com checkbox por campo. */
 function Sugestoes({ idBase, itens, marcados, onAlternar }) {
   return (
-    <ul aria-label="Sugestões para o formulário" className="divide-y divide-border border border-border">
+    <ul
+      aria-label="Sugestões para o formulário"
+      className="divide-y divide-border border border-border"
+    >
       {itens.map((item) => {
         const id = `${idBase}-${item.campoReceita}`;
 
@@ -116,7 +134,9 @@ function Sugestoes({ idBase, itens, marcados, onAlternar }) {
             <label className="grid gap-0.5 text-sm" htmlFor={id}>
               <span className="text-xs text-muted-foreground">{item.label}</span>
               <span>{item.texto}</span>
-              {item.substitui && <span className="text-xs text-muted-foreground">Substitui o valor atual</span>}
+              {item.substitui && (
+                <span className="text-xs text-muted-foreground">Substitui o valor atual</span>
+              )}
               {item.motivo && <span className="text-xs text-muted-foreground">{item.motivo}</span>}
             </label>
           </li>
@@ -147,12 +167,15 @@ export function LupaCnpj({ idBase, cnpj, campos, valores, onAplicar, onErroNoCam
   const consultar = useConsultarCnpj();
   const [painel, setPainel] = useState(null);
 
-  if (!temFeature(user, CRM_FEATURES.CNPJ) || !configQuery.data?.ativo) return null;
+  if (!temFeature(user, CRM_FEATURES.CNPJ) || !configQuery.data?.ativo) {
+    return null;
+  }
 
   const documento = documentoSemMascara(cnpj);
   // Trocou o CNPJ depois de consultar: o resultado era do outro.
   const resultado = painel?.documento === documento ? painel : null;
-  const erroDaConsulta = consultar.error && consultar.variables === documento ? toApiError(consultar.error) : null;
+  const erroDaConsulta =
+    consultar.error && consultar.variables === documento ? toApiError(consultar.error) : null;
   // O 400 (DV errado) já está no campo; aqui ficam os outros.
   const erro = erroDaConsulta?.status === HTTP_BAD_REQUEST ? null : erroDaConsulta;
   // Desligado nas configurações (403): a mensagem do back explica; buscar de novo não adianta.
@@ -162,9 +185,18 @@ export function LupaCnpj({ idBase, cnpj, campos, valores, onAplicar, onErroNoCam
     setPainel(null);
     consultar.mutate(documento, {
       onSuccess: (consulta) => {
-        const itens = consulta.status === 'ok' ? itensDaSugestao(consulta.sugestao, campos, valores) : [];
-        const marcados = new Set(itens.filter((item) => item.marcadaPorPadrao).map((item) => item.id));
-        setPainel({ documento, status: consulta.status, itens, marcados, dados: consulta.dados ?? null });
+        const itens =
+          consulta.status === 'ok' ? itensDaSugestao(consulta.sugestao, campos, valores) : [];
+        const marcados = new Set(
+          itens.filter((item) => item.marcadaPorPadrao).map((item) => item.id),
+        );
+        setPainel({
+          documento,
+          status: consulta.status,
+          itens,
+          marcados,
+          dados: consulta.dados ?? null,
+        });
       },
       onError: (falha) => {
         const apiError = toApiError(falha);
@@ -178,8 +210,11 @@ export function LupaCnpj({ idBase, cnpj, campos, valores, onAplicar, onErroNoCam
   function alternar(id) {
     setPainel((atual) => {
       const marcados = new Set(atual.marcados);
-      if (marcados.has(id)) marcados.delete(id);
-      else marcados.add(id);
+      if (marcados.has(id)) {
+        marcados.delete(id);
+      } else {
+        marcados.add(id);
+      }
       return { ...atual, marcados };
     });
   }
@@ -215,11 +250,17 @@ export function LupaCnpj({ idBase, cnpj, campos, valores, onAplicar, onErroNoCam
           </div>
         )}
         {erro && erro.code !== SERVICO_INDISPONIVEL && (
-          <ApiErrorAlert error={erro} id={`${idBase}-erro`} title="Não foi possível consultar o CNPJ" />
+          <ApiErrorAlert
+            error={erro}
+            id={`${idBase}-erro`}
+            title="Não foi possível consultar o CNPJ"
+          />
         )}
 
         {resultado && resultado.status !== 'ok' && (
-          <p className="border border-border px-3 py-2 text-sm">{MENSAGEM_POR_STATUS[resultado.status]}</p>
+          <p className="border border-border px-3 py-2 text-sm">
+            {MENSAGEM_POR_STATUS[resultado.status]}
+          </p>
         )}
         {resultado?.status === 'ok' && (
           <>

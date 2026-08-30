@@ -55,10 +55,7 @@ test('item de menu atrás de flag some com a flag desligada', () => {
   assert.equal(podeVer(item, { ...dono, featuresAtivas: ['crm.layout'] }), true);
   assert.equal(podeVer(item, { ...dono, featuresAtivas: [] }), false);
   assert.equal(podeVer(item, dono), false);
-  assert.equal(
-    podeVer(item, { ...operador, featuresAtivas: ['crm.layout'] }),
-    false,
-  );
+  assert.equal(podeVer(item, { ...operador, featuresAtivas: ['crm.layout'] }), false);
 });
 
 test('feature em lista exige todas as flags ligadas', () => {
@@ -81,6 +78,9 @@ test('página com subseções só aparece se alguma subseção pronta for visív
   assert.equal(paginaVisivel(configuracoes, dono), true);
   assert.equal(paginaVisivel(configuracoes, operador), false);
   assert.equal(paginaVisivel(configuracoes, { ...operador, featuresAtivas: ['crm.layout'] }), true);
-  assert.equal(paginaVisivel(configuracoes, { ...operador, featuresAtivas: ['crm.listas'] }), false);
+  assert.equal(
+    paginaVisivel(configuracoes, { ...operador, featuresAtivas: ['crm.listas'] }),
+    false,
+  );
   assert.equal(paginaVisivel({ roles: ['DONO'] }, operador), false);
 });

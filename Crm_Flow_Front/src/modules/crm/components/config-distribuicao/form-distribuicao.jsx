@@ -28,11 +28,27 @@ import { useLinhaOrdenavel } from '../ordenavel/use-linha-ordenavel';
 import { SelectSimples } from '../select-simples';
 import { RegraDistribuicaoDialog } from './regra-distribuicao-dialog';
 
-const OPCOES_FALLBACK = Object.entries(ROTULOS_FALLBACK).map(([valor, rotulo]) => ({ valor, rotulo }));
+const OPCOES_FALLBACK = Object.entries(ROTULOS_FALLBACK).map(([valor, rotulo]) => ({
+  valor,
+  rotulo,
+}));
 const SEM_ERROS = Object.freeze({ porRegra: {}, outros: [] });
 
 /** Uma regra do rascunho: posição, nome, frase, liga/desliga e ações. */
-function LinhaRegra({ regra, indice, total, descricao, destino, erro, podeEditar, ocupado, onMover, onAlternar, onEditar, onRemover }) {
+function LinhaRegra({
+  regra,
+  indice,
+  total,
+  descricao,
+  destino,
+  erro,
+  podeEditar,
+  ocupado,
+  onMover,
+  onAlternar,
+  onEditar,
+  onRemover,
+}) {
   const { linha, puxador } = useLinhaOrdenavel(regra.chaveLocal, !podeEditar || ocupado);
   const nome = regra.nome || 'Regra sem nome';
   const idAtiva = `distribuicao-${regra.chaveLocal}-ativa`;
@@ -49,13 +65,16 @@ function LinhaRegra({ regra, indice, total, descricao, destino, erro, podeEditar
       )}
     >
       {podeEditar && <PuxadorOrdem {...puxador} rotulo={nome} />}
-      <span className="w-6 font-mono text-xs text-muted-foreground tabular-nums">{indice + 1}.</span>
+      <span className="w-6 font-mono text-xs text-muted-foreground tabular-nums">
+        {indice + 1}.
+      </span>
 
       <div className="grid min-w-0 flex-1 gap-0.5">
         <p className="text-sm font-medium">{nome}</p>
         <p className="text-sm text-muted-foreground">
           {descricao} <span aria-hidden="true">→</span>
-          <span className="sr-only">, vai para</span> <span className="text-foreground">{destino}</span>
+          <span className="sr-only">, vai para</span>{' '}
+          <span className="text-foreground">{destino}</span>
         </p>
         {erro && (
           <p className="text-xs text-destructive" id={idErro}>
@@ -65,16 +84,37 @@ function LinhaRegra({ regra, indice, total, descricao, destino, erro, podeEditar
       </div>
 
       <label className="flex items-center gap-2 text-sm" htmlFor={idAtiva}>
-        <Switch checked={regra.ativo} disabled={!podeEditar || ocupado} id={idAtiva} onCheckedChange={onAlternar} />
+        <Switch
+          checked={regra.ativo}
+          disabled={!podeEditar || ocupado}
+          id={idAtiva}
+          onCheckedChange={onAlternar}
+        />
         {regra.ativo ? 'Ligada' : 'Desligada'}
         <span className="sr-only">: {nome}</span>
       </label>
 
       {podeEditar && (
         <div className="flex whitespace-nowrap">
-          <BotoesOrdem desabilitado={ocupado} indice={indice} onMover={onMover} rotulo={nome} total={total} />
-          <BotaoIcone disabled={ocupado} icone={Pencil} onClick={onEditar} rotulo={`Editar ${nome}`} />
-          <BotaoIcone disabled={ocupado} icone={Trash2} onClick={onRemover} rotulo={`Remover ${nome}`} />
+          <BotoesOrdem
+            desabilitado={ocupado}
+            indice={indice}
+            onMover={onMover}
+            rotulo={nome}
+            total={total}
+          />
+          <BotaoIcone
+            disabled={ocupado}
+            icone={Pencil}
+            onClick={onEditar}
+            rotulo={`Editar ${nome}`}
+          />
+          <BotaoIcone
+            disabled={ocupado}
+            icone={Trash2}
+            onClick={onRemover}
+            rotulo={`Remover ${nome}`}
+          />
         </div>
       )}
     </li>
@@ -95,7 +135,14 @@ function LinhaRegra({ regra, indice, total, descricao, destino, erro, podeEditar
  *   onSalvo: (aviso: string) => void,
  * }} props
  */
-export function FormDistribuicao({ config, campos, nomePorId, opcoesDestino, podeEditar, onSalvo }) {
+export function FormDistribuicao({
+  config,
+  campos,
+  nomePorId,
+  opcoesDestino,
+  podeEditar,
+  onSalvo,
+}) {
   const [valores, setValores] = useState(() => valoresDaDistribuicao(config, campos));
   const [erros, setErros] = useState(SEM_ERROS);
   // `undefined` = fechado; `{ regra, nova }` = editando no dialog.
@@ -109,7 +156,9 @@ export function FormDistribuicao({ config, campos, nomePorId, opcoesDestino, pod
 
   function alterar(parcial) {
     setValores((atuais) => ({ ...atuais, ...parcial }));
-    if (salvar.error) salvar.reset();
+    if (salvar.error) {
+      salvar.reset();
+    }
   }
 
   function alterarRegras(regras) {
@@ -118,18 +167,25 @@ export function FormDistribuicao({ config, campos, nomePorId, opcoesDestino, pod
 
   function mover(de, para) {
     const proximos = moverPara(valores.regras, de, para);
-    if (proximos !== valores.regras) alterarRegras(proximos);
+    if (proximos !== valores.regras) {
+      alterarRegras(proximos);
+    }
   }
 
   function confirmarRegra(confirmada) {
     const existe = valores.regras.some((regra) => regra.chaveLocal === confirmada.chaveLocal);
     alterarRegras(
       existe
-        ? valores.regras.map((regra) => (regra.chaveLocal === confirmada.chaveLocal ? confirmada : regra))
+        ? valores.regras.map((regra) =>
+            regra.chaveLocal === confirmada.chaveLocal ? confirmada : regra,
+          )
         : [...valores.regras, confirmada],
     );
     // A regra foi revista: o erro dela sai.
-    setErros(({ porRegra, outros }) => ({ porRegra: semChave(porRegra, confirmada.chaveLocal), outros }));
+    setErros(({ porRegra, outros }) => ({
+      porRegra: semChave(porRegra, confirmada.chaveLocal),
+      outros,
+    }));
   }
 
   function remover(chaveLocal) {
@@ -232,7 +288,9 @@ export function FormDistribuicao({ config, campos, nomePorId, opcoesDestino, pod
             <ListaOrdenavel
               ids={ids}
               onMover={mover}
-              rotuloDe={(id) => valores.regras.find((regra) => regra.chaveLocal === id)?.nome || 'Regra sem nome'}
+              rotuloDe={(id) =>
+                valores.regras.find((regra) => regra.chaveLocal === id)?.nome || 'Regra sem nome'
+              }
             >
               <ul aria-busy={salvar.isPending} className="border border-border">
                 {valores.regras.map((regra, indice) => {
@@ -242,12 +300,18 @@ export function FormDistribuicao({ config, campos, nomePorId, opcoesDestino, pod
                     <LinhaRegra
                       descricao={descreverCondicoes(regra, campos, nomePorId)}
                       destino={nomeDoDestino(regra.destino, nomePorId, config.grupos)}
-                      erro={doServidor ? `Revise esta regra: ${Object.values(doServidor)[0]}` : null}
+                      erro={
+                        doServidor ? `Revise esta regra: ${Object.values(doServidor)[0]}` : null
+                      }
                       indice={indice}
                       key={regra.chaveLocal}
                       ocupado={ocupado}
                       onAlternar={(ativo) =>
-                        alterarRegras(valores.regras.map((atual) => (atual === regra ? { ...atual, ativo } : atual)))
+                        alterarRegras(
+                          valores.regras.map((atual) =>
+                            atual === regra ? { ...atual, ativo } : atual,
+                          ),
+                        )
                       }
                       onEditar={() => setEmEdicao({ regra, nova: false })}
                       onMover={mover}
@@ -264,7 +328,10 @@ export function FormDistribuicao({ config, campos, nomePorId, opcoesDestino, pod
         </section>
 
         {erros.outros.length > 0 && (
-          <ul className="grid gap-1 border border-destructive px-3 py-2 text-sm text-destructive" role="alert">
+          <ul
+            className="grid gap-1 border border-destructive px-3 py-2 text-sm text-destructive"
+            role="alert"
+          >
             {erros.outros.map((mensagem) => (
               <li key={mensagem}>{mensagem}</li>
             ))}
@@ -276,7 +343,11 @@ export function FormDistribuicao({ config, campos, nomePorId, opcoesDestino, pod
           </p>
         )}
         {salvar.error && !comErroDeRegra && erros.outros.length === 0 && (
-          <ApiErrorAlert error={salvar.error} id="distribuicao-erro" title="Não foi possível salvar" />
+          <ApiErrorAlert
+            error={salvar.error}
+            id="distribuicao-erro"
+            title="Não foi possível salvar"
+          />
         )}
 
         {podeEditar && (
@@ -284,7 +355,12 @@ export function FormDistribuicao({ config, campos, nomePorId, opcoesDestino, pod
             <Button aria-busy={salvar.isPending} disabled={!mudou || ocupado} type="submit">
               {salvar.isPending ? 'Salvando…' : 'Salvar'}
             </Button>
-            <Button disabled={!mudou || ocupado} onClick={descartar} type="button" variant="outline">
+            <Button
+              disabled={!mudou || ocupado}
+              onClick={descartar}
+              type="button"
+              variant="outline"
+            >
               Descartar
             </Button>
           </div>

@@ -6,7 +6,8 @@ import { moverPara } from '../../lib/ordem';
 import { ListaOrdenavel } from '../ordenavel/lista-ordenavel';
 import { LinhaOpcao } from './linha-opcao';
 
-const HEAD_CLASS = 'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
+const HEAD_CLASS =
+  'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
 
 /**
  * Opções de uma lista, na ordem dos seletores, com arrastar e ↑/↓.
@@ -21,7 +22,15 @@ const HEAD_CLASS = 'font-mono text-[11px] font-normal uppercase tracking-wide te
  *   acaoVazio: import('react').ReactNode,
  * }} props
  */
-export function TabelaOpcoes({ tipo, opcoes, ordemOcupada, onReordenar, onEditar, onExcluir, acaoVazio }) {
+export function TabelaOpcoes({
+  tipo,
+  opcoes,
+  ordemOcupada,
+  onReordenar,
+  onEditar,
+  onExcluir,
+  acaoVazio,
+}) {
   if (opcoes.length === 0) {
     return (
       <ModulePlaceholder
@@ -39,7 +48,9 @@ export function TabelaOpcoes({ tipo, opcoes, ordemOcupada, onReordenar, onEditar
 
   function mover(de, para) {
     const proximos = moverPara(ids, de, para);
-    if (proximos !== ids) onReordenar(proximos);
+    if (proximos !== ids) {
+      onReordenar(proximos);
+    }
   }
 
   return (

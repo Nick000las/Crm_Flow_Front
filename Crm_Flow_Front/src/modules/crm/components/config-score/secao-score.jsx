@@ -19,7 +19,9 @@ const PORCENTAGEM = 100;
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">Carregando pontuação…</span>
+      <span className="sr-only" role="status">
+        Carregando pontuação…
+      </span>
       {Array.from({ length: 4 }, (_, indice) => (
         <Skeleton className="h-14 rounded-none" key={indice} />
       ))}
@@ -30,9 +32,12 @@ function Carregando() {
 /** Barra do recálculo em andamento e a data do último (`role="status"`). */
 function Recalculo({ recalculo }) {
   const texto = textoDoRecalculo(recalculo);
-  if (!texto) return null;
+  if (!texto) {
+    return null;
+  }
   const emAndamento = Boolean(recalculo?.emAndamento);
-  const parte = recalculo.total > 0 ? Math.round((recalculo.processados / recalculo.total) * PORCENTAGEM) : 0;
+  const parte =
+    recalculo.total > 0 ? Math.round((recalculo.processados / recalculo.total) * PORCENTAGEM) : 0;
 
   return (
     <div className="grid gap-1.5">
@@ -48,7 +53,10 @@ function Recalculo({ recalculo }) {
           className="h-1 w-full max-w-md bg-muted"
           role="progressbar"
         >
-          <div className="h-full bg-primary transition-[width] duration-200" style={{ width: `${parte}%` }} />
+          <div
+            className="h-full bg-primary transition-[width] duration-200"
+            style={{ width: `${parte}%` }}
+          />
         </div>
       )}
     </div>
@@ -73,9 +81,15 @@ export function SecaoScore() {
   const [aviso, setAviso] = useState(null);
   const erro = scoreQuery.error ?? camposQuery.error;
 
-  if (isAccessError(erro)) return <AcessoIndisponivel error={erro} />;
-  if (erro) return <ApiErrorAlert error={erro} id="score-carregar-erro" />;
-  if (scoreQuery.isPending || camposQuery.isPending) return <Carregando />;
+  if (isAccessError(erro)) {
+    return <AcessoIndisponivel error={erro} />;
+  }
+  if (erro) {
+    return <ApiErrorAlert error={erro} id="score-carregar-erro" />;
+  }
+  if (scoreQuery.isPending || camposQuery.isPending) {
+    return <Carregando />;
+  }
 
   const config = scoreQuery.data;
   // As condições usam os campos com id; o score não pode depender dele mesmo (o back dá 400).
@@ -86,8 +100,8 @@ export function SecaoScore() {
     <div className="grid gap-4">
       <div className="grid max-w-2xl gap-1 text-sm text-muted-foreground">
         <p>
-          Cada regra soma (ou tira) pontos do lead que cumpre as condições. O Lead score é calculado sozinho e
-          fica só de leitura no formulário.
+          Cada regra soma (ou tira) pontos do lead que cumpre as condições. O Lead score é calculado
+          sozinho e fica só de leitura no formulário.
         </p>
         {!podeEditar && <p>Só DONO e MASTER alteram a pontuação.</p>}
       </div>
@@ -110,7 +124,11 @@ export function SecaoScore() {
           </Button>
         )}
       </div>
-      <ApiErrorAlert error={recalcular.error} id="score-recalcular-erro" title="Não foi possível recalcular" />
+      <ApiErrorAlert
+        error={recalcular.error}
+        id="score-recalcular-erro"
+        title="Não foi possível recalcular"
+      />
 
       <p className={aviso ? 'border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
         {aviso}

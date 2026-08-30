@@ -21,7 +21,13 @@ export function CampoResponsavel({ id, value, onChange, usuarios, rotuloVazio, e
   return (
     <CampoForm ajuda={ajuda} erro={erro} id={id} label="Responsável">
       {(controle) => (
-        <SelectSimples {...controle} onChange={onChange} opcoes={opcoes} vazio={rotuloVazio} value={value} />
+        <SelectSimples
+          {...controle}
+          onChange={onChange}
+          opcoes={opcoes}
+          vazio={rotuloVazio}
+          value={value}
+        />
       )}
     </CampoForm>
   );

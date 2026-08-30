@@ -1,13 +1,8 @@
+import { LoadingState } from '@/components/loading-state';
 import { useState } from 'react';
 import { ShieldCheck } from 'lucide-react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { isAbortError, toApiError } from '@/services/api';
 import { DisableMfaDialog } from './disable-mfa-dialog';
@@ -78,11 +73,10 @@ export function MfaSection({ initialEnabled, syncMfaEnabled, authApi }) {
       </CardHeader>
 
       <CardContent className="grid gap-4">
+        {isSubmitting && <LoadingState inline label="Ativando verificação em duas etapas…" />}
         <p className="text-sm text-muted-foreground">
           Status:{' '}
-          <span className="font-medium text-foreground">
-            {enabled ? 'Ativada' : 'Desativada'}
-          </span>
+          <span className="font-medium text-foreground">{enabled ? 'Ativada' : 'Desativada'}</span>
         </p>
 
         <ApiErrorAlert error={submitError} id={SUBMIT_ERROR_ID} />

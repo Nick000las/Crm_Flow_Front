@@ -43,7 +43,9 @@ export function destinoParaSelect(destino) {
 /** Valor do select → `{ tipo, id }`, ou `null` sem escolha. */
 export function destinoDoSelect(valor) {
   const posicao = String(valor ?? '').indexOf(SEPARADOR_DESTINO);
-  if (posicao < 0) return null;
+  if (posicao < 0) {
+    return null;
+  }
   const tipo = valor.slice(0, posicao);
   const id = valor.slice(posicao + 1);
   return Object.values(TIPOS_DESTINO).includes(tipo) && id ? { tipo, id } : null;
@@ -93,8 +95,12 @@ export function valoresDaDistribuicao(config, campos) {
  */
 export function validarRegraDistribuicao(regra, campos) {
   const erros = {};
-  if (!regra.nome.trim()) erros.nome = MENSAGENS_DISTRIBUICAO.NOME;
-  if (!destinoDoSelect(regra.destino)) erros.destino = MENSAGENS_DISTRIBUICAO.DESTINO;
+  if (!regra.nome.trim()) {
+    erros.nome = MENSAGENS_DISTRIBUICAO.NOME;
+  }
+  if (!destinoDoSelect(regra.destino)) {
+    erros.destino = MENSAGENS_DISTRIBUICAO.DESTINO;
+  }
 
   return { ...erros, ...validarCondicoes(regra.condicoes, campos, DISTRIBUICAO.MAX_CONDICOES) };
 }
@@ -119,14 +125,20 @@ function regraParaEnvio(regra, campos) {
  *   | { erros: Record<string, Record<string, string>>, geral?: string }}
  */
 export function distribuicaoParaEnvio(valores, campos) {
-  if (valores.regras.length > DISTRIBUICAO.MAX_REGRAS) return { erros: {}, geral: MENSAGENS_DISTRIBUICAO.MAX_REGRAS };
+  if (valores.regras.length > DISTRIBUICAO.MAX_REGRAS) {
+    return { erros: {}, geral: MENSAGENS_DISTRIBUICAO.MAX_REGRAS };
+  }
 
   const erros = {};
   for (const regra of valores.regras) {
     const daRegra = validarRegraDistribuicao(regra, campos);
-    if (Object.keys(daRegra).length > 0) erros[regra.chaveLocal] = daRegra;
+    if (Object.keys(daRegra).length > 0) {
+      erros[regra.chaveLocal] = daRegra;
+    }
   }
-  if (Object.keys(erros).length > 0) return { erros };
+  if (Object.keys(erros).length > 0) {
+    return { erros };
+  }
 
   return {
     corpo: {
@@ -148,7 +160,10 @@ export function distribuicaoParaEnvio(valores, campos) {
 export function errosDoPut(fields, chavesEnviadas) {
   const { porItem, outros } = errosPorItem(fields, 'regras', chavesEnviadas);
   const porRegra = Object.fromEntries(
-    Object.entries(porItem).map(([chave, { item, ...resto }]) => [chave, item ? { ...resto, regra: item } : resto]),
+    Object.entries(porItem).map(([chave, { item, ...resto }]) => [
+      chave,
+      item ? { ...resto, regra: item } : resto,
+    ]),
   );
   return { porRegra, outros };
 }
@@ -177,7 +192,8 @@ const semChaveLocal = ({ ativo, fallback, regras }) => ({
  */
 export function distribuicaoMudou(valores, config, campos) {
   return (
-    JSON.stringify(semChaveLocal(valores)) !== JSON.stringify(semChaveLocal(valoresDaDistribuicao(config, campos)))
+    JSON.stringify(semChaveLocal(valores)) !==
+    JSON.stringify(semChaveLocal(valoresDaDistribuicao(config, campos)))
   );
 }
 
@@ -201,7 +217,9 @@ export function chaveDaConfig({ ativo, fallback, regras }) {
  */
 export function nomeDoDestino(destino, nomePorId, grupos) {
   const escolhido = destinoDoSelect(destino);
-  if (!escolhido) return 'Sem destino';
+  if (!escolhido) {
+    return 'Sem destino';
+  }
   if (escolhido.tipo === TIPOS_DESTINO.GRUPO) {
     const grupo = grupos.find((atual) => atual.id === escolhido.id);
     return grupo ? `Grupo ${grupo.nome}` : 'Grupo removido';

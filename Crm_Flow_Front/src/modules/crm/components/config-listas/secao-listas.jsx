@@ -20,7 +20,9 @@ const LINHAS_SKELETON = 6;
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">Carregando listas…</span>
+      <span className="sr-only" role="status">
+        Carregando listas…
+      </span>
       {Array.from({ length: LINHAS_SKELETON }, (_, indice) => (
         <Skeleton className="h-11 rounded-none" key={indice} />
       ))}
@@ -36,7 +38,9 @@ function Carregando() {
  */
 export function SecaoListas() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const tipo = TIPOS.includes(searchParams.get(PARAM_LISTA)) ? searchParams.get(PARAM_LISTA) : TIPOS_LISTA.STATUS;
+  const tipo = TIPOS.includes(searchParams.get(PARAM_LISTA))
+    ? searchParams.get(PARAM_LISTA)
+    : TIPOS_LISTA.STATUS;
   const listasQuery = useListas();
   const reordenar = useReordenarOpcoes();
   // `undefined` = fechado; `null` = criando; objeto = editando.
@@ -44,9 +48,15 @@ export function SecaoListas() {
   const [aExcluir, setAExcluir] = useState(null);
   const [aviso, setAviso] = useState(null);
 
-  if (isAccessError(listasQuery.error)) return <AcessoIndisponivel error={listasQuery.error} />;
-  if (listasQuery.error) return <ApiErrorAlert error={listasQuery.error} id="config-listas-carregar-erro" />;
-  if (listasQuery.isPending) return <Carregando />;
+  if (isAccessError(listasQuery.error)) {
+    return <AcessoIndisponivel error={listasQuery.error} />;
+  }
+  if (listasQuery.error) {
+    return <ApiErrorAlert error={listasQuery.error} id="config-listas-carregar-erro" />;
+  }
+  if (listasQuery.isPending) {
+    return <Carregando />;
+  }
 
   const opcoes = listasQuery.data[tipo] ?? [];
   const rotuloDaLista = ROTULOS_LISTA[tipo];
@@ -54,7 +64,9 @@ export function SecaoListas() {
   function trocarLista(proximo) {
     setAviso(null);
     reordenar.reset();
-    setSearchParams(proximo === TIPOS_LISTA.STATUS ? {} : { [PARAM_LISTA]: proximo }, { replace: true });
+    setSearchParams(proximo === TIPOS_LISTA.STATUS ? {} : { [PARAM_LISTA]: proximo }, {
+      replace: true,
+    });
   }
 
   function abrir(acao) {
@@ -111,7 +123,12 @@ export function SecaoListas() {
 
         <OpcaoDialog
           onOpenChange={(aberto) => !aberto && setEmEdicao(undefined)}
-          onSalvo={(salva) => salva && setAviso(emEdicao ? `Opção "${salva.label}" atualizada.` : `Opção "${salva.label}" criada.`)}
+          onSalvo={(salva) =>
+            salva &&
+            setAviso(
+              emEdicao ? `Opção "${salva.label}" atualizada.` : `Opção "${salva.label}" criada.`,
+            )
+          }
           open={emEdicao !== undefined}
           opcao={emEdicao}
           rotuloDaLista={rotuloDaLista}

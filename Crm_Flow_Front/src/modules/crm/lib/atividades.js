@@ -33,7 +33,9 @@ const dois = (numero) => String(numero).padStart(2, '0');
  */
 export function paraInputLocal(iso) {
   const data = iso ? new Date(iso) : null;
-  if (!data || Number.isNaN(data.getTime())) return '';
+  if (!data || Number.isNaN(data.getTime())) {
+    return '';
+  }
 
   const dia = `${data.getFullYear()}-${dois(data.getMonth() + 1)}-${dois(data.getDate())}`;
   return `${dia}T${dois(data.getHours())}:${dois(data.getMinutes())}`;
@@ -46,7 +48,9 @@ export function paraInputLocal(iso) {
  * @param {string} texto
  */
 export function deInputLocal(texto) {
-  if (!texto) return null;
+  if (!texto) {
+    return null;
+  }
 
   const data = new Date(texto);
   return Number.isNaN(data.getTime()) ? null : data.toISOString();
@@ -68,10 +72,17 @@ export function validarAtividade(valores) {
   const erros = {};
   const titulo = valores.titulo.trim();
 
-  if (!valores.tipo) erros.tipo = MENSAGENS_ATIVIDADE.TIPO;
-  if (!titulo) erros.titulo = MENSAGENS_ATIVIDADE.TITULO;
-  else if (titulo.length > LIMITES_ATIVIDADE.TITULO) erros.titulo = MENSAGENS_ATIVIDADE.TITULO_LONGO;
-  if (valores.notas.trim().length > LIMITES_ATIVIDADE.NOTAS) erros.notas = MENSAGENS_ATIVIDADE.NOTAS_LONGAS;
+  if (!valores.tipo) {
+    erros.tipo = MENSAGENS_ATIVIDADE.TIPO;
+  }
+  if (!titulo) {
+    erros.titulo = MENSAGENS_ATIVIDADE.TITULO;
+  } else if (titulo.length > LIMITES_ATIVIDADE.TITULO) {
+    erros.titulo = MENSAGENS_ATIVIDADE.TITULO_LONGO;
+  }
+  if (valores.notas.trim().length > LIMITES_ATIVIDADE.NOTAS) {
+    erros.notas = MENSAGENS_ATIVIDADE.NOTAS_LONGAS;
+  }
   if (!valores.jaAconteceu && valores.agendadaPara && !deInputLocal(valores.agendadaPara)) {
     erros.agendadaPara = MENSAGENS_ATIVIDADE.DATA;
   }
@@ -99,7 +110,9 @@ export function payloadDaAtividade(valores, original = null) {
   };
 
   if (!original) {
-    return Object.fromEntries(Object.entries({ ...atual, concluida: valores.jaAconteceu || undefined }).filter(preenchido));
+    return Object.fromEntries(
+      Object.entries({ ...atual, concluida: valores.jaAconteceu || undefined }).filter(preenchido),
+    );
   }
 
   const antes = valoresDaAtividade(original);
@@ -127,7 +140,9 @@ export function estaConcluida(atividade) {
  * @param {Date} [agora]
  */
 export function estaAtrasada(atividade, agora = new Date()) {
-  if (estaConcluida(atividade) || !atividade.agendadaPara) return false;
+  if (estaConcluida(atividade) || !atividade.agendadaPara) {
+    return false;
+  }
 
   const agenda = Date.parse(atividade.agendadaPara);
   return !Number.isNaN(agenda) && agenda < agora.getTime();
@@ -168,7 +183,9 @@ export function opcoesDeTipo(lista, atual) {
   const itens = (lista ?? [])
     .filter((opcao) => opcao.ativo)
     .map((opcao) => ({ valor: opcao.key, rotulo: opcao.label }));
-  if (!atual || itens.some((item) => item.valor === atual)) return itens;
+  if (!atual || itens.some((item) => item.valor === atual)) {
+    return itens;
+  }
 
   const opcao = opcaoDoTipo(lista, atual);
   return [...itens, { valor: opcao.key, rotulo: `${opcao.label}${SUFIXO_INATIVA}` }];

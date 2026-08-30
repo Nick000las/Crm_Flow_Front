@@ -23,7 +23,15 @@ import { CondicaoDeCampo } from './condicao-de-campo';
  *   legenda?: string,
  * }} props `erroDe`: `condicoes` e `condicoes.<i>` (o caminho do 400 sem `regras.<n>.`)
  */
-export function ListaCondicoes({ idBase, condicoes, campos, maximo, erroDe, onChange, legenda = 'Quando o lead' }) {
+export function ListaCondicoes({
+  idBase,
+  condicoes,
+  campos,
+  maximo,
+  erroDe,
+  onChange,
+  legenda = 'Quando o lead',
+}) {
   const proximaChave = useRef(condicoes.length);
   const [chaves, setChaves] = useState(() => condicoes.map((_, indice) => indice));
   const cheia = condicoes.length >= maximo;
@@ -60,7 +68,11 @@ export function ListaCondicoes({ idBase, condicoes, campos, maximo, erroDe, onCh
               <p className="font-mono text-[11px] tracking-wide text-muted-foreground uppercase">
                 Condição {indice + 1}
               </p>
-              <BotaoIcone icone={Trash2} onClick={() => remover(indice)} rotulo={`Remover condição ${indice + 1}`} />
+              <BotaoIcone
+                icone={Trash2}
+                onClick={() => remover(indice)}
+                rotulo={`Remover condição ${indice + 1}`}
+              />
             </div>
             <CondicaoDeCampo
               campos={campos}
@@ -79,7 +91,11 @@ export function ListaCondicoes({ idBase, condicoes, campos, maximo, erroDe, onCh
           <Plus aria-hidden="true" />
           Adicionar condição
         </Button>
-        {cheia && <p className="mt-1 text-xs text-muted-foreground">Máximo de {maximo} condições por regra.</p>}
+        {cheia && (
+          <p className="mt-1 text-xs text-muted-foreground">
+            Máximo de {maximo} condições por regra.
+          </p>
+        )}
       </div>
     </fieldset>
   );

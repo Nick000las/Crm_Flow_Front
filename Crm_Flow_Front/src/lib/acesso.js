@@ -21,7 +21,9 @@
  * @param {{ role?: string, modulosAtivos?: string[], featuresAtivas?: string[] } | null | undefined} user
  */
 export function podeVer(entry, user) {
-  if (!user) return false;
+  if (!user) {
+    return false;
+  }
 
   if (
     entry.moduleKey &&
@@ -31,9 +33,13 @@ export function podeVer(entry, user) {
     return false;
   }
 
-  if (entry.feature && !temTodas(user, [entry.feature].flat())) return false;
+  if (entry.feature && !temTodas(user, [entry.feature].flat())) {
+    return false;
+  }
 
-  if (entry.roles && !entry.roles.includes(user.role)) return false;
+  if (entry.roles && !entry.roles.includes(user.role)) {
+    return false;
+  }
 
   return true;
 }
@@ -64,8 +70,12 @@ function temTodas(user, flags) {
  * @param {Parameters<typeof podeVer>[1]} user
  */
 export function paginaVisivel(page, user) {
-  if (!podeVer(page, user)) return false;
-  if (!page.secoes) return true;
+  if (!podeVer(page, user)) {
+    return false;
+  }
+  if (!page.secoes) {
+    return true;
+  }
 
   return page.secoes.some((secao) => secao.pronta !== false && podeVer(secao, user));
 }
