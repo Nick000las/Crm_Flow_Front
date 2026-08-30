@@ -1,4 +1,8 @@
+/**
+ * @file Criar ou editar uma opção de lista.
+ */
 import { useState } from 'react';
+
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,9 +14,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Form } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { semChave } from '@/lib/objetos';
 import { getFieldError } from '@/services/api';
+
 import { CATEGORIAS_STATUS, ROTULOS_CATEGORIA } from '../../constants';
 import { useAtualizarOpcao, useCriarOpcao } from '../../hooks/use-listas';
 import {
@@ -37,16 +43,16 @@ const COR_INICIAL_DO_SELETOR = '#6b7280';
 function CampoCor({ value, onChange, controle }) {
   return (
     <div className="flex items-center gap-2">
-      <input
+      <Input
         aria-label="Escolher cor"
-        className="size-9 shrink-0 cursor-pointer border border-input bg-transparent p-0.5"
+        className="size-9 shrink-0 cursor-pointer p-0.5"
         onChange={(event) => onChange(event.target.value)}
         type="color"
         value={value || COR_INICIAL_DO_SELETOR}
       />
       <Input
         {...controle}
-        className="h-9 rounded-none font-mono uppercase"
+        className="uppercase"
         maxLength={7}
         onChange={(event) => onChange(event.target.value.trim())}
         placeholder="Sem cor"
@@ -78,6 +84,7 @@ function FormOpcao({ tipo, opcao, pipelineId, onSalvo }) {
   function alterar(campo, valor) {
     setValores((atuais) => ({ ...atuais, [campo]: valor }));
     setErrosCliente((atuais) => semChave(atuais, campo));
+
     if (mutacao.error) {
       mutacao.reset();
     }
@@ -85,19 +92,25 @@ function FormOpcao({ tipo, opcao, pipelineId, onSalvo }) {
 
   function handleSubmit(event) {
     event.preventDefault();
+
     // Fora de status de pipeline, o campo não aparece e não vai.
     const enviados = comProbabilidade ? valores : { ...valores, probabilidadePadrao: '' };
     const erros = validarOpcao(tipo, enviados);
+
     if (Object.keys(erros).length > 0) {
       setErrosCliente(erros);
+
       return;
     }
 
     const corpo = payloadDaOpcao(tipo, enviados, opcao);
+
     if (!corpo) {
       onSalvo(null);
+
       return;
     }
+
     if (editando) {
       atualizar.mutate({ tipo, id: opcao.id, parcial: corpo }, { onSuccess: onSalvo });
     } else {
@@ -106,13 +119,13 @@ function FormOpcao({ tipo, opcao, pipelineId, onSalvo }) {
   }
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       <CampoForm erro={erroDe('label')} id="opcao-label" label="Nome" obrigatorio>
         {(controle) => (
           <Input
             {...controle}
             autoFocus
-            className="h-9 rounded-none"
+
             onChange={(event) => alterar('label', event.target.value)}
             value={valores.label}
           />
@@ -121,8 +134,8 @@ function FormOpcao({ tipo, opcao, pipelineId, onSalvo }) {
 
       {editando && (
         <p className="-mt-2 text-xs text-muted-foreground">
-          Chave <span className="font-mono text-foreground select-all">{opcao.key}</span> — é o que
-          fica gravado nos leads; não muda ao renomear.
+          Chave <span className="text-foreground select-all">{opcao.key}</span> — é o que fica
+          gravado nos leads; não muda ao renomear.
         </p>
       )}
 
@@ -159,7 +172,7 @@ function FormOpcao({ tipo, opcao, pipelineId, onSalvo }) {
           {(controle) => (
             <Input
               {...controle}
-              className="h-9 w-24 rounded-none font-mono tabular-nums"
+              className="w-24 tabular-nums"
               inputMode="numeric"
               onChange={(event) => alterar('probabilidadePadrao', event.target.value)}
               value={valores.probabilidadePadrao}
@@ -178,11 +191,17 @@ function FormOpcao({ tipo, opcao, pipelineId, onSalvo }) {
         >
           Cancelar
         </DialogClose>
-        <Button aria-busy={mutacao.isPending} disabled={mutacao.isPending} type="submit">
-          {mutacao.isPending ? 'Salvando…' : editando ? 'Salvar alterações' : 'Criar opção'}
+        <Button
+          aria-busy={mutacao.isPending}
+          disabled={mutacao.isPending}
+          type="submit"
+          loading={mutacao.isPending}
+          loadingText="Salvando…"
+        >
+          {editando ? 'Salvar alterações' : 'Criar opção'}
         </Button>
       </DialogFooter>
-    </form>
+    </Form>
   );
 }
 
@@ -210,7 +229,7 @@ export function OpcaoDialog({
 }) {
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="rounded-none sm:max-w-md">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{opcao ? 'Editar opção' : 'Nova opção'}</DialogTitle>
           <DialogDescription>

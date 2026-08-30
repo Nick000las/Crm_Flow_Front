@@ -1,3 +1,6 @@
+/**
+ * @file Carregamento limitado à área que consulta dados; nunca cobre a aplicação.
+ */
 import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
 
@@ -9,12 +12,13 @@ export function LoadingState({ label = 'Carregando…', inline = false, classNam
       aria-live="polite"
       aria-busy="true"
       className={cn(
-        'flex items-center gap-2 text-sm text-muted-foreground',
-        !inline && 'min-h-24 justify-center rounded-lg border border-border p-6',
+        'flex items-center gap-2.5 text-sm text-muted-foreground',
+        !inline &&
+          'min-h-28 justify-center rounded-xl border border-border bg-surface/60 px-6 py-8',
         className,
       )}
     >
-      <Spinner />
+      <Spinner className="size-4 text-primary" />
       <span>{label}</span>
     </div>
   );

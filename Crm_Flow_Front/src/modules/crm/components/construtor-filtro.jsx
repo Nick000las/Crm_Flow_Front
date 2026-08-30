@@ -1,9 +1,16 @@
-import { ListFilter, Plus } from 'lucide-react';
+/**
+ * @file Construtor de filtro em Popover. Edita um rascunho e só aplica no botão "Aplicar" —
+ * cada aplicação é uma busca. Abrir de novo recomeça do filtro aplicado, descartando o que não
+ * foi aplicado.
+ */
 import { useState } from 'react';
+import { ListFilter, Plus } from 'lucide-react';
+
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+
 import { BUSCA_LEADS } from '../constants';
 import {
   contarFiltros,
@@ -52,6 +59,7 @@ export function ConstrutorFiltro({
       setRascunho(rascunhoDoFiltro(filtro, campos));
       setErros({});
     }
+
     setAberto(proximo);
   }
 
@@ -64,6 +72,7 @@ export function ConstrutorFiltro({
 
     if ('erros' in resultado) {
       setErros(resultado.erros);
+
       return;
     }
 
@@ -73,15 +82,15 @@ export function ConstrutorFiltro({
 
   return (
     <Popover onOpenChange={handleOpenChange} open={aberto}>
-      <PopoverTrigger className={cn(buttonVariants({ variant: 'outline' }), 'h-9 rounded-none')}>
+      <PopoverTrigger className={cn(buttonVariants({ variant: 'outline' }), 'h-9 ')}>
         <ListFilter aria-hidden="true" />
         Filtros
-        {total > 0 && <span className="font-mono text-xs tabular-nums">({total})</span>}
+        {total > 0 && <span className="text-xs tabular-nums">({total})</span>}
       </PopoverTrigger>
 
       <PopoverContent
         align="start"
-        className="w-[min(44rem,calc(100vw-2rem))] gap-3 rounded-none p-3 shadow-none ring-border"
+        className="w-[min(44rem,calc(100vw-2rem))] gap-3 p-3 ring-border"
       >
         <PopoverTitle className="text-sm font-medium">Filtrar leads</PopoverTitle>
 
@@ -110,7 +119,7 @@ export function ConstrutorFiltro({
         )}
 
         <Button
-          className="w-fit rounded-none"
+          className="w-fit"
           disabled={campos.length === 0 || limiteAtingido}
           onClick={() => alterarLinhas((linhas) => [...linhas, novaLinha(campos[0])])}
           size="sm"

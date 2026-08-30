@@ -1,3 +1,8 @@
+/**
+ * @file Página pública do formulário (FM3/FM4, `/f/:token`, sem login). Os campos usam os
+ * controles do CRM: aqui, o item vira o `Campo` que eles esperam, e os valores vão e voltam no
+ * formato da ficha.
+ */
 import { CAMADA } from '../constants.js';
 import { paraValorDeApi, paraValorDeForm } from './form-lead.js';
 
@@ -61,6 +66,7 @@ export function campoDoItem(item) {
   const dados = ehPerguntaPublica(item)
     ? { label: item.pergunta.rotulo, tipo: item.pergunta.tipo, opcoes: item.pergunta.opcoes }
     : item.campo;
+
   return {
     chave: chaveDoItem(item),
     label: dados.label,
@@ -85,6 +91,7 @@ export function valoresIniciais(versao) {
     itensDe(versao).map((item) => {
       const { tipo } = campoDoItem(item);
       const valor = ehPerguntaPublica(item) ? null : item.valor;
+
       return [chaveDoItem(item), paraValorDeForm(tipo, valor)];
     }),
   );
@@ -100,13 +107,16 @@ export function valoresIniciais(versao) {
  */
 export function corpoDoEnvio(versao, valores, envio) {
   const respostas = {};
+
   for (const item of itensDe(versao)) {
     const chave = chaveDoItem(item);
     const valor = paraValorDeApi(campoDoItem(item).tipo, valores[chave]);
+
     if (valor !== null && valor !== undefined) {
       respostas[chave] = valor;
     }
   }
+
   const comResponsavel = envio.preenchidoPor === QUEM_PREENCHE.RESPONSAVEL;
 
   return {
@@ -128,13 +138,16 @@ export function corpoDoEnvio(versao, valores, envio) {
  */
 export function validarEnvio(versao, valores, envio) {
   const porChave = {};
+
   for (const item of itensDe(versao).filter((atual) => atual.obrigatorio)) {
     const chave = chaveDoItem(item);
     const valor = paraValorDeApi(campoDoItem(item).tipo, valores[chave]);
+
     if (valor === null || valor === undefined) {
       porChave[chave] = MENSAGENS_PUBLICAS.OBRIGATORIA;
     }
   }
+
   return {
     porChave,
     ...(!envio.aceite && { aceite: MENSAGENS_PUBLICAS.ACEITE }),
@@ -156,8 +169,10 @@ export function temErros(erros) {
  */
 export function errosDoEnvio(fields) {
   const erros = { porChave: {}, outros: [] };
+
   for (const [caminho, mensagens] of Object.entries(fields ?? {})) {
     const mensagem = Array.isArray(mensagens) ? mensagens[0] : String(mensagens);
+
     if (caminho.startsWith(PREFIXO_RESPOSTA)) {
       erros.porChave[caminho.slice(PREFIXO_RESPOSTA.length)] = mensagem;
     } else if (caminho === 'aceite' || caminho === 'nomeResponsavel') {
@@ -166,6 +181,7 @@ export function errosDoEnvio(fields) {
       erros.outros.push(mensagem);
     }
   }
+
   return erros;
 }
 
@@ -180,16 +196,20 @@ export function mensagemDoErroPublico(erro) {
   if (!erro) {
     return null;
   }
+
   if (erro.status === STATUS_INDISPONIVEL) {
     return { texto: MENSAGENS_PUBLICAS.INDISPONIVEL, tentarDeNovo: false };
   }
+
   if (erro.status === STATUS_MUITAS_TENTATIVAS) {
     const segundos = Number(erro.retryAfter);
     const texto =
       segundos > 0
         ? `Muitas tentativas. Aguarde ${segundos} segundos e tente de novo.`
         : MENSAGENS_PUBLICAS.MUITAS_TENTATIVAS;
+
     return { texto, tentarDeNovo: true };
   }
+
   return { texto: MENSAGENS_PUBLICAS.GENERICA, tentarDeNovo: true };
 }

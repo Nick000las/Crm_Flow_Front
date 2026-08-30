@@ -1,6 +1,12 @@
+/**
+ * @file A resposta é só o resumo: o lead (e os mesclados nele) é buscado de novo, com
+ * atividades e histórico.
+ */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
 import { temFeature } from '@/lib/acesso';
+
 import { anonimizarLead, obterLgpd, salvarLgpd } from '../api/lgpd.api';
 import { CRM_FEATURES } from '../constants';
 import { crmKeys } from '../query-keys';

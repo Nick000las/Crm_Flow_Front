@@ -1,5 +1,10 @@
+/**
+ * @file A resposta é a versão: o detalhe recarrega para mostrá-la na lista de versões.
+ */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
+
 import {
   criarFormulario,
   editarFormulario,
@@ -75,6 +80,7 @@ export function useCriarFormulario() {
     mutationFn: (dados) => criarFormulario(authApi, dados),
     onSuccess: (detalhe) => {
       queryClient.setQueryData(crmKeys.formulario(detalhe.id), detalhe);
+
       return recarregarLista(queryClient);
     },
   });
@@ -89,6 +95,7 @@ export function useSalvarFormulario(id) {
     mutationFn: (corpo) => editarFormulario(authApi, id, corpo),
     onSuccess: (detalhe) => {
       queryClient.setQueryData(crmKeys.formulario(id), detalhe);
+
       return recarregarLista(queryClient);
     },
   });

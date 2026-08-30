@@ -1,4 +1,9 @@
+/**
+ * @file `GET /admin/tenants/:id` — detalhe de um tenant, com `recarregar()` para as seções
+ * chamarem depois de cada mutação.
+ */
 import { useCallback, useEffect, useState } from 'react';
+
 import { isAbortError, toApiError } from '@/services/api';
 
 /**

@@ -1,3 +1,7 @@
+/**
+ * @file Corpo do PUT: só os status que mudaram, `null` para desligar. `null` quando nada mudou.
+ * Status fechado nunca vai (o back daria 400).
+ */
 import { CATEGORIAS_STATUS, INATIVIDADE } from '../constants.js';
 
 const MS_POR_DIA = 24 * 60 * 60 * 1000;
@@ -43,6 +47,7 @@ export function filtroDaBusca(filtro, comInatividade) {
  */
 export function diasEsfriando(esfriandoDesde, agora = new Date()) {
   const instante = esfriandoDesde ? Date.parse(esfriandoDesde) : Number.NaN;
+
   if (Number.isNaN(instante)) {
     return null;
   }
@@ -53,9 +58,11 @@ export function diasEsfriando(esfriandoDesde, agora = new Date()) {
 /** "Esfriando há 3 dias" — o selo da tabela e do drawer. Vazio sem data. */
 export function textoEsfriando(esfriandoDesde, agora) {
   const dias = diasEsfriando(esfriandoDesde, agora);
+
   if (dias === null) {
     return '';
   }
+
   if (dias === 0) {
     return 'Esfriando desde hoje';
   }
@@ -99,6 +106,7 @@ export function alternarStatus(atual, ligado) {
 /** @param {string} texto */
 function lerDias(texto) {
   const limpo = texto.trim();
+
   return INTEIRO.test(limpo) ? Number(limpo) : Number.NaN;
 }
 
@@ -115,6 +123,7 @@ export function errosLocais(valores) {
       if (!ligado) {
         return [];
       }
+
       const numero = lerDias(dias);
       const valido = numero >= INATIVIDADE.DIAS_MIN && numero <= INATIVIDADE.DIAS_MAX;
 
@@ -142,11 +151,13 @@ export function inatividadeParaEnvio(valores, lista) {
   const mudancas = Object.fromEntries(
     lista.flatMap((status) => {
       const valor = valores[status.key];
+
       if (!valor || !statusEsfria(status)) {
         return [];
       }
 
       const dias = valor.ligado ? lerDias(valor.dias) : null;
+
       return dias === status.dias ? [] : [[status.key, dias]];
     }),
   );

@@ -1,3 +1,7 @@
+/**
+ * @file 201 `{ enviado: true }`; 400 com `fields` (o link continua valendo); 404 se o link
+ * acabou (inclusive no segundo de um clique duplo).
+ */
 import { apiRequest } from '@/services/api';
 
 /**

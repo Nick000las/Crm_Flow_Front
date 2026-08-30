@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import { MENSAGENS } from './form-lead.js';
 import {
-  CODIGO_PROBABILIDADE_REDEFINIDA,
   avisoDeProbabilidade,
+  CODIGO_PROBABILIDADE_REDEFINIDA,
   juntarAvisos,
   lerProbabilidade,
   placeholderDoPadrao,
@@ -30,6 +31,7 @@ test('avisoDeProbabilidade monta a frase com o padrão e o anterior', () => {
     avisoDeProbabilidade([AVISO], 80),
     'A probabilidade voltou ao padrão do status (80%). Antes era 60%.',
   );
+
   assert.equal(
     avisoDeProbabilidade([AVISO], 0),
     'A probabilidade voltou ao padrão do status (0%). Antes era 60%.',
@@ -60,6 +62,7 @@ test('textoDaProbabilidade marca quando vale a do status', () => {
     textoDaProbabilidade({ probabilidadeFechamento: null, probabilidadeEfetiva: 60 }),
     { valor: '60%', doStatus: true },
   );
+
   assert.deepEqual(
     textoDaProbabilidade({ probabilidadeFechamento: 35, probabilidadeEfetiva: 35 }),
     { valor: '35%', doStatus: false },

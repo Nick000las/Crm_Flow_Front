@@ -1,4 +1,7 @@
 /**
+ * @file O problema do passo de mapeamento quando o lote é exigido e ficou vazio.
+ */
+/**
  * LGPD (`crm.lgpd`): textos e regras puras da anonimização e da base legal
  * do lote no import.
  */
@@ -32,11 +35,13 @@ export function resumoDaAnonimizacao(resultado) {
   if (!resultado) {
     return 'Lead anonimizado.';
   }
+
   const partes = [
     plural(resultado.leads, 'lead', 'leads'),
     plural(resultado.atividades, 'atividade', 'atividades'),
     plural(resultado.eventos, 'evento', 'eventos'),
   ];
+
   return `Lead anonimizado (${partes.join(', ')}).`;
 }
 
@@ -52,6 +57,7 @@ export function exigeLote(config, mapeamento, chaveBaseLegal) {
   if (!config?.obrigatoria) {
     return false;
   }
+
   return !Object.values(mapeamento).includes(chaveBaseLegal);
 }
 

@@ -1,6 +1,12 @@
-import { Eye } from 'lucide-react';
+/**
+ * @file Versões publicadas, da mais nova para a mais antiga. Cada uma é imutável: a prévia
+ * mostra o formulário como o link vai mostrar.
+ */
 import { useState } from 'react';
+import { Eye } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
+
 import { formatarInstante } from '../../lib/formatadores';
 import { PreviaVersaoDialog } from './previa-versao-dialog';
 
@@ -33,8 +39,8 @@ export function VersoesDoFormulario({ formulario, nomePorId }) {
               key={versao.id}
             >
               <span>
-                <span className="font-mono tabular-nums">v{versao.versao}</span>
-                <span className="ml-3 font-mono text-xs text-muted-foreground tabular-nums">
+                <span className="tabular-nums">v{versao.versao}</span>
+                <span className="ml-3 text-xs text-muted-foreground tabular-nums">
                   {formatarInstante(versao.publicadaEm)}
                 </span>
                 {versao.publicadaPor && (
@@ -46,13 +52,7 @@ export function VersoesDoFormulario({ formulario, nomePorId }) {
                   <span className="ml-3 text-xs">atual</span>
                 )}
               </span>
-              <Button
-                className="rounded-none"
-                onClick={() => setAberta(versao)}
-                size="sm"
-                type="button"
-                variant="ghost"
-              >
+              <Button onClick={() => setAberta(versao)} size="sm" type="button" variant="ghost">
                 <Eye aria-hidden="true" />
                 Pré-visualizar
                 <span className="sr-only"> a versão {versao.versao}</span>

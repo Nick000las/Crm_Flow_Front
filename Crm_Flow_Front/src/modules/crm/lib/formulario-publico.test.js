@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import {
-  MENSAGENS_PUBLICAS,
-  QUEM_PREENCHE,
   campoDoItem,
   corpoDoEnvio,
   errosDoEnvio,
   mensagemDoErroPublico,
+  MENSAGENS_PUBLICAS,
+  QUEM_PREENCHE,
   temErros,
   validarEnvio,
   valoresIniciais,
@@ -90,6 +91,7 @@ test('corpoDoEnvio omite o vazio e só leva o responsável quando é o caso', ()
     aceite: true,
     preenchidoPor: 'titular',
   });
+
   assert.equal(
     corpoDoEnvio(VERSAO, valores, {
       aceite: true,
@@ -116,7 +118,9 @@ test('validarEnvio cobra obrigatório, aceite e nome do responsável', () => {
     aceite: MENSAGENS_PUBLICAS.ACEITE,
     nomeResponsavel: MENSAGENS_PUBLICAS.RESPONSAVEL,
   });
+
   assert.equal(temErros(erros), true);
+
   assert.equal(
     temErros(validarEnvio(VERSAO, { ...valoresIniciais(VERSAO), 'p-fuma': true }, TITULAR)),
     false,
@@ -142,14 +146,18 @@ test('errosDoEnvio leva cada 400 ao seu campo', () => {
 
 test('mensagemDoErroPublico não diferencia o motivo do 404', () => {
   assert.equal(mensagemDoErroPublico(null), null);
+
   assert.deepEqual(mensagemDoErroPublico({ status: 404 }), {
     texto: MENSAGENS_PUBLICAS.INDISPONIVEL,
     tentarDeNovo: false,
   });
+
   assert.match(mensagemDoErroPublico({ status: 429, retryAfter: 30 }).texto, /30 segundos/);
+
   assert.equal(
     mensagemDoErroPublico({ status: 429, retryAfter: null }).texto,
     MENSAGENS_PUBLICAS.MUITAS_TENTATIVAS,
   );
+
   assert.equal(mensagemDoErroPublico({ status: 500 }).tentarDeNovo, true);
 });

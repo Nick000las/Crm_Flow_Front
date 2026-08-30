@@ -1,3 +1,7 @@
+/**
+ * @file Erro sem campo no dialog. `outros` aparecem em texto: `CAMPOS_OBRIGATORIOS` pode pedir
+ * um dado do lead, e o alerta geral só diz "preencha os campos".
+ */
 import { ApiErrorAlert } from '@/components/api-error-alert';
 
 /**

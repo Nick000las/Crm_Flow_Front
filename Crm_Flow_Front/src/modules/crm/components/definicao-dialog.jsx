@@ -1,4 +1,9 @@
+/**
+ * @file Formulário da definição. Montado só com o dialog aberto, então cada abertura começa
+ * limpa a partir de `definicao`.
+ */
 import { useState } from 'react';
+
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,9 +15,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Form } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { semChave } from '@/lib/objetos';
 import { getFieldError } from '@/services/api';
+
 import { ROTULOS_TIPO } from '../constants';
 import { useCriarDefinicao, useEditarDefinicao } from '../hooks/use-campos-config';
 import {
@@ -48,6 +55,7 @@ function FormDefinicao({ definicao, proximaOrdem, onSalvo }) {
   function alterar(campo, valor) {
     setValores((atuais) => ({ ...atuais, [campo]: valor }));
     setErrosCliente((atuais) => semChave(atuais, campo));
+
     if (mutacao.error) {
       mutacao.reset();
     }
@@ -55,14 +63,18 @@ function FormDefinicao({ definicao, proximaOrdem, onSalvo }) {
 
   function handleSubmit(event) {
     event.preventDefault();
+
     const erros = validarDefinicao(valores);
+
     if (Object.keys(erros).length > 0) {
       setErrosCliente(erros);
+
       return;
     }
 
     const payload = payloadDaDefinicao(valores);
     const opcoesMutacao = { onSuccess: onSalvo };
+
     if (editando) {
       editar.mutate({ id: definicao.id, definicao: payload }, opcoesMutacao);
     } else {
@@ -71,13 +83,13 @@ function FormDefinicao({ definicao, proximaOrdem, onSalvo }) {
   }
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       <CampoForm erro={erroDe('label')} id="definicao-label" label="Nome do campo" obrigatorio>
         {(controle) => (
           <Input
             {...controle}
             autoFocus
-            className="h-9 rounded-none"
+
             onChange={(event) => alterar('label', event.target.value)}
             value={valores.label}
           />
@@ -126,11 +138,17 @@ function FormDefinicao({ definicao, proximaOrdem, onSalvo }) {
         >
           Cancelar
         </DialogClose>
-        <Button aria-busy={mutacao.isPending} disabled={mutacao.isPending} type="submit">
-          {mutacao.isPending ? 'Salvando…' : editando ? 'Salvar alterações' : 'Criar campo'}
+        <Button
+          aria-busy={mutacao.isPending}
+          disabled={mutacao.isPending}
+          type="submit"
+          loading={mutacao.isPending}
+          loadingText="Salvando…"
+        >
+          {editando ? 'Salvar alterações' : 'Criar campo'}
         </Button>
       </DialogFooter>
-    </form>
+    </Form>
   );
 }
 
@@ -148,24 +166,22 @@ function FormDefinicao({ definicao, proximaOrdem, onSalvo }) {
 export function DefinicaoDialog({ open, onOpenChange, definicao, proximaOrdem, onSalvo }) {
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="rounded-none sm:max-w-md">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{definicao ? 'Editar campo' : 'Novo campo personalizado'}</DialogTitle>
           <DialogDescription>
             Aparece no formulário do lead, nos filtros e nas colunas da tabela.
           </DialogDescription>
         </DialogHeader>
-        {open && (
-          <FormDefinicao
-            definicao={definicao}
-            key={definicao?.id ?? 'novo'}
-            onSalvo={() => {
-              onOpenChange(false);
-              onSalvo();
-            }}
-            proximaOrdem={proximaOrdem}
-          />
-        )}
+        <FormDefinicao
+          definicao={definicao}
+          key={definicao?.id ?? 'novo'}
+          onSalvo={() => {
+            onOpenChange(false);
+            onSalvo();
+          }}
+          proximaOrdem={proximaOrdem}
+        />
       </DialogContent>
     </Dialog>
   );

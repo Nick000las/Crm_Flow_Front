@@ -1,4 +1,7 @@
 /**
+ * @file Mesmo conjunto, em qualquer ordem — decide se "Salvar flags" tem o que salvar.
+ */
+/**
  * Agrupa o catálogo de flags por módulo, na ordem em que os módulos
  * aparecem no catálogo, para a seção de flags do tenant listar por bloco.
  *
@@ -13,6 +16,7 @@ export function agruparFeaturesPorModulo(catalogo) {
     if (!grupos.has(moduleKey)) {
       grupos.set(moduleKey, []);
     }
+
     grupos.get(moduleKey).push(featureKey);
   }
 

@@ -1,9 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import {
-  MENSAGENS_FORMULARIO,
-  POLITICAS,
-  TIPOS_PERGUNTA,
   adicionarItem,
   adicionarPergunta,
   adicionarSecao,
@@ -15,14 +13,17 @@ import {
   errosDoFormulario,
   formularioMudou,
   itensIndisponiveis,
+  MENSAGENS_FORMULARIO,
   moverItem,
   moverSecao,
   perguntaVazia,
+  POLITICAS,
   rascunhoDoForm,
   rascunhoParaApi,
   removerItem,
   removerSecao,
   situacaoDoFormulario,
+  TIPOS_PERGUNTA,
   validarNoCliente,
   validarPergunta,
 } from './formularios.js';
@@ -84,10 +85,12 @@ test('situacaoDoFormulario distingue rascunho, publicado e publicado com altera�
   const publicado = { versaoAtual: { id: 'v', versao: 2, publicadaEm: '' } };
 
   assert.deepEqual(situacaoDoFormulario(FORMULARIO), { rotulo: 'Rascunho', versao: null });
+
   assert.deepEqual(situacaoDoFormulario({ ...publicado, alteracoesNaoPublicadas: false }), {
     rotulo: 'Publicado',
     versao: 2,
   });
+
   assert.equal(
     situacaoDoFormulario({ ...publicado, alteracoesNaoPublicadas: true }).rotulo,
     'Publicado com alterações',
@@ -113,6 +116,7 @@ test('rascunhoDoForm começa com uma seção vazia, que não vai no PUT', () => 
   const vazio = rascunhoDoForm({ secoes: [], introducao: null, termo: null });
 
   assert.equal(vazio.secoes.length, 1);
+
   assert.deepEqual(rascunhoParaApi(vazio), {
     secoes: [],
     introducao: null,
@@ -129,6 +133,7 @@ test('pergunta nova vai sem id e com a chave local própria', () => {
   const nova = rascunho.secoes[1].itens.at(-1);
 
   assert.equal(nova.chaveLocal, 'nova-2');
+
   assert.deepEqual(rascunhoParaApi(rascunho).secoes[1].itens.at(-1), {
     pergunta: { rotulo: 'Alergias?', ajuda: null, tipo: 'texto', sensivel: false },
     obrigatorio: false,
@@ -196,6 +201,7 @@ test('moverItem reordena dentro da seção e leva para outra', () => {
     ['pergunta:p1', 'campo:a'],
     ['campo:c'],
   ]);
+
   assert.deepEqual(chaves(moverItem(rascunho, 'pergunta:p1', { secao: 'secao-1', indice: 99 })), [
     ['campo:a'],
     ['campo:c', 'pergunta:p1'],
@@ -209,6 +215,7 @@ test('removerSecao devolve os campos e mantém uma seção', () => {
     camposDisponiveis(ELEGIVEIS, semSaude).map((atual) => atual.id),
     ['a', 'b'],
   );
+
   assert.equal(removerSecao(semSaude, 'secao-1').secoes.length, 1);
 });
 
@@ -237,18 +244,22 @@ test('validarPergunta segue os limites do back', () => {
 
   assert.deepEqual(validarPergunta(base), {});
   assert.equal(validarPergunta({ ...base, rotulo: ' ' }).rotulo, MENSAGENS_FORMULARIO.ROTULO);
+
   assert.equal(
     validarPergunta({ ...base, rotulo: 'x'.repeat(201) }).rotulo,
     MENSAGENS_FORMULARIO.ROTULO_LONGO,
   );
+
   assert.equal(
     validarPergunta({ ...base, tipo: 'selecao', opcoes: ['', ' '] }).opcoes,
     MENSAGENS_FORMULARIO.SEM_OPCOES,
   );
+
   assert.equal(
     validarPergunta({ ...base, tipo: 'selecao', opcoes: ['Sim', 'sim'] }).opcoes,
     MENSAGENS_FORMULARIO.OPCAO_REPETIDA,
   );
+
   // Fora da seleção, as opções não importam: nem vão no PUT.
   assert.deepEqual(validarPergunta({ ...base, tipo: 'texto', opcoes: ['a', 'a'] }), {});
 });
@@ -263,10 +274,12 @@ test('validarNoCliente confere nome, validade e itens', () => {
     porAlerta: {},
     geral: null,
   });
+
   assert.deepEqual(
     validarNoCliente({ ...dados, nome: ' ', validadeDias: '91' }, rascunho, ELEGIVEIS).dados,
     { nome: MENSAGENS_FORMULARIO.NOME, validadeDias: MENSAGENS_FORMULARIO.VALIDADE },
   );
+
   assert.equal(
     validarNoCliente(dados, rascunho, [campo('a')]).geral,
     MENSAGENS_FORMULARIO.INDISPONIVEIS,
@@ -280,6 +293,7 @@ test('validarNoCliente pede para desligar o preenchido de campo que virou sensí
   assert.deepEqual(resultado.porItem, {
     'campo:c': { preencher: MENSAGENS_FORMULARIO.DESLIGUE_PREENCHER },
   });
+
   assert.equal(resultado.geral, MENSAGENS_FORMULARIO.REVISE_ITENS);
 });
 
@@ -317,6 +331,7 @@ test('errosDoFormulario leva cada erro ao seu lugar, pelos índices do que foi e
     'pergunta:p1': { pergunta: 'Escreva a opção' },
     'campo:c': { preencher: 'Campo sensível não vem preenchido' },
   });
+
   assert.deepEqual(erros.porSecao, { 'secao-1': 'Longo demais' });
   assert.equal(erros.secoes, 'Escolha ao menos um item para publicar');
   assert.equal(erros.termo, 'Escreva o termo de aceite para publicar');

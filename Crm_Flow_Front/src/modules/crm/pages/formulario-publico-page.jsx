@@ -1,12 +1,24 @@
+/**
+ * @file Formulário montado com os dados já lidos.
+ */
+import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { CheckCircle2, CircleAlert } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
+
+import { FieldError } from '@/components/field-error';
+import { LoadingState } from '@/components/loading-state';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Form } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Radio } from '@/components/ui/radio';
 import { Skeleton } from '@/components/ui/skeleton';
+import { focusFirstInvalidField } from '@/lib/form-validation';
+import { PwaStatus } from '@/pwa/pwa-status';
 import { toApiError } from '@/services/api';
+
 import {
   enviarRespostaPublica,
   marcarFormularioAberto,
@@ -16,12 +28,12 @@ import { CampoDinamico } from '../components/campo-dinamico';
 import { CampoForm } from '../components/campo-form';
 import { formatarInstante } from '../lib/formatadores';
 import {
-  QUEM_PREENCHE,
   campoDoItem,
   chaveDoItem,
   corpoDoEnvio,
   errosDoEnvio,
   mensagemDoErroPublico,
+  QUEM_PREENCHE,
   temErros,
   validarEnvio,
   valoresIniciais,
@@ -33,10 +45,11 @@ const SEM_ERROS = Object.freeze({ porChave: {}, outros: [] });
 /** Moldura da página: sem menu, centrada, no visual do CRM. */
 function Moldura({ children }) {
   return (
-    <main className="min-h-svh bg-muted/30 px-4 py-10">
-      <div className="mx-auto grid w-full max-w-2xl gap-6 border border-border bg-background p-6 sm:p-8">
+    <main className="app-safe-area min-h-dvh bg-background [--safe-padding-inline:1rem] [--safe-padding-block:1.5rem] sm:[--safe-padding-block:2.5rem]">
+      <PwaStatus />
+      <Card layout="plain" className="mx-auto grid w-full max-w-2xl gap-6 p-5 shadow-sm sm:p-8">
         {children}
-      </div>
+      </Card>
     </main>
   );
 }
@@ -67,6 +80,7 @@ function FormularioRespondivel({ token, dados, onEnviado, onFechou }) {
 
   function mudar(chave, valor) {
     setValores((atuais) => ({ ...atuais, [chave]: valor }));
+
     if (erros.porChave[chave]) {
       setErros((atuais) => ({ ...atuais, porChave: { ...atuais.porChave, [chave]: undefined } }));
     }
@@ -74,17 +88,29 @@ function FormularioRespondivel({ token, dados, onEnviado, onFechou }) {
 
   function handleSubmit(event) {
     event.preventDefault();
+
     const envio = { aceite, preenchidoPor, nomeResponsavel };
     const locais = validarEnvio(versao, valores, envio);
+
     if (temErros(locais)) {
       setErros({ ...locais, outros: [] });
+
+      focusFirstInvalidField(event.currentTarget, [
+        ...Object.keys(locais.porChave ?? {}).map((chave) => `resposta-${chave}`),
+        ...(locais.nomeResponsavel ? ['nome-responsavel'] : []),
+        ...(locais.aceite ? ['aceite-termo'] : []),
+      ]);
+
       return;
     }
+
     setErros(SEM_ERROS);
+
     enviar.mutate(corpoDoEnvio(versao, valores, envio), {
       onSuccess: onEnviado,
       onError: (error) => {
         const erro = toApiError(error);
+
         if (erro.status === STATUS_VALIDACAO) {
           setErros(errosDoEnvio(erro.fields));
         } else {
@@ -95,7 +121,7 @@ function FormularioRespondivel({ token, dados, onEnviado, onFechou }) {
   }
 
   return (
-    <form className="grid gap-6" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-6" noValidate onSubmit={handleSubmit}>
       {versao.introducao && <p className="text-sm whitespace-pre-wrap">{versao.introducao}</p>}
 
       {versao.secoes.map((secao, indice) => (
@@ -104,6 +130,7 @@ function FormularioRespondivel({ token, dados, onEnviado, onFechou }) {
           {secao.itens.map((item) => {
             const chave = chaveDoItem(item);
             const campo = campoDoItem(item);
+
             return (
               <CampoDinamico
                 ajuda={campo.ajuda}
@@ -127,12 +154,12 @@ function FormularioRespondivel({ token, dados, onEnviado, onFechou }) {
             { valor: QUEM_PREENCHE.RESPONSAVEL, rotulo: 'Responsável' },
           ].map((opcao) => (
             <label className="flex items-center gap-2 text-sm" key={opcao.valor}>
-              <input
+              <Radio
                 checked={preenchidoPor === opcao.valor}
-                className="size-4 accent-primary"
+                className="size-4"
                 name="preenchido-por"
                 onChange={() => setPreenchidoPor(opcao.valor)}
-                type="radio"
+
                 value={opcao.valor}
               />
               {opcao.rotulo}
@@ -151,7 +178,7 @@ function FormularioRespondivel({ token, dados, onEnviado, onFechou }) {
               <Input
                 {...controle}
                 autoComplete="name"
-                className="h-9 rounded-none"
+
                 onChange={(event) => setNomeResponsavel(event.target.value)}
                 value={nomeResponsavel}
               />
@@ -162,7 +189,7 @@ function FormularioRespondivel({ token, dados, onEnviado, onFechou }) {
 
       <div className="grid gap-2">
         <p className="text-sm font-semibold">Termo de aceite</p>
-        <p className="max-h-48 overflow-y-auto border border-border px-3 py-2 text-sm whitespace-pre-wrap">
+        <p className="max-h-48 overflow-y-auto rounded-lg border border-border bg-surface px-3 py-2 text-sm whitespace-pre-wrap">
           {versao.termo}
         </p>
         <label className="flex items-start gap-2 text-sm" htmlFor="aceite-termo">
@@ -175,11 +202,7 @@ function FormularioRespondivel({ token, dados, onEnviado, onFechou }) {
           />
           Li e aceito o termo
         </label>
-        {erros.aceite && (
-          <p className="text-xs text-destructive" id="aceite-termo-erro" role="alert">
-            {erros.aceite}
-          </p>
-        )}
+        <FieldError id="aceite-termo-erro" message={erros.aceite} />
       </div>
 
       {(erros.outros.length > 0 || temErros(erros)) && (
@@ -191,14 +214,15 @@ function FormularioRespondivel({ token, dados, onEnviado, onFechou }) {
       <div>
         <Button
           aria-busy={enviar.isPending}
-          className="rounded-none"
           disabled={enviar.isPending}
           type="submit"
+          loading={enviar.isPending}
+          loadingText="Enviando…"
         >
-          {enviar.isPending ? 'Enviando…' : 'Enviar'}
+          {'Enviar'}
         </Button>
       </div>
-    </form>
+    </Form>
   );
 }
 
@@ -240,12 +264,13 @@ export default function FormularioPublicoPage() {
 
   const erro = erroQueFechou ?? (formularioQuery.error ? toApiError(formularioQuery.error) : null);
   const mensagem = mensagemDoErroPublico(erro);
+
   if (mensagem) {
     return (
       <Aviso icone={CircleAlert} texto={mensagem.texto} titulo="Não foi possível abrir">
         {mensagem.tentarDeNovo && (
           <Button
-            className="mt-2 rounded-none"
+            className="mt-2"
             onClick={() => {
               setErroQueFechou(null);
               formularioQuery.refetch();
@@ -264,12 +289,10 @@ export default function FormularioPublicoPage() {
     return (
       <Moldura>
         <div className="grid gap-3" aria-busy="true">
-          <span className="sr-only" role="status">
-            Carregando formulário…
-          </span>
-          <Skeleton className="h-8 w-56 rounded-none" />
-          <Skeleton className="h-24 rounded-none" />
-          <Skeleton className="h-24 rounded-none" />
+          <LoadingState label="Carregando formulário…" />
+          <Skeleton className="h-8 w-56" />
+          <Skeleton className="h-24" />
+          <Skeleton className="h-24" />
         </div>
       </Moldura>
     );
@@ -286,7 +309,7 @@ export default function FormularioPublicoPage() {
         <h1 className="text-xl font-semibold">{dados.formulario.nome}</h1>
         {prazo && (
           <p className="text-xs text-muted-foreground">
-            Responda até <span className="font-mono tabular-nums">{prazo}</span>
+            Responda até <span className="tabular-nums">{prazo}</span>
           </p>
         )}
       </header>

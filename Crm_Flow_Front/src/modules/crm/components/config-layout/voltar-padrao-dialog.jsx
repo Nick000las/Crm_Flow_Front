@@ -1,3 +1,6 @@
+/**
+ * @file "Voltar ao padrão": apaga o layout próprio de quem está logado.
+ */
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import {
   AlertDialog,
@@ -9,6 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+
 import { useRemoverMeu } from '../../hooks/use-layout';
 
 /**
@@ -23,9 +27,11 @@ export function VoltarPadraoDialog({ open, onOpenChange, onRestaurado }) {
     if (remover.isPending) {
       return;
     }
+
     if (!proximo) {
       remover.reset();
     }
+
     onOpenChange(proximo);
   }
 
@@ -40,7 +46,7 @@ export function VoltarPadraoDialog({ open, onOpenChange, onRestaurado }) {
 
   return (
     <AlertDialog onOpenChange={handleOpenChange} open={open}>
-      <AlertDialogContent className="rounded-none">
+      <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Voltar ao padrão da empresa?</AlertDialogTitle>
           <AlertDialogDescription>

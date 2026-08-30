@@ -1,6 +1,11 @@
+/**
+ * @file A resposta é a configuração inteira: vira o cache.
+ */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
 import { temFeature } from '@/lib/acesso';
+
 import {
   criarGrupo,
   editarGrupo,
@@ -52,15 +57,18 @@ function useMutacaoDeGrupo(mutationFn) {
 
 export function useCriarGrupo() {
   const { authApi } = useAuth();
+
   return useMutacaoDeGrupo((grupo) => criarGrupo(authApi, grupo));
 }
 
 export function useEditarGrupo() {
   const { authApi } = useAuth();
+
   return useMutacaoDeGrupo(({ id, grupo }) => editarGrupo(authApi, id, grupo));
 }
 
 export function useExcluirGrupo() {
   const { authApi } = useAuth();
+
   return useMutacaoDeGrupo((id) => excluirGrupo(authApi, id));
 }

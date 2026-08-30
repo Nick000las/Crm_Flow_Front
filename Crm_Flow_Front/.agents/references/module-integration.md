@@ -6,6 +6,16 @@ O código é a referência para contratos e funcionalidades disponíveis.
 
 ## Inicialização e sessão
 
+- Recuperação de conta é compartilhada pelos logins tenant e master em
+  `src/modules/auth/pages/password-recovery.jsx`: solicitação por
+  `POST /auth/password/forgot` e redefinição por `POST /auth/password/reset`
+  com `{ email, verificationCode, senha }`. O código é de uso único, expira em
+  10 minutos e permite reenvio após 60 segundos. Após a redefinição, o frontend
+  chama `/auth/login/password` com a nova senha e o escopo da área e encaminha
+  a resposta ao fluxo de login existente, incluindo MFA quando ativo. Falha nessa
+  autenticação preserva o sucesso da troca e oferece voltar ao login. O backend
+  precisa da migration `0030_recuperacao_senha` antes de disponibilizar o fluxo.
+
 - `src/main.jsx` cria um único `QueryClient` por `createQueryClient` e mantém
   `QueryClientProvider`, `BrowserRouter`, `AuthProvider` e `AdminAuthProvider`
   na raiz. Navegar entre áreas não deve desmontar as sessões.

@@ -1,6 +1,11 @@
+/**
+ * @file A resposta é a configuração inteira (já recalculada): vira o cache.
+ */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
 import { temFeature } from '@/lib/acesso';
+
 import { obterScore, recalcularScore, salvarScore } from '../api/score.api';
 import { CRM_FEATURES } from '../constants';
 import { crmKeys } from '../query-keys';

@@ -245,3 +245,10 @@ pnpm test   # node --test: arquivos *.test.js ao lado das funções puras
 pnpm lint
 pnpm build
 ```
+
+## Aplicativo instalável e responsividade
+
+O Flow CRM oferece instalação como PWA, navegação móvel, aviso de conexão e
+atualizações confirmadas pela pessoa. Veja [instalação, publicação HTTPS e
+verificação](docs/pwa.md). Para a suíte de navegador, execute
+`pnpm exec playwright install chromium` e `pnpm test:e2e`.

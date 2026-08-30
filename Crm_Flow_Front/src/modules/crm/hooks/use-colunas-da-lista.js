@@ -1,4 +1,10 @@
+/**
+ * @file Colunas da lista de leads: as do contexto "Tabela", a escolha salva do usuário e, com
+ * layout (`crm.layout`), o identificador fixo na 1ª coluna (fora do seletor) e as colunas
+ * padrão do layout para quem ainda não escolheu.
+ */
 import { useMemo } from 'react';
+
 import { CONTEXTO } from '../constants';
 import { comDataConversao } from '../lib/ciclo-de-vida';
 import { montarColunas } from '../lib/colunas';

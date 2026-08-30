@@ -1,4 +1,8 @@
+/**
+ * @file Ícone decorativo; o rótulo acessível pertence ao componente em carregamento.
+ */
 import { LoaderCircle } from 'lucide-react';
+
 import { cn } from '@/lib/utils';
 
 /** Ícone decorativo; o rótulo acessível pertence ao componente em carregamento. */

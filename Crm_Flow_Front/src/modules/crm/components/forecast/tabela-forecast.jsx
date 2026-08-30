@@ -1,4 +1,10 @@
+/**
+ * @file Lista de oportunidades por trás de um número. Valores à direita, em mono; `null` vira
+ * "—".
+ */
 import { Link } from 'react-router-dom';
+
+import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Table,
@@ -9,10 +15,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
-import { celulaDaLista } from '../../lib/forecast-vista';
 
-const HEAD_CLASS =
-  'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
+import { celulaDaLista } from '../../lib/forecast-vista';
 
 /**
  * @typedef {{
@@ -52,7 +56,7 @@ function SelecionarPagina({ selecao, itens }) {
  */
 export function TabelaForecast({ itens, colunas, nomePorId, linkDoLead, selecao = null }) {
   return (
-    <div className="overflow-x-auto border border-border">
+    <Card layout="plain" className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
@@ -63,7 +67,7 @@ export function TabelaForecast({ itens, colunas, nomePorId, linkDoLead, selecao 
             )}
             {colunas.map((coluna) => (
               <TableHead
-                className={cn(HEAD_CLASS, coluna.numerica && 'text-right')}
+                className={cn(coluna.numerica && 'text-right')}
                 key={coluna.id}
                 scope="col"
               >
@@ -75,6 +79,7 @@ export function TabelaForecast({ itens, colunas, nomePorId, linkDoLead, selecao 
         <TableBody>
           {itens.map((item) => {
             const marcado = selecao?.ids.has(item.id) ?? false;
+
             return (
               <TableRow data-state={marcado ? 'selected' : undefined} key={item.id}>
                 {selecao && (
@@ -89,9 +94,10 @@ export function TabelaForecast({ itens, colunas, nomePorId, linkDoLead, selecao 
                 )}
                 {colunas.map((coluna) => {
                   const texto = celulaDaLista(item, coluna, nomePorId);
+
                   return (
                     <TableCell
-                      className={cn(coluna.numerica && 'text-right font-mono tabular-nums')}
+                      className={cn(coluna.numerica && 'text-right tabular-nums')}
                       key={coluna.id}
                     >
                       {coluna.id === 'pessoa' ? (
@@ -112,6 +118,6 @@ export function TabelaForecast({ itens, colunas, nomePorId, linkDoLead, selecao 
           })}
         </TableBody>
       </Table>
-    </div>
+    </Card>
   );
 }

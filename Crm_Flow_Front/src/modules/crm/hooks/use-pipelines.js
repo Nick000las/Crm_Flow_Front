@@ -1,5 +1,10 @@
+/**
+ * @file Otimista, como a ordem de Listas: muda ao soltar e volta se o back recusar.
+ */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
+
 import {
   atualizarPipeline,
   criarPipeline,
@@ -31,16 +36,19 @@ function useMutacaoDePipeline(mutationFn) {
 
 export function useCriarPipeline() {
   const { authApi } = useAuth();
+
   return useMutacaoDePipeline((corpo) => criarPipeline(authApi, corpo));
 }
 
 export function useAtualizarPipeline() {
   const { authApi } = useAuth();
+
   return useMutacaoDePipeline(({ id, parcial }) => atualizarPipeline(authApi, id, parcial));
 }
 
 export function useExcluirPipeline() {
   const { authApi } = useAuth();
+
   return useMutacaoDePipeline((id) => excluirPipeline(authApi, id));
 }
 
@@ -53,10 +61,13 @@ export function useReordenarStatus(pipelineId) {
     mutationFn: (ids) => reordenarStatus(authApi, pipelineId, ids),
     onMutate: async (ids) => {
       await queryClient.cancelQueries({ queryKey: CHAVE });
+
       const anterior = queryClient.getQueryData(CHAVE);
+
       queryClient.setQueryData(CHAVE, (pipelines) =>
         pipelines ? comStatusReordenados(pipelines, pipelineId, ids) : pipelines,
       );
+
       return { anterior };
     },
     onError: (_erro, _variaveis, contexto) => queryClient.setQueryData(CHAVE, contexto?.anterior),

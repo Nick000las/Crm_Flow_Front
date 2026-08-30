@@ -1,3 +1,7 @@
+/**
+ * @file Excluir um campo personalizado. O dado já preenchido continua nos leads (órfão) — o
+ * back confirma isso no `aviso`, que vai para quem chamou.
+ */
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import {
   AlertDialog,
@@ -9,6 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+
 import { useExcluirDefinicao } from '../hooks/use-campos-config';
 
 /**
@@ -28,9 +33,11 @@ export function ExcluirDefinicaoDialog({ definicao, onOpenChange, onExcluido }) 
     if (excluir.isPending) {
       return;
     }
+
     if (!proximo) {
       excluir.reset();
     }
+
     onOpenChange(proximo);
   }
 
@@ -45,7 +52,7 @@ export function ExcluirDefinicaoDialog({ definicao, onOpenChange, onExcluido }) 
 
   return (
     <AlertDialog onOpenChange={handleOpenChange} open={Boolean(definicao)}>
-      <AlertDialogContent className="rounded-none">
+      <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Excluir campo</AlertDialogTitle>
           <AlertDialogDescription>

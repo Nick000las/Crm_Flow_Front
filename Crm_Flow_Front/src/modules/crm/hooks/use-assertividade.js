@@ -1,5 +1,10 @@
+/**
+ * @file `GET /crm/forecast/assertividade` (FC3, só gestão).
+ */
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
+
 import { buscarAssertividade } from '../api/assertividade.api';
 import { crmKeys } from '../query-keys';
 

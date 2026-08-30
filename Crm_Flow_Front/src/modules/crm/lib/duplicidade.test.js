@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import {
   acoesParaEnvio,
   candidatosDoErro,
@@ -40,20 +41,24 @@ test('candidatosDoErro lê details.duplicados com segurança', () => {
   assert.deepEqual(candidatosDoErro({ details: { duplicados: [candidato, { nome: 'sem id' }] } }), [
     candidato,
   ]);
+
   assert.deepEqual(candidatosDoErro({ details: null }), []);
   assert.deepEqual(candidatosDoErro(undefined), []);
 });
 
 test('descreverCandidato junta os campos iguais', () => {
   assert.equal(descreverCandidato({ campos: [{ label: 'E-mail' }] }), 'E-mail igual');
+
   assert.equal(
     descreverCandidato({ campos: [{ label: 'E-mail' }, { label: 'Telefone' }] }),
     'E-mail e Telefone iguais',
   );
+
   assert.equal(
     descreverCandidato({ campos: [{ label: 'E-mail' }, { label: 'Telefone' }, { label: 'CNPJ' }] }),
     'E-mail, Telefone e CNPJ iguais',
   );
+
   assert.equal(descreverCandidato({ campos: [] }), 'Parecido');
 });
 
@@ -70,10 +75,12 @@ test('consultaDeDuplicados pega só os campos das regras, preenchidos e fora da 
     email: 'ana@x.com',
     cnpj: '12.345.678/0001-90',
   });
+
   assert.deepEqual(consultaDeDuplicados(CAMPOS, { email: 'a@b.c' }, 'l1'), {
     email: 'a@b.c',
     leadId: 'l1',
   });
+
   assert.equal(consultaDeDuplicados(CAMPOS, { nome: 'Ana' }), null);
 });
 
@@ -92,6 +99,7 @@ test('regrasParaEnvio manda só o que mudou', () => {
   const editadas = valoresDasRegras(originais);
 
   assert.equal(regrasParaEnvio(editadas, originais), null);
+
   assert.deepEqual(
     regrasParaEnvio({ ...editadas, cnpj: { ativo: true, acao: 'block' } }, originais),
     [{ campo: 'cnpj', ativo: true, acao: 'block' }],
@@ -103,10 +111,12 @@ test('import: "criar" some na linha bloqueada; ações só das escolhidas', () =
     opcoesDeAcaoImport({ linha: 2, acao: 'warn', leads: [] }).map((opcao) => opcao.valor),
     ['pular', 'atualizar', 'criar'],
   );
+
   assert.deepEqual(
     opcoesDeAcaoImport({ linha: 2, acao: 'block', leads: [] }).map((opcao) => opcao.valor),
     ['pular', 'atualizar'],
   );
+
   assert.deepEqual(acoesParaEnvio({ 2: 'pular', 3: '', 5: 'criar' }), { 2: 'pular', 5: 'criar' });
   assert.equal(acoesParaEnvio({ 3: '' }), null);
 });

@@ -1,6 +1,13 @@
+/**
+ * @file O link que abre o lead fica na 1ª coluna — o alvo do Enter e do foco de volta; o clique
+ * no resto da linha é só atalho de mouse.
+ */
 import { RotateCcw, ShieldOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
+import { LoadingState } from '@/components/loading-state';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -12,6 +19,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
+
 import { textoDaPurga } from '../lib/arquivo';
 import { lerValorDaColuna } from '../lib/colunas';
 import { tituloDoLead } from '../lib/layout';
@@ -23,8 +31,6 @@ import { LinkDoLead } from './link-do-lead';
 import { SeloAnonimizado } from './selo-anonimizado';
 import { SeloEsfriando } from './selo-esfriando';
 
-const HEAD_CLASS =
-  'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
 const LINHAS_SKELETON = 8;
 
 /** Marca ou desmarca a página inteira (edição em massa). */
@@ -56,21 +62,13 @@ function Cabecalho({ colunas, identificador, comAcoes, lixeira, selecao = null, 
             )}
           </TableHead>
         )}
-        {identificador && (
-          <TableHead className={HEAD_CLASS} scope="col">
-            {identificador.label}
-          </TableHead>
-        )}
+        {identificador && <TableHead scope="col">{identificador.label}</TableHead>}
         {colunas.map((coluna) => (
-          <TableHead className={HEAD_CLASS} key={coluna.id} scope="col">
+          <TableHead key={coluna.id} scope="col">
             {coluna.label}
           </TableHead>
         ))}
-        {lixeira && (
-          <TableHead className={HEAD_CLASS} scope="col">
-            Exclusão
-          </TableHead>
-        )}
+        {lixeira && <TableHead scope="col">Exclusão</TableHead>}
         {comAcoes && (
           <TableHead className="w-10" scope="col">
             <span className="sr-only">Ações</span>
@@ -89,10 +87,8 @@ function Cabecalho({ colunas, identificador, comAcoes, lixeira, selecao = null, 
  */
 export function LeadsTableSkeleton({ colunas, identificador }) {
   return (
-    <div className="overflow-x-auto border border-border" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando leads…
-      </span>
+    <Card layout="plain" className="theme-data-table overflow-x-auto" aria-busy="true">
+      <LoadingState label="Carregando leads…" />
       <Table>
         <Cabecalho colunas={colunas} identificador={identificador} />
         <TableBody>
@@ -100,19 +96,19 @@ export function LeadsTableSkeleton({ colunas, identificador }) {
             <TableRow key={linha}>
               {identificador && (
                 <TableCell>
-                  <Skeleton className="h-4 w-32 rounded-none" />
+                  <Skeleton className="h-4 w-32" />
                 </TableCell>
               )}
               {colunas.map((coluna) => (
                 <TableCell key={coluna.id}>
-                  <Skeleton className="h-4 w-24 rounded-none" />
+                  <Skeleton className="h-4 w-24" />
                 </TableCell>
               ))}
             </TableRow>
           ))}
         </TableBody>
       </Table>
-    </div>
+    </Card>
   );
 }
 
@@ -182,14 +178,15 @@ function Restaurar({ lead, titulo, restaurando, onRestaurar }) {
     <Button
       aria-busy={restaurando}
       aria-label={`Restaurar ${titulo}`}
-      className="rounded-none"
       disabled={restaurando}
       onClick={() => onRestaurar(lead)}
       size="sm"
       variant="ghost"
+      loading={restaurando}
+      loadingText="Restaurando…"
     >
       <RotateCcw aria-hidden="true" />
-      {restaurando ? 'Restaurando…' : 'Restaurar'}
+      {'Restaurar'}
     </Button>
   );
 }
@@ -242,7 +239,7 @@ export function LeadsTable({
   return (
     <div
       className={cn(
-        'overflow-x-auto border border-border transition-opacity duration-200',
+        'theme-data-table overflow-x-auto rounded-xl border border-border bg-card shadow-xs transition-opacity duration-200',
         atualizando && 'opacity-60',
       )}
       aria-busy={atualizando}
@@ -262,6 +259,7 @@ export function LeadsTable({
 
             return (
               <TableRow
+                data-selected={selecao?.ids.has(lead.id) || undefined}
                 className={lixeira ? undefined : 'cursor-pointer hover:bg-muted/40'}
                 key={lead.id}
                 onClick={
@@ -316,7 +314,7 @@ export function LeadsTable({
                   );
                 })}
                 {lixeira && (
-                  <TableCell className="font-mono text-xs whitespace-nowrap text-muted-foreground">
+                  <TableCell className="text-xs whitespace-nowrap text-muted-foreground">
                     {lead.mesclado_em_id ? <MescladoEm lead={lead} /> : textoDaPurga(lead.purga_em)}
                   </TableCell>
                 )}

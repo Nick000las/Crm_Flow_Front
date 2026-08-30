@@ -1,4 +1,10 @@
+/**
+ * @file `GET /auth/settings` — diferente de `/auth/me` (que só ecoa o payload do JWT), essa
+ * rota consulta o banco na hora e é a única fonte confiável de `mfaAtivo`: esse campo nunca
+ * viaja dentro do token.
+ */
 import { useEffect, useState } from 'react';
+
 import { isAbortError, toApiError } from '@/services/api';
 
 /**

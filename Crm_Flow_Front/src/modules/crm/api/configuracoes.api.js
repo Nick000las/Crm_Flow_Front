@@ -1,4 +1,7 @@
 /**
+ * @file Sistema na ordem original; personalizados por data de criação.
+ */
+/**
  * Área Configurações › Campos (sem flag).
  * Leitura liberada a qualquer papel; escrita só DONO/MASTER (403 `FORBIDDEN`).
  */

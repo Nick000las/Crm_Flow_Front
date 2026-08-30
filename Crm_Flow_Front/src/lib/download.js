@@ -1,4 +1,7 @@
 /**
+ * @file Dispara o download de um Blob no navegador, sem abrir aba nova.
+ */
+/**
  * Dispara o download de um Blob no navegador, sem abrir aba nova.
  *
  * @param {Blob} blob

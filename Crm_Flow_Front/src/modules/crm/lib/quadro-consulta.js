@@ -1,3 +1,7 @@
+/**
+ * @file Aviso depois do form de `CAMPOS_OBRIGATORIOS`: ele acabou de se fechar, então sempre
+ * confirma.
+ */
 import { CHAVES_FIXAS_CICLO } from './ciclo-de-vida.js';
 import { contarFiltros, paraCorpoDeBusca } from './filtro.js';
 import { avisoDeProbabilidade, juntarAvisos } from './probabilidade.js';
@@ -104,9 +108,11 @@ function avisoDaPosicao({ conflito, saiuDoFiltro }) {
   if (conflito && saiuDoFiltro) {
     return AVISO_CONFLITO_FORA_DO_FILTRO;
   }
+
   if (saiuDoFiltro) {
     return AVISO_SAIU_DO_FILTRO;
   }
+
   return conflito ? AVISO_CONFLITO : null;
 }
 

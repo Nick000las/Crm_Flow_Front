@@ -1,4 +1,8 @@
+/**
+ * @file Aviso de `camposDesligados`: não bloqueia a página, os números continuam.
+ */
 import { Info } from 'lucide-react';
+
 import { avisoDoCampoDesligado } from '../../lib/forecast-textos';
 
 /**
@@ -16,7 +20,10 @@ export function AvisoCamposDesligados({ chaves, ehGestao }) {
   }
 
   return (
-    <div className="flex gap-3 border border-border bg-muted/40 p-3 text-sm" role="status">
+    <div
+      className="flex gap-3 rounded-lg border border-border bg-surface p-3 text-sm"
+      role="status"
+    >
       <Info aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
       <ul className="grid gap-1">
         {textos.map((aviso) => (

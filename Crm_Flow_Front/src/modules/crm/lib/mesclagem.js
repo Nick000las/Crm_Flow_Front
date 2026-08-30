@@ -1,3 +1,7 @@
+/**
+ * @file De onde vem o valor de uma linha: a escolha, se houver; senão o principal, ou o outro
+ * lado quando o principal está vazio (a regra do back).
+ */
 import { lerValorDoCampo } from './colunas.js';
 import { textoDoValor } from './layout.js';
 
@@ -99,8 +103,10 @@ export function ladoQueFica(linha, escolha, principal) {
   }
 
   const textoDoPrincipal = principal === LADO.A ? linha.textoA : linha.textoB;
+
   if (textoDoPrincipal) {
     return principal;
   }
+
   return principal === LADO.A ? LADO.B : LADO.A;
 }

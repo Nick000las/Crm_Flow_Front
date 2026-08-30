@@ -1,4 +1,7 @@
 /**
+ * @file Grupo destino de alguma regra = 409 (a mensagem diz qual).
+ */
+/**
  * Distribuição automática (`crm.distribuicao`). Leitura para qualquer papel
  * (o form do lead precisa saber se está ligada); escrita só DONO/MASTER.
  *

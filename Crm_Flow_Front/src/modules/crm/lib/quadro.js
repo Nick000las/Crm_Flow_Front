@@ -1,3 +1,6 @@
+/**
+ * @file O form deixou de cobrir a recusa? Então ele remonta com o que falta.
+ */
 import { CAMADA, CHAVE_VALOR, TIPOS_CAMPO } from '../constants.js';
 import {
   CHAVE_RESPONSAVEL,
@@ -58,6 +61,7 @@ const FORA_DA_PESSOA_NOVA = new Set(['status', 'dataConversao']);
  */
 export function cardsDasPaginas(dados) {
   const vistos = new Set();
+
   return (dados?.pages ?? [])
     .flatMap((pagina) => pagina.itens)
     .filter((card) => !vistos.has(card.entidadeId) && vistos.add(card.entidadeId));
@@ -72,6 +76,7 @@ export function tirarDasPaginas(dados, entidadeId) {
   if (!dados) {
     return dados;
   }
+
   return {
     ...dados,
     pages: dados.pages.map((pagina) => ({
@@ -93,8 +98,11 @@ export function porNoTopo(dados, card) {
   if (!dados || dados.pages.length === 0) {
     return dados;
   }
-  const [primeira, ...resto] = dados.pages;
-  return { ...dados, pages: [{ ...primeira, itens: [card, ...primeira.itens] }, ...resto] };
+
+  const limpo = tirarDasPaginas(dados, card.entidadeId);
+  const [primeira, ...resto] = limpo.pages;
+
+  return { ...limpo, pages: [{ ...primeira, itens: [card, ...primeira.itens] }, ...resto] };
 }
 
 /**
@@ -120,7 +128,9 @@ export function textoDoCard(item, campos, nomePorId) {
   if (item.chave === 'status') {
     return item.valor ? String(item.valor) : null;
   }
+
   const campo = campos.find((atual) => atual.chave === item.chave);
+
   return textoDoValor({ ...campo, ...item }, item.valor, nomePorId);
 }
 
@@ -164,10 +174,12 @@ function recusasDaChave(chave, mensagens, campos) {
       ),
     }));
   }
+
   const campo =
     chave === CHAVE_RESPONSAVEL
       ? /** @type {Campo} */ (CAMPO_RESPONSAVEL)
       : campos.find((atual) => atual.chave === chave);
+
   return [{ campo, mensagem: mensagens?.[0] ?? chave }];
 }
 
@@ -222,6 +234,7 @@ export function camposDoMover(noMover, valores) {
   if (noMover.length === 0) {
     return undefined;
   }
+
   return Object.fromEntries(
     noMover.map((campo) => [campo.chave, paraValorDeApi(campo.tipo, valores[idNoForm(campo)])]),
   );

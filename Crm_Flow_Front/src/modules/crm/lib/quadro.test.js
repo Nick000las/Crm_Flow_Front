@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import {
   camposDaPessoaNova,
+  camposDoMover,
   colunasDeDestino,
   pedeOutrosCampos,
   porNoTopo,
-  camposDoMover,
   separarObrigatorios,
   somaDoResumo,
   textoDoCard,
@@ -165,6 +166,7 @@ test('responsável não está em /fields e vai pelo lead', () => {
     doLead.map(({ chave, tipo }) => [chave, tipo]),
     [['usuarioResponsavelId', 'usuario']],
   );
+
   assert.deepEqual(bloqueados, []);
 });
 
@@ -174,6 +176,7 @@ test('o que o papel não preenche trava, com a mensagem do back', () => {
   assert.deepEqual(separarObrigatorios({ valor: ['Informe o valor'] }, soVer).bloqueados, [
     'Informe o valor',
   ]);
+
   assert.deepEqual(separarObrigatorios({ oculto: ['Informe o campo'] }, CAMPOS).bloqueados, [
     'Informe o campo',
   ]);
@@ -205,6 +208,7 @@ test('camposDoMover converte os valores do form para a API', () => {
       probabilidadeFechamento: 35,
     },
   );
+
   assert.equal(camposDoMover([], {}), undefined);
 });
 

@@ -1,3 +1,6 @@
+/**
+ * @file Campo sensível (FM1): oculto para o Operador e fora da exportação padrão.
+ */
 import { cn } from '@/lib/utils';
 
 /**
@@ -9,7 +12,7 @@ export function SeloSensivel({ className }) {
   return (
     <span
       className={cn(
-        'inline-flex border border-border px-1.5 font-mono text-[11px] text-muted-foreground uppercase',
+        'inline-flex rounded-md border border-border px-1.5 text-[11px] text-muted-foreground uppercase',
         className,
       )}
       title="Oculto para o Operador e fora da exportação padrão"

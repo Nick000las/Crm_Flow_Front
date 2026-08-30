@@ -1,11 +1,19 @@
-import { Pencil, Plus, Sigma, Trash2 } from 'lucide-react';
+/**
+ * @file O rascunho da pontuação: regras e faixas. Nada sai daqui até o "Salvar", que manda tudo
+ * num PUT e só responde depois de recalcular os leads. A mutação vem da seção (ela fica montada
+ * enquanto o PUT roda, mesmo que o progresso recarregue a configuração).
+ */
 import { useRef, useState } from 'react';
+import { Pencil, Plus, Sigma, Trash2 } from 'lucide-react';
+
 import { ApiErrorAlert } from '@/components/api-error-alert';
-import { ModulePlaceholder } from '@/components/module-placeholder';
+import { EmptyState } from '@/components/empty-state';
 import { Button } from '@/components/ui/button';
+import { Form } from '@/components/ui/form';
 import { Switch } from '@/components/ui/switch';
 import { semChave } from '@/lib/objetos';
 import { toApiError } from '@/services/api';
+
 import { SCORE } from '../../constants';
 import { descreverCondicoes } from '../../lib/condicoes';
 import { errosPorItem } from '../../lib/erros-de-lista';
@@ -56,9 +64,7 @@ function LinhaRegra({
       aria-describedby={erro ? idErro : undefined}
       className="flex flex-wrap items-center gap-3 border-b border-border px-3 py-2 last:border-b-0"
     >
-      <span className="w-14 text-right font-mono text-sm tabular-nums">
-        {textoDosPontos(regra.pontos)}
-      </span>
+      <span className="w-14 text-right text-sm tabular-nums">{textoDosPontos(regra.pontos)}</span>
       <div className="grid min-w-0 flex-1 gap-0.5">
         <p className="text-sm font-medium">{nome}</p>
         <p className="text-sm text-muted-foreground">{descricao}</p>
@@ -131,6 +137,7 @@ export function FormScore({ config, campos, nomePorId, podeEditar, ocupado, salv
 
   function alterar(parcial) {
     setValores((atuais) => ({ ...atuais, ...parcial }));
+
     if (salvar.error) {
       salvar.reset();
     }
@@ -138,6 +145,7 @@ export function FormScore({ config, campos, nomePorId, podeEditar, ocupado, salv
 
   function confirmarRegra(confirmada) {
     const existe = valores.regras.some((regra) => regra.chaveLocal === confirmada.chaveLocal);
+
     alterar({
       regras: existe
         ? valores.regras.map((regra) =>
@@ -145,6 +153,7 @@ export function FormScore({ config, campos, nomePorId, podeEditar, ocupado, salv
           )
         : [...valores.regras, confirmada],
     });
+
     setErros((atuais) => ({ ...atuais, regras: semChave(atuais.regras, confirmada.chaveLocal) }));
   }
 
@@ -159,6 +168,7 @@ export function FormScore({ config, campos, nomePorId, podeEditar, ocupado, salv
         faixa.chaveLocal === chaveLocal ? { ...faixa, ...parcial } : faixa,
       ),
     });
+
     setErros((atuais) => ({ ...atuais, faixas: semChave(atuais.faixas, chaveLocal), geral: [] }));
   }
 
@@ -169,15 +179,20 @@ export function FormScore({ config, campos, nomePorId, podeEditar, ocupado, salv
 
   function handleSubmit(event) {
     event.preventDefault();
+
     const resultado = scoreParaEnvio(valores, campos);
+
     if ('erros' in resultado) {
       setErros(resultado.erros);
+
       return;
     }
 
     setErros(SEM_ERROS);
+
     const chavesDasRegras = valores.regras.map((regra) => regra.chaveLocal);
     const chavesDasFaixas = valores.faixas.map((faixa) => faixa.chaveLocal);
+
     salvar.mutate(resultado.corpo, {
       onSuccess: () => onSalvo('Pontuação salva e leads recalculados.'),
       onError: (erro) =>
@@ -208,7 +223,7 @@ export function FormScore({ config, campos, nomePorId, podeEditar, ocupado, salv
 
   return (
     <>
-      <form className="grid gap-6" noValidate onSubmit={handleSubmit}>
+      <Form className="grid gap-6" noValidate onSubmit={handleSubmit}>
         <section aria-labelledby="score-regras-titulo" className="grid gap-2">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div className="grid gap-0.5">
@@ -223,13 +238,13 @@ export function FormScore({ config, campos, nomePorId, podeEditar, ocupado, salv
           </div>
 
           {valores.regras.length === 0 ? (
-            <ModulePlaceholder
+            <EmptyState
               description="Sem regras, todo lead fica com score 0."
               icon={Sigma}
               title="Nenhuma regra ainda"
             >
               {botaoNovaRegra}
-            </ModulePlaceholder>
+            </EmptyState>
           ) : (
             <ul aria-busy={ocupado} className="border border-border">
               {valores.regras.map((regra) => {
@@ -299,8 +314,14 @@ export function FormScore({ config, campos, nomePorId, podeEditar, ocupado, salv
         {podeEditar && (
           <div className="grid gap-2 border-t border-border pt-4">
             <div className="flex flex-wrap gap-2">
-              <Button aria-busy={salvar.isPending} disabled={!mudou || travado} type="submit">
-                {salvar.isPending ? 'Salvando e recalculando…' : 'Salvar'}
+              <Button
+                aria-busy={salvar.isPending}
+                disabled={!mudou || travado}
+                type="submit"
+                loading={salvar.isPending}
+                loadingText="Salvando e recalculando…"
+              >
+                {'Salvar'}
               </Button>
               <Button
                 disabled={!mudou || travado}
@@ -316,9 +337,9 @@ export function FormScore({ config, campos, nomePorId, podeEditar, ocupado, salv
             </p>
           </div>
         )}
-      </form>
+      </Form>
 
-      {/* Fora do <form>: o submit do dialog sobe pela árvore do React (portal) e salvaria a seção. */}
+      {/* Fora do <Form>: o submit do dialog sobe pela árvore do React (portal) e salvaria a seção. */}
       <RegraScoreDialog
         campos={campos}
         errosDoServidor={emEdicao ? erros.regras[emEdicao.regra.chaveLocal] : undefined}

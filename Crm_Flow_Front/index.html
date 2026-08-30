@@ -3,9 +3,38 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Frontend do Flow CRM conectado à API do projeto." />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content"
+    />
+    <meta
+      name="description"
+      content="Flow CRM — Plataforma B2B de CRM, Kanban e gestão operacional."
+    />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <meta name="theme-color" content="#10151b" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Flow CRM" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>Flow CRM</title>
+    <script>
+      (() => {
+        try {
+          const stored = window.localStorage.getItem('flow-crm:theme');
+          const preference =
+            stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
+          const isDark =
+            preference === 'dark' ||
+            (preference === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          const root = document.documentElement;
+          root.classList.toggle('dark', isDark);
+          root.style.colorScheme = isDark ? 'dark' : 'light';
+        } catch {
+          // Ambiente sem acesso a localStorage ou matchMedia: mantém tema padrão.
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

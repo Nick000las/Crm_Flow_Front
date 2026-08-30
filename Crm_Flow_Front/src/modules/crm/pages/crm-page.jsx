@@ -1,4 +1,9 @@
+/**
+ * @file Organiza a tela de crm page, na área de CRM, e coordena navegação, consultas e ações do
+ * usuário.
+ */
 import { Link } from 'react-router-dom';
+
 import { PageHeader } from '@/components/page-header';
 
 export default function CrmPage() {

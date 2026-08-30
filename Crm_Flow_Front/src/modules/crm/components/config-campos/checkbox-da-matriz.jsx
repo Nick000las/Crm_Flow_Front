@@ -1,4 +1,8 @@
+/**
+ * @file Checkbox da matriz de campos. Travado, mostra o motivo (`ControleTravado`).
+ */
 import { Checkbox } from '@/components/ui/checkbox';
+
 import { ControleTravado } from '../controle-travado';
 
 /**
@@ -17,16 +21,18 @@ export function CheckboxDaMatriz({ id, rotulo, checked, motivo, ocupado, onChang
   const motivoId = `${id}-motivo`;
 
   return (
-    <ControleTravado motivo={motivo} motivoId={motivoId}>
-      <Checkbox
-        aria-describedby={motivo ? motivoId : undefined}
-        aria-label={rotulo}
-        checked={checked}
-        className={motivo ? 'pointer-events-none' : undefined}
-        disabled={Boolean(motivo) || ocupado}
-        id={id}
-        onCheckedChange={onChange}
-      />
-    </ControleTravado>
+    <div className="flex items-center justify-center">
+      <ControleTravado motivo={motivo} motivoId={motivoId}>
+        <Checkbox
+          aria-describedby={motivo ? motivoId : undefined}
+          aria-label={rotulo}
+          checked={checked}
+          className={motivo ? 'pointer-events-none' : undefined}
+          disabled={Boolean(motivo) || ocupado}
+          id={id}
+          onCheckedChange={onChange}
+        />
+      </ControleTravado>
+    </div>
   );
 }

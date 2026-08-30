@@ -1,8 +1,12 @@
+/**
+ * @file Lista reordenável por arrastar (Campos, Listas e o que vier).
+ */
+import { useRef } from 'react';
 import {
+  closestCenter,
   DndContext,
   KeyboardSensor,
   PointerSensor,
-  closestCenter,
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
@@ -11,13 +15,15 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { INSTRUCOES_ORDEM, anunciosDeOrdem } from './textos-ordem';
+
+import { canScrollDragArea, dragBoundsModifier } from '@/lib/drag-bounds';
+
+import { anunciosDeOrdem, INSTRUCOES_ORDEM } from './textos-ordem';
 
 // Um clique no puxador não deve virar arrasto sem querer.
 const DISTANCIA_MINIMA_PX = 4;
 
-/** O arrasto anda só na vertical. */
-const somenteVertical = ({ transform }) => ({ ...transform, x: 0 });
+const limitarLista = dragBoundsModifier(undefined, { axis: 'vertical' });
 
 /**
  * Lista reordenável por arrastar (Campos, Listas e o que vier). Teclado: o
@@ -36,6 +42,7 @@ const somenteVertical = ({ transform }) => ({ ...transform, x: 0 });
  * }} props
  */
 export function ListaOrdenavel({ ids, rotuloDe, onMover, children }) {
+  const boundary = useRef(null);
   const sensores = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: DISTANCIA_MINIMA_PX } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -43,6 +50,8 @@ export function ListaOrdenavel({ ids, rotuloDe, onMover, children }) {
   const posicaoDe = (id) => ids.indexOf(id) + 1;
 
   function handleDragEnd({ active, over }) {
+    boundary.current = null;
+
     if (over && active.id !== over.id) {
       onMover(ids.indexOf(active.id), ids.indexOf(over.id));
     }
@@ -55,7 +64,14 @@ export function ListaOrdenavel({ ids, rotuloDe, onMover, children }) {
         screenReaderInstructions: { draggable: INSTRUCOES_ORDEM },
       }}
       collisionDetection={closestCenter}
-      modifiers={[somenteVertical]}
+      modifiers={[limitarLista]}
+      autoScroll={{ canScroll: (element) => canScrollDragArea(element, boundary.current) }}
+      onDragStart={({ active }) => {
+        boundary.current = active.data.current?.dragBoundary?.();
+      }}
+      onDragCancel={() => {
+        boundary.current = null;
+      }}
       onDragEnd={handleDragEnd}
       sensors={sensores}
     >

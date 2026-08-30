@@ -1,10 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import {
-  LIMITES_ALERTA,
-  MENSAGENS_ALERTA,
-  NIVEIS_ALERTA,
-  OPCOES_NIVEL,
   alertaNovo,
   alertasDoForm,
   alertasParaApi,
@@ -13,14 +10,18 @@ import {
   alvosDoRascunho,
   chaveDoAlvo,
   descreverAlerta,
+  LIMITES_ALERTA,
+  MENSAGENS_ALERTA,
+  NIVEIS_ALERTA,
+  OPCOES_NIVEL,
   rotuloDoNivel,
   validarAlertas,
 } from './alertas-formulario.js';
 import {
-  MENSAGENS_FORMULARIO,
-  POLITICAS,
   dadosDoForm,
   errosDoFormulario,
+  MENSAGENS_FORMULARIO,
+  POLITICAS,
   rascunhoDoForm,
   rascunhoParaApi,
   removerItem,
@@ -108,6 +109,7 @@ test('níveis: rótulos e do mais grave para o mais leve no select', () => {
     OPCOES_NIVEL.map((opcao) => opcao.valor),
     ['critical', 'warning', 'info'],
   );
+
   assert.equal(rotuloDoNivel(NIVEIS_ALERTA.CRITICO), 'Crítico');
   assert.equal(rotuloDoNivel('outro'), 'outro');
 });
@@ -172,6 +174,7 @@ test('alerta novo começa sem alvo, em Atenção, e não vai sem id', () => {
 
   assert.equal(novo.chaveLocal, 'alerta-novo-4');
   assert.equal(novo.nivel, 'warning');
+
   assert.deepEqual(alertasParaApi([preenchido], alvos), [
     {
       alvo: { campoId: 'c1' },
@@ -206,6 +209,7 @@ test('validarAlertas: alvo, operador do tipo, valor, texto e limite', () => {
     texto: { texto: MENSAGENS_ALERTA.TEXTO_LONGO },
     vazio: { texto: MENSAGENS_ALERTA.TEXTO },
   });
+
   assert.equal(geral, MENSAGENS_ALERTA.REVISE);
   assert.deepEqual(validarAlertas(rascunho.alertas, alvos), { porAlerta: {}, geral: null });
 
@@ -213,6 +217,7 @@ test('validarAlertas: alvo, operador do tipo, valor, texto e limite', () => {
     ...alergia,
     chaveLocal: `a-${indice}`,
   }));
+
   assert.equal(validarAlertas(demais, alvos).geral, MENSAGENS_ALERTA.LIMITE);
 });
 
@@ -244,6 +249,7 @@ test('errosDoFormulario leva o erro do alerta ao alerta, pelo índice enviado', 
     'alerta:a2': { operador: 'Operador não vale para o tipo' },
     'alerta:a3': { texto: 'Alerta repetido' },
   });
+
   assert.equal(erros.alertas, 'No máximo 30 alertas');
   assert.deepEqual(erros.outros, ['Sem alerta']);
 });
@@ -265,6 +271,7 @@ test('descreverAlerta: a condição em frase, com o nome da opção', () => {
   assert.equal(descreverAlerta(ALERTAS[0], alvos), 'Alergias contém dipirona');
   assert.equal(descreverAlerta(ALERTAS[1], alvos), 'Fuma? é Sim');
   assert.equal(descreverAlerta(ALERTAS[2], alvos), 'Plano é um de Ouro');
+
   assert.equal(
     descreverAlerta({ ...ALERTAS[0], alvo: { campoId: 'outro' } }, alvos),
     'Item removido',

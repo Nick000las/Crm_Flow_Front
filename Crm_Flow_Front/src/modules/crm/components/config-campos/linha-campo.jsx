@@ -1,9 +1,16 @@
+/**
+ * @file Uma linha da matriz: em que telas o campo aparece, se é obrigatório e a posição. Cada
+ * checkbox salva na hora (`PUT` parcial); enquanto salva, a linha mostra o valor pedido e
+ * trava.
+ */
 import { Pencil, Trash2 } from 'lucide-react';
+
 import { TableCell, TableRow } from '@/components/ui/table';
 import { toApiError } from '@/services/api';
+
 import { CAMADA, ROTULOS_CONTEXTO, ROTULOS_TIPO } from '../../constants';
 import { useAtualizarCampoConfigurado } from '../../hooks/use-configuracoes-campos';
-import { CONTEXTOS, bloqueios, parcialDeVisibilidade } from '../../lib/configuracoes-campos';
+import { bloqueios, CONTEXTOS, parcialDeVisibilidade } from '../../lib/configuracoes-campos';
 import { BotaoIcone } from '../botao-icone';
 import { BotoesOrdem } from '../ordenavel/botoes-ordem';
 import { PuxadorOrdem } from '../ordenavel/puxador-ordem';
@@ -16,6 +23,7 @@ const CAMPOS_DO_ERRO = Object.freeze(['visibilidade', 'obrigatorio', 'label', 's
 function mensagemDoErro(error) {
   const apiError = toApiError(error);
   const doCampo = CAMPOS_DO_ERRO.map((chave) => apiError.fields[chave]?.[0]).find(Boolean);
+
   return doCampo ?? apiError.message;
 }
 
@@ -63,7 +71,7 @@ export function LinhaCampo({ campo, indice, total, ordemOcupada, onMover, onEdit
 
       <TableCell className="min-w-48">
         <span className="font-medium">{campo.label}</span>
-        <span className="block font-mono text-[11px] text-muted-foreground">
+        <span className="block text-[11px] text-muted-foreground">
           {campo.chave}
           {campo.labelPadrao &&
             campo.label !== campo.labelPadrao &&
@@ -78,7 +86,7 @@ export function LinhaCampo({ campo, indice, total, ordemOcupada, onMover, onEdit
 
       <TableCell className="text-sm whitespace-nowrap">
         {ROTULOS_TIPO[campo.tipo] ?? campo.tipo}
-        <span className="block font-mono text-[11px] text-muted-foreground uppercase">
+        <span className="block text-[11px] text-muted-foreground uppercase">
           {personalizado ? 'Personalizado' : 'Sistema'}
         </span>
       </TableCell>

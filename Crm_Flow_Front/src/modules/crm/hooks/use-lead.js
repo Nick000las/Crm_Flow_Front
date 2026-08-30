@@ -1,5 +1,11 @@
+/**
+ * @file Compartilha estado e efeitos de use lead, na área de CRM, entre consumidores da
+ * interface.
+ */
 import { useQuery } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
+
 import { buscarLead } from '../api/leads.api';
 import { crmKeys } from '../query-keys';
 

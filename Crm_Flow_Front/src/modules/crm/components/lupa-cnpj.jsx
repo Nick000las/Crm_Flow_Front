@@ -1,5 +1,11 @@
-import { Search } from 'lucide-react';
+/**
+ * @file Lupa do CNPJ (`crm.cnpj`, modo manual): consulta a Receita e sugere valores para os
+ * campos mapeados. Aplicar só preenche o form — o usuário revisa e salva. Some sem a flag ou
+ * com o enriquecimento desligado.
+ */
 import { useState } from 'react';
+import { Search } from 'lucide-react';
+
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -7,14 +13,15 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/hooks/useAuth';
 import { podeVer, temFeature } from '@/lib/acesso';
 import { getFieldError, toApiError } from '@/services/api';
+
 import { CRM_FEATURES, PAPEIS_GESTAO } from '../constants';
 import { useConfigCnpj, useConsultarCnpj } from '../hooks/use-cnpj';
 import {
-  MENSAGENS_CNPJ,
   aplicarSugestoes,
   cnpjCompleto,
   dadosParaLeitura,
   itensDaSugestao,
+  MENSAGENS_CNPJ,
   situacaoDestacada,
 } from '../lib/cnpj';
 import { documentoSemMascara } from '../lib/formatadores';
@@ -41,10 +48,7 @@ function SeloSituacao({ situacao }) {
 
   return (
     <p className="flex items-center gap-2 text-sm">
-      <Badge
-        className="rounded-none border-destructive font-mono text-[11px] text-destructive"
-        variant="outline"
-      >
+      <Badge className="border-destructive text-[11px] text-destructive" variant="outline">
         {situacao}
       </Badge>
       <span className="text-muted-foreground">Situação cadastral na Receita</span>
@@ -75,11 +79,11 @@ function OutrosDados({ dados, comSugestoes, gestao }) {
   return (
     <section
       aria-label="Dados da Receita sem campo no lead"
-      className="grid gap-2 border border-border px-3 py-2"
+      className="grid gap-2 rounded-lg border border-border bg-surface px-3 py-2"
     >
       {dados.length > 0 && (
         <>
-          <p className="font-mono text-[11px] tracking-wide text-muted-foreground uppercase">
+          <p className="text-[11px] tracking-wide text-muted-foreground uppercase">
             {comSugestoes ? 'Outros dados da Receita' : 'Dados da Receita'}
           </p>
           <dl className="grid gap-x-3 gap-y-1 text-sm sm:grid-cols-[auto_minmax(0,1fr)]">
@@ -183,6 +187,7 @@ export function LupaCnpj({ idBase, cnpj, campos, valores, onAplicar, onErroNoCam
 
   function buscar() {
     setPainel(null);
+
     consultar.mutate(documento, {
       onSuccess: (consulta) => {
         const itens =
@@ -190,6 +195,7 @@ export function LupaCnpj({ idBase, cnpj, campos, valores, onAplicar, onErroNoCam
         const marcados = new Set(
           itens.filter((item) => item.marcadaPorPadrao).map((item) => item.id),
         );
+
         setPainel({
           documento,
           status: consulta.status,
@@ -200,6 +206,7 @@ export function LupaCnpj({ idBase, cnpj, campos, valores, onAplicar, onErroNoCam
       },
       onError: (falha) => {
         const apiError = toApiError(falha);
+
         if (apiError.status === HTTP_BAD_REQUEST) {
           onErroNoCampo(getFieldError(apiError, CAMPO_DO_ERRO) ?? apiError.message);
         }
@@ -210,11 +217,13 @@ export function LupaCnpj({ idBase, cnpj, campos, valores, onAplicar, onErroNoCam
   function alternar(id) {
     setPainel((atual) => {
       const marcados = new Set(atual.marcados);
+
       if (marcados.has(id)) {
         marcados.delete(id);
       } else {
         marcados.add(id);
       }
+
       return { ...atual, marcados };
     });
   }
@@ -234,15 +243,17 @@ export function LupaCnpj({ idBase, cnpj, campos, valores, onAplicar, onErroNoCam
           size="sm"
           type="button"
           variant="outline"
+          loading={consultar.isPending}
+          loadingText="Consultando a Receita…"
         >
           <Search aria-hidden="true" />
-          {consultar.isPending ? 'Consultando a Receita…' : 'Buscar dados na Receita'}
+          {'Buscar dados na Receita'}
         </Button>
       </div>
 
       <div aria-live="polite" className="grid gap-2">
         {erro?.code === SERVICO_INDISPONIVEL && (
-          <div className="flex flex-wrap items-center gap-2 border border-border px-3 py-2 text-sm">
+          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm">
             {MENSAGENS_CNPJ.INDISPONIVEL}
             <Button onClick={buscar} size="sm" type="button" variant="ghost">
               Tentar de novo
@@ -258,7 +269,7 @@ export function LupaCnpj({ idBase, cnpj, campos, valores, onAplicar, onErroNoCam
         )}
 
         {resultado && resultado.status !== 'ok' && (
-          <p className="border border-border px-3 py-2 text-sm">
+          <p className="rounded-lg border border-border bg-surface px-3 py-2 text-sm">
             {MENSAGEM_POR_STATUS[resultado.status]}
           </p>
         )}

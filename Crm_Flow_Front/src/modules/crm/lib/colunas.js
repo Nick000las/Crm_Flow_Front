@@ -1,3 +1,8 @@
+/**
+ * @file Descarta ids de colunas que deixaram de existir (campo desligado ou excluído). Sem nada
+ * válido — inclusive quando o usuário nunca escolheu —, volta ao padrão: o do layout do tenant,
+ * se houver, senão `COLUNAS_PADRAO`.
+ */
 import { CAMADA } from '../constants.js';
 import { ROTULOS_COLUNA_CICLO } from './ciclo-textos.js';
 
@@ -128,21 +133,27 @@ export function lerValorDaColuna(lead, coluna) {
   if (coluna.tipo === TIPO_COLUNA.MOEDA) {
     return lead.valor;
   }
+
   if (coluna.tipo === TIPO_COLUNA.RESPONSAVEL) {
     return lead.usuario_responsavel_id;
   }
+
   if (coluna.tipo === TIPO_COLUNA.INSTANTE) {
     return lead.created_at;
   }
+
   if (coluna.tipo === TIPO_COLUNA.CICLO) {
     return lead;
   }
+
   if (coluna.tipo === TIPO_COLUNA.MES_ANO) {
     return lead.cliente_desde;
   }
+
   if (coluna.tipo === TIPO_COLUNA.DIA) {
     return lead.ultima_compra;
   }
+
   if (coluna.tipo === TIPO_COLUNA.INTEIRO) {
     return lead.oportunidades_abertas;
   }

@@ -1,8 +1,15 @@
-import { LoadingState } from '@/components/loading-state';
+/**
+ * @file Organiza a tela de configuracoes page, na área de configurações, e coordena navegação,
+ * consultas e ações do usuário.
+ */
 import { ApiErrorAlert } from '@/components/api-error-alert';
+import { AsyncContent, FormSkeleton } from '@/components/loading-skeletons';
 import { PageHeader } from '@/components/page-header';
 import { useAuth } from '@/hooks/useAuth';
+import { InstallAppSection } from '@/pwa/install-app-section';
+
 import { AccountSection } from '../components/account-section';
+import { AppearanceSection } from '../components/appearance-section';
 import { MfaSection } from '../components/mfa-section';
 import { useAuthSettings } from '../hooks/use-auth-settings';
 
@@ -13,30 +20,38 @@ export default function ConfiguracoesPage() {
   const { settings, carregando, erro } = useAuthSettings(authApi);
 
   return (
-    <>
-      <PageHeader title="Configurações" description="Gerencie a segurança da sua conta." />
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="Preferências"
+        title="Configurações"
+        description="Gerencie a aparência da interface e a segurança da sua conta."
+      />
 
-      {carregando ? (
-        <div className="grid gap-6">
-          <section aria-label="Conta">
-            <LoadingState label="Carregando dados da conta…" />
-          </section>
-          <section aria-label="Segurança">
-            <LoadingState label="Carregando configurações de segurança…" />
-          </section>
-        </div>
-      ) : erro ? (
-        <ApiErrorAlert error={erro} id={SETTINGS_ERROR_ID} />
-      ) : (
-        <div className="grid gap-6">
-          <AccountSection nome={settings.nome} email={settings.email} role={settings.role} />
-          <MfaSection
-            initialEnabled={settings.mfaAtivo}
-            syncMfaEnabled={syncMfaEnabled}
-            authApi={authApi}
-          />
-        </div>
-      )}
-    </>
+      <AppearanceSection />
+      <InstallAppSection />
+
+      <AsyncContent
+        loading={carregando}
+        skeleton={
+          <div className="grid gap-6">
+            <FormSkeleton fields={3} label="Carregando dados da conta…" />
+            <FormSkeleton fields={2} label="Carregando configurações de segurança…" />
+          </div>
+        }
+      >
+        {erro ? (
+          <ApiErrorAlert error={erro} id={SETTINGS_ERROR_ID} />
+        ) : (
+          <div className="grid gap-6">
+            <AccountSection nome={settings.nome} email={settings.email} role={settings.role} />
+            <MfaSection
+              initialEnabled={settings.mfaAtivo}
+              syncMfaEnabled={syncMfaEnabled}
+              authApi={authApi}
+            />
+          </div>
+        )}
+      </AsyncContent>
+    </div>
   );
 }

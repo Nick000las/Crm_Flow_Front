@@ -1,3 +1,7 @@
+/**
+ * @file Regras de Configurações › Listas. O back valida de novo (400/409); aqui só se evita a
+ * ida ao servidor com dado que ele recusaria.
+ */
 import { corValida } from '../../../lib/contraste.js';
 import { CATEGORIAS_STATUS, TIPOS_LISTA } from '../constants.js';
 import { ordenarPorIds } from './ordem.js';
@@ -68,15 +72,19 @@ export function validarOpcao(tipo, valores) {
   if (!valores.label.trim()) {
     erros.label = MENSAGENS_LISTA.NOME;
   }
+
   if (valores.color && !corValida(valores.color)) {
     erros.color = MENSAGENS_LISTA.COR;
   }
+
   if (temCategoria(tipo) && !valores.category) {
     erros.category = MENSAGENS_LISTA.CATEGORIA;
   }
+
   const probabilidade = pedeProbabilidade(tipo, valores)
     ? validarProbabilidade(valores.probabilidadePadrao ?? '')
     : null;
+
   if (probabilidade) {
     erros.probabilidadePadrao = probabilidade;
   }
@@ -102,6 +110,7 @@ export function payloadDaOpcao(tipo, valores, original) {
     const probabilidadePadrao = pedeProbabilidade(tipo, valores)
       ? lerProbabilidade(valores.probabilidadePadrao ?? '')
       : null;
+
     return {
       label,
       ...(color && { color }),
@@ -132,6 +141,7 @@ export function motivoNaoExclui(opcao, [singular, plural] = ['lead', 'leads']) {
 
   const quantos =
     opcao.usos === 1 ? `1 ${singular}` : `${opcao.usos.toLocaleString('pt-BR')} ${plural}`;
+
   return `Em uso por ${quantos}. Desative em vez de excluir.`;
 }
 

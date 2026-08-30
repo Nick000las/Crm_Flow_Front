@@ -1,6 +1,12 @@
+/**
+ * @file Mesclar dois leads (`crm.duplicidade`, DONO/MASTER). Com um lead só (menu "⋯"), começa
+ * pela busca do outro; com dois (seleção na tabela), vai direto à comparação.
+ */
 import { useMemo, useState } from 'react';
+
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import {
   Dialog,
   DialogClose,
@@ -10,10 +16,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Radio } from '@/components/ui/radio';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { temFeature } from '@/lib/acesso';
 import { cn } from '@/lib/utils';
+
 import { CHAVE_SCORE, CONTEXTO, CRM_FEATURES, SITUACOES_LEAD } from '../../constants';
 import { useMesclarLeads } from '../../hooks/use-duplicidade';
 import { useLead } from '../../hooks/use-lead';
@@ -21,7 +29,7 @@ import { useLeadsSearch } from '../../hooks/use-leads-search';
 import { camposDoContexto } from '../../lib/contextos';
 import { FILTRO_VAZIO } from '../../lib/filtro';
 import { tituloDoLead } from '../../lib/layout';
-import { LADO, escolhasParaEnvio, ladoQueFica, linhasDaMesclagem } from '../../lib/mesclagem';
+import { escolhasParaEnvio, LADO, ladoQueFica, linhasDaMesclagem } from '../../lib/mesclagem';
 import { BuscaLeads } from '../busca-leads';
 
 const RESULTADOS = 10;
@@ -55,7 +63,7 @@ function EscolherOutro({ lead, onEscolher }) {
       <ApiErrorAlert error={resultados.error} id="mesclar-busca-erro" />
 
       {resultados.isPending ? (
-        <Skeleton className="h-24 rounded-none" />
+        <Skeleton className="h-24" />
       ) : outros.length === 0 ? (
         <p className="text-sm text-muted-foreground" role="status">
           Nenhum outro lead encontrado.
@@ -92,16 +100,16 @@ function CelulaLado({ linha, lado, texto, fica, onEscolher }) {
   }
 
   const id = `mesclar-${linha.chave}-${lado}`;
+
   return (
     <td className="px-3 py-2 align-top">
       <label className="flex items-start gap-2" htmlFor={id}>
-        <input
+        <Radio
           checked={fica}
           className={cn(RADIO_CLASS, 'mt-0.5')}
           id={id}
           name={`mesclar-${linha.chave}`}
           onChange={() => onEscolher(lado)}
-          type="radio"
         />
         <span className="break-words">{texto}</span>
       </label>
@@ -125,11 +133,13 @@ function Comparar({ idA, idB, campos, nomePorId, onMesclado }) {
   );
 
   const erroAoCarregar = leadA.error ?? leadB.error;
+
   if (erroAoCarregar) {
     return <ApiErrorAlert error={erroAoCarregar} id="mesclar-carregar-erro" />;
   }
+
   if (!a || !b) {
-    return <Skeleton className="h-40 rounded-none" />;
+    return <Skeleton className="h-40" />;
   }
 
   const porLado = { [LADO.A]: a, [LADO.B]: b };
@@ -148,13 +158,13 @@ function Comparar({ idA, idB, campos, nomePorId, onMesclado }) {
 
   return (
     <div className="grid gap-4">
-      <div className="overflow-x-auto border border-border">
+      <Card layout="plain" className="overflow-x-auto">
         <table className="w-full text-sm">
           <caption className="sr-only">Comparação dos dois leads</caption>
           <thead>
             <tr className="border-b border-border">
               <th
-                className="px-3 py-2 text-left font-mono text-[11px] font-normal tracking-wide text-muted-foreground uppercase"
+                className="px-3 py-2 text-left text-[11px] font-normal tracking-wide text-muted-foreground uppercase"
                 scope="col"
               >
                 Campo
@@ -162,13 +172,12 @@ function Comparar({ idA, idB, campos, nomePorId, onMesclado }) {
               {[LADO.A, LADO.B].map((lado) => (
                 <th className="px-3 py-2 text-left font-normal" key={lado} scope="col">
                   <label className="flex items-start gap-2" htmlFor={`mesclar-fica-${lado}`}>
-                    <input
+                    <Radio
                       checked={principal === lado}
                       className={cn(RADIO_CLASS, 'mt-0.5')}
                       id={`mesclar-fica-${lado}`}
                       name="mesclar-principal"
                       onChange={() => setPrincipal(lado)}
-                      type="radio"
                     />
                     <span className="grid">
                       <span className="font-medium">{tituloDoLead(porLado[lado])}</span>
@@ -224,12 +233,12 @@ function Comparar({ idA, idB, campos, nomePorId, onMesclado }) {
             )}
           </tbody>
         </table>
-      </div>
+      </Card>
 
       <p className="text-xs text-muted-foreground">
-        Campo vazio de um lado fica com o valor do outro. Tags são unidas. As oportunidades dos
-        dois continuam existindo e o lead mostra a principal. Atividades e histórico vão para o
-        lead que fica; o outro vai para a lixeira e não pode ser restaurado.
+        Campo vazio de um lado fica com o valor do outro. Tags são unidas. As oportunidades dos dois
+        continuam existindo e o lead mostra a principal. Atividades e histórico vão para o lead que
+        fica; o outro vai para a lixeira e não pode ser restaurado.
       </p>
 
       <ApiErrorAlert error={mesclar.error} id="mesclar-erro" title="Não foi possível mesclar" />
@@ -240,8 +249,14 @@ function Comparar({ idA, idB, campos, nomePorId, onMesclado }) {
         >
           Cancelar
         </DialogClose>
-        <Button aria-busy={mesclar.isPending} disabled={mesclar.isPending} onClick={confirmar}>
-          {mesclar.isPending ? 'Mesclando…' : 'Mesclar leads'}
+        <Button
+          aria-busy={mesclar.isPending}
+          disabled={mesclar.isPending}
+          onClick={confirmar}
+          loading={mesclar.isPending}
+          loadingText="Mesclando…"
+        >
+          {'Mesclar leads'}
         </Button>
       </DialogFooter>
     </div>
@@ -279,12 +294,13 @@ export function MesclarDialog({ leads, campos, nomePorId, onOpenChange, onMescla
     if (!aberto) {
       setEscolhido(null);
     }
+
     onOpenChange(aberto);
   }
 
   return (
     <Dialog onOpenChange={handleOpenChange} open={leads.length > 0}>
-      <DialogContent className="rounded-none sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Mesclar leads</DialogTitle>
           <DialogDescription>Junta dois leads do mesmo contato em um só.</DialogDescription>

@@ -5,3 +5,6 @@ pnpm-lock.yaml
 prisma/migrations/
 prisma/*.generated.sql
 .env*
+dist-e2e/
+playwright-report/
+test-results/

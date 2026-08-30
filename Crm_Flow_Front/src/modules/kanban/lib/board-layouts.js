@@ -1,3 +1,7 @@
+/**
+ * @file Reúne operações reutilizáveis de board layouts, mantendo cálculos e transformações
+ * independentes da interface.
+ */
 export const BOARD_LAYOUTS = [
   {
     id: 'basico',

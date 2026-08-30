@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
+
 import {
   CHAVES_DATA_CICLO,
   CHAVES_FIXAS_CICLO,
@@ -46,10 +47,12 @@ test('comDataConversao: sem /fields ainda, vale; depois, só com a chave', () =>
 describe('textoDoCiclo', () => {
   test('cada ciclo tem o seu texto', () => {
     assert.deepEqual(textoDoCiclo({ ciclo_de_vida: 'lead' }), { ciclo: 'lead', texto: 'Lead' });
+
     assert.deepEqual(textoDoCiclo({ ciclo_de_vida: 'oportunidade' }), {
       ciclo: 'oportunidade',
       texto: 'Em negociação',
     });
+
     assert.deepEqual(
       textoDoCiclo({ ciclo_de_vida: 'cliente', cliente_desde: '2026-03-10T14:00:00.000Z' }),
       { ciclo: 'cliente', texto: 'Cliente desde 03/2026' },
@@ -84,6 +87,7 @@ test('chaves do ciclo no filtro', () => {
     'ultimaCompraDe',
     'ultimaCompraAte',
   ]);
+
   assert.equal(CHAVES_FIXAS_CICLO.length, 7);
   assert.ok(CHAVES_FIXAS_CICLO.includes('cicloDeVida'));
 });
@@ -101,6 +105,7 @@ test('filtroComDataConversao tira só as datas do ciclo, e só sem o gate', () =
   };
 
   assert.equal(filtroComDataConversao(filtro, true), filtro);
+
   assert.deepEqual(filtroComDataConversao(filtro, false), {
     filtros: [],
     cicloDeVida: ['cliente'],

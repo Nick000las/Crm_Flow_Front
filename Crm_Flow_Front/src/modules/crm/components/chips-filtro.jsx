@@ -1,4 +1,10 @@
+/**
+ * @file Filtros aplicados, um chip por filtro, abaixo da toolbar. Chip apontado pelo back num
+ * 400 (`filtros.<chave>`) fica destacado — caso típico: view salva com um campo que depois foi
+ * desligado.
+ */
 import { X } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -47,7 +53,7 @@ export function ChipsFiltro({ chips, chavesComErro, onRemover, onLimpar }) {
           );
         })}
       </ul>
-      <Button className="h-7 rounded-none px-2 text-xs" onClick={onLimpar} variant="ghost">
+      <Button className="h-7 px-2 text-xs" onClick={onLimpar} variant="ghost">
         Limpar tudo
       </Button>
     </div>

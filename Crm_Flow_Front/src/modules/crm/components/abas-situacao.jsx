@@ -1,4 +1,9 @@
+/**
+ * @file Ativos · Arquivados · Lixeira (`crm.arquivo`): filtro fixo da busca, não filtro de
+ * campo. Um painel só, com a lista da aba ativa.
+ */
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import { ROTULOS_SITUACAO, SITUACOES_LEAD } from '../constants';
 
 const SITUACOES = Object.values(SITUACOES_LEAD);

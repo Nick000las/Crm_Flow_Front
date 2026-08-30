@@ -1,4 +1,9 @@
 /**
+ * @file Cor de texto base do selo, preservada no tema escuro. O tema claro aplica as
+ * superfícies semânticas de status em `src/styles/light-theme.css` usando `data-status`;
+ * rótulos e valores enviados à API permanecem os mesmos.
+ */
+/**
  * Espelha `TENANT_STATUS` de `shared/constants/index.js` no backend, que é o
  * que `PUT /admin/tenants/:id/status` valida com `z.enum`. As chaves são
  * minúsculas e misturam português e inglês (`active` ao lado de `suspenso`):
@@ -34,10 +39,9 @@ export function getTenantStatusLabel(status) {
 }
 
 /**
- * Só `active` usa a cor de destaque — a regra do design system reserva o
- * accent para poucos lugares. `past_due` é a única outra exceção: sinaliza uma
- * conta com pagamento pendente, e aí a cor carrega informação em vez de
- * decorar. O resto fica no cinza da interface, distinguido pelo rótulo.
+ * Cor de texto base do selo, preservada no tema escuro. O tema claro aplica
+ * as superfícies semânticas de status em `src/styles/light-theme.css` usando
+ * `data-status`; rótulos e valores enviados à API permanecem os mesmos.
  *
  * @param {string} status
  */
@@ -45,9 +49,11 @@ export function getTenantStatusTone(status) {
   if (status === 'active') {
     return 'text-primary';
   }
+
   if (status === 'past_due') {
     return 'text-destructive';
   }
+
   if (status === 'cancelado') {
     return 'text-muted-foreground';
   }

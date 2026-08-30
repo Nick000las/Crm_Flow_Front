@@ -1,4 +1,9 @@
+/**
+ * @file Portão de papel (e, opcionalmente, de feature flag) para rotas. É só UX — esconde a
+ * tela de quem não pode usá-la; o back valida de verdade com 403.
+ */
 import { Navigate } from 'react-router-dom';
+
 import { useAuth } from '@/hooks/useAuth';
 import { podeVer } from '@/lib/acesso';
 

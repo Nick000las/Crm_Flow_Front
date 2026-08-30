@@ -1,4 +1,9 @@
+/**
+ * @file Criar ou editar. Ganhar e perder ficam no `MudarStatusDialog`, que tem o motivo: na
+ * criação, só status abertos.
+ */
 import { useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -9,8 +14,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Form } from '@/components/ui/form';
+import { focusFirstInvalidField } from '@/lib/form-validation';
 import { semChave } from '@/lib/objetos';
 import { toApiError } from '@/services/api';
+
 import { useCriarOportunidade, useEditarOportunidade } from '../../hooks/use-oportunidades';
 import { useUsuarios } from '../../hooks/use-usuarios';
 import {
@@ -71,6 +79,7 @@ function FormOportunidade({ oportunidade, lead, pipelines, campos, onSalvo, onCo
   function alterar(chave, valor) {
     setValores((atuais) => ({ ...atuais, [chave]: valor }));
     setErrosCliente((atuais) => semChave(atuais, chave));
+
     if (mutacao.error) {
       mutacao.reset();
     }
@@ -84,9 +93,25 @@ function FormOportunidade({ oportunidade, lead, pipelines, campos, onSalvo, onCo
 
   function handleSubmit(event) {
     event.preventDefault();
+
     const erros = validarOportunidade(valores);
+
     if (Object.keys(erros).length > 0) {
       setErrosCliente(erros);
+
+      const ids = {
+        leadId: 'quadro-busca-pessoa',
+        pipelineId: 'oportunidade-pipeline',
+        status: 'oportunidade-status-inicial',
+        dataPrevistaFechamento: 'oportunidade-data',
+        responsavelId: 'oportunidade-responsavel',
+      };
+
+      focusFirstInvalidField(
+        event.currentTarget,
+        Object.keys(erros).map((campo) => ids[campo] ?? `oportunidade-${campo}`),
+      );
+
       return;
     }
 
@@ -94,20 +119,25 @@ function FormOportunidade({ oportunidade, lead, pipelines, campos, onSalvo, onCo
       criar.mutate(payloadDaCriacao(valores, campos), {
         onSuccess: () => onSalvo('Oportunidade criada.'),
       });
+
       return;
     }
 
     const corpo = payloadDaEdicao(oportunidade, valores, campos);
+
     if (!corpo) {
       onSalvo(null);
+
       return;
     }
+
     editar.mutate(
       { id: oportunidade.id, corpo },
       {
         onSuccess: () => onSalvo('Oportunidade salva.'),
         onError: (erro) => {
           const atual = versaoDoConflito(toApiError(erro));
+
           if (atual) {
             onConflito(atual);
           }
@@ -117,7 +147,7 @@ function FormOportunidade({ oportunidade, lead, pipelines, campos, onSalvo, onCo
   }
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       {!editando && (
         <>
           <CampoForm erro={erroDe('pipelineId')} id="oportunidade-pipeline" label="Pipeline">
@@ -170,11 +200,17 @@ function FormOportunidade({ oportunidade, lead, pipelines, campos, onSalvo, onCo
         >
           Cancelar
         </DialogClose>
-        <Button aria-busy={mutacao.isPending} disabled={mutacao.isPending} type="submit">
-          {mutacao.isPending ? 'Salvando…' : editando ? 'Salvar alterações' : 'Criar oportunidade'}
+        <Button
+          aria-busy={mutacao.isPending}
+          disabled={mutacao.isPending}
+          type="submit"
+          loading={mutacao.isPending}
+          loadingText="Salvando…"
+        >
+          {editando ? 'Salvar alterações' : 'Criar oportunidade'}
         </Button>
       </DialogFooter>
-    </form>
+    </Form>
   );
 }
 
@@ -190,7 +226,10 @@ function ConteudoDoDialog({ oportunidade, onSalvo, ...form }) {
   return (
     <>
       {maisNova && (
-        <div className="grid justify-items-start gap-2 border border-border px-3 py-2" role="alert">
+        <div
+          className="grid justify-items-start gap-2 rounded-lg border border-border bg-surface px-3 py-2"
+          role="alert"
+        >
           <p className="text-sm">Outra pessoa alterou esta oportunidade enquanto você editava.</p>
           <Button
             onClick={() => {
@@ -241,7 +280,7 @@ export function OportunidadeDialog({
 }) {
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-none sm:max-w-md">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{oportunidade ? 'Editar oportunidade' : 'Nova oportunidade'}</DialogTitle>
           <DialogDescription>

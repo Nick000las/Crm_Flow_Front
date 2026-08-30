@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import { agruparFeaturesPorModulo, mesmoConjunto } from './features.js';
 
 test('agrupa as flags por módulo, mantendo a ordem do catálogo', () => {

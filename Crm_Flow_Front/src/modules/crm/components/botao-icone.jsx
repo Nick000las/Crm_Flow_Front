@@ -1,3 +1,7 @@
+/**
+ * @file Botão só com ícone: o rótulo vira `aria-label` e `title` (CLAUDE.md — todo ícone sem
+ * texto tem nome acessível).
+ */
 import { Button } from '@/components/ui/button';
 
 /**
@@ -10,7 +14,7 @@ export function BotaoIcone({ rotulo, icone: Icone, ...props }) {
   return (
     <Button
       aria-label={rotulo}
-      className="rounded-none"
+
       size="icon-sm"
       title={rotulo}
       variant="ghost"

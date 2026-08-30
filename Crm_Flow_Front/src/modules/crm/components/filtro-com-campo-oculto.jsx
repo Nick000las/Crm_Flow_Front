@@ -1,4 +1,10 @@
+/**
+ * @file O filtro (uma view salva por outra pessoa, um link) usa um campo oculto para este
+ * usuário (permissão por campo): o back dá 400. Em vez do erro genérico, explica e oferece
+ * tirar só esses itens.
+ */
 import { EyeOff } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 
 /**

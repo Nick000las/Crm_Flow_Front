@@ -1,12 +1,21 @@
+/**
+ * @file Configurações › Duplicidade (`crm.duplicidade`): por campo, se checa e o que fazer com
+ * o repetido — avisar (pede confirmação ao salvar) ou bloquear. Todos leem; só DONO/MASTER
+ * alteram (o back barra com 403).
+ */
 import { useState } from 'react';
+
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
+import { LoadingState } from '@/components/loading-state';
 import { Button } from '@/components/ui/button';
+import { Form } from '@/components/ui/form';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/hooks/useAuth';
 import { podeVer } from '@/lib/acesso';
 import { isAccessError } from '@/services/api';
+
 import { ACOES_DUPLICIDADE, PAPEIS_GESTAO, ROTULOS_ACAO_DUPLICIDADE } from '../../constants';
 import { useRegrasDuplicidade, useSalvarRegras } from '../../hooks/use-duplicidade';
 import { regrasParaEnvio, valoresDasRegras } from '../../lib/duplicidade';
@@ -20,11 +29,9 @@ const OPCOES_ACAO = Object.values(ACOES_DUPLICIDADE).map((valor) => ({
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando regras…
-      </span>
+      <LoadingState label="Carregando regras…" />
       {Array.from({ length: 4 }, (_, indice) => (
-        <Skeleton className="h-12 rounded-none" key={indice} />
+        <Skeleton className="h-12" key={indice} />
       ))}
     </div>
   );
@@ -41,6 +48,7 @@ function FormRegras({ regras, podeEditar, onSalvo }) {
 
   function alterar(campo, parcial) {
     setValores((atuais) => ({ ...atuais, [campo]: { ...atuais[campo], ...parcial } }));
+
     if (salvar.error) {
       salvar.reset();
     }
@@ -48,13 +56,14 @@ function FormRegras({ regras, podeEditar, onSalvo }) {
 
   function handleSubmit(event) {
     event.preventDefault();
+
     if (mudancas) {
       salvar.mutate(mudancas, { onSuccess: () => onSalvo('Regras de duplicidade salvas.') });
     }
   }
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       <ul className="border border-border">
         {regras.map(({ campo, label }) => {
           const atual = valores[campo];
@@ -102,8 +111,10 @@ function FormRegras({ regras, podeEditar, onSalvo }) {
             aria-busy={salvar.isPending}
             disabled={!mudancas || salvar.isPending}
             type="submit"
+            loading={salvar.isPending}
+            loadingText="Salvando…"
           >
-            {salvar.isPending ? 'Salvando…' : 'Salvar regras'}
+            {'Salvar regras'}
           </Button>
           <Button
             disabled={!mudancas || salvar.isPending}
@@ -118,7 +129,7 @@ function FormRegras({ regras, podeEditar, onSalvo }) {
           </Button>
         </div>
       )}
-    </form>
+    </Form>
   );
 }
 
@@ -136,9 +147,11 @@ export function SecaoDuplicidade() {
   if (isAccessError(regrasQuery.error)) {
     return <AcessoIndisponivel error={regrasQuery.error} />;
   }
+
   if (regrasQuery.error) {
     return <ApiErrorAlert error={regrasQuery.error} id="duplicidade-carregar-erro" />;
   }
+
   if (regrasQuery.isPending) {
     return <Carregando />;
   }
@@ -157,7 +170,12 @@ export function SecaoDuplicidade() {
         {!podeEditar && <p>Só DONO e MASTER alteram as regras.</p>}
       </div>
 
-      <p className={aviso ? 'border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
+      <p
+        className={
+          aviso ? 'rounded-lg border border-border bg-surface px-3 py-2 text-sm' : 'sr-only'
+        }
+        role="status"
+      >
         {aviso}
       </p>
 

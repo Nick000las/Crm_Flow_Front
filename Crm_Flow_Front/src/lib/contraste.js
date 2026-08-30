@@ -1,4 +1,7 @@
 /**
+ * @file Marcador de cor que some no fundo (amarelo-claro no branco) ganha contorno.
+ */
+/**
  * Contraste WCAG 2.x entre cores `#RRGGBB`. Genérico de propósito: serve ao
  * marcador de cor das listas do CRM hoje e ao accent por tenant (tema
  * Camaleão) depois.
@@ -6,8 +9,10 @@
 
 const HEX = /^#([0-9a-f]{6})$/i;
 const CANAL_MAXIMO = 255;
+
 /** Contraste mínimo de elemento gráfico (WCAG 1.4.11). */
 export const CONTRASTE_MINIMO_GRAFICO = 3;
+
 const FUNDO_PADRAO = '#ffffff';
 
 /** @param {string} hex */
@@ -18,6 +23,7 @@ export function corValida(hex) {
 /** Canal sRGB (0–255) → valor linear. */
 function linear(canal) {
   const c = canal / CANAL_MAXIMO;
+
   return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
 }
 
@@ -28,6 +34,7 @@ function linear(canal) {
  */
 export function luminancia(hex) {
   const [, corpo] = HEX.exec(hex) ?? [];
+
   if (!corpo) {
     throw new TypeError(`Cor inválida: ${hex}`);
   }
@@ -35,6 +42,7 @@ export function luminancia(hex) {
   const [r, g, b] = [0, 2, 4].map((inicio) =>
     linear(Number.parseInt(corpo.slice(inicio, inicio + 2), 16)),
   );
+
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
@@ -46,6 +54,7 @@ export function luminancia(hex) {
  */
 export function razaoDeContraste(a, b) {
   const [clara, escura] = [luminancia(a), luminancia(b)].sort((x, y) => y - x);
+
   return (clara + 0.05) / (escura + 0.05);
 }
 

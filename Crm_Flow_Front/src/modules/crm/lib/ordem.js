@@ -1,3 +1,6 @@
+/**
+ * @file Lista na ordem de `ids` — o estado otimista enquanto o `PUT /ordem` não volta.
+ */
 /** Ordem de listas reordenáveis (Campos, Listas): funções puras, sem React. */
 
 /**
@@ -15,7 +18,9 @@ export function moverPara(itens, de, para) {
 
   const proximos = [...itens];
   const [movido] = proximos.splice(de, 1);
+
   proximos.splice(para, 0, movido);
+
   return proximos;
 }
 
@@ -28,5 +33,6 @@ export function moverPara(itens, de, para) {
  */
 export function ordenarPorIds(lista, ids) {
   const porId = new Map(lista.map((campo) => [campo.id, campo]));
+
   return ids.map((id) => porId.get(id)).filter(Boolean);
 }

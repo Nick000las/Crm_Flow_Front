@@ -1,3 +1,7 @@
+/**
+ * @file Metas da página pública: o token está na URL, então nada de `Referer` para fora e nada
+ * de indexação. Entram antes do primeiro pedido.
+ */
 /** Caminho da página pública do formulário (FM3), atendida fora da sessão. */
 export const PREFIXO_FORMULARIO_PUBLICO = '/f/';
 
@@ -14,6 +18,7 @@ export function prepararCabecalhoPublico() {
     ['robots', 'noindex'],
   ]) {
     const meta = document.createElement('meta');
+
     meta.name = name;
     meta.content = content;
     document.head.append(meta);

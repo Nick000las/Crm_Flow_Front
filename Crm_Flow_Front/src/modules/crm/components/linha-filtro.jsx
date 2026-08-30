@@ -1,7 +1,12 @@
+/**
+ * @file Uma linha do construtor: `[Campo ▾] [Operador ▾] [Valor] ✕`.
+ */
 import { X } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { ROTULOS_OPERADOR, operadoresDoCampo, trocarCampo, trocarOperador } from '../lib/filtro';
+
+import { operadoresDoCampo, ROTULOS_OPERADOR, trocarCampo, trocarOperador } from '../lib/filtro';
 import { SelectSimples } from './select-simples';
 import { ValorDoFiltro } from './valor-do-filtro';
 
@@ -19,6 +24,7 @@ import { ValorDoFiltro } from './valor-do-filtro';
  */
 export function LinhaFiltro({ linha, campos, erro, erroDoServidor = false, onChange, onRemover }) {
   const campo = campos.find((atual) => atual.chave === linha.chave);
+
   if (!campo) {
     return null;
   }
@@ -78,7 +84,6 @@ export function LinhaFiltro({ linha, campos, erro, erroDoServidor = false, onCha
       </div>
       <Button
         aria-label={`Remover filtro de ${campo.label}`}
-        className="rounded-none"
         onClick={onRemover}
         size="icon"
         type="button"

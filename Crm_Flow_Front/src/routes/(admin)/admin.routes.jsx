@@ -1,10 +1,17 @@
+/**
+ * @file Área master: auth própria, deliberadamente fora do `useAuth` do tenant — estar logado
+ * como tenant não muda nada aqui, nem o contrário. É um hook, e não uma constante, porque o
+ * portão depende da sessão master.
+ */
 import { Navigate } from 'react-router-dom';
+
 import { LoadingState } from '@/components/loading-state';
 import { SessionRecovery } from '@/components/session-recovery';
 import { useAdminAuth } from '@/hooks/use-admin-auth';
 import AdminLoginPage from '@/modules/admin/pages/admin-login-page';
 import TenantDetailPage from '@/modules/admin/pages/tenant-detail-page';
 import TenantsPage from '@/modules/admin/pages/tenants-page';
+
 import AdminLayout from './admin-layout';
 
 /**

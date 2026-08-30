@@ -1,10 +1,17 @@
-import { LoadingState } from '@/components/loading-state';
+/**
+ * @file Confirmação do backend sobe para o contexto além do estado local: a página remonta a
+ * cada navegação e é reeseedada por `mfaEnabled`. Sem isso, ligar o MFA e voltar para cá
+ * mostraria o toggle desligado de novo.
+ */
 import { useState } from 'react';
 import { ShieldCheck } from 'lucide-react';
+
 import { ApiErrorAlert } from '@/components/api-error-alert';
+import { LoadingState } from '@/components/loading-state';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { isAbortError, toApiError } from '@/services/api';
+
 import { DisableMfaDialog } from './disable-mfa-dialog';
 
 const SUBMIT_ERROR_ID = 'mfa-section-error';
@@ -31,6 +38,7 @@ export function MfaSection({ initialEnabled, syncMfaEnabled, authApi }) {
     if (!nextEnabled) {
       // Desligar exige senha — o Switch só muda depois do diálogo confirmar.
       setIsDisableDialogOpen(true);
+
       return;
     }
 

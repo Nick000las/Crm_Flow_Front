@@ -1,8 +1,16 @@
-import { useEffect, useId, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
-import { AlertTriangle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+/**
+ * @file Confirmação compartilhada. Renderiza na top layer para funcionar também quando a ação
+ * parte de um editor que já usa <dialog>.
+ */
 import './confirmation-dialog.css';
+
+import { useId, useRef, useState } from 'react';
+import { AlertTriangle } from 'lucide-react';
+import { createPortal } from 'react-dom';
+
+import { Button } from '@/components/ui/button';
+import { Form } from '@/components/ui/form';
+import { NativeDialog } from '@/components/ui/native-dialog';
 
 /**
  * Confirmação compartilhada. Renderiza na top layer para funcionar também
@@ -22,7 +30,6 @@ export function ConfirmationDialog({
   onClose,
 }) {
   const id = useId();
-  const dialog = useRef(null);
   const cancel = useRef(null);
   const inFlight = useRef(false);
   const [submitting, setSubmitting] = useState(false);
@@ -30,22 +37,18 @@ export function ConfirmationDialog({
   const pending = busy || submitting;
   const message = error || submitError;
 
-  useEffect(() => {
-    const element = dialog.current;
-    element.showModal();
-    cancel.current?.focus();
-    return () => element.close();
-  }, []);
-
   async function confirm() {
     if (pending || inFlight.current) {
       return;
     }
+
     inFlight.current = true;
     setSubmitting(true);
     setSubmitError('');
+
     try {
       const result = await onConfirm();
+
       if (result !== false) {
         onClose();
       }
@@ -58,8 +61,8 @@ export function ConfirmationDialog({
   }
 
   return createPortal(
-    <dialog
-      ref={dialog}
+    <NativeDialog
+      initialFocusRef={cancel}
       className="confirmation-dialog"
       role="alertdialog"
       aria-labelledby={`${id}-title`}
@@ -67,6 +70,7 @@ export function ConfirmationDialog({
       aria-busy={pending}
       onCancel={(event) => {
         event.preventDefault();
+
         if (!pending) {
           onClose();
         }
@@ -84,21 +88,22 @@ export function ConfirmationDialog({
           </p>
         )}
       </div>
-      <footer className="confirmation-dialog-footer">
+      <Form
+        className="confirmation-dialog-footer"
+        noValidate
+        onSubmit={(event) => {
+          event.preventDefault();
+          confirm();
+        }}
+      >
         <Button ref={cancel} type="button" variant="outline" disabled={pending} onClick={onClose}>
           {cancelLabel}
         </Button>
-        <Button
-          type="button"
-          variant="destructive"
-          loading={pending}
-          disabled={pending}
-          onClick={confirm}
-        >
+        <Button type="submit" variant="destructive" loading={pending} disabled={pending}>
           {pending ? pendingLabel : confirmLabel}
         </Button>
-      </footer>
-    </dialog>,
+      </Form>
+    </NativeDialog>,
     document.body,
   );
 }

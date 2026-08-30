@@ -1,3 +1,6 @@
+/**
+ * @file Confirmação de exclusão. Usada pela linha da tabela e pelo Sheet.
+ */
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import {
   AlertDialog,
@@ -9,6 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+
 import { DIAS_NA_LIXEIRA } from '../constants';
 import { useExcluirLead } from '../hooks/use-lead-mutations';
 
@@ -44,9 +48,11 @@ export function ExcluirLeadDialog({
     if (excluir.isPending) {
       return;
     }
+
     if (!proximo) {
       excluir.reset();
     }
+
     onOpenChange(proximo);
   }
 
@@ -61,7 +67,7 @@ export function ExcluirLeadDialog({
 
   return (
     <AlertDialog onOpenChange={handleOpenChange} open={open}>
-      <AlertDialogContent className="rounded-none">
+      <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Excluir lead</AlertDialogTitle>
           <AlertDialogDescription>

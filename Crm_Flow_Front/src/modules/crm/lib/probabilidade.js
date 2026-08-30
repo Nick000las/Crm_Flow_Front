@@ -1,5 +1,8 @@
+/**
+ * @file Inteiro de 0 a 100, como o back. Vazio é válido: quem chama decide se vale.
+ */
 import { CATEGORIAS_STATUS, TIPOS_CAMPO } from '../constants.js';
-import { MENSAGENS, erroComercial, paraValorDeApi } from './form-lead.js';
+import { erroComercial, MENSAGENS, paraValorDeApi } from './form-lead.js';
 
 /**
  * Probabilidade padrão por status (FC1). A oportunidade usa a própria
@@ -42,11 +45,13 @@ export const comPorcento = (valor) => `${valor}%`;
  */
 export function avisoDeProbabilidade(avisos, atual) {
   const aviso = (avisos ?? []).find((item) => item.codigo === CODIGO_PROBABILIDADE_REDEFINIDA);
+
   if (!aviso) {
     return null;
   }
 
   const padrao = typeof atual === 'number' ? ` (${comPorcento(atual)})` : '';
+
   return `A probabilidade voltou ao padrão do status${padrao}. Antes era ${comPorcento(aviso.anterior)}.`;
 }
 
@@ -58,6 +63,7 @@ export function avisoDeProbabilidade(avisos, atual) {
  */
 export function juntarAvisos(...textos) {
   const presentes = textos.filter(Boolean);
+
   return presentes.length > 0 ? presentes.join(' ') : null;
 }
 
@@ -70,9 +76,11 @@ export function juntarAvisos(...textos) {
  */
 export function textoDaProbabilidade(oportunidade) {
   const efetiva = oportunidade.probabilidadeEfetiva;
+
   if (typeof efetiva !== 'number') {
     return null;
   }
+
   return {
     valor: comPorcento(efetiva),
     doStatus: typeof oportunidade.probabilidadeFechamento !== 'number',
@@ -105,8 +113,10 @@ export const lerProbabilidade = (texto) => paraValorDeApi(TIPOS_CAMPO.NUMERO, te
  */
 export function validarProbabilidade(texto) {
   const valor = lerProbabilidade(texto);
+
   if (Number.isNaN(valor)) {
     return MENSAGENS.PROBABILIDADE_INVALIDA;
   }
+
   return erroComercial('probabilidadeFechamento', valor);
 }

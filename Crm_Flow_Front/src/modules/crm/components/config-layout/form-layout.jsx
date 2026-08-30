@@ -1,13 +1,21 @@
+/**
+ * @file O editor de um modo ("Padrão da empresa" ou "Só para mim"). Montado com `key` pela
+ * base: depois de salvar, a resposta do back vira a base nova e o formulário recomeça limpo a
+ * partir dela.
+ */
 import { useState } from 'react';
+
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
+import { Form } from '@/components/ui/form';
 import { toApiError } from '@/services/api';
+
 import { LIMITES_LAYOUT } from '../../constants';
 import { useSalvarMeu, useSalvarPadrao } from '../../hooks/use-layout';
 import {
-  MODO,
   errosPorParte,
   layoutParaEnvio,
+  MODO,
   parcialDoMeu,
   validarLayout,
 } from '../../lib/layout';
@@ -47,6 +55,7 @@ export function FormLayout({ modo, base, opcoes, automatica, onSalvo }) {
   function alterar(parte, valor) {
     setLayout((atual) => ({ ...atual, [parte]: valor }));
     setErrosCliente((atuais) => ({ ...atuais, [parte]: undefined }));
+
     if (mutacao.error) {
       mutacao.reset();
     }
@@ -54,9 +63,12 @@ export function FormLayout({ modo, base, opcoes, automatica, onSalvo }) {
 
   function handleSubmit(event) {
     event.preventDefault();
+
     const erros = validarLayout(layout);
+
     if (Object.keys(erros).length > 0) {
       setErrosCliente(erros);
+
       return;
     }
 
@@ -65,6 +77,7 @@ export function FormLayout({ modo, base, opcoes, automatica, onSalvo }) {
       onSuccess: () =>
         onSalvo(modo === MODO.PADRAO ? 'Padrão da empresa salvo.' : 'Seu layout foi salvo.'),
     };
+
     if (modo === MODO.PADRAO) {
       salvarPadrao.mutate(envio, opcoesMutacao);
     } else {
@@ -78,7 +91,7 @@ export function FormLayout({ modo, base, opcoes, automatica, onSalvo }) {
     mutacao.error && (doServidor.geral.length > 0 || Object.keys(doServidor.porParte).length === 0);
 
   return (
-    <form className="grid gap-8" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-8" noValidate onSubmit={handleSubmit}>
       <div className="grid gap-6 md:grid-cols-2">
         <CampoForm
           erro={erroDe('identificador')}
@@ -152,6 +165,7 @@ export function FormLayout({ modo, base, opcoes, automatica, onSalvo }) {
           aria-busy={mutacao.isPending}
           disabled={!alterado || mutacao.isPending}
           type="submit"
+          loading={mutacao.isPending}
         >
           {mutacao.isPending
             ? 'Salvando…'
@@ -172,6 +186,6 @@ export function FormLayout({ modo, base, opcoes, automatica, onSalvo }) {
           Descartar
         </Button>
       </div>
-    </form>
+    </Form>
   );
 }

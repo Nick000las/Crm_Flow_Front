@@ -1,12 +1,20 @@
-import { Pencil, Plus, Shuffle, Trash2 } from 'lucide-react';
+/**
+ * @file O rascunho da distribuição: liga/desliga, fallback e as regras na ordem de avaliação.
+ * Nada sai daqui até o "Salvar", que manda tudo num PUT. Montado com `key` pela configuração
+ * salva (sem os grupos — ver `chaveDaConfig`).
+ */
 import { useRef, useState } from 'react';
+import { Pencil, Plus, Shuffle, Trash2 } from 'lucide-react';
+
 import { ApiErrorAlert } from '@/components/api-error-alert';
-import { ModulePlaceholder } from '@/components/module-placeholder';
+import { EmptyState } from '@/components/empty-state';
 import { Button } from '@/components/ui/button';
+import { Form } from '@/components/ui/form';
 import { Switch } from '@/components/ui/switch';
 import { semChave } from '@/lib/objetos';
 import { cn } from '@/lib/utils';
 import { toApiError } from '@/services/api';
+
 import { DISTRIBUICAO, ROTULOS_FALLBACK } from '../../constants';
 import { useSalvarDistribuicao } from '../../hooks/use-distribuicao';
 import {
@@ -65,9 +73,7 @@ function LinhaRegra({
       )}
     >
       {podeEditar && <PuxadorOrdem {...puxador} rotulo={nome} />}
-      <span className="w-6 font-mono text-xs text-muted-foreground tabular-nums">
-        {indice + 1}.
-      </span>
+      <span className="w-6 text-xs text-muted-foreground tabular-nums">{indice + 1}.</span>
 
       <div className="grid min-w-0 flex-1 gap-0.5">
         <p className="text-sm font-medium">{nome}</p>
@@ -156,6 +162,7 @@ export function FormDistribuicao({
 
   function alterar(parcial) {
     setValores((atuais) => ({ ...atuais, ...parcial }));
+
     if (salvar.error) {
       salvar.reset();
     }
@@ -167,6 +174,7 @@ export function FormDistribuicao({
 
   function mover(de, para) {
     const proximos = moverPara(valores.regras, de, para);
+
     if (proximos !== valores.regras) {
       alterarRegras(proximos);
     }
@@ -174,6 +182,7 @@ export function FormDistribuicao({
 
   function confirmarRegra(confirmada) {
     const existe = valores.regras.some((regra) => regra.chaveLocal === confirmada.chaveLocal);
+
     alterarRegras(
       existe
         ? valores.regras.map((regra) =>
@@ -181,6 +190,7 @@ export function FormDistribuicao({
           )
         : [...valores.regras, confirmada],
     );
+
     // A regra foi revista: o erro dela sai.
     setErros(({ porRegra, outros }) => ({
       porRegra: semChave(porRegra, confirmada.chaveLocal),
@@ -195,14 +205,19 @@ export function FormDistribuicao({
 
   function handleSubmit(event) {
     event.preventDefault();
+
     const resultado = distribuicaoParaEnvio(valores, campos);
+
     if ('erros' in resultado) {
       setErros({ porRegra: resultado.erros, outros: resultado.geral ? [resultado.geral] : [] });
+
       return;
     }
 
     setErros(SEM_ERROS);
+
     const enviadas = valores.regras.map((regra) => regra.chaveLocal);
+
     salvar.mutate(resultado.corpo, {
       onSuccess: () => onSalvo('Distribuição salva.'),
       onError: (erro) => setErros(errosDoPut(toApiError(erro).fields, enviadas)),
@@ -230,7 +245,7 @@ export function FormDistribuicao({
 
   return (
     <>
-      <form className="grid gap-5" noValidate onSubmit={handleSubmit}>
+      <Form className="grid gap-5" noValidate onSubmit={handleSubmit}>
         <div className="grid max-w-2xl gap-4">
           <label className="flex items-center gap-2 text-sm" htmlFor="distribuicao-ativo">
             <Switch
@@ -266,7 +281,7 @@ export function FormDistribuicao({
               <p className="text-xs text-muted-foreground">
                 Avaliadas de cima para baixo: a primeira que casar define o responsável.
                 {valores.regras.length > 0 && (
-                  <span className="font-mono">
+                  <span>
                     {' '}
                     {valores.regras.length}/{DISTRIBUICAO.MAX_REGRAS}
                   </span>
@@ -277,13 +292,13 @@ export function FormDistribuicao({
           </div>
 
           {valores.regras.length === 0 ? (
-            <ModulePlaceholder
+            <EmptyState
               description="Sem regras, todo lead novo segue o que está escolhido em “Quando nenhuma regra casar”."
               icon={Shuffle}
               title="Nenhuma regra ainda"
             >
               {botaoNovaRegra}
-            </ModulePlaceholder>
+            </EmptyState>
           ) : (
             <ListaOrdenavel
               ids={ids}
@@ -352,8 +367,14 @@ export function FormDistribuicao({
 
         {podeEditar && (
           <div className="flex flex-wrap gap-2 border-t border-border pt-4">
-            <Button aria-busy={salvar.isPending} disabled={!mudou || ocupado} type="submit">
-              {salvar.isPending ? 'Salvando…' : 'Salvar'}
+            <Button
+              aria-busy={salvar.isPending}
+              disabled={!mudou || ocupado}
+              type="submit"
+              loading={salvar.isPending}
+              loadingText="Salvando…"
+            >
+              {'Salvar'}
             </Button>
             <Button
               disabled={!mudou || ocupado}
@@ -365,9 +386,9 @@ export function FormDistribuicao({
             </Button>
           </div>
         )}
-      </form>
+      </Form>
 
-      {/* Fora do <form>: o submit do dialog sobe pela árvore do React (portal) e salvaria a seção. */}
+      {/* Fora do <Form>: o submit do dialog sobe pela árvore do React (portal) e salvaria a seção. */}
       <RegraDistribuicaoDialog
         campos={campos}
         errosDoServidor={emEdicao ? erros.porRegra[emEdicao.regra.chaveLocal] : undefined}

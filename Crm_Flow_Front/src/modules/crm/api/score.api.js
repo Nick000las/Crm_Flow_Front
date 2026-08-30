@@ -1,4 +1,9 @@
 /**
+ * @file Regras (sem `id`: são substituídas) e faixas inteiras. Só responde depois de recalcular
+ * todos os leads — o progresso sai no GET enquanto isso. 400 em `regras.<n>…`, `faixas.<n>…` e
+ * `faixas` (sobreposição, chave repetida).
+ */
+/**
  * Pontuação de leads (`crm.score`). Leitura para qualquer papel (a tabela
  * pinta a faixa do score com as cores daqui); escrita só DONO/MASTER.
  *

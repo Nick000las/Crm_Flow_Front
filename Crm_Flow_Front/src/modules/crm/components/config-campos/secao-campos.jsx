@@ -1,10 +1,18 @@
-import { Plus, RotateCcw } from 'lucide-react';
+/**
+ * @file Configurações › Campos: em que telas cada campo aparece, obrigatoriedade, nome e ordem
+ * — sistema e personalizados numa lista só, na ordem do form. Criar/editar/excluir
+ * personalizado reaproveita os dialogs da Camada 3.
+ */
 import { useState } from 'react';
+import { Plus, RotateCcw } from 'lucide-react';
+
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
+import { LoadingState } from '@/components/loading-state';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { isAccessError } from '@/services/api';
+
 import { CAMADA } from '../../constants';
 import { useCamposConfigurados, useReordenarCampos } from '../../hooks/use-configuracoes-campos';
 import { proximaOrdem } from '../../lib/campos-config';
@@ -19,11 +27,9 @@ const LINHAS_SKELETON = 8;
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando campos…
-      </span>
+      <LoadingState label="Carregando campos…" />
       {Array.from({ length: LINHAS_SKELETON }, (_, indice) => (
-        <Skeleton className="h-11 rounded-none" key={indice} />
+        <Skeleton className="h-11" key={indice} />
       ))}
     </div>
   );
@@ -47,9 +53,11 @@ export function SecaoCampos() {
   if (isAccessError(camposQuery.error)) {
     return <AcessoIndisponivel error={camposQuery.error} />;
   }
+
   if (camposQuery.error) {
     return <ApiErrorAlert error={camposQuery.error} id="config-campos-carregar-erro" />;
   }
+
   if (camposQuery.isPending) {
     return <Carregando />;
   }
@@ -88,7 +96,12 @@ export function SecaoCampos() {
         </div>
       </div>
 
-      <p className={aviso ? 'border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
+      <p
+        className={
+          aviso ? 'rounded-lg border border-border bg-surface px-3 py-2 text-sm' : 'sr-only'
+        }
+        role="status"
+      >
         {aviso}
       </p>
       <ApiErrorAlert

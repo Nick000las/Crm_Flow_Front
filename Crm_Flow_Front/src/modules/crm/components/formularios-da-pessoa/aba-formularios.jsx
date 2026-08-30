@@ -1,15 +1,22 @@
-import { ClipboardList, Copy, Link2, RotateCcw, XCircle } from 'lucide-react';
+/**
+ * @file Aba "Formulários" da ficha (FM2, `crm.formularios`): gera o link pessoal de um
+ * formulário publicado e mostra o histórico.
+ */
 import { useState } from 'react';
+import { ClipboardList, Copy, Link2, RotateCcw, XCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { ConfirmationDialog } from '@/components/confirmation-dialog';
-import { ModulePlaceholder } from '@/components/module-placeholder';
+import { EmptyState } from '@/components/empty-state';
+import { LoadingState } from '@/components/loading-state';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { podeVer } from '@/lib/acesso';
 import { isAccessError, toApiError } from '@/services/api';
+
 import { PAPEIS_GESTAO } from '../../constants';
 import {
   useFormulariosDisponiveis,
@@ -20,10 +27,10 @@ import {
 } from '../../hooks/use-links-formulario';
 import { formatarInstante } from '../../lib/formatadores';
 import {
-  STATUS_LINK,
   estadoDoLink,
   motivoSemEnvio,
   primeiroNomeDoLead,
+  STATUS_LINK,
 } from '../../lib/links-formulario';
 import { precisaRevisar, rotuloDeQuemPreencheu } from '../../lib/respostas-formulario';
 import { caminhoDaSecao } from '../../lib/secoes-configuracoes';
@@ -40,11 +47,9 @@ const RESPOSTAS_VAZIAS = [];
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando formulários…
-      </span>
-      <Skeleton className="h-16 rounded-none" />
-      <Skeleton className="h-24 rounded-none" />
+      <LoadingState label="Carregando formulários…" />
+      <Skeleton className="h-16" />
+      <Skeleton className="h-24" />
     </div>
   );
 }
@@ -54,6 +59,7 @@ function ErroDoLink({ error }) {
   if (!error) {
     return null;
   }
+
   if (toApiError(error).status === STATUS_NAO_ENCONTRADO) {
     return (
       <p className="border border-destructive/30 px-3 py-2 text-sm text-destructive" role="alert">
@@ -61,6 +67,7 @@ function ErroDoLink({ error }) {
       </p>
     );
   }
+
   return (
     <ApiErrorAlert error={error} id="formulario-link-erro" title="Não foi possível obter o link" />
   );
@@ -93,12 +100,15 @@ export function AbaFormularios({ lead, nomePorId, respostaAberta, onAbrirRespost
   const [aRevogar, setARevogar] = useState(null);
 
   const erro = disponiveisQuery.error ?? linksQuery.error;
+
   if (isAccessError(erro)) {
     return <AcessoIndisponivel error={erro} />;
   }
+
   if (erro) {
     return <ApiErrorAlert error={erro} id="formularios-pessoa-erro" />;
   }
+
   if (disponiveisQuery.isPending || linksQuery.isPending) {
     return <Carregando />;
   }
@@ -150,15 +160,17 @@ export function AbaFormularios({ lead, nomePorId, respostaAberta, onAbrirRespost
               <Button
                 aria-busy={obter.isPending}
                 aria-describedby={motivo ? 'formularios-gerar-motivo' : undefined}
-                className={motivo ? 'pointer-events-none rounded-none' : 'rounded-none'}
+                className={motivo ? 'pointer-events-none' : undefined}
                 disabled={Boolean(motivo) || !formId || obter.isPending}
                 onClick={() =>
                   pedirLink(formId, disponiveis.find((formulario) => formulario.id === formId).nome)
                 }
                 type="button"
+                loading={obter.isPending}
+                loadingText="Gerando…"
               >
                 <Link2 aria-hidden="true" />
-                {obter.isPending ? 'Gerando…' : 'Gerar link'}
+                {'Gerar link'}
               </Button>
             </ControleTravado>
           </div>
@@ -178,6 +190,7 @@ export function AbaFormularios({ lead, nomePorId, respostaAberta, onAbrirRespost
         <h3 className="text-sm font-semibold" id="formularios-respostas-titulo">
           Respostas recebidas
         </h3>
+        {respostasQuery.isPending && <LoadingState inline label="Carregando respostas…" />}
         <ApiErrorAlert error={respostasQuery.error} id="formularios-respostas-erro" />
         {respostas.length === 0 ? (
           !respostasQuery.isPending &&
@@ -196,20 +209,18 @@ export function AbaFormularios({ lead, nomePorId, respostaAberta, onAbrirRespost
                   <span className="flex flex-wrap items-baseline justify-between gap-2">
                     <span>
                       <span className="font-medium">{resposta.formulario.nome}</span>
-                      <span className="ml-2 font-mono text-xs text-muted-foreground">
+                      <span className="ml-2 text-xs text-muted-foreground">
                         v{resposta.versao.versao}
                       </span>
                     </span>
                     {precisaRevisar(resposta) && (
-                      <span className="border border-foreground px-1.5 font-mono text-[11px] uppercase">
+                      <span className="border border-foreground px-1.5 text-[11px] uppercase">
                         Revisar
                       </span>
                     )}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    <span className="font-mono tabular-nums">
-                      {formatarInstante(resposta.respondidoEm)}
-                    </span>
+                    <span className="tabular-nums">{formatarInstante(resposta.respondidoEm)}</span>
                     {' · '}
                     {rotuloDeQuemPreencheu(resposta)}
                   </span>
@@ -227,7 +238,7 @@ export function AbaFormularios({ lead, nomePorId, respostaAberta, onAbrirRespost
           Links enviados
         </h3>
         {links.length === 0 ? (
-          <ModulePlaceholder
+          <EmptyState
             description="Os links gerados para esta pessoa aparecem aqui."
             icon={ClipboardList}
             title="Nenhum link ainda"
@@ -248,7 +259,7 @@ export function AbaFormularios({ lead, nomePorId, respostaAberta, onAbrirRespost
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
                     <span>
                       <span className="font-medium">{link.formulario.nome}</span>
-                      <span className="ml-2 font-mono text-xs text-muted-foreground">
+                      <span className="ml-2 text-xs text-muted-foreground">
                         v{link.versao.versao}
                       </span>
                     </span>
@@ -257,11 +268,11 @@ export function AbaFormularios({ lead, nomePorId, respostaAberta, onAbrirRespost
                   <dl className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                     <div className="flex gap-1">
                       <dt>Criado em</dt>
-                      <dd className="font-mono tabular-nums">{formatarInstante(link.criadoEm)}</dd>
+                      <dd className="tabular-nums">{formatarInstante(link.criadoEm)}</dd>
                     </div>
                     <div className="flex gap-1">
                       <dt>Vence em</dt>
-                      <dd className="font-mono tabular-nums">{formatarInstante(link.expiraEm)}</dd>
+                      <dd className="tabular-nums">{formatarInstante(link.expiraEm)}</dd>
                     </div>
                     {criadoPor && (
                       <div className="flex gap-1">
@@ -273,7 +284,6 @@ export function AbaFormularios({ lead, nomePorId, respostaAberta, onAbrirRespost
                   {link.status === STATUS_LINK.RESPONDIDO && respostaDoLink(link.id) && (
                     <div>
                       <Button
-                        className="rounded-none"
                         onClick={() => onAbrirResposta(respostaDoLink(link.id).id)}
                         size="sm"
                         type="button"
@@ -287,7 +297,6 @@ export function AbaFormularios({ lead, nomePorId, respostaAberta, onAbrirRespost
                   {acao && !motivo && (
                     <div className="flex flex-wrap gap-2">
                       <Button
-                        className="rounded-none"
                         disabled={obter.isPending}
                         onClick={() => pedirLink(link.formulario.id, link.formulario.nome)}
                         size="sm"
@@ -304,7 +313,6 @@ export function AbaFormularios({ lead, nomePorId, respostaAberta, onAbrirRespost
                       </Button>
                       {acao === 'copiar' && (
                         <Button
-                          className="rounded-none"
                           onClick={() => setARevogar(link)}
                           size="sm"
                           type="button"

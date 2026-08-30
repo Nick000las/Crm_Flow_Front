@@ -1,5 +1,10 @@
+/**
+ * @file Título, valor, probabilidade, previsão e responsável: o dialog da oportunidade e o
+ * "Adicionar" do quadro. Dado oculto para o papel não aparece; só de ver, fica travado.
+ */
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+
 import { MENSAGEM_SEM_PERMISSAO } from '../../constants';
 import { placeholderDoPadrao } from '../../lib/probabilidade';
 import { CampoForm } from '../campo-form';
@@ -77,7 +82,7 @@ export function CamposOportunidade({
           {(controle) => (
             <Input
               {...controle}
-              className={cn(INPUT_CLASS, 'font-mono tabular-nums')}
+              className={cn(INPUT_CLASS, 'tabular-nums')}
               inputMode="numeric"
               onChange={(event) => onChange('probabilidadeFechamento', event.target.value)}
               placeholder={placeholderDoPadrao(probabilidadePadrao)}
@@ -97,7 +102,7 @@ export function CamposOportunidade({
           {(controle) => (
             <Input
               {...controle}
-              className={cn(INPUT_CLASS, 'font-mono')}
+              className={INPUT_CLASS}
               onChange={(event) => onChange('dataPrevistaFechamento', event.target.value)}
               type="date"
               value={valores.dataPrevistaFechamento}

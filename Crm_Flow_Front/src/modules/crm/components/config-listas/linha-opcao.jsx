@@ -1,9 +1,16 @@
-import { Pencil, Trash2 } from 'lucide-react';
+/**
+ * @file Uma opção da lista. "Ativa" salva na hora; desativar some dos seletores, mas o lead que
+ * já a tem continua mostrando (com o selo "inativa"). O 409 de "último status da categoria"
+ * aparece na própria linha.
+ */
 import { useState } from 'react';
+import { Pencil, Trash2 } from 'lucide-react';
+
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { getFieldError, toApiError } from '@/services/api';
+
 import { ROTULOS_CATEGORIA } from '../../constants';
 import { useAtualizarOpcao } from '../../hooks/use-listas';
 import { motivoNaoExclui, temCategoria } from '../../lib/listas';
@@ -44,7 +51,7 @@ function CampoProbabilidadePadrao({ opcao, pipelineId, ajudaId }) {
   const id = `opcao-${opcao.id}-probabilidade`;
 
   if (fixa !== null) {
-    return <span className="font-mono text-xs tabular-nums">{comPorcento(fixa)}</span>;
+    return <span className="text-xs tabular-nums">{comPorcento(fixa)}</span>;
   }
 
   const erro =
@@ -55,16 +62,22 @@ function CampoProbabilidadePadrao({ opcao, pipelineId, ajudaId }) {
 
   function gravar() {
     const valor = lerProbabilidade(texto);
+
     if (valor === null) {
       setTexto(textoSalvo);
       setErroLocal(null);
+
       return;
     }
+
     const invalida = validarProbabilidade(texto);
+
     setErroLocal(invalida);
+
     if (invalida || valor === salva) {
       return;
     }
+
     atualizar.mutate({ id: opcao.id, parcial: { [PROBABILIDADE]: valor } });
   }
 
@@ -72,11 +85,12 @@ function CampoProbabilidadePadrao({ opcao, pipelineId, ajudaId }) {
     <div className="grid justify-items-end gap-1">
       <div className="flex items-center gap-1">
         <Input
+          size="sm"
           aria-busy={atualizar.isPending}
           aria-describedby={[ajudaId, erro && `${id}-erro`].filter(Boolean).join(' ') || undefined}
           aria-invalid={erro ? true : undefined}
           aria-label={`Probabilidade de ${opcao.label} (%)`}
-          className="h-8 w-16 rounded-none text-right font-mono text-xs tabular-nums"
+          className="w-16 text-right text-xs tabular-nums"
           disabled={atualizar.isPending}
           id={id}
           inputMode="numeric"
@@ -89,7 +103,7 @@ function CampoProbabilidadePadrao({ opcao, pipelineId, ajudaId }) {
           onKeyDown={(event) => event.key === 'Enter' && gravar()}
           value={texto}
         />
-        <span aria-hidden="true" className="font-mono text-xs text-muted-foreground">
+        <span aria-hidden="true" className="text-xs text-muted-foreground">
           %
         </span>
       </div>
@@ -146,9 +160,7 @@ export function LinhaOpcao({
 
       <TableCell className="min-w-48">
         <OpcaoBadge opcao={{ ...opcao, ativo }} />
-        <span className="mt-0.5 block font-mono text-[11px] text-muted-foreground">
-          {opcao.key}
-        </span>
+        <span className="mt-0.5 block text-[11px] text-muted-foreground">{opcao.key}</span>
         {atualizar.error && (
           <p className="mt-1 text-xs text-destructive" role="alert">
             {toApiError(atualizar.error).message}
@@ -171,7 +183,7 @@ export function LinhaOpcao({
         </TableCell>
       )}
 
-      <TableCell className="text-right font-mono text-xs tabular-nums">
+      <TableCell className="text-right text-xs tabular-nums">
         {opcao.usos.toLocaleString('pt-BR')}
       </TableCell>
 
@@ -203,7 +215,7 @@ export function LinhaOpcao({
         <ControleTravado motivo={motivoExcluir} motivoId={`${idBase}-excluir-motivo`}>
           <BotaoIcone
             aria-describedby={motivoExcluir ? `${idBase}-excluir-motivo` : undefined}
-            className={motivoExcluir ? 'pointer-events-none rounded-none' : 'rounded-none'}
+            className={motivoExcluir ? 'pointer-events-none' : undefined}
             disabled={Boolean(motivoExcluir)}
             icone={Trash2}
             onClick={() => onExcluir(opcao)}

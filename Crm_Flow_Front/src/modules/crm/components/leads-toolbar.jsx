@@ -1,3 +1,7 @@
+/**
+ * @file Busca, filtros, views e colunas da lista. Tudo que muda a consulta passa por
+ * `atualizar` (URL) e volta para a primeira página.
+ */
 import { estadoDaVisao, visaoDoEstado } from '../lib/url-state';
 import { BuscaLeads } from './busca-leads';
 import { ConstrutorFiltro } from './construtor-filtro';
@@ -40,7 +44,7 @@ export function LeadsToolbar({
   placeholderBusca,
 }) {
   return (
-    <div className="mb-3 flex flex-wrap items-center gap-2">
+    <div className="theme-data-toolbar mb-3 flex flex-wrap items-center gap-2">
       <BuscaLeads
         busca={estado.busca}
         onBuscaChange={(busca) => atualizar({ busca, pagina: 1 })}
@@ -67,7 +71,7 @@ export function LeadsToolbar({
         selecionadas={colunasSelecionadas}
       />
       {total !== undefined && (
-        <p className="ml-auto font-mono text-xs text-muted-foreground tabular-nums">
+        <p className="ml-auto text-xs text-muted-foreground tabular-nums">
           {totalFormatter.format(total)} {total === 1 ? 'lead' : 'leads'}
         </p>
       )}

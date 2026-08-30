@@ -1,3 +1,6 @@
+/**
+ * @file Página do histórico do lead (o back aceita até 200).
+ */
 import { ROLES } from '../../lib/roles.js';
 
 /**

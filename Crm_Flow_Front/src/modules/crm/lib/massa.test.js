@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import { RESPONSAVEL_NENHUM } from './filtro.js';
 import {
-  FORM_MASSA_VAZIO,
-  MENSAGENS_MASSA,
   alteracoesDoForm,
   avisoDoResultado,
   falhasDoResultado,
+  FORM_MASSA_VAZIO,
+  MENSAGENS_MASSA,
   resumoDoResultado,
 } from './massa.js';
 
@@ -28,6 +29,7 @@ test('só o que está marcado vai, e marcado sem valor é erro da linha', () => 
     ),
     { alteracoes: { status: 'ganho' } },
   );
+
   assert.deepEqual(alteracoesDoForm(comForm({ fonteLead: { ativa: true, valor: '' } })), {
     erros: { fonteLead: MENSAGENS_MASSA.SEM_VALOR },
   });
@@ -37,6 +39,7 @@ test('responsável: id, ou null para tirar', () => {
   assert.deepEqual(alteracoesDoForm(comForm({ responsavel: { ativa: true, valor: 'u1' } })), {
     alteracoes: { usuarioResponsavelId: 'u1' },
   });
+
   assert.deepEqual(
     alteracoesDoForm(comForm({ responsavel: { ativa: true, valor: RESPONSAVEL_NENHUM } })),
     {
@@ -52,6 +55,7 @@ test('tags: só as listas preenchidas; nenhuma é erro', () => {
       alteracoes: { tags: { adicionar: ['vip'] } },
     },
   );
+
   assert.deepEqual(
     alteracoesDoForm(comForm({ tags: { ativa: true, adicionar: [], remover: [] } })),
     {
@@ -65,11 +69,14 @@ test('resumo e aviso', () => {
     resumoDoResultado({ atualizados: 12, inalterados: 3, falhas: 2 }),
     '12 atualizados · 3 sem mudança · 2 com erro',
   );
+
   assert.equal(resumoDoResultado({ atualizados: 1, inalterados: 0, falhas: 0 }), '1 atualizado');
+
   assert.equal(
     resumoDoResultado({ atualizados: 0, inalterados: 0, falhas: 0 }),
     'Nenhum lead alterado',
   );
+
   assert.equal(avisoDoResultado({ atualizados: 1 }), '1 lead atualizado.');
   assert.equal(avisoDoResultado({ atualizados: 0 }), null);
 });

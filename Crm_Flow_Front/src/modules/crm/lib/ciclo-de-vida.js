@@ -1,3 +1,7 @@
+/**
+ * @file Sem `dataConversao`, os filtros de data do ciclo dão 400: um link ou view antiga não
+ * quebra a lista (molde: `filtroComValor`).
+ */
 import { CHAVE_DATA_CONVERSAO, CICLOS_DE_VIDA, FUSO_PADRAO } from '../constants.js';
 import { ROTULOS_CICLO, textoClienteDesde } from './ciclo-textos.js';
 
@@ -36,21 +40,25 @@ const formatadores = new Map();
  */
 function formatador(formato, fuso) {
   let porFuso = formatadores.get(formato);
+
   if (!porFuso) {
     porFuso = new Map();
     formatadores.set(formato, porFuso);
   }
+
   if (!porFuso.has(fuso)) {
     const opcoes =
       formato === 'mesAno'
         ? { month: '2-digit', year: 'numeric' }
         : { day: '2-digit', month: '2-digit', year: 'numeric' };
     let instancia;
+
     try {
       instancia = new Intl.DateTimeFormat('pt-BR', { ...opcoes, timeZone: fuso });
     } catch {
       instancia = new Intl.DateTimeFormat('pt-BR', { ...opcoes, timeZone: FUSO_PADRAO });
     }
+
     porFuso.set(fuso, instancia);
   }
 
@@ -62,6 +70,7 @@ function instante(iso) {
   if (typeof iso !== 'string' || !iso) {
     return null;
   }
+
   const data = new Date(iso);
 
   return Number.isNaN(data.getTime()) ? null : data;
@@ -76,9 +85,11 @@ function instante(iso) {
  */
 function formatarNoFuso(formato, iso, fuso) {
   const data = instante(iso);
+
   if (!data) {
     return null;
   }
+
   const partes = Object.fromEntries(
     formatador(formato, fuso || FUSO_PADRAO)
       .formatToParts(data)
@@ -135,11 +146,14 @@ export function comDataConversao(campos) {
  */
 export function textoDoCiclo(lead, fuso = FUSO_PADRAO) {
   const ciclo = lead?.ciclo_de_vida;
+
   if (typeof ciclo !== 'string' || !Object.hasOwn(ROTULOS_CICLO, ciclo)) {
     return null;
   }
+
   if (ciclo === CICLOS_DE_VIDA.CLIENTE) {
     const mesAno = formatarMesAno(lead.cliente_desde, fuso);
+
     return { ciclo, texto: mesAno ? textoClienteDesde(mesAno) : ROTULOS_CICLO[ciclo] };
   }
 

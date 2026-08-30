@@ -1,7 +1,16 @@
+/**
+ * @file Renderiza card comments, na área de Kanban, expondo os estados e eventos necessários à
+ * interface.
+ */
 import { useState } from 'react';
-import { LoadingState } from '@/components/loading-state';
-import { Button } from '@/components/ui/button';
 import { MessageSquare, Send, Trash2 } from 'lucide-react';
+
+import { LoadingState } from '@/components/loading-state';
+import { Alert } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Form } from '@/components/ui/form';
+import { NativeSelect } from '@/components/ui/native-select';
+import { Textarea } from '@/components/ui/textarea';
 
 export function CardComments({
   comments,
@@ -15,21 +24,28 @@ export function CardComments({
   userId,
   onComment,
   onDelete,
+  onEdit,
   onDraftChange,
 }) {
+  const [editing, setEditing] = useState(null);
+  const [editText, setEditText] = useState('');
   const [content, setContent] = useState('');
   const [mentioned, setMentioned] = useState([]);
+
   return (
     <section className="kb-card-comments" aria-labelledby="kb-comments-title">
       <h3 id="kb-comments-title">
         <MessageSquare size={17} aria-hidden="true" /> Comentários <span>{comments.length}</span>
       </h3>
       {!readOnly && (
-        <form
+        <Form
+          noValidate
           onSubmit={async (event) => {
             event.preventDefault();
+
             const form = event.currentTarget;
             const content = new FormData(form).get('conteudo').trim();
+
             if (
               content &&
               (await onComment(
@@ -40,18 +56,18 @@ export function CardComments({
               setContent('');
               setMentioned([]);
               form.reset();
-              onDraftChange(false);
+              onDraftChange(Boolean(editing));
             }
           }}
         >
           <label>
             Escreva um comentário
-            <textarea
+            <Textarea
               name="conteudo"
               value={content}
               onChange={(event) => {
                 setContent(event.target.value);
-                onDraftChange(Boolean(event.target.value));
+                onDraftChange(Boolean(event.target.value) || Boolean(editing));
               }}
               placeholder="Compartilhe uma atualização com a equipe…"
               required
@@ -61,29 +77,37 @@ export function CardComments({
           </label>
           <label>
             Mencionar participante
-            <select
-              disabled={busy}
-              value=""
-              onChange={(event) => {
-                const member = members.find((item) => item.id === event.target.value);
-                if (member) {
-                  setContent((value) => `${value}${value ? ' ' : ''}@${member.nome} `);
-                  setMentioned((current) =>
-                    current.some((item) => item.id === member.id) ? current : [...current, member],
-                  );
-                  onDraftChange(true);
-                }
-              }}
-            >
-              <option value="">Escolher participante…</option>
-              {members
-                .filter((m) => m.id !== userId)
-                .map((member) => (
-                  <option key={member.id} value={member.id}>
-                    {member.nome}
-                  </option>
-                ))}
-            </select>
+            <div className="relative">
+              <NativeSelect
+                disabled={busy}
+                value=""
+                className="w-full pr-8"
+                onChange={(event) => {
+                  const member = members.find((item) => item.id === event.target.value);
+
+                  if (member) {
+                    setContent((value) => `${value}${value ? ' ' : ''}@${member.nome} `);
+
+                    setMentioned((current) =>
+                      current.some((item) => item.id === member.id)
+                        ? current
+                        : [...current, member],
+                    );
+
+                    onDraftChange(true);
+                  }
+                }}
+              >
+                <option value="">Escolher participante…</option>
+                {members
+                  .filter((m) => m.id !== userId)
+                  .map((member) => (
+                    <option key={member.id} value={member.id}>
+                      {member.nome}
+                    </option>
+                  ))}
+              </NativeSelect>
+            </div>
           </label>
           {mentioned.length > 0 && (
             <div className="kb-mention-recipients">
@@ -113,13 +137,13 @@ export function CardComments({
           >
             <Send size={15} aria-hidden="true" /> Comentar
           </Button>
-        </form>
+        </Form>
       )}
       {loading && <LoadingState inline label="Carregando comentários…" />}
       {error && (
-        <p role="alert" className="kb-error">
+        <Alert variant="destructive" role="alert">
           {error}
-        </p>
+        </Alert>
       )}
       {!loading && !error && comments.length === 0 && (
         <p className="kb-hint">As conversas da equipe sobre este card aparecerão aqui.</p>
@@ -132,21 +156,80 @@ export function CardComments({
               {new Date(comment.createdAt).toLocaleString('pt-BR')}
             </time>
           </div>
-          <p>
-            {comment.conteudo.replace(
-              /@\{([0-9a-f-]{36})\}/gi,
-              (_, id) => `@${members.find((m) => m.id === id)?.nome || 'participante'}`,
-            )}
-          </p>
+          {editing === comment.id ? (
+            <Form
+              noValidate
+              onSubmit={async (event) => {
+                event.preventDefault();
+
+                if (editText.trim() && (await onEdit(comment.id, editText.trim()))) {
+                  setEditing(null);
+                  onDraftChange(Boolean(content));
+                }
+              }}
+            >
+              <label>
+                Editar comentário
+                <Textarea
+                  value={editText}
+                  maxLength={10000}
+                  disabled={busy}
+                  onChange={(event) => {
+                    setEditText(event.target.value);
+                    onDraftChange(true);
+                  }}
+                />
+              </label>
+              <Button type="submit" disabled={busy || !editText.trim()}>
+                Salvar comentário
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={busy}
+                onClick={() => {
+                  setEditing(null);
+                  onDraftChange(Boolean(content));
+                }}
+              >
+                Cancelar edição
+              </Button>
+            </Form>
+          ) : (
+            <p>
+              {comment.conteudo.replace(
+                /@\{([0-9a-f-]{36})\}/gi,
+                (_, id) => `@${members.find((m) => m.id === id)?.nome || 'participante'}`,
+              )}
+            </p>
+          )}
+          {comment.editedAt && (
+            <small>Editado em {new Date(comment.editedAt).toLocaleString('pt-BR')}</small>
+          )}
+          {!readOnly && comment.usuarioId === userId && !editing && (
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={busy}
+              onClick={() => {
+                setEditing(comment.id);
+                setEditText(comment.conteudo);
+                onDraftChange(true);
+              }}
+            >
+              Editar comentário
+            </Button>
+          )}
           {!readOnly && (canManage || comment.usuarioId === userId) && (
-            <button
-              className="kb-button-danger"
+            <Button
+              variant="destructive"
+              size="sm"
               type="button"
               disabled={busy}
               onClick={() => onDelete(comment.id)}
             >
               <Trash2 size={13} aria-hidden="true" /> Excluir comentário
-            </button>
+            </Button>
           )}
         </article>
       ))}

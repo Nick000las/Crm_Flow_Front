@@ -1,5 +1,10 @@
+/**
+ * @file Renderiza tenants table, na área de administração, expondo os estados e eventos
+ * necessários à interface.
+ */
 import { Building2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
 import { ModulePlaceholder } from '@/components/module-placeholder';
 import {
   Table,
@@ -9,10 +14,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { TenantStatusBadge } from './tenant-status-badge';
 
-const HEAD_CLASS =
-  'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
+import { TenantStatusBadge } from './tenant-status-badge';
 
 export function TenantsTable({ tenants, acaoVazio }) {
   if (tenants.length === 0) {
@@ -28,22 +31,14 @@ export function TenantsTable({ tenants, acaoVazio }) {
   }
 
   return (
-    <div className="overflow-x-auto border border-border">
+    <div className="theme-data-table overflow-x-auto border border-border">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className={HEAD_CLASS} scope="col">
-              Nome
-            </TableHead>
-            <TableHead className={HEAD_CLASS} scope="col">
-              Subdomínio
-            </TableHead>
-            <TableHead className={HEAD_CLASS} scope="col">
-              Módulos
-            </TableHead>
-            <TableHead className={HEAD_CLASS} scope="col">
-              Status
-            </TableHead>
+            <TableHead scope="col">Nome</TableHead>
+            <TableHead scope="col">Subdomínio</TableHead>
+            <TableHead scope="col">Módulos</TableHead>
+            <TableHead scope="col">Status</TableHead>
           </TableRow>
         </TableHeader>
 
@@ -58,10 +53,8 @@ export function TenantsTable({ tenants, acaoVazio }) {
                   {tenant.nome}
                 </Link>
               </TableCell>
-              <TableCell className="font-mono text-xs text-muted-foreground">
-                {tenant.subdomain}
-              </TableCell>
-              <TableCell className="font-mono text-xs text-muted-foreground">
+              <TableCell className="text-xs text-muted-foreground">{tenant.subdomain}</TableCell>
+              <TableCell className="text-xs text-muted-foreground">
                 {formatarModulos(tenant.modulosContratados)}
               </TableCell>
               <TableCell>

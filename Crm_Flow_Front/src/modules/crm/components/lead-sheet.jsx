@@ -1,13 +1,19 @@
-import { useQueryClient } from '@tanstack/react-query';
+/**
+ * @file Um Sheet por lead (`key`): ir de um lead a outro sem fechar (ex.: "Abrir o existente"
+ * no 409 de duplicidade) recomeça o estado do zero.
+ */
 import { useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useLocation, useParams } from 'react-router-dom';
+
 import { ApiErrorAlert } from '@/components/api-error-alert';
+import { FormSkeleton } from '@/components/loading-skeletons';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { useAuth } from '@/hooks/useAuth';
 import { podeVer, temFeature } from '@/lib/acesso';
 import { toApiError } from '@/services/api';
+
 import { AVISOS_LEAD, CRM_FEATURES, PAPEIS_GESTAO } from '../constants';
 import { useContextoDoForm } from '../hooks/use-contexto-do-form';
 import { useLayoutEfetivo } from '../hooks/use-layout';
@@ -30,22 +36,17 @@ import { versaoDoConflito } from '../lib/oportunidades';
 import { avisoDeProbabilidade, juntarAvisos } from '../lib/probabilidade';
 import { crmKeys } from '../query-keys';
 import { ID_BOTAO_NOVO_LEAD, ID_NOVO_LEAD, idLinkDoLead } from '../rotas';
+import { AnonimizarLeadDialog } from './anonimizar-lead-dialog';
 import { ConfirmarArquivarDialog } from './confirmar-arquivar-dialog';
 import { ExcluirLeadDialog } from './excluir-lead-dialog';
-import { AnonimizarLeadDialog } from './anonimizar-lead-dialog';
-import { LeadCabecalho } from './lead-cabecalho';
 import { LeadAbas } from './lead-abas';
+import { LeadCabecalho } from './lead-cabecalho';
 import { LeadForm } from './lead-form';
 
 function Carregando() {
   return (
-    <div className="grid gap-3 px-4" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando lead…
-      </span>
-      {Array.from({ length: 6 }, (_, indice) => (
-        <Skeleton className="h-8 rounded-none" key={indice} />
-      ))}
+    <div className="px-4 py-2">
+      <FormSkeleton fields={6} label="Carregando lead…" />
     </div>
   );
 }
@@ -109,6 +110,7 @@ function SheetDoLead({ leadId }) {
     if (criando) {
       await criar.mutateAsync({ ...montarPayloadCriacao(campos, valores), ...extra });
       fechar(AVISOS_LEAD.CRIADO);
+
       return;
     }
 
@@ -116,17 +118,23 @@ function SheetDoLead({ leadId }) {
     // Mudar o status volta a probabilidade ao padrão (FC1). O lead não traz a
     // efetiva, então a frase sai sem o número novo.
     let avisoDaProbabilidade = null;
+
     if (!payloadVazio(payload)) {
       const expectedUpdatedAt = versaoLida ?? versaoDoLead(lead);
+
       try {
         const salvo = await atualizar.mutateAsync({ ...payload, ...extra, expectedUpdatedAt });
+
         avisoDaProbabilidade = avisoDeProbabilidade(salvo.avisos);
       } catch (error) {
         const atual = versaoDoConflito(toApiError(error));
+
         if (!atual) {
           throw error;
         }
+
         setMaisNovo(atual);
+
         return;
       }
     }
@@ -173,7 +181,7 @@ function SheetDoLead({ leadId }) {
       open={aberto}
     >
       <SheetContent
-        className="w-full gap-0 rounded-none p-0 shadow-none sm:max-w-lg"
+        className="w-full gap-0 p-0 sm:max-w-lg"
         // Devolve o foco a quem abriu; se a linha sumiu (exclusão), o padrão.
         finalFocus={() =>
           document.getElementById(
@@ -202,13 +210,16 @@ function SheetDoLead({ leadId }) {
 
         <div className="flex min-h-0 flex-1 flex-col pt-4">
           {aviso && (
-            <p className="mx-4 mb-4 border border-border px-3 py-2 text-sm" role="status">
+            <p
+              className="mx-4 mb-4 rounded-lg border border-border bg-surface px-3 py-2 text-sm"
+              role="status"
+            >
               {aviso}
             </p>
           )}
           {maisNovo && mostrarForm && (
             <div
-              className="mx-4 mb-4 grid justify-items-start gap-2 border border-border px-3 py-2"
+              className="mx-4 mb-4 grid justify-items-start gap-2 rounded-lg border border-border bg-surface px-3 py-2"
               role="alert"
             >
               <p className="text-sm">Outra pessoa alterou este lead enquanto você editava.</p>
@@ -242,6 +253,7 @@ function SheetDoLead({ leadId }) {
               onAbrirLead={(id) => abrirLead(id)}
               onCancelar={() => {
                 setMaisNovo(null);
+
                 return criando ? fechar() : setEditando(false);
               }}
               onSalvar={salvar}
@@ -268,13 +280,16 @@ function SheetDoLead({ leadId }) {
           onConfirmar={async () => {
             setAviso(null);
             desarquivar.reset();
+
             try {
               await arquivar.mutateAsync(leadId);
             } catch (error) {
               // O erro aparece no dialog, não também no alerta do drawer.
               arquivar.reset();
+
               throw new Error(toApiError(error).message, { cause: error });
             }
+
             setAviso(AVISOS_LEAD.ARQUIVADO);
           }}
           onFechar={() => setConfirmandoArquivo(false)}

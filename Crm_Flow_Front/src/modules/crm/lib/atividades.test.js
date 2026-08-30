@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import {
-  MENSAGENS_ATIVIDADE,
   deInputLocal,
   estaAtrasada,
+  MENSAGENS_ATIVIDADE,
   opcaoDoTipo,
   opcoesDeTipo,
   paraInputLocal,
@@ -57,27 +58,33 @@ test('valoresDaAtividade parte vazio ou da atividade', () => {
     agendadaPara: '',
     jaAconteceu: false,
   });
+
   assert.equal(valoresDaAtividade(atividade({ notas: 'oi' })).notas, 'oi');
 });
 
 test('validarAtividade', () => {
   assert.deepEqual(validarAtividade(VALORES), {});
+
   assert.deepEqual(validarAtividade({ ...VALORES, tipo: '', titulo: '  ' }), {
     tipo: MENSAGENS_ATIVIDADE.TIPO,
     titulo: MENSAGENS_ATIVIDADE.TITULO,
   });
+
   assert.equal(
     validarAtividade({ ...VALORES, titulo: 'x'.repeat(201) }).titulo,
     MENSAGENS_ATIVIDADE.TITULO_LONGO,
   );
+
   assert.equal(
     validarAtividade({ ...VALORES, notas: 'x'.repeat(5001) }).notas,
     MENSAGENS_ATIVIDADE.NOTAS_LONGAS,
   );
+
   assert.equal(
     validarAtividade({ ...VALORES, agendadaPara: 'lixo' }).agendadaPara,
     MENSAGENS_ATIVIDADE.DATA,
   );
+
   // Com "já aconteceu" a data some do form: não valida.
   assert.deepEqual(validarAtividade({ ...VALORES, agendadaPara: 'lixo', jaAconteceu: true }), {});
 });
@@ -87,6 +94,7 @@ test('criação manda só o preenchido', () => {
     tipo: 'ligacao',
     titulo: 'Ligar',
   });
+
   assert.deepEqual(
     payloadDaAtividade({ ...VALORES, notas: 'n', agendadaPara: '2026-10-20T14:30' }),
     {
@@ -114,9 +122,11 @@ test('edição manda só o que mudou, e vazio limpa', () => {
   const valores = valoresDaAtividade(original);
 
   assert.equal(payloadDaAtividade(valores, original), null);
+
   assert.deepEqual(payloadDaAtividade({ ...valores, titulo: 'Novo' }, original), {
     titulo: 'Novo',
   });
+
   assert.deepEqual(payloadDaAtividade({ ...valores, notas: '', agendadaPara: '' }, original), {
     notas: null,
     agendadaPara: null,
@@ -130,6 +140,7 @@ test('estaAtrasada só para aberta com agenda no passado', () => {
   assert.equal(estaAtrasada(atividade({ agendadaPara: passado }), agora), true);
   assert.equal(estaAtrasada(atividade({ agendadaPara: '2026-10-16T13:00:00.000Z' }), agora), false);
   assert.equal(estaAtrasada(atividade(), agora), false);
+
   assert.equal(
     estaAtrasada(atividade({ agendadaPara: passado, concluidaEm: passado }), agora),
     false,
@@ -148,6 +159,7 @@ test('separarAtividades mantém a ordem do back em cada grupo', () => {
     abertas.map((item) => item.id),
     ['1', '3'],
   );
+
   assert.deepEqual(
     concluidas.map((item) => item.id),
     ['2'],
@@ -156,6 +168,7 @@ test('separarAtividades mantém a ordem do back em cada grupo', () => {
 
 test('opcoesDeTipo: ativas, mais a inativa atual', () => {
   assert.deepEqual(opcoesDeTipo(LISTA), [{ valor: 'ligacao', rotulo: 'Ligação' }]);
+
   assert.deepEqual(opcoesDeTipo(LISTA, 'visita'), [
     { valor: 'ligacao', rotulo: 'Ligação' },
     { valor: 'visita', rotulo: 'Visita (inativa)' },

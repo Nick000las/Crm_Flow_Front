@@ -1,4 +1,8 @@
-import { IMPORTACAO, IMPORT_JOB_STATUS } from '../constants.js';
+/**
+ * @file Regras puras do import de planilha: arquivo, mapeamento, relatório, progresso e a
+ * máquina de passos do wizard.
+ */
+import { IMPORT_JOB_STATUS, IMPORTACAO } from '../constants.js';
 
 /**
  * Regras puras do import de planilha: arquivo, mapeamento, relatório,
@@ -28,9 +32,11 @@ export function validarArquivo(arquivo) {
   if (!arquivo.name.toLowerCase().endsWith(EXTENSAO)) {
     return 'Envie uma planilha .xlsx';
   }
+
   if (arquivo.size > IMPORTACAO.TAMANHO_MAXIMO_ARQUIVO_BYTES) {
     return `O arquivo passa de ${IMPORTACAO.TAMANHO_MAXIMO_ARQUIVO_BYTES / BYTES_POR_MB} MB`;
   }
+
   if (arquivo.size === 0) {
     return 'O arquivo está vazio';
   }
@@ -69,9 +75,11 @@ export function autoMapear(colunas, campos) {
           !usados.has(candidato.chave) &&
           (normalizar(candidato.label) === alvo || normalizar(candidato.chave) === alvo),
       );
+
       if (campo) {
         usados.add(campo.chave);
       }
+
       return [coluna, campo?.chave ?? ''];
     }),
   );
@@ -101,8 +109,10 @@ export function problemasDoMapeamento(mapeamento, campos) {
   const repetidos = [
     ...new Set(destinos.filter((chave, indice) => destinos.indexOf(chave) !== indice)),
   ];
+
   for (const chave of repetidos) {
     const label = campos.find((campo) => campo.chave === chave)?.label ?? chave;
+
     problemas.push(`"${label}" foi escolhido para mais de uma coluna`);
   }
 
@@ -145,6 +155,7 @@ export function emProcessamento(status) {
  */
 export function percentualConcluido(job) {
   const total = job.total_linhas ?? 0;
+
   if (total === 0) {
     return 0;
   }

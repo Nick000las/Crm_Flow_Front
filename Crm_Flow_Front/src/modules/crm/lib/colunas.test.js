@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import {
   COLUNAS_PADRAO,
   lerValorDaColuna,
@@ -85,6 +86,7 @@ test('colunas do ciclo de vida (FC4) vêm depois das de sistema, na ordem da tel
     'ultimaCompra',
     'oportunidadesAbertas',
   ]);
+
   assert.equal(COLUNAS_PADRAO.includes('cicloDeVida'), false);
 });
 
@@ -95,6 +97,7 @@ test('sem dataConversao, as colunas de data não existem e saem da seleção', (
   assert.deepEqual(ids.slice(-2), ['cicloDeVida', 'oportunidadesAbertas']);
   assert.equal(ids.includes('clienteDesde'), false);
   assert.equal(ids.includes('ultimaCompra'), false);
+
   assert.deepEqual(sanearSelecao(['clienteDesde', 'ultimaCompra', 'cicloDeVida'], colunas), [
     'cicloDeVida',
   ]);
@@ -117,6 +120,7 @@ test('lerValorDaColuna do ciclo: o lead no Ciclo; o resto cru, sem virar 0 nem "
   assert.equal(lerValorDaColuna(cliente, porId('oportunidadesAbertas')), 0);
 
   const semNada = { id: 'l3' };
+
   assert.equal(lerValorDaColuna(semNada, porId('clienteDesde')), undefined);
   assert.equal(lerValorDaColuna(semNada, porId('ultimaCompra')), undefined);
   assert.equal(lerValorDaColuna(semNada, porId('oportunidadesAbertas')), undefined);

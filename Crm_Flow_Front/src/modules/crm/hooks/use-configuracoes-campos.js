@@ -1,5 +1,11 @@
+/**
+ * @file Reordenar é otimista: a lista muda ao soltar e volta ao que era se o back recusar —
+ * esperar a resposta faria a linha "pular de volta" a cada arrasto.
+ */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
+
 import {
   atualizarCampoConfigurado,
   listarCamposConfigurados,
@@ -45,6 +51,7 @@ export function useAtualizarCampoConfigurado() {
       queryClient.setQueryData(CHAVE, (lista) =>
         lista ? substituirCampo(lista, atualizado) : lista,
       );
+
       return invalidarConsumidores(queryClient);
     },
   });
@@ -62,13 +69,17 @@ export function useReordenarCampos() {
     mutationFn: (ids) => reordenarCamposConfigurados(authApi, ids),
     onMutate: async (ids) => {
       await queryClient.cancelQueries({ queryKey: CHAVE });
+
       const anterior = queryClient.getQueryData(CHAVE);
+
       queryClient.setQueryData(CHAVE, (lista) => (lista ? ordenarPorIds(lista, ids) : lista));
+
       return { anterior };
     },
     onError: (_erro, _ids, contexto) => queryClient.setQueryData(CHAVE, contexto?.anterior),
     onSuccess: (lista) => {
       queryClient.setQueryData(CHAVE, lista);
+
       return invalidarConsumidores(queryClient);
     },
   });
@@ -82,6 +93,7 @@ export function useRestaurarOrdemPadrao() {
     mutationFn: () => restaurarOrdemPadrao(authApi),
     onSuccess: (lista) => {
       queryClient.setQueryData(CHAVE, lista);
+
       return invalidarConsumidores(queryClient);
     },
   });

@@ -1,4 +1,8 @@
+/**
+ * @file Busca de pessoas para vincular ao card, nas rotas do CRM.
+ */
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
 
 const MINIMO_DE_CARACTERES = 2;

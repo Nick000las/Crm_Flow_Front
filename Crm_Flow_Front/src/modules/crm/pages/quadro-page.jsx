@@ -1,7 +1,11 @@
+/**
+ * @file Apresenta o quadro comercial do CRM e coordena a movimentação de cards pelo provedor de
+ * entidades.
+ */
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { useQueryClient } from '@tanstack/react-query';
-import { KanbanSquare, RefreshCw, Settings2 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { ArrowLeft, KanbanSquare, RefreshCw, Settings2 } from 'lucide-react';
 import {
   Link,
   Outlet,
@@ -10,19 +14,21 @@ import {
   useOutletContext,
   useParams,
 } from 'react-router-dom';
+
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
-import { ModulePlaceholder } from '@/components/module-placeholder';
-import { PageHeader } from '@/components/page-header';
+import { EmptyState } from '@/components/empty-state';
+import { BoardSkeleton } from '@/components/loading-skeletons';
+import { StatusToast } from '@/components/status-toast';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { podeVer } from '@/lib/acesso';
-import { cn } from '@/lib/utils';
+import { canScrollDragArea, dragBoundsModifier } from '@/lib/drag-bounds';
 import { isAccessError, toApiError } from '@/services/api';
+
+import { FiltroComCampoOculto } from '../components/filtro-com-campo-oculto';
 import { CamposObrigatoriosDialog } from '../components/quadro/campos-obrigatorios-dialog';
 import { CardArrastado } from '../components/quadro/card-quadro';
-import { FiltroComCampoOculto } from '../components/filtro-com-campo-oculto';
 import { ColunaQuadro } from '../components/quadro/coluna-quadro';
 import { FiltrosDoQuadro } from '../components/quadro/filtros-do-quadro';
 import { NovoCardDialog } from '../components/quadro/novo-card-dialog';
@@ -41,7 +47,7 @@ import { statusDoPipeline } from '../lib/pipelines';
 import { CODIGO_CAMPOS_OBRIGATORIOS } from '../lib/quadro';
 import { avisoDoMovimento, montarConsulta } from '../lib/quadro-consulta';
 import { crmKeys } from '../query-keys';
-import { ABAS_LEAD, ROTAS_CRM, idCardDoQuadro } from '../rotas';
+import { ABAS_LEAD, idCardDoQuadro, ROTAS_CRM } from '../rotas';
 
 const CAMPOS_VAZIOS = [];
 const STATUS_NAO_ENCONTRADO = 404;
@@ -49,29 +55,20 @@ const STATUS_NAO_ENCONTRADO = 404;
 const DISTANCIA_MINIMA_PX = 4;
 
 function Carregando() {
-  return (
-    <div className="flex gap-3" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando quadro…
-      </span>
-      {Array.from({ length: 4 }, (_, indice) => (
-        <Skeleton className="h-64 w-72 shrink-0 rounded-none" key={indice} />
-      ))}
-    </div>
-  );
+  return <BoardSkeleton label="Carregando quadro…" />;
 }
 
 function QuadroIndisponivel() {
   return (
-    <ModulePlaceholder
+    <EmptyState
       description="Este pipeline foi desativado ou não está disponível para você."
       icon={KanbanSquare}
       title="Quadro indisponível"
     >
-      <Link className={cn(buttonVariants({ variant: 'outline' }), 'rounded-none')} to="/kanban">
+      <Link className={buttonVariants({ variant: 'outline' })} to="/kanban">
         Voltar aos quadros
       </Link>
-    </ModulePlaceholder>
+    </EmptyState>
   );
 }
 
@@ -83,6 +80,11 @@ function QuadroIndisponivel() {
  * `KanbanLayout`, pelo `Outlet`: o CRM não importa o Kanban.
  */
 export default function QuadroPage() {
+  const boardBoundary = useRef(null);
+  const limitDrag = useCallback(
+    (args) => dragBoundsModifier(() => boardBoundary.current)(args),
+    [],
+  );
   const { quadroRef } = useParams();
   const { user } = useAuth();
   const { state, search } = useLocation();
@@ -116,6 +118,7 @@ export default function QuadroPage() {
   const [adicionandoEm, setAdicionandoEm] = useState(null);
   const [aviso, setAviso] = useState(null);
   const [erroAoMover, setErroAoMover] = useState(null);
+
   const sensores = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: DISTANCIA_MINIMA_PX } }),
   );
@@ -135,18 +138,21 @@ export default function QuadroPage() {
   function moverCard(card, de, destino, { devolverFoco = false } = {}) {
     setAviso(null);
     setErroAoMover(null);
+
     // O ref da coluna é a key do status, e o quadro é o pipeline.
     const padraoDoDestino = statusDoPipeline(
       pipelinesQuery.data ?? [],
       quadroRef,
       destino.ref,
     )?.probabilidadePadrao;
+
     mover.mutate(
       { card, de, para: destino.ref },
       {
         onSuccess: (resposta) => setAviso(avisoDoMovimento(resposta, padraoDoDestino)),
         onError: (error) => {
           const erro = toApiError(error);
+
           if (erro.code === CODIGO_CAMPOS_OBRIGATORIOS) {
             setPendencia({ card, de, destino, erro, padraoDoDestino });
           } else {
@@ -155,6 +161,7 @@ export default function QuadroPage() {
         },
       },
     );
+
     if (devolverFoco) {
       // O card remontou na outra coluna: o foco iria para o `body`.
       requestAnimationFrame(() =>
@@ -165,8 +172,10 @@ export default function QuadroPage() {
 
   function aoSoltar({ active, over }) {
     setArrastado(null);
+
     const destino = over?.data.current?.coluna;
     const { card, colunaRef } = active.data.current;
+
     if (destino && destino.ref !== colunaRef) {
       moverCard(card, colunaRef, destino);
     }
@@ -187,20 +196,20 @@ export default function QuadroPage() {
   const acoes = (
     <>
       <Button
-        className="rounded-none"
         onClick={() => queryClient.invalidateQueries({ queryKey: crmKeys.quadro(quadroRef) })}
+        size="sm"
         type="button"
         variant="outline"
       >
-        <RefreshCw aria-hidden="true" />
+        <RefreshCw className="size-3.5" aria-hidden="true" />
         Atualizar
       </Button>
       {gestao && (
         <Link
-          className={cn(buttonVariants({ variant: 'outline' }), 'rounded-none')}
+          className={buttonVariants({ variant: 'outline', size: 'sm' })}
           to={ROTAS_CRM.pipelineNaConfiguracao(quadroRef)}
         >
-          <Settings2 aria-hidden="true" />
+          <Settings2 className="size-3.5" aria-hidden="true" />
           Editar estrutura
         </Link>
       )}
@@ -211,6 +220,7 @@ export default function QuadroPage() {
   const erro = colunasQuery.error ?? camposQuery.error ?? erroDoFiltro;
 
   let conteudo;
+
   if (isAccessError(erro)) {
     conteudo = <AcessoIndisponivel error={erro} />;
   } else if (semAcesso || erro?.status === STATUS_NAO_ENCONTRADO) {
@@ -228,12 +238,18 @@ export default function QuadroPage() {
   } else {
     conteudo = (
       <DndContext
+        modifiers={[limitDrag]}
+        autoScroll={{ canScroll: (element) => canScrollDragArea(element, boardBoundary.current) }}
         onDragCancel={() => setArrastado(null)}
         onDragEnd={aoSoltar}
         onDragStart={({ active }) => setArrastado(active.data.current.card)}
         sensors={sensores}
       >
-        <div className="flex items-start gap-3 overflow-x-auto pb-4">
+        <div
+          ref={boardBoundary}
+          data-drag-boundary
+          className="flex min-h-[28rem] min-w-0 flex-1 items-stretch gap-4 overflow-x-auto pb-4"
+        >
           {colunas.map((coluna) => (
             <ColunaQuadro
               campos={campos}
@@ -249,7 +265,7 @@ export default function QuadroPage() {
             />
           ))}
         </div>
-        <DragOverlay>
+        <DragOverlay dropAnimation={null}>
           {arrastado && <CardArrastado campos={campos} card={arrastado} nomePorId={nomePorId} />}
         </DragOverlay>
       </DndContext>
@@ -257,12 +273,36 @@ export default function QuadroPage() {
   }
 
   return (
-    <>
-      <PageHeader
-        actions={acoes}
-        description="Arraste os cards ou use “Mover para…”. Cada coluna é um status."
-        title={pipeline?.nome ?? 'Quadro'}
-      />
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
+      <header className="space-y-3 border-b border-border pb-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="ghost"
+            size="xs"
+            nativeButton={false}
+            render={<Link to="/kanban" />}
+            className="-ml-2 text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="size-3.5" aria-hidden="true" />
+            Voltar aos quadros
+          </Button>
+          <span className="inline-flex items-center rounded-md border border-border bg-muted/60 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+            Pipeline comercial
+          </span>
+        </div>
+
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div className="min-w-0 space-y-1">
+            <h1 className="truncate text-2xl font-semibold tracking-tight text-foreground">
+              {pipeline?.nome ?? 'Quadro'}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Arraste os cards ou use “Mover para…”. Cada coluna representa um status do pipeline.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">{acoes}</div>
+        </div>
+      </header>
 
       <FiltrosDoQuadro
         atualizar={atualizar}
@@ -277,22 +317,15 @@ export default function QuadroPage() {
         usuarios={usuarios}
       />
 
-      <p
-        className={
-          aviso || state?.aviso ? 'mb-3 border border-border px-3 py-2 text-sm' : 'sr-only'
-        }
-        role="status"
-      >
-        {aviso ?? state?.aviso}
-      </p>
       <ApiErrorAlert
-        className="mb-3"
         error={erroAoMover}
         id="quadro-mover-erro"
         title="Não foi possível mover o card"
       />
 
       {conteudo}
+
+      <StatusToast message={aviso ?? state?.aviso} onDismiss={() => setAviso(null)} />
 
       <CamposObrigatoriosDialog
         campos={campos}
@@ -316,6 +349,6 @@ export default function QuadroPage() {
       />
 
       <Outlet context={{ baseDoLead: base }} />
-    </>
+    </div>
   );
 }

@@ -1,5 +1,13 @@
+/**
+ * @file Corpo do drawer no modo de ver: Dados e Oportunidades sempre (M2.5, sem flag);
+ * Atividades e Histórico com `crm.atividades`; Formulários com `crm.formularios` (qualquer
+ * papel), com os alertas não vistos (FM5) acima das abas; "Projetos" só com cards ligados ao
+ * lead.
+ */
 import { useState } from 'react';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import { useProjetosDoLead } from '../hooks/use-projetos-do-lead';
 import { ABAS_LEAD as ABA } from '../rotas';
 import { AbaAtividades } from './atividades/aba-atividades';
@@ -43,10 +51,12 @@ export function LeadAbas({
 
   function abrirResposta(respostaId) {
     setRespostaAberta(respostaId);
+
     if (respostaId) {
       setAba(ABA.FORMULARIOS);
     }
   }
+
   const projetos = useProjetosDoLead(lead.id);
   const comProjetos = projetos.length > 0;
 

@@ -1,3 +1,8 @@
+/**
+ * @file Valor de uma célula, renderizado pelo tipo da coluna. `completo` (ficha) mostra o texto
+ * longo inteiro; na tabela ele fica em uma linha. `semLink` evita link dentro de link quando a
+ * célula já está no link do lead.
+ */
 import { CHAVE_SCORE, TIPOS_CAMPO } from '../constants';
 import { textoDaCelulaCiclo } from '../lib/celula-ciclo';
 import { TIPO_COLUNA } from '../lib/colunas';
@@ -7,8 +12,8 @@ import {
   formatarCpf,
   formatarData,
   formatarEndereco,
-  formatarIntervalo,
   formatarInstante,
+  formatarIntervalo,
   formatarMoeda,
   formatarNumero,
   formatarTelefone,
@@ -21,7 +26,7 @@ import { SeloScore } from './selo-score';
 
 const MAX_BADGES = 2;
 const TAMANHO_ID_CURTO = 8;
-const DADO = 'font-mono text-xs tabular-nums';
+const DADO = 'text-xs tabular-nums';
 /** Documentos (M11) chegam sem máscara: o front aplica pelo tipo. */
 const MASCARA_POR_TIPO = Object.freeze({
   [TIPOS_CAMPO.CPF]: formatarCpf,
@@ -68,6 +73,7 @@ function Opcoes({ valores, campo }) {
 
 function Responsavel({ id, nomePorId }) {
   const nome = nomePorId.get(id);
+
   if (nome) {
     return nome;
   }
@@ -83,6 +89,7 @@ function Responsavel({ id, nomePorId }) {
 /** Só http/https vira link; o resto aparece como texto (nunca num `href`). */
 function Url({ valor }) {
   const href = urlSegura(valor);
+
   if (!href) {
     return String(valor);
   }
@@ -112,24 +119,29 @@ export function CelulaLead({ coluna, valor, nomePorId, completo = false, semLink
   if (valor === null || valor === undefined || valor === '') {
     return <Vazio />;
   }
+
   // Ciclo de vida (FC4): o chip lê o lead inteiro; sem ciclo conhecido, vazio.
   if (coluna.tipo === TIPO_COLUNA.CICLO) {
     return textoDaCelulaCiclo(coluna, valor) ? <SeloCiclo lead={valor} /> : <Vazio />;
   }
+
   if (
     coluna.tipo === TIPO_COLUNA.MES_ANO ||
     coluna.tipo === TIPO_COLUNA.DIA ||
     coluna.tipo === TIPO_COLUNA.INTEIRO
   ) {
     const texto = textoDaCelulaCiclo(coluna, valor);
+
     return texto ? <span className={DADO}>{texto}</span> : <Vazio />;
   }
+
   // Lead score: selo da faixa (`crm.score`; sem a flag, só o número).
   if (coluna.id === CHAVE_SCORE) {
     return <SeloScore valor={valor} />;
   }
 
   const mascara = MASCARA_POR_TIPO[coluna.tipo];
+
   if (mascara) {
     return <span className={DADO}>{mascara(valor)}</span>;
   }
@@ -158,9 +170,11 @@ export function CelulaLead({ coluna, valor, nomePorId, completo = false, semLink
       return <span className={DADO}>{formatarIntervalo(valor) ?? '—'}</span>;
     case TIPOS_CAMPO.ENDERECO: {
       const texto = formatarEndereco(valor);
+
       if (!texto) {
         return <Vazio />;
       }
+
       return completo ? (
         texto
       ) : (
@@ -169,6 +183,7 @@ export function CelulaLead({ coluna, valor, nomePorId, completo = false, semLink
         </span>
       );
     }
+
     case TIPOS_CAMPO.EMAIL:
       return semLink ? (
         String(valor)

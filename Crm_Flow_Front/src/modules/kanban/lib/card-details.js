@@ -1,3 +1,6 @@
+/**
+ * @file Respostas paralelas podem chegar fora de ordem; só uma versão mais nova é conflito.
+ */
 export const PRIORITIES = [
   { value: 'sem_prioridade', label: 'Sem prioridade' },
   { value: 'baixa', label: 'Baixa' },
@@ -16,8 +19,66 @@ export const LABEL_COLORS = [
 ];
 
 export function getCardDetails(card) {
-  const details = card.dadosExtras ?? {};
+  const details =
+    card.dadosExtras && typeof card.dadosExtras === 'object' && !Array.isArray(card.dadosExtras)
+      ? card.dadosExtras
+      : {};
+
   return {
+    ...details,
+    ...('bloqueio' in details && {
+      bloqueio: typeof details.bloqueio === 'string' ? details.bloqueio : '',
+    }),
+    ...('links' in details && {
+      links: Array.isArray(details.links)
+        ? details.links.filter(
+            (item) =>
+              item &&
+              typeof item.id === 'string' &&
+              typeof item.nome === 'string' &&
+              typeof item.url === 'string' &&
+              /^https?:\/\//i.test(item.url),
+          )
+        : [],
+    }),
+    ...('anexos' in details && {
+      anexos: Array.isArray(details.anexos)
+        ? details.anexos.filter(
+            (item) =>
+              item &&
+              typeof item.id === 'string' &&
+              typeof item.nome === 'string' &&
+              typeof item.conteudo === 'string' &&
+              /^data:application\/octet-stream;base64,[A-Za-z0-9+/]*={0,2}$/.test(item.conteudo),
+          )
+        : [],
+    }),
+    ...('automacoes' in details && {
+      automacoes: Array.isArray(details.automacoes)
+        ? details.automacoes.filter(
+            (item) =>
+              item && typeof item.colunaId === 'string' && typeof item.concluir === 'boolean',
+          )
+        : [],
+    }),
+    ...('seguidores' in details && {
+      seguidores: Array.isArray(details.seguidores)
+        ? details.seguidores.filter((item) => typeof item === 'string')
+        : [],
+    }),
+    ...('proximaAcao' in details && {
+      proximaAcao:
+        details.proximaAcao &&
+        typeof details.proximaAcao.titulo === 'string' &&
+        typeof details.proximaAcao.data === 'string'
+          ? details.proximaAcao
+          : null,
+    }),
+    ...('dependencias' in details && {
+      dependencias: Array.isArray(details.dependencias)
+        ? [...new Set(details.dependencias.filter((id) => typeof id === 'string'))]
+        : [],
+    }),
     descricao: typeof details.descricao === 'string' ? details.descricao : '',
     prioridade: PRIORITIES.some((item) => item.value === details.prioridade)
       ? details.prioridade
@@ -44,13 +105,17 @@ export function getDueState(prazo, concluido, today = new Date()) {
   if (!prazo) {
     return null;
   }
+
   if (concluido) {
     return { key: 'done', label: 'Concluído' };
   }
+
   const localDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
   if (prazo < localDate) {
     return { key: 'overdue', label: 'Atrasado' };
   }
+
   return prazo === localDate
     ? { key: 'today', label: 'Vence hoje' }
     : { key: 'scheduled', label: 'No prazo' };

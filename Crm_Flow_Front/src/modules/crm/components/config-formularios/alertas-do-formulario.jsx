@@ -1,11 +1,19 @@
+/**
+ * @file Alertas do formulário (FM5): quando a resposta casa com a condição, a pessoa ganha um
+ * alerta no topo da ficha e um selo no card. Vão junto com o rascunho no "Salvar" e com a
+ * versão no "Publicar".
+ */
 import { Plus, Trash2 } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+
 import {
-  LIMITES_ALERTA,
-  OPCOES_NIVEL,
   alertaNovo,
   alvosDoRascunho,
+  LIMITES_ALERTA,
+  OPCOES_NIVEL,
 } from '../../lib/alertas-formulario';
 import { CampoForm } from '../campo-form';
 import { CondicaoDeCampo } from '../condicao-de-campo';
@@ -32,16 +40,10 @@ function LinhaDoAlerta({ alerta, numero, alvos, erros, onChange, onRemover }) {
   const idBase = `alerta-${alerta.chaveLocal}`;
 
   return (
-    <li className="grid gap-3 border border-border p-3">
+    <li className="grid gap-3 rounded-xl border border-border bg-card p-4">
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs font-medium text-muted-foreground">Alerta {numero}</p>
-        <Button
-          className="rounded-none"
-          onClick={onRemover}
-          size="sm"
-          type="button"
-          variant="ghost"
-        >
+        <Button onClick={onRemover} size="sm" type="button" variant="ghost">
           <Trash2 aria-hidden="true" />
           Remover
           <span className="sr-only"> o alerta {numero}</span>
@@ -76,7 +78,7 @@ function LinhaDoAlerta({ alerta, numero, alvos, erros, onChange, onRemover }) {
           {(controle) => (
             <Input
               {...controle}
-              className="h-9 rounded-none"
+
               maxLength={LIMITES_ALERTA.TEXTO + 50}
               onChange={(event) => onChange({ ...alerta, texto: event.target.value })}
               placeholder="Ex.: Alergia a dipirona"
@@ -123,7 +125,7 @@ export function AlertasDoFormulario({ rascunho, campos, errosPorAlerta, erroGera
     });
 
   return (
-    <fieldset className="grid gap-4 border border-border p-4">
+    <Card as="fieldset" layout="plain" className="grid gap-4 p-4">
       <legend className="mb-3 px-1 text-sm font-semibold">Alertas</legend>
       <p className="text-sm text-muted-foreground">
         Quando a resposta casar com a condição, a pessoa ganha um alerta no topo da ficha e um selo
@@ -163,7 +165,7 @@ export function AlertasDoFormulario({ rascunho, campos, errosPorAlerta, erroGera
         <ControleTravado motivo={motivo} motivoId="formulario-alerta-motivo">
           <Button
             aria-describedby={motivo ? 'formulario-alerta-motivo' : undefined}
-            className={motivo ? 'pointer-events-none rounded-none' : 'rounded-none'}
+            className={motivo ? 'pointer-events-none' : undefined}
             disabled={Boolean(motivo)}
             onClick={() =>
               onChange({
@@ -180,6 +182,6 @@ export function AlertasDoFormulario({ rascunho, campos, errosPorAlerta, erroGera
           </Button>
         </ControleTravado>
       </div>
-    </fieldset>
+    </Card>
   );
 }

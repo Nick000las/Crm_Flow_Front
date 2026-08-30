@@ -1,3 +1,7 @@
+/**
+ * @file `created_at`/`updated_at` são instantes de verdade (com fuso), ao contrário das datas
+ * de campo: aqui sim a data é a do fuso de quem está vendo.
+ */
 const DATA_ISO = /^(\d{4})-(\d{2})-(\d{2})/;
 
 const numeroFormatter = new Intl.NumberFormat('pt-BR', {
@@ -39,6 +43,7 @@ export function formatarData(valor) {
   }
 
   const partes = DATA_ISO.exec(valor);
+
   if (!partes) {
     return null;
   }
@@ -77,6 +82,7 @@ export function mascararTelefone(valor) {
   const digitos = String(valor ?? '')
     .replace(/\D/g, '')
     .slice(0, TELEFONE_CELULAR);
+
   if (digitos.length <= DDD) {
     return digitos;
   }
@@ -125,6 +131,7 @@ export function urlSegura(valor) {
 
   try {
     const url = new URL(valor.trim());
+
     return PROTOCOLOS_SEGUROS.includes(url.protocol) ? url.href : null;
   } catch {
     return null;
@@ -152,6 +159,7 @@ function moldar(valor, tamanho, regex, molde, aceitos = /^\d+$/) {
 
   const texto = String(valor);
   const limpo = texto.replace(PONTUACAO_DOCUMENTO, '').toUpperCase();
+
   return limpo.length === tamanho && aceitos.test(limpo) ? limpo.replace(regex, molde) : texto;
 }
 
@@ -185,9 +193,11 @@ export function formatarCep(valor) {
  */
 function mascarar(limpo, separadores) {
   let saida = '';
+
   for (const [indice, caractere] of [...limpo].entries()) {
     saida += (separadores[indice] ?? '') + caractere;
   }
+
   return saida;
 }
 
@@ -196,6 +206,7 @@ export function mascararCpf(valor) {
   const digitos = String(valor ?? '')
     .replace(/\D/g, '')
     .slice(0, DIGITOS_CPF);
+
   return mascarar(digitos, { 3: '.', 6: '.', 9: '-' });
 }
 
@@ -205,6 +216,7 @@ export function mascararCnpj(valor) {
     .toUpperCase()
     .replace(/[^0-9A-Z]/g, '')
     .slice(0, DIGITOS_CNPJ);
+
   return mascarar(limpo, { 2: '.', 5: '.', 8: '/', 12: '-' });
 }
 
@@ -212,6 +224,7 @@ export function mascararCep(valor) {
   const digitos = String(valor ?? '')
     .replace(/\D/g, '')
     .slice(0, DIGITOS_CEP);
+
   return mascarar(digitos, { 5: '-' });
 }
 
@@ -235,12 +248,15 @@ export function formatarIntervalo(valor) {
 
   const de = formatarData(valor.de);
   const ate = formatarData(valor.ate);
+
   if (de && ate) {
     return `${de} a ${ate}`;
   }
+
   if (de) {
     return `a partir de ${de}`;
   }
+
   return ate ? `até ${ate}` : null;
 }
 
@@ -282,5 +298,6 @@ export function formatarInstante(valor) {
   }
 
   const data = new Date(valor);
+
   return Number.isNaN(data.getTime()) ? null : instanteFormatter.format(data);
 }

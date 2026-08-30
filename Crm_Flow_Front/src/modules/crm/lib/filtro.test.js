@@ -1,23 +1,24 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
+
 import {
-  FILTRO_VAZIO,
-  MENSAGENS_FILTRO,
-  RESPONSAVEL_NENHUM,
   chavesComErro,
   chavesForaDosCampos,
   chipsDoFiltro,
-  filtroComValor,
   contarFiltros,
   descreverItem,
+  FILTRO_VAZIO,
+  filtroComValor,
   filtroDoRascunho,
   filtroSemChaves,
   lerFiltro,
+  MENSAGENS_FILTRO,
   novaLinha,
   operadoresDoCampo,
   paraCorpoDeBusca,
   rascunhoDoFiltro,
   rascunhoVazio,
+  RESPONSAVEL_NENHUM,
   serializarFiltro,
   tipoBase,
   trocarCampo,
@@ -57,6 +58,7 @@ describe('URL e contagem', () => {
 
   test('lerFiltro descarta lixo', () => {
     assert.deepEqual(lerFiltro('{quebrado'), FILTRO_VAZIO);
+
     assert.deepEqual(
       lerFiltro({
         filtros: [
@@ -177,6 +179,7 @@ describe('filtroDoRascunho', () => {
     );
 
     assert.equal(filtro, undefined);
+
     assert.deepEqual(erros, {
       a: MENSAGENS_FILTRO.LIMITE,
       b: MENSAGENS_FILTRO.LISTA,
@@ -217,6 +220,7 @@ describe('chips', () => {
       ),
       'Status é um de Novo, Ganho',
     );
+
     assert.equal(
       descreverItem(
         { chave: 'renda', operador: 'entre', valor: { de: 1000, ate: 5000 } },
@@ -224,10 +228,12 @@ describe('chips', () => {
       ),
       'Renda de 1.000 a 5.000',
     );
+
     assert.equal(
       descreverItem({ chave: 'email', operador: 'vazio' }, porChave('email')),
       'E-mail está vazio',
     );
+
     assert.equal(
       descreverItem({ chave: 'vip', operador: 'igual', valor: true }, porChave('vip')),
       'VIP é Sim',
@@ -256,10 +262,13 @@ describe('chips', () => {
       chips.map((chip) => chip.id),
       ['filtro-0', 'filtro-1', 'responsavel', 'valor'],
     );
+
     assert.equal(chips[2].texto, 'Responsável é Ana');
+
     assert.deepEqual(chips[0].remover().filtros, [
       { chave: 'vip', operador: 'igual', valor: true },
     ]);
+
     assert.equal(chips[3].remover().valorMin, undefined);
     assert.equal(chips[3].remover().usuarioResponsavelId, 'u1');
   });
@@ -305,6 +314,7 @@ describe('tipos do M2', () => {
     assert.deepEqual(filtro.filtros, [
       { chave: 'ticket', operador: 'entre', valor: { de: 1500.5 } },
     ]);
+
     assert.match(descreverItem(filtro.filtros[0], ticket), /^Ticket a partir de R\$\s1\.500,50$/);
   });
 });
@@ -346,6 +356,7 @@ describe('semResponsavel', () => {
     assert.equal('semResponsavel' in lerFiltro({ filtros: [], semResponsavel: 'sim' }), false);
 
     const ambos = lerFiltro({ filtros: [], semResponsavel: true, usuarioResponsavelId: 'u1' });
+
     assert.equal(ambos.usuarioResponsavelId, 'u1');
     assert.equal('semResponsavel' in ambos, false);
   });
@@ -370,6 +381,7 @@ describe('semResponsavel', () => {
     assert.deepEqual(filtroDoRascunho(rascunho, campos).filtro, filtro);
 
     const trocado = { ...rascunho, fixos: { ...rascunho.fixos, usuarioResponsavelId: 'u1' } };
+
     assert.deepEqual(filtroDoRascunho(trocado, campos).filtro, {
       filtros: [],
       usuarioResponsavelId: 'u1',
@@ -396,10 +408,12 @@ describe('tipos do M11 no filtro', () => {
       descreverItem({ chave: 'cnpj', operador: 'igual', valor: '12345678000190' }, cnpj),
       'CNPJ é 12.345.678/0001-90',
     );
+
     assert.equal(
       descreverItem({ chave: 'dono', operador: 'e_um_dos', valor: ['u1'] }, dono, nomes),
       'Dono é um de Bia',
     );
+
     assert.equal(
       descreverItem(
         { chave: 'viagem', operador: 'entre', valor: { de: '2026-02-01', ate: '2026-02-10' } },
@@ -424,9 +438,11 @@ test('filtro por campo oculto: acha a chave e tira do filtro e do rascunho', () 
   };
 
   assert.deepEqual(chavesForaDosCampos(fields, campos), ['renda']);
+
   assert.deepEqual(filtroSemChaves(filtro, ['renda']).filtros, [
     { chave: 'status', operador: 'contem', valor: 'a' },
   ]);
+
   assert.deepEqual(
     rascunhoDoFiltro(filtro, campos).linhas.map((linha) => linha.chave),
     ['status'],
@@ -436,12 +452,14 @@ test('filtro por campo oculto: acha a chave e tira do filtro e do rascunho', () 
 describe('faixaScore (crm.score)', () => {
   test('lerFiltro aceita a chave da faixa; conta, vira chip e atravessa o rascunho', () => {
     const filtro = lerFiltro({ filtros: [], faixaScore: 'quente' });
+
     assert.equal(filtro.faixaScore, 'quente');
     assert.equal(lerFiltro({ filtros: [], faixaScore: '' }).faixaScore, undefined);
     assert.equal(lerFiltro({ filtros: [], faixaScore: 3 }).faixaScore, undefined);
     assert.equal(contarFiltros(filtro), 1);
 
     const [chip] = chipsDoFiltro(filtro, [], new Map(), [{ chave: 'quente', rotulo: 'Quente' }]);
+
     assert.equal(chip.texto, 'Score: Quente');
     assert.equal(chip.remover().faixaScore, undefined);
     assert.equal(chipsDoFiltro(filtro, [], new Map())[0].texto, 'Score: quente');
@@ -478,6 +496,7 @@ describe('ciclo de vida (FC4)', () => {
 
   test('cicloDeVida: só os conhecidos, sem repetir, na ordem da tela; vazio some', () => {
     const lido = lerFiltro({ filtros: [], cicloDeVida: ['cliente', 'x', 'lead', 'cliente'] });
+
     assert.deepEqual(lido.cicloDeVida, ['lead', 'cliente']);
     assert.equal('cicloDeVida' in lerFiltro({ filtros: [], cicloDeVida: [] }), false);
     assert.equal('cicloDeVida' in lerFiltro({ filtros: [], cicloDeVida: ['x'] }), false);
@@ -492,6 +511,7 @@ describe('ciclo de vida (FC4)', () => {
       oportunidadesAbertasMin: -1,
       oportunidadesAbertasMax: 1.5,
     });
+
     assert.deepEqual(lido, { filtros: [] });
     assert.deepEqual(lerFiltro({ filtros: [], oportunidadesAbertasMax: '2' }), { filtros: [] });
     // 0 é valor real.
@@ -512,12 +532,15 @@ describe('ciclo de vida (FC4)', () => {
     assert.deepEqual(corpo.cicloDeVida, ['lead', 'cliente']);
     assert.equal(corpo.oportunidadesAbertasMin, 0);
     assert.equal(corpo.criadoAte, '2026-06-30T23:59:59.999');
+
     const resto = { ...corpo, criadoAte: undefined };
+
     assert.doesNotMatch(JSON.stringify(resto), /T\d/);
   });
 
   test('atravessa o rascunho e volta igual', () => {
     const rascunho = rascunhoDoFiltro(completo, []);
+
     assert.deepEqual(rascunho.fixos.cicloDeVida, ['lead', 'cliente']);
     assert.equal(rascunho.fixos.oportunidadesAbertasMin, '0');
     assert.equal(rascunho.fixos.clienteDesdeAte, '2026-03-31');
@@ -526,6 +549,7 @@ describe('ciclo de vida (FC4)', () => {
 
   test('rascunho vazio não aplica nada do ciclo', () => {
     const vazio = rascunhoVazio();
+
     assert.deepEqual(vazio.fixos.cicloDeVida, []);
     assert.equal(vazio.fixos.oportunidadesAbertasMin, '');
     assert.deepEqual(filtroDoRascunho(vazio, []).filtro, { filtros: [] });
@@ -544,17 +568,20 @@ describe('ciclo de vida (FC4)', () => {
       }),
       [],
     );
+
     assert.deepEqual(resultado, {
       erros: {
         clienteDesdeDe: 'A data inicial não pode ser depois da final',
         ultimaCompraDe: 'A data inicial não pode ser depois da final',
       },
     });
+
     // O mesmo dia nas duas pontas vale (inclusivo).
     const mesmoDia = filtroDoRascunho(
       comFixos({ clienteDesdeDe: '2026-03-01', clienteDesdeAte: '2026-03-01' }),
       [],
     );
+
     assert.equal(mesmoDia.filtro.clienteDesdeAte, '2026-03-01');
   });
 
@@ -566,11 +593,13 @@ describe('ciclo de vida (FC4)', () => {
       ),
       { erros: { oportunidadesAbertasMin: 'O mínimo não pode ser maior que o máximo' } },
     );
+
     for (const texto of ['-1', '1,5', 'dois', '1e2']) {
       assert.deepEqual(filtroDoRascunho(comFixos({ oportunidadesAbertasMax: texto }), []), {
         erros: { oportunidadesAbertasMax: 'Use um número inteiro a partir de 0' },
       });
     }
+
     assert.deepEqual(filtroDoRascunho(comFixos({ oportunidadesAbertasMin: ' 0 ' }), []).filtro, {
       filtros: [],
       oportunidadesAbertasMin: 0,
@@ -591,10 +620,13 @@ describe('ciclo de vida (FC4)', () => {
     assert.equal(porId.oportunidadesAbertas.chave, 'oportunidadesAbertasMin');
 
     const semCompra = porId.ultimaCompra.remover();
+
     assert.equal('ultimaCompraDe' in semCompra, false);
     assert.equal('ultimaCompraAte' in semCompra, false);
     assert.equal(semCompra.clienteDesdeDe, '2026-01-01');
+
     const semAbertas = porId.oportunidadesAbertas.remover();
+
     assert.equal('oportunidadesAbertasMin' in semAbertas, false);
     assert.equal('oportunidadesAbertasMax' in semAbertas, false);
   });
@@ -605,6 +637,7 @@ describe('ciclo de vida (FC4)', () => {
       [],
       new Map(),
     );
+
     assert.deepEqual(
       chips.map((chip) => chip.texto),
       ['Última compra: até 30/06/2026', 'Oportunidades abertas: a partir de 1'],
@@ -618,6 +651,7 @@ describe('ciclo de vida (FC4)', () => {
       'filtros.oportunidadesAbertasMin': ['x'],
       'filtros.oportunidadesAbertasMax': ['x'],
     };
+
     assert.deepEqual(chavesForaDosCampos(fields, campos), ['clienteDesdeDe']);
   });
 
@@ -637,6 +671,7 @@ describe('ciclo de vida (FC4)', () => {
       oportunidadesAbertasMin: 0,
       oportunidadesAbertasMax: 3,
     });
+
     assert.equal('cicloDeVida' in filtroSemChaves(filtro, ['cicloDeVida']), false);
   });
 });

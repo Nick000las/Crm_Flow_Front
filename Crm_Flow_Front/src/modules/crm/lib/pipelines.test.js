@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import {
   comStatusReordenados,
   motivoNaoDesativa,
@@ -86,11 +87,13 @@ test('seletores de pipeline ignoram os inativos', () => {
     pipelinesAtivos(PIPELINES).map((item) => item.valor),
     ['v', 'a'],
   );
+
   assert.deepEqual(origensDaAutomacao(PIPELINES), [{ valor: 'v', rotulo: 'Vendas' }]);
 });
 
 test('automação vai e volta do form, e o dono só vale com usuário específico', () => {
   const valores = valoresDaAutomacao(AUTOMACAO_VAZIA);
+
   assert.deepEqual(valores, {
     ativa: false,
     origemId: '',
@@ -98,11 +101,14 @@ test('automação vai e volta do form, e o dono só vale com usuário específic
     regraDoDono: 'none',
     donoId: '',
   });
+
   assert.deepEqual(payloadDaAutomacao(valores), AUTOMACAO_VAZIA);
+
   assert.equal(
     payloadDaAutomacao({ ...valores, regraDoDono: 'person_owner', donoId: 'u1' }).donoId,
     null,
   );
+
   assert.equal(
     payloadDaAutomacao({ ...valores, regraDoDono: 'specific_user', donoId: 'u1' }).donoId,
     'u1',
@@ -113,10 +119,12 @@ test('resumoDaAutomacao descreve o que acontece', () => {
   const nomes = new Map([['u1', 'Ana']]);
 
   assert.equal(resumoDaAutomacao(VENDAS, PIPELINES, nomes), 'Desligada.');
+
   assert.equal(
     resumoDaAutomacao(ATENDIMENTO, PIPELINES, nomes),
     'Venda ganha em Vendas cria um card em Na fila. Responsável: Ana.',
   );
+
   assert.match(resumoDaAutomacao(ATENDIMENTO, PIPELINES, new Map()), /Usuário removido/);
 });
 
@@ -132,6 +140,7 @@ test('não exclui com oportunidades nem se outro pipeline nasce dele', () => {
 
   const origem = { ...INATIVO, id: 'v2' };
   const dependente = { ...ATENDIMENTO, automacao: { ...ATENDIMENTO.automacao, origemId: 'v2' } };
+
   assert.match(motivoNaoExclui(origem, [origem, dependente]), /nasce/);
 });
 
@@ -142,5 +151,6 @@ test('comStatusReordenados só mexe no pipeline certo', () => {
     vendas.status.map((status) => status.id),
     ['s3', 's1', 's2'],
   );
+
   assert.equal(atendimento, ATENDIMENTO);
 });

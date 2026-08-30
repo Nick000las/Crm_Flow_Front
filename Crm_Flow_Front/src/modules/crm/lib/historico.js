@@ -1,3 +1,7 @@
+/**
+ * @file O diff do evento, item a item. A anonimização não mostra diff (os valores eram os dados
+ * pessoais).
+ */
 import { ORIGEM_DISTRIBUICAO, ORIGEM_FORMULARIO, TIPOS_EVENTO } from '../constants.js';
 import { formatarCnpj } from './formatadores.js';
 import { textoDoValor } from './layout.js';
@@ -66,8 +70,10 @@ export function tituloDoEvento(evento) {
     case TIPOS_EVENTO.ENRIQUECIDO: {
       // `detalhes.cnpj` só vem para quem vê o CNPJ.
       const cnpj = evento.detalhes?.cnpj ? ` (CNPJ ${formatarCnpj(evento.detalhes.cnpj)})` : '';
+
       return { titulo: `Dados da Receita aplicados${cnpj}`, comAutor: false };
     }
+
     default:
       return { titulo: TITULO_DO_TIPO[evento.tipo] ?? 'Lead alterado', comAutor: false };
   }
@@ -83,6 +89,7 @@ export function detalheDoEvento(evento) {
   if (evento.tipo !== TIPOS_EVENTO.CRIADO) {
     return null;
   }
+
   const distribuicao = evento.detalhes?.distribuicao;
 
   switch (distribuicao?.origem) {
@@ -123,14 +130,17 @@ function ladoDoDiff(item, valor, nome, nomePorId) {
   if (vazio(valor)) {
     return null;
   }
+
   if (nome) {
     return resumir(nome);
   }
 
   const texto = textoDoValor(item, valor, nomePorId);
+
   if (texto) {
     return resumir(texto);
   }
+
   return item.tipo === 'usuario' ? USUARIO_REMOVIDO : resumir(String(valor));
 }
 
@@ -159,5 +169,6 @@ export function itensDoEvento(evento, nomePorId) {
   if (evento.tipo === TIPOS_EVENTO.ANONIMIZADO) {
     return [];
   }
+
   return (evento.diff ?? []).map((item) => itemDoDiff(item, nomePorId));
 }

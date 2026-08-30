@@ -1,4 +1,10 @@
+/**
+ * @file Anonimizar o lead a pedido do titular (LGPD, DONO/MASTER). Irreversível: a trava é
+ * digitar o nome do lead. Depois, o lead é buscado de novo (o hook invalida) e quem chamou
+ * mostra o resumo.
+ */
 import { useState } from 'react';
+
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,8 +16,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Form } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+
 import { useAnonimizarLead } from '../hooks/use-lgpd';
 import { confirmacaoBate, resumoDaAnonimizacao, textoDeConfirmacao } from '../lib/lgpd';
 
@@ -27,16 +35,18 @@ function FormAnonimizar({ lead, comFormularios, onAnonimizado }) {
 
   function handleSubmit(event) {
     event.preventDefault();
+
     if (!confere || anonimizar.isPending) {
       return;
     }
+
     anonimizar.mutate(lead.id, {
       onSuccess: (resultado) => onAnonimizado(resumoDaAnonimizacao(resultado)),
     });
   }
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       <div className="grid gap-2 text-sm">
         <p>
           <span className="font-medium">Sai de vez:</span> nome (vira "Lead anonimizado"), e-mail,
@@ -58,16 +68,17 @@ function FormAnonimizar({ lead, comFormularios, onAnonimizado }) {
 
       <div className="grid gap-1.5">
         <Label htmlFor={CONFIRMACAO_ID}>
-          Para confirmar, digite <span className="font-mono">{esperado}</span>
+          Para confirmar, digite <span>{esperado}</span>
         </Label>
         <Input
           aria-describedby={AJUDA_ID}
           autoComplete="off"
           autoFocus
-          className="h-9 rounded-none"
+
           id={CONFIRMACAO_ID}
           onChange={(event) => {
             setDigitado(event.target.value);
+
             if (anonimizar.error) {
               anonimizar.reset();
             }
@@ -96,11 +107,13 @@ function FormAnonimizar({ lead, comFormularios, onAnonimizado }) {
           disabled={!confere || anonimizar.isPending}
           type="submit"
           variant="destructive"
+          loading={anonimizar.isPending}
+          loadingText="Anonimizando…"
         >
-          {anonimizar.isPending ? 'Anonimizando…' : 'Anonimizar de vez'}
+          {'Anonimizar de vez'}
         </Button>
       </DialogFooter>
-    </form>
+    </Form>
   );
 }
 
@@ -124,7 +137,7 @@ export function AnonimizarLeadDialog({
 }) {
   return (
     <Dialog onOpenChange={onOpenChange} open={Boolean(lead)}>
-      <DialogContent className="rounded-none sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Anonimizar lead</DialogTitle>
           <DialogDescription>

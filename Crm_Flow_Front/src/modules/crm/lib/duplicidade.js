@@ -1,3 +1,8 @@
+/**
+ * @file Regras de duplicidade no front (`crm.duplicidade`). O back decide o que é duplicado
+ * (normaliza telefone, documento e e-mail); aqui só se lê o que ele devolve e se monta o que
+ * vai para ele.
+ */
 import {
   ACOES_DUPLICIDADE,
   CAMADA,
@@ -40,18 +45,21 @@ export function ehBloqueio(erro) {
  */
 export function candidatosDoErro(erro) {
   const lista = erro?.details?.duplicados;
+
   return Array.isArray(lista) ? lista.filter((item) => typeof item?.id === 'string') : [];
 }
 
 /** "E-mail e telefone iguais" — por que o lead parece duplicado. */
 export function descreverCandidato(candidato) {
   const labels = (candidato.campos ?? []).map((campo) => campo.label);
+
   if (labels.length === 0) {
     return 'Parecido';
   }
 
   const juntos =
     labels.length === 1 ? labels[0] : `${labels.slice(0, -1).join(', ')} e ${labels.at(-1)}`;
+
   return `${juntos} ${labels.length === 1 ? 'igual' : 'iguais'}`;
 }
 
@@ -70,7 +78,9 @@ export function consultaDeDuplicados(campos, valores, leadId) {
     if (campo.camada === CAMADA.CAMADA_3 || !DE_CAMPO.has(campo.chave)) {
       continue;
     }
+
     const valor = paraValorDeApi(campo.tipo, valores[idNoForm(campo)]);
+
     if (typeof valor === 'string') {
       corpo[campo.chave] = valor;
     }
@@ -79,6 +89,7 @@ export function consultaDeDuplicados(campos, valores, leadId) {
   if (Object.keys(corpo).length === 0) {
     return null;
   }
+
   return leadId ? { ...corpo, leadId } : corpo;
 }
 
@@ -144,5 +155,6 @@ export function acoesParaEnvio(escolhas) {
   const acoes = Object.fromEntries(
     Object.entries(escolhas).filter(([, acao]) => acao !== SEGUIR_ESTRATEGIA),
   );
+
   return Object.keys(acoes).length > 0 ? acoes : null;
 }

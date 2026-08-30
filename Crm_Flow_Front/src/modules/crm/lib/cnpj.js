@@ -1,6 +1,10 @@
-import { formatarCep, formatarData, formatarEndereco, formatarTelefone } from './formatadores.js';
+/**
+ * @file Algo mudou em relação ao salvo? @param {ReturnType<typeof valoresDaConfig>} valores
+ * @param {ConfigCnpj} config.
+ */
 import { MENSAGEM_SEM_PERMISSAO } from '../constants.js';
 import { idNoForm, paraValorDeApi, paraValorDeForm, podeEditarCampo } from './form-lead.js';
+import { formatarCep, formatarData, formatarEndereco, formatarTelefone } from './formatadores.js';
 import { textoDoValor } from './layout.js';
 
 /**
@@ -95,16 +99,21 @@ export function dadosParaLeitura(dados, camposReceita, sugeridos = new Set()) {
     if (sugeridos.has(chave) || PARTES_DO_ENDERECO.includes(chave)) {
       return [];
     }
+
     if (chave === DADO_ENDERECO) {
       const texto = enderecoEmLinha(dados);
+
       return texto ? [{ chave, label, texto }] : [];
     }
 
     const valor = dados[chave];
+
     if (valor === undefined || valor === null || valor === '' || typeof valor === 'object') {
       return [];
     }
+
     const formatar = FORMATO_DO_DADO[chave];
+
     return [{ chave, label, texto: (formatar && formatar(valor)) || String(valor) }];
   });
 }
@@ -117,6 +126,7 @@ export function dadosParaLeitura(dados, camposReceita, sugeridos = new Set()) {
  */
 export function situacaoDestacada(dados) {
   const situacao = typeof dados?.situacao === 'string' ? dados.situacao.trim().toUpperCase() : '';
+
   return situacao && situacao !== SITUACAO_REGULAR ? situacao : null;
 }
 
@@ -185,11 +195,13 @@ export function itensDaSugestao(sugestao, campos, valores) {
  */
 export function aplicarSugestoes(valores, itens, marcados) {
   const proximos = { ...valores };
+
   for (const item of itens) {
     if (item.disponivel && marcados.has(item.id)) {
       proximos[item.id] = item.valorDeForm;
     }
   }
+
   return proximos;
 }
 

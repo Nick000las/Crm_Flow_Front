@@ -1,6 +1,11 @@
+/**
+ * @file A resposta é a matriz inteira: vira o cache; os campos do lead mudam de `acesso`.
+ */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
 import { podeVer } from '@/lib/acesso';
+
 import { obterPermissoes, salvarPermissoes } from '../api/permissoes.api';
 import { CRM_FEATURES, PAPEIS_GESTAO } from '../constants';
 import { crmKeys } from '../query-keys';

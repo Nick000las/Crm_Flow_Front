@@ -1,6 +1,11 @@
+/**
+ * @file Regras do tenant (Configurações › Duplicidade). Só busca com a flag.
+ */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
 import { temFeature } from '@/lib/acesso';
+
 import { checarDuplicados, mesclarLeads, obterRegras, salvarRegras } from '../api/duplicidade.api';
 import { CRM_FEATURES } from '../constants';
 import { crmKeys } from '../query-keys';
@@ -49,6 +54,7 @@ export function useMesclarLeads() {
       queryClient.setQueryData(crmKeys.lead(principalId), principal);
       queryClient.removeQueries({ queryKey: crmKeys.lead(secundarioId) });
       queryClient.removeQueries({ queryKey: crmKeys.linksDeFormulario(secundarioId) });
+
       return Promise.all(
         [
           crmKeys.leads(),

@@ -1,6 +1,12 @@
+/**
+ * @file Valor de uma linha de filtro: o controle muda com o operador. `entre` → de/até;
+ * `e_um_dos` → checkboxes (ou tags livres); `vazio`/`nao_vazio` → nada. Campo de lista oferece
+ * todas as opções, inclusive inativas, e filtra pela key (tags inclusive).
+ */
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+
 import { TIPOS_CAMPO } from '../constants';
 import { useUsuarios } from '../hooks/use-usuarios';
 import { OPERADOR, operadorSemValor, tipoBase } from '../lib/filtro';
@@ -8,7 +14,7 @@ import { opcoesDoFiltro } from '../lib/opcoes';
 import { SelectSimples } from './select-simples';
 import { TagsInput } from './tags-input';
 
-const INPUT_CLASS = 'h-9 rounded-none';
+const INPUT_CLASS = 'w-full';
 const OPCOES_BOOLEANO = Object.freeze([
   { valor: 'true', rotulo: 'Sim' },
   { valor: 'false', rotulo: 'Não' },
@@ -24,7 +30,7 @@ function InputDoTipo({ campo, value, onChange, ...controle }) {
   return (
     <Input
       {...controle}
-      className={cn(INPUT_CLASS, (numerico || data || hora) && 'font-mono tabular-nums')}
+      className={cn(INPUT_CLASS, (numerico || data || hora) && 'tabular-nums')}
       inputMode={numerico ? 'decimal' : undefined}
       onChange={(event) => onChange(event.target.value)}
       type={data ? 'date' : hora ? 'time' : 'text'}
@@ -96,6 +102,7 @@ function ValorUsuario({ operador, value, onChange, controle }) {
   if (operador === OPERADOR.E_UM_DOS) {
     return <ListaDeOpcoes controle={controle} onChange={onChange} opcoes={opcoes} value={value} />;
   }
+
   return <SelectSimples {...controle} onChange={onChange} opcoes={opcoes} value={value} />;
 }
 

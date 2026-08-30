@@ -1,4 +1,10 @@
+/**
+ * @file "Adicionar" da coluna: pessoa que já existe ou pessoa nova. Aberto enquanto houver
+ * `coluna`.
+ */
 import { useState } from 'react';
+
+import { LoadingState } from '@/components/loading-state';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -9,12 +15,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Form } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { focusFirstInvalidField } from '@/lib/form-validation';
 import { semChave } from '@/lib/objetos';
 import { cn } from '@/lib/utils';
 import { toApiError } from '@/services/api';
+
 import { useContextoDoForm } from '../../hooks/use-contexto-do-form';
 import { useNavegacaoLeads } from '../../hooks/use-navegacao-leads';
 import { useBuscaDePessoas, useCriarCard } from '../../hooks/use-quadro';
@@ -53,22 +61,24 @@ function ResultadosDaBusca({ termo, escolhida, onEscolher }) {
   if (termo.trim().length < 2) {
     return <p className="text-sm text-muted-foreground">Digite ao menos 2 letras.</p>;
   }
+
   if (busca.isPending) {
-    return <Skeleton className="h-9 rounded-none" />;
+    return <LoadingState inline label="Buscando pessoas…" />;
   }
+
   if (pessoas.length === 0) {
     return <p className="text-sm text-muted-foreground">Ninguém encontrado.</p>;
   }
 
   return (
-    <ul className="grid max-h-40 overflow-y-auto border border-border">
+    <ul className="grid max-h-40 overflow-y-auto rounded-lg border border-border bg-card">
       {pessoas.map((pessoa) => (
         <li key={pessoa.id}>
           <button
             aria-pressed={escolhida?.id === pessoa.id}
             className={cn(
               'w-full px-3 py-2 text-left text-sm outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/50',
-              escolhida?.id === pessoa.id && 'bg-muted font-medium',
+              escolhida?.id === pessoa.id && 'bg-primary/10 font-medium text-primary',
             )}
             onClick={() => onEscolher(pessoa)}
             type="button"
@@ -110,12 +120,28 @@ function FormPessoaExistente({ quadroRef, coluna, campos, onSalvo }) {
 
   function handleSubmit(event) {
     event.preventDefault();
+
     const erros = {
       ...validarOportunidade(valores),
       ...(!pessoa && { leadId: 'Escolha a pessoa' }),
     };
+
     if (Object.keys(erros).length > 0) {
       setErrosCliente(erros);
+
+      const ids = {
+        leadId: 'quadro-busca-pessoa',
+        pipelineId: 'oportunidade-pipeline',
+        status: 'oportunidade-status-inicial',
+        dataPrevistaFechamento: 'oportunidade-data',
+        responsavelId: 'oportunidade-responsavel',
+      };
+
+      focusFirstInvalidField(
+        event.currentTarget,
+        Object.keys(erros).map((campo) => ids[campo] ?? `oportunidade-${campo}`),
+      );
+
       return;
     }
 
@@ -129,7 +155,7 @@ function FormPessoaExistente({ quadroRef, coluna, campos, onSalvo }) {
   }
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       <CampoForm
         erro={errosCliente.leadId ?? porCampo.leadId}
         id="quadro-busca-pessoa"
@@ -169,11 +195,17 @@ function FormPessoaExistente({ quadroRef, coluna, campos, onSalvo }) {
         <DialogClose render={<Button disabled={criar.isPending} type="button" variant="outline" />}>
           Cancelar
         </DialogClose>
-        <Button aria-busy={criar.isPending} disabled={criar.isPending} type="submit">
-          {criar.isPending ? 'Criando…' : 'Criar card'}
+        <Button
+          aria-busy={criar.isPending}
+          disabled={criar.isPending}
+          type="submit"
+          loading={criar.isPending}
+          loadingText="Criando…"
+        >
+          {'Criar card'}
         </Button>
       </DialogFooter>
-    </form>
+    </Form>
   );
 }
 
@@ -190,7 +222,7 @@ function FormPessoaNova({ quadroRef, coluna, onCancelar, onSalvo }) {
   const daPessoa = camposDaPessoaNova(campos);
 
   if (esperando) {
-    return <Skeleton className="h-40 rounded-none" />;
+    return <LoadingState label="Carregando campos da pessoa…" />;
   }
 
   async function salvar(valores, { ignorarDuplicados = false } = {}) {
@@ -201,6 +233,7 @@ function FormPessoaNova({ quadroRef, coluna, onCancelar, onSalvo }) {
         ...(ignorarDuplicados && { ignorarDuplicados: true }),
       },
     });
+
     onSalvo(AVISO_CRIADO);
   }
 
@@ -243,7 +276,7 @@ export function NovoCardDialog({ coluna, quadroRef, campos, onFechar, onSalvo })
 
   return (
     <Dialog onOpenChange={(aberto) => !aberto && onFechar()} open={Boolean(coluna)}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-none sm:max-w-lg">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Adicionar em {coluna?.nome}</DialogTitle>
           <DialogDescription>O card entra nesta coluna, neste pipeline.</DialogDescription>

@@ -1,6 +1,11 @@
+/**
+ * @file Tudo de que o `LeadForm` depende, no Sheet e no "Adicionar" do quadro.
+ */
 import { useMemo } from 'react';
+
 import { useAuth } from '@/hooks/useAuth';
 import { temFeature } from '@/lib/acesso';
+
 import { CAMPOS_LGPD, CONTEXTO, CRM_FEATURES } from '../constants';
 import { camposDoContexto } from '../lib/contextos';
 import { marcarCalculados, marcarSemAcessoComercial, valoresIniciais } from '../lib/form-lead';

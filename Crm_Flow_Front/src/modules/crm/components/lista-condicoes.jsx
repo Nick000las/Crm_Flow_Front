@@ -1,6 +1,12 @@
-import { Plus, Trash2 } from 'lucide-react';
+/**
+ * @file As condições de uma regra (distribuição, pontuação): uma `CondicaoDeCampo` por linha,
+ * remover e "Adicionar condição" até `maximo`.
+ */
 import { useRef, useState } from 'react';
+import { Plus, Trash2 } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
+
 import { condicaoDoCampo } from '../lib/regras';
 import { BotaoIcone } from './botao-icone';
 import { CondicaoDeCampo } from './condicao-de-campo';
@@ -65,7 +71,7 @@ export function ListaCondicoes({
         return (
           <div className="grid gap-3 border border-border p-3" key={chaves[indice]}>
             <div className="flex items-center justify-between gap-2">
-              <p className="font-mono text-[11px] tracking-wide text-muted-foreground uppercase">
+              <p className="text-[11px] tracking-wide text-muted-foreground uppercase">
                 Condição {indice + 1}
               </p>
               <BotaoIcone

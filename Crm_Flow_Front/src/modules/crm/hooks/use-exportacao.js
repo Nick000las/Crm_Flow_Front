@@ -1,6 +1,11 @@
+/**
+ * @file Gera o arquivo e já dispara o download (sem nome do back, `leads.<formato>`).
+ */
 import { useMutation } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
 import { salvarBlob } from '@/lib/download';
+
 import { exportarLeads } from '../api/exportacao.api';
 import { EXPORTACAO } from '../constants';
 

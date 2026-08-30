@@ -1,4 +1,7 @@
 /**
+ * @file Só DONO/MASTER. O secundário vai para a lixeira (`mesclado_em_id`).
+ */
+/**
  * Duplicidade e mesclagem (`crm.duplicidade`). A checagem ao vivo não
  * depende da flag: sem ela, a lista vem vazia.
  *

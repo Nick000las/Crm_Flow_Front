@@ -1,4 +1,8 @@
 /**
+ * @file Mover é mudar o status. `CAMPOS_OBRIGATORIOS` (400) traz o que falta em `fields`;
+ * `conflito: true` = gravou, mas outra pessoa mexeu antes.
+ */
+/**
  * Quadro comercial (M3): cada pipeline ativo é um quadro, cada status uma coluna
  * e cada oportunidade um card. Tudo é lido do CRM a cada consulta. Sem as flags
  * `crm.quadro_comercial` e `kanban_universal.quadros_entidade`, não existe.

@@ -1,3 +1,6 @@
+/**
+ * @file Nome do destino para a lista: o usuário (`nomePorId`) ou "Grupo X".
+ */
 import { DISTRIBUICAO, TIPOS_DESTINO } from '../constants.js';
 import { condicaoParaEnvio, condicaoParaForm, validarCondicoes } from './condicoes.js';
 import { errosPorItem } from './erros-de-lista.js';
@@ -43,11 +46,14 @@ export function destinoParaSelect(destino) {
 /** Valor do select → `{ tipo, id }`, ou `null` sem escolha. */
 export function destinoDoSelect(valor) {
   const posicao = String(valor ?? '').indexOf(SEPARADOR_DESTINO);
+
   if (posicao < 0) {
     return null;
   }
+
   const tipo = valor.slice(0, posicao);
   const id = valor.slice(posicao + 1);
+
   return Object.values(TIPOS_DESTINO).includes(tipo) && id ? { tipo, id } : null;
 }
 
@@ -95,9 +101,11 @@ export function valoresDaDistribuicao(config, campos) {
  */
 export function validarRegraDistribuicao(regra, campos) {
   const erros = {};
+
   if (!regra.nome.trim()) {
     erros.nome = MENSAGENS_DISTRIBUICAO.NOME;
   }
+
   if (!destinoDoSelect(regra.destino)) {
     erros.destino = MENSAGENS_DISTRIBUICAO.DESTINO;
   }
@@ -130,12 +138,15 @@ export function distribuicaoParaEnvio(valores, campos) {
   }
 
   const erros = {};
+
   for (const regra of valores.regras) {
     const daRegra = validarRegraDistribuicao(regra, campos);
+
     if (Object.keys(daRegra).length > 0) {
       erros[regra.chaveLocal] = daRegra;
     }
   }
+
   if (Object.keys(erros).length > 0) {
     return { erros };
   }
@@ -165,6 +176,7 @@ export function errosDoPut(fields, chavesEnviadas) {
       item ? { ...resto, regra: item } : resto,
     ]),
   );
+
   return { porRegra, outros };
 }
 
@@ -178,7 +190,9 @@ const semChaveLocal = ({ ativo, fallback, regras }) => ({
   fallback,
   regras: regras.map((regra) => {
     const resto = { ...regra };
+
     delete resto.chaveLocal;
+
     return resto;
   }),
 });
@@ -217,12 +231,16 @@ export function chaveDaConfig({ ativo, fallback, regras }) {
  */
 export function nomeDoDestino(destino, nomePorId, grupos) {
   const escolhido = destinoDoSelect(destino);
+
   if (!escolhido) {
     return 'Sem destino';
   }
+
   if (escolhido.tipo === TIPOS_DESTINO.GRUPO) {
     const grupo = grupos.find((atual) => atual.id === escolhido.id);
+
     return grupo ? `Grupo ${grupo.nome}` : 'Grupo removido';
   }
+
   return nomePorId.get(escolhido.id) ?? 'Usuário inativo';
 }

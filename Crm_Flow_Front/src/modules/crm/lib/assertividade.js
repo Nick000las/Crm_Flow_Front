@@ -1,6 +1,10 @@
+/**
+ * @file Regras de exibição da assertividade do forecast (FC3). Previsto, realizado e a razão
+ * vêm prontos do back: aqui nada é recalculado, e `null` nunca vira 0 nem "0%".
+ */
 import { toApiError } from '../../../services/api-error.js';
 import { FAIXAS_ASSERTIVIDADE, FUSO_PADRAO } from '../constants.js';
-import { TEXTOS_ASSERTIVIDADE, rotuloMesSemAno } from './assertividade-textos.js';
+import { rotuloMesSemAno, TEXTOS_ASSERTIVIDADE } from './assertividade-textos.js';
 import { validarPeriodo } from './forecast.js';
 import { formatarMoeda } from './formatadores.js';
 
@@ -35,7 +39,9 @@ function ehMes(valor) {
   if (typeof valor !== 'string') {
     return false;
   }
+
   const m = /^\d{4}-(\d{2})$/.exec(valor);
+
   return Boolean(m) && Number(m[1]) >= 1 && Number(m[1]) <= 12;
 }
 
@@ -68,18 +74,23 @@ export function escreverConsultaAssertividade(searchParams, mudancas) {
   const mudouPeriodo = ['de', 'ate'].some(
     (chave) => Object.hasOwn(mudancas, chave) && mesOuNulo(mudancas[chave]) !== atual[chave],
   );
+
   if (mudouPeriodo && !Object.hasOwn(mudancas, 'mes')) {
     proxima.mes = null;
   }
 
   const saida = new URLSearchParams(searchParams);
+
   for (const parte of PARTES_DA_CONSULTA) {
     saida.delete(parte);
+
     const valor = mesOuNulo(proxima[parte]);
+
     if (valor) {
       saida.set(parte, valor);
     }
   }
+
   return saida;
 }
 
@@ -91,12 +102,15 @@ export function escreverConsultaAssertividade(searchParams, mudancas) {
 export function paramsDaAssertividade(consulta) {
   /** @type {ParamsAssertividade} */
   const params = {};
+
   if (consulta?.de) {
     params.de = consulta.de;
   }
+
   if (consulta?.ate) {
     params.ate = consulta.ate;
   }
+
   return params;
 }
 
@@ -108,6 +122,7 @@ function anoEMes(fuso, agora) {
     month: '2-digit',
   }).formatToParts(agora);
   const ler = (tipo) => Number(partes.find((p) => p.type === tipo)?.value);
+
   return { ano: ler('year'), mes: ler('month') };
 }
 
@@ -120,13 +135,16 @@ function anoEMes(fuso, agora) {
  */
 export function ultimoMesFechado(fuso, agora = new Date()) {
   let atual;
+
   try {
     atual = anoEMes(fuso || FUSO_PADRAO, agora);
   } catch {
     atual = anoEMes(FUSO_PADRAO, agora);
   }
+
   const ano = atual.mes === 1 ? atual.ano - 1 : atual.ano;
   const mes = atual.mes === 1 ? 12 : atual.mes - 1;
+
   return `${ano}-${String(mes).padStart(2, '0')}`;
 }
 
@@ -140,13 +158,16 @@ export function ultimoMesFechado(fuso, agora = new Date()) {
  */
 export function validarPeriodoFechado(de, ate, ultimoFechado) {
   const erros = { ...validarPeriodo(de, ate) };
+
   // `AAAA-MM` compara como texto.
   if (!erros.ate && ehMes(ate) && ate > ultimoFechado) {
     erros.ate = TEXTOS_ASSERTIVIDADE.soMesesFechados;
   }
+
   if (!erros.de && ehMes(de) && de > ultimoFechado) {
     erros.de = TEXTOS_ASSERTIVIDADE.soMesesFechados;
   }
+
   return erros;
 }
 
@@ -161,10 +182,12 @@ export function porcentagem(razao, casas = 0) {
   if (typeof razao !== 'number' || !Number.isFinite(razao)) {
     return null;
   }
+
   const formato = new Intl.NumberFormat('pt-BR', {
     minimumFractionDigits: casas,
     maximumFractionDigits: casas,
   });
+
   return `${formato.format(razao * 100)}%`;
 }
 
@@ -178,12 +201,15 @@ export function faixaDaAssertividade(razao) {
   if (typeof razao !== 'number' || !Number.isFinite(razao)) {
     return null;
   }
+
   if (razao < FAIXAS_ASSERTIVIDADE.OTIMISTA_ABAIXO) {
     return 'otimista';
   }
+
   if (razao > FAIXAS_ASSERTIVIDADE.PESSIMISTA_ACIMA) {
     return 'pessimista';
   }
+
   return 'boa';
 }
 
@@ -198,10 +224,13 @@ const moeda = (valor) => formatarMoeda(valor) ?? TRACO;
 export function textoDeLeitura(mes) {
   const nome = rotuloMesSemAno(mes.mes);
   const realizou = `realizou ${moeda(mes.realizado)}`;
+
   if (mes.semDados) {
     return `Em ${nome} ainda não havia previsão guardada; ${realizou}.`;
   }
+
   const taxa = porcentagem(mes.assertividade) ?? TRACO;
+
   return `Em ${nome}, na primeira semana, o forecast previa ${moeda(mes.previsto)}; ${realizou} (${taxa}).`;
 }
 
@@ -234,18 +263,24 @@ export function erroDaAssertividade(error) {
   if (!error) {
     return null;
   }
+
   const apiError = toApiError(error);
+
   if (apiError.status === 403 && apiError.code === 'FORBIDDEN') {
     return { tipo: 'oculta' };
   }
+
   if (apiError.status !== 400) {
     return null;
   }
+
   for (const campo of CAMPOS_DO_FILTRO) {
     const mensagem = apiError.fields[campo]?.[0];
+
     if (mensagem) {
       return { tipo: 'filtro', campo, mensagem };
     }
   }
+
   return null;
 }

@@ -1,3 +1,6 @@
+/**
+ * @file Segunda linha de um resultado da busca.
+ */
 import { podeVer } from '../../../lib/acesso.js';
 
 /** Vínculo de card com pessoa do CRM. */

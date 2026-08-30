@@ -1,20 +1,27 @@
+/**
+ * @file Área Configurações do CRM (`/crm/configuracoes/:secao`). Papel e flag valem por
+ * subseção (`secoesVisiveis`): o OPERADOR, por exemplo, só vê o Layout. Sem `:secao`, ou com
+ * uma que o usuário não vê, vai para a primeira visível; sem nenhuma, volta para a lista.
+ */
 import { Link, Navigate, useParams } from 'react-router-dom';
+
 import { PageHeader } from '@/components/page-header';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
+
 import { SecaoCampos } from '../components/config-campos/secao-campos';
 import { SecaoCnpj } from '../components/config-cnpj/secao-cnpj';
-import { SecaoDuplicidade } from '../components/config-duplicidade/secao-duplicidade';
 import { SecaoDistribuicao } from '../components/config-distribuicao/secao-distribuicao';
+import { SecaoDuplicidade } from '../components/config-duplicidade/secao-duplicidade';
 import { SecaoFormularios } from '../components/config-formularios/secao-formularios';
 import { SecaoInatividade } from '../components/config-inatividade/secao-inatividade';
-import { SecaoLgpd } from '../components/config-lgpd/secao-lgpd';
 import { SecaoLayout } from '../components/config-layout/secao-layout';
+import { SecaoLgpd } from '../components/config-lgpd/secao-lgpd';
 import { SecaoListas } from '../components/config-listas/secao-listas';
+import { SecaoPermissoes } from '../components/config-permissoes/secao-permissoes';
 import { SecaoPipelines } from '../components/config-pipelines/secao-pipelines';
 import { SecaoRegras } from '../components/config-regras/secao-regras';
 import { SecaoScore } from '../components/config-score/secao-score';
-import { SecaoPermissoes } from '../components/config-permissoes/secao-permissoes';
 import { caminhoDaSecao, secoesVisiveis } from '../lib/secoes-configuracoes';
 import { ROTAS_CRM } from '../rotas';
 
@@ -37,8 +44,8 @@ const TELA_DA_SECAO = Object.freeze({
 
 function NavegacaoSecoes({ secoes, ativa }) {
   return (
-    <nav aria-label="Seções de configuração" className="md:w-48 md:shrink-0">
-      <ul className="flex gap-1 overflow-x-auto md:grid">
+    <nav aria-label="Seções de configuração" className="min-w-0 max-w-full xl:w-48 xl:shrink-0">
+      <ul className="flex gap-1 overflow-x-auto xl:grid">
         {secoes.map((secao) => {
           const atual = secao.key === ativa;
 
@@ -79,6 +86,7 @@ export default function ConfiguracoesCrmPage() {
 
   if (!atual) {
     const destino = secoes[0] ? caminhoDaSecao(secoes[0].key) : ROTAS_CRM.LISTA;
+
     return <Navigate replace to={destino} />;
   }
 
@@ -86,9 +94,13 @@ export default function ConfiguracoesCrmPage() {
 
   return (
     <>
-      <PageHeader title="Configurações" description="Como o CRM funciona para a sua empresa." />
+      <PageHeader
+        eyebrow="CRM"
+        title="Configurações"
+        description="Como o CRM funciona para a sua empresa."
+      />
 
-      <div className="flex flex-col gap-6 md:flex-row">
+      <div className="flex min-w-0 flex-col gap-6 xl:flex-row">
         <NavegacaoSecoes ativa={atual.key} secoes={secoes} />
         <section aria-labelledby="config-secao-titulo" className="min-w-0 flex-1">
           <h2 className="mb-4 text-base font-semibold" id="config-secao-titulo">

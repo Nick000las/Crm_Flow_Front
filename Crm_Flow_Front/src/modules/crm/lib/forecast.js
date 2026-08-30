@@ -1,9 +1,13 @@
+/**
+ * @file Erro de filtro do `GET /crm/forecast`, para a tela marcar o filtro certo. Null quando o
+ * erro não é de filtro (a tela mostra o alerta genérico).
+ */
 import { ROLES } from '../../../lib/roles.js';
 import { toApiError } from '../../../services/api-error.js';
 import {
   AGRUPAR_FORECAST,
-  BLOCOS_FORECAST,
   BLOCO_NA_ROTA,
+  BLOCOS_FORECAST,
   CAMADA,
   FORECAST,
   TIPOS_MES,
@@ -88,14 +92,19 @@ function indiceDoMes(mes) {
   if (typeof mes !== 'string') {
     return null;
   }
+
   const m = /^(\d{4})-(\d{2})$/.exec(mes);
+
   if (!m) {
     return null;
   }
+
   const numero = Number(m[2]);
+
   if (numero < 1 || numero > 12) {
     return null;
   }
+
   return Number(m[1]) * 12 + numero - 1;
 }
 
@@ -114,10 +123,12 @@ function agruparValido(agrupar, pipelineId) {
   if (!VALORES_AGRUPAR.includes(agrupar)) {
     return AGRUPAR_FORECAST.TOTAL;
   }
+
   // `status` sem pipeline dá 400 no back.
   if (agrupar === AGRUPAR_FORECAST.STATUS && !pipelineId) {
     return AGRUPAR_FORECAST.TOTAL;
   }
+
   return agrupar;
 }
 
@@ -131,24 +142,29 @@ function listaValida(mes, tipo, bloco) {
   if (mes && bloco) {
     return null;
   }
+
   if (mes) {
     return ehMes(mes) && VALORES_TIPO.includes(tipo) ? { mes, tipo } : null;
   }
+
   if (bloco) {
     return VALORES_BLOCO.includes(bloco) ? { bloco } : null;
   }
+
   return null;
 }
 
 /** @param {unknown} valor */
 function paginaValida(valor) {
   const numero = Number(valor);
+
   return Number.isInteger(numero) && numero >= 1 ? numero : 1;
 }
 
 /** @param {unknown} valor */
 function tamanhoValido(valor) {
   const numero = Number(valor);
+
   return FORECAST.TAMANHOS.includes(numero) ? numero : FORECAST.TAMANHO_PADRAO;
 }
 
@@ -205,6 +221,7 @@ export function escreverConsulta(searchParams, mudancas) {
   if (mudouFiltro && !Object.hasOwn(mudancas, 'lista')) {
     proxima.lista = null;
   }
+
   if ((mudouFiltro || mudouLista || mudouTamanho) && !Object.hasOwn(mudancas, 'pagina')) {
     proxima.pagina = 1;
   }
@@ -219,9 +236,11 @@ export function escreverConsulta(searchParams, mudancas) {
   const tamanho = tamanhoValido(proxima.tamanho);
 
   const saida = new URLSearchParams(searchParams);
+
   for (const nome of Object.values(NA_URL)) {
     saida.delete(nome);
   }
+
   const por = (parte, valor) => {
     if (valor !== null && valor !== undefined && valor !== '') {
       saida.set(NA_URL[parte], String(valor));
@@ -232,21 +251,26 @@ export function escreverConsulta(searchParams, mudancas) {
   por('ate', ate);
   por('pipelineId', pipelineId);
   por('responsavelId', responsavelId);
+
   if (agrupar !== AGRUPAR_FORECAST.TOTAL) {
     por('agrupar', agrupar);
   }
+
   if (lista && 'mes' in lista) {
     por('mes', lista.mes);
     por('tipo', lista.tipo);
   } else if (lista && 'bloco' in lista) {
     por('bloco', lista.bloco);
   }
+
   if (pagina !== 1) {
     por('pagina', pagina);
   }
+
   if (tamanho !== FORECAST.TAMANHO_PADRAO) {
     por('tamanho', tamanho);
   }
+
   return saida;
 }
 
@@ -286,9 +310,11 @@ export function paramsDoForecast(consulta) {
  */
 export function paramsDaLista(consulta, periodo) {
   const { lista } = consulta;
+
   if (!lista) {
     return null;
   }
+
   const qual =
     'mes' in lista ? { mes: lista.mes, tipo: lista.tipo } : { bloco: BLOCO_NA_ROTA[lista.bloco] };
 
@@ -313,12 +339,16 @@ export function paramsDaLista(consulta, periodo) {
  */
 export function chaveDaSelecao(consulta, periodo) {
   const params = paramsDaLista(consulta, periodo);
+
   if (!params) {
     return JSON.stringify(null);
   }
+
   const resto = { ...params };
+
   delete resto.pagina;
   delete resto.tamanho;
+
   return JSON.stringify(resto);
 }
 
@@ -331,9 +361,11 @@ export function chaveDaSelecao(consulta, periodo) {
 export function mesesEntre(de, ate) {
   const inicio = indiceDoMes(de);
   const fim = indiceDoMes(ate);
+
   if (inicio === null || fim === null) {
     return null;
   }
+
   return fim - inicio + 1;
 }
 
@@ -345,23 +377,29 @@ export function mesesEntre(de, ate) {
  */
 export function validarPeriodo(de, ate) {
   const erros = {};
+
   if (de && !ehMes(de)) {
     erros.de = MENSAGENS_PERIODO.formato;
   }
+
   if (ate && !ehMes(ate)) {
     erros.ate = MENSAGENS_PERIODO.formato;
   }
+
   if (Object.keys(erros).length > 0 || !de || !ate) {
     return erros;
   }
 
   const meses = mesesEntre(de, ate);
+
   if (meses < 1) {
     return { de: MENSAGENS_PERIODO.invertido };
   }
+
   if (meses > FORECAST.MAX_MESES) {
     return { ate: MENSAGENS_PERIODO.longo };
   }
+
   return {};
 }
 
@@ -374,9 +412,11 @@ export function validarPeriodo(de, ate) {
  */
 export function tipoDoMes(mes, hoje) {
   const atual = hoje.slice(0, 7);
+
   if (mes === atual) {
     return 'atual';
   }
+
   return mes < atual ? 'passado' : 'futuro';
 }
 
@@ -389,12 +429,15 @@ export function tipoDoMes(mes, hoje) {
  */
 export function tiposDaLista(mes, hoje) {
   const tipo = tipoDoMes(mes, hoje);
+
   if (tipo === 'passado') {
     return [TIPOS_MES.REALIZADO];
   }
+
   if (tipo === 'futuro') {
     return [TIPOS_MES.ABERTO];
   }
+
   return [TIPOS_MES.REALIZADO, TIPOS_MES.ABERTO];
 }
 
@@ -446,6 +489,7 @@ export function listaDeAbertas(lista) {
   if (!lista) {
     return false;
   }
+
   return 'bloco' in lista || lista.tipo === TIPOS_MES.ABERTO;
 }
 
@@ -459,6 +503,7 @@ export function podeAtualizarData(campos, lista) {
   if (!Array.isArray(campos) || !listaDeAbertas(lista)) {
     return false;
   }
+
   return acessoAosDados(campos).dataPrevistaFechamento?.editavel === true;
 }
 
@@ -477,6 +522,7 @@ export function resumoDaAcao(resposta, selecionados) {
     nome: textoOuNulo(nomePorId.get(ignorada.id) ?? null) ?? 'Oportunidade',
     motivo: textoDoMotivo(ignorada.motivo),
   }));
+
   return { atualizadas, texto: textoAtualizadas(atualizadas), ignoradas };
 }
 
@@ -490,18 +536,24 @@ export function erroDoForecast(error) {
   if (!error) {
     return null;
   }
+
   const apiError = toApiError(error);
+
   if (apiError.status === 404 && apiError.code === 'RESOURCE_NOT_FOUND') {
     return { tipo: 'pipeline', mensagem: 'Pipeline não encontrado' };
   }
+
   if (apiError.status !== 400) {
     return null;
   }
+
   for (const campo of CAMPOS_DO_FILTRO) {
     const mensagem = apiError.fields[campo]?.[0];
+
     if (mensagem) {
       return { tipo: 'filtro', campo, mensagem };
     }
   }
+
   return null;
 }

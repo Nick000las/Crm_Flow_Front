@@ -1,3 +1,6 @@
+/**
+ * @file Linhas da tabela por responsável do mês. `semDados` não tem linhas.
+ */
 import { faixaDaAssertividade, porcentagem } from './assertividade.js';
 import {
   ROTULOS_FAIXA,
@@ -49,12 +52,14 @@ const rotuloDaFaixa = (faixa) => (faixa ? ROTULOS_FAIXA[faixa] : null);
 /** @param {MesAssertividade} m */
 function tooltipDoMes(m) {
   const S = ROTULOS_SERIE_ASSERTIVIDADE;
+
   if (m.semDados) {
     return [
       { rotulo: S.realizado, texto: din(m.realizado) },
       { rotulo: TEXTOS_ASSERTIVIDADE.semDados, texto: TRACO },
     ];
   }
+
   return [
     { rotulo: S.previsto, texto: din(m.previsto) },
     {
@@ -77,9 +82,11 @@ export function serieDaAssertividade(meses, mesAberto) {
   const pontos = [...(meses ?? [])].reverse().map((m) => {
     const faixa = faixaDaAssertividade(m.assertividade);
     let rotuloPct = null;
+
     if (!m.semDados) {
       rotuloPct = porcentagem(m.assertividade) ?? TRACO;
     }
+
     return {
       mes: m.mes,
       rotulo: rotuloCurtoDoMes(m.mes),
@@ -94,6 +101,7 @@ export function serieDaAssertividade(meses, mesAberto) {
       tooltip: tooltipDoMes(m),
     };
   });
+
   return { pontos };
 }
 
@@ -106,8 +114,10 @@ export function linhasPorResponsavel(mes) {
   if (!mes || mes.semDados) {
     return [];
   }
+
   return (mes.porResponsavel ?? []).map((r) => {
     const faixa = faixaDaAssertividade(r.assertividade);
+
     return {
       chave: r.responsavelId ?? r.rotulo,
       rotulo: r.rotulo,
@@ -129,5 +139,6 @@ export function mesDaTabela(meses, mesAberto) {
   if (!mesAberto) {
     return null;
   }
+
   return (meses ?? []).find((m) => m.mes === mesAberto) ?? null;
 }

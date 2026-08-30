@@ -1,13 +1,22 @@
+/**
+ * @file Configurações › Inatividade (`crm.inatividade`): por status, quantos dias sem interação
+ * até o lead esfriar. Ganho e perdido não esfriam. Todos leem; só DONO/MASTER alteram (o back
+ * barra com 403).
+ */
 import { useState } from 'react';
+
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
+import { LoadingState } from '@/components/loading-state';
 import { Button } from '@/components/ui/button';
+import { Form } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/hooks/useAuth';
 import { podeVer } from '@/lib/acesso';
 import { getFieldError, isAccessError } from '@/services/api';
+
 import { INATIVIDADE, PAPEIS_GESTAO } from '../../constants';
 import { useInatividade, useSalvarInatividade } from '../../hooks/use-inatividade';
 import {
@@ -24,11 +33,9 @@ const PREFIXO_ERRO = 'status.';
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando status…
-      </span>
+      <LoadingState label="Carregando status…" />
       {Array.from({ length: 5 }, (_, indice) => (
-        <Skeleton className="h-12 rounded-none" key={indice} />
+        <Skeleton className="h-12" key={indice} />
       ))}
     </div>
   );
@@ -64,10 +71,11 @@ function LinhaStatus({ status, valor, erro, desabilitado, onChange }) {
         {esfria ? (
           <div className="flex items-center gap-2">
             <Input
+              size="sm"
               aria-describedby={erro ? idErro : undefined}
               aria-invalid={Boolean(erro)}
               aria-label={`Dias sem interação até ${status.label} esfriar`}
-              className="h-8 w-20 rounded-none font-mono tabular-nums"
+              className="w-20 tabular-nums"
               disabled={desabilitado || !valor.ligado}
               id={idDias}
               inputMode="numeric"
@@ -111,6 +119,7 @@ function FormInatividade({ lista, podeEditar, onSalvo }) {
 
   function alterar(key, valor) {
     setValores((atuais) => ({ ...atuais, [key]: valor }));
+
     if (salvar.error) {
       salvar.reset();
     }
@@ -119,6 +128,7 @@ function FormInatividade({ lista, podeEditar, onSalvo }) {
   function handleSubmit(event) {
     event.preventDefault();
     setTentou(true);
+
     if (!mudancas || Object.keys(errosLocais(valores)).length > 0) {
       return;
     }
@@ -127,7 +137,7 @@ function FormInatividade({ lista, podeEditar, onSalvo }) {
   }
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       <ul aria-label="Dias sem interação por status" className="border border-border">
         {lista.map((status) => (
           <LinhaStatus
@@ -154,8 +164,10 @@ function FormInatividade({ lista, podeEditar, onSalvo }) {
             aria-busy={salvar.isPending}
             disabled={!mudancas || salvar.isPending}
             type="submit"
+            loading={salvar.isPending}
+            loadingText="Salvando…"
           >
-            {salvar.isPending ? 'Salvando…' : 'Salvar'}
+            {'Salvar'}
           </Button>
           <Button
             disabled={!mudancas || salvar.isPending}
@@ -171,7 +183,7 @@ function FormInatividade({ lista, podeEditar, onSalvo }) {
           </Button>
         </div>
       )}
-    </form>
+    </Form>
   );
 }
 
@@ -189,9 +201,11 @@ export function SecaoInatividade() {
   if (isAccessError(inatividadeQuery.error)) {
     return <AcessoIndisponivel error={inatividadeQuery.error} />;
   }
+
   if (inatividadeQuery.error) {
     return <ApiErrorAlert error={inatividadeQuery.error} id="inatividade-carregar-erro" />;
   }
+
   if (inatividadeQuery.isPending) {
     return <Carregando />;
   }
@@ -209,7 +223,12 @@ export function SecaoInatividade() {
         {!podeEditar && <p>Só DONO e MASTER alteram os dias.</p>}
       </div>
 
-      <p className={aviso ? 'border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
+      <p
+        className={
+          aviso ? 'rounded-lg border border-border bg-surface px-3 py-2 text-sm' : 'sr-only'
+        }
+        role="status"
+      >
         {aviso}
       </p>
 

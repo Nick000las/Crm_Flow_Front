@@ -1,5 +1,11 @@
+/**
+ * @file Página de leads. `keepPreviousData` mantém a página anterior na tela durante a troca,
+ * em vez de piscar o skeleton.
+ */
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
+
 import { pesquisarLeads } from '../api/leads.api';
 import { SITUACOES_LEAD } from '../constants';
 import { paraCorpoDeBusca } from '../lib/filtro';

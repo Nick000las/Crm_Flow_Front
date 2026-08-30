@@ -1,5 +1,9 @@
-import { DIRECAO, ORDEM_PADRAO } from './quadro-consulta.js';
+/**
+ * @file Tira o que saiu e põe o que está nesta coluna. Fora da ordem por atualização, o card
+ * fica onde estava (ou no topo, se chegou agora) até a recarga da coluna.
+ */
 import { porNoTopo, tirarDasPaginas } from './quadro.js';
+import { DIRECAO, ORDEM_PADRAO } from './quadro-consulta.js';
 
 /**
  * Tempo real do quadro comercial (M5): o aviso traz só ids, e a tela relê os
@@ -20,9 +24,11 @@ export const LIMITE_DE_IDS = 100;
  */
 export function lotesDeIds(ids) {
   const lotes = [];
+
   for (let inicio = 0; inicio < ids.length; inicio += LIMITE_DE_IDS) {
     lotes.push(ids.slice(inicio, inicio + LIMITE_DE_IDS));
   }
+
   return lotes;
 }
 
@@ -96,6 +102,7 @@ function inserirNaOrdem(dados, card, direcao) {
   const instante = Date.parse(card.atualizadoEm);
   const vemDepois = (outro) => {
     const doOutro = Date.parse(outro.atualizadoEm);
+
     return direcao === DIRECAO.DESC ? doOutro <= instante : doOutro >= instante;
   };
   const indicePagina = dados.pages.findIndex((pagina) => pagina.itens.some(vemDepois));
@@ -106,14 +113,17 @@ function inserirNaOrdem(dados, card, direcao) {
   }
 
   const alvo = indicePagina === -1 ? ultima : indicePagina;
+
   return {
     ...dados,
     pages: dados.pages.map((pagina, indice) => {
       if (indice !== alvo) {
         return pagina;
       }
+
       const posicao = pagina.itens.findIndex(vemDepois);
       const corte = posicao === -1 ? pagina.itens.length : posicao;
+
       return {
         ...pagina,
         itens: [...pagina.itens.slice(0, corte), card, ...pagina.itens.slice(corte)],
@@ -136,6 +146,7 @@ export function aplicarNaColuna(dados, colunaRef, { itens, ausentes }, ordem = O
   if (!dados) {
     return dados;
   }
+
   const daqui = itens.filter((card) => card.colunaRef === colunaRef);
   const sairam = [
     ...ausentes,
@@ -149,6 +160,7 @@ export function aplicarNaColuna(dados, colunaRef, { itens, ausentes }, ordem = O
       restantes,
     );
   }
+
   return daqui.reduce(
     (atual, card) =>
       temCard(atual, card.entidadeId) ? trocarNasPaginas(atual, card) : porNoTopo(atual, card),

@@ -1,4 +1,9 @@
+/**
+ * @file A rota devolve o array direto dentro do envelope `{ statusCode, data }`, e o
+ * `unwrapResponseData` do cliente HTTP já tira essa camada — então aqui chega `Tenant[]`.
+ */
 import { useCallback, useEffect, useState } from 'react';
+
 import { isAbortError, toApiError } from '@/services/api';
 
 /**

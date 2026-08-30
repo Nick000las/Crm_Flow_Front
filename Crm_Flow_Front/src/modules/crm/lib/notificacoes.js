@@ -1,3 +1,8 @@
+/**
+ * @file Para onde vai uma notificação do CRM (`crm.esfriando`…). O back aponta a lista como
+ * `/crm/leads`, que no front é `/crm` (`/crm/leads/:id` é o Sheet); `dados.filtro` entra na URL
+ * como uma view aplicada. Com `dados.leadId` (`crm.lead_atribuido`), abre o lead.
+ */
 import { ROTAS_CRM } from '../rotas.js';
 import { escreverEstadoLista, estadoDaVisao } from './url-state.js';
 
@@ -17,6 +22,7 @@ export function destinoCrm(dados) {
   if (dados?.rota !== ROTA_LEADS_DO_BACK) {
     return null;
   }
+
   if (typeof dados.leadId === 'string' && dados.leadId) {
     return ROTAS_CRM.lead(dados.leadId);
   }

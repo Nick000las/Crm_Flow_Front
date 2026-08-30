@@ -1,3 +1,7 @@
+/**
+ * @file Confirmação de arquivar, só com `crm.formularios` (FM6): arquivar cancela os links de
+ * formulário ainda não respondidos, e desarquivar não os traz de volta.
+ */
 import { ConfirmationDialog } from '@/components/confirmation-dialog';
 
 /**

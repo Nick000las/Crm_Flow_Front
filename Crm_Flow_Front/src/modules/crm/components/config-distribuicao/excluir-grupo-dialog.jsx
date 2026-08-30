@@ -1,3 +1,7 @@
+/**
+ * @file Excluir um grupo. Destino de alguma regra salva = 409, com o nome da regra na mensagem
+ * do back (aparece aqui).
+ */
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import {
   AlertDialog,
@@ -9,6 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+
 import { useExcluirGrupo } from '../../hooks/use-distribuicao';
 
 /**
@@ -28,9 +33,11 @@ export function ExcluirGrupoDialog({ grupo, onOpenChange, onExcluido }) {
     if (excluir.isPending) {
       return;
     }
+
     if (!proximo) {
       excluir.reset();
     }
+
     onOpenChange(proximo);
   }
 
@@ -45,7 +52,7 @@ export function ExcluirGrupoDialog({ grupo, onOpenChange, onExcluido }) {
 
   return (
     <AlertDialog onOpenChange={handleOpenChange} open={Boolean(grupo)}>
-      <AlertDialogContent className="rounded-none">
+      <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Excluir grupo</AlertDialogTitle>
           <AlertDialogDescription>

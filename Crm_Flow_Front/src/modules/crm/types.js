@@ -1,4 +1,8 @@
 /**
+ * @file Formas de dado do CRM como chegam do back. Leitura de lead vem em snake_case (coluna);
+ * form, filtro e payload usam a `chave` camelCase.
+ */
+/**
  * Formas de dado do CRM como chegam do back. Leitura de lead vem em
  * snake_case (coluna); form, filtro e payload usam a `chave` camelCase.
  *

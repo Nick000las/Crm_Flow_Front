@@ -1,4 +1,9 @@
+/**
+ * @file Sessão master — instância própria de `createAuthSession`, deliberadamente separada da
+ * sessão do tenant: outro contexto, outro estado, outros tokens.
+ */
 import api, { ApiError } from '@/services/api';
+
 import { createAuthSession } from './create-auth-session.js';
 
 /** Papel exigido para qualquer coisa sob `/admin`. */

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import { corValida, luminancia, marcadorPrecisaContorno, razaoDeContraste } from './contraste.js';
 
 test('luminância nos extremos', () => {

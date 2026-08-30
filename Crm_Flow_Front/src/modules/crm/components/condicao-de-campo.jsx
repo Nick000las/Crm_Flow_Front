@@ -1,4 +1,9 @@
-import { ROTULOS_OPERADOR, operadoresDoCampo, trocarOperador } from '../lib/filtro';
+/**
+ * @file Uma condição "campo → operador → valor" no formato do construtor de filtro (`valor`
+ * como o `ValorDoFiltro` edita). Usada pela regra de campo (M8) e pelas regras de distribuição
+ * (M12). Trocar o campo zera operador e valor.
+ */
+import { operadoresDoCampo, ROTULOS_OPERADOR, trocarOperador } from '../lib/filtro';
 import { condicaoDoCampo } from '../lib/regras';
 import { CampoForm } from './campo-form';
 import { SelectSimples } from './select-simples';

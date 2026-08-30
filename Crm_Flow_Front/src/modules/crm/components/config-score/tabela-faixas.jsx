@@ -1,5 +1,12 @@
+/**
+ * @file Faixas do score editadas na própria tabela (no rascunho): rótulo, limites inclusivos
+ * (vazio = sem limite) e cor. A chave da faixa salva não aparece nem muda — é ela que views e
+ * filtros guardam.
+ */
 import { Plus, Trash2 } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
   Table,
@@ -9,13 +16,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+
 import { SCORE } from '../../constants';
 import { BotaoIcone } from '../botao-icone';
 
-const HEAD_CLASS =
-  'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
-const INPUT_CLASS = 'h-9 rounded-none';
-const NUMERO_CLASS = 'h-9 w-24 rounded-none font-mono tabular-nums';
+const INPUT_CLASS = 'w-full';
+const NUMERO_CLASS = 'w-24 tabular-nums';
 // Valor do seletor de cor quando o hex digitado ainda não é válido (ele não aceita outro formato).
 const COR_DO_SELETOR = '#6b7280';
 const HEX = /^#[0-9A-Fa-f]{6}$/;
@@ -23,6 +29,7 @@ const HEX = /^#[0-9A-Fa-f]{6}$/;
 /** As mensagens de uma faixa, numa linha só (o 400 aponta campo ou a faixa inteira). */
 function ErrosDaFaixa({ id, erros }) {
   const mensagens = [...new Set(Object.values(erros ?? {}))];
+
   if (mensagens.length === 0) {
     return null;
   }
@@ -62,22 +69,14 @@ export function TabelaFaixas({
 
   return (
     <div className="grid gap-2">
-      <div className="overflow-x-auto border border-border">
+      <Card layout="plain" className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className={HEAD_CLASS} scope="col">
-                Faixa
-              </TableHead>
-              <TableHead className={HEAD_CLASS} scope="col">
-                De
-              </TableHead>
-              <TableHead className={HEAD_CLASS} scope="col">
-                Até
-              </TableHead>
-              <TableHead className={HEAD_CLASS} scope="col">
-                Cor
-              </TableHead>
+              <TableHead scope="col">Faixa</TableHead>
+              <TableHead scope="col">De</TableHead>
+              <TableHead scope="col">Até</TableHead>
+              <TableHead scope="col">Cor</TableHead>
               {podeEditar && (
                 <TableHead scope="col">
                   <span className="sr-only">Ações</span>
@@ -139,9 +138,9 @@ export function TabelaFaixas({
                   </TableCell>
                   <TableCell className="align-top">
                     <div className="flex items-center gap-2">
-                      <input
+                      <Input
                         aria-label={`${nome}: escolher cor`}
-                        className="size-9 shrink-0 cursor-pointer border border-input bg-transparent p-0.5 disabled:cursor-not-allowed"
+                        className="size-9 shrink-0 cursor-pointer p-0.5"
                         disabled={travado}
                         onChange={(event) =>
                           onAlterar(faixa.chaveLocal, { cor: event.target.value.toUpperCase() })
@@ -152,7 +151,7 @@ export function TabelaFaixas({
                       <Input
                         {...comum('cor')}
                         aria-label={`${nome}: cor (#RRGGBB)`}
-                        className="h-9 w-24 rounded-none font-mono uppercase"
+                        className="w-24 uppercase"
                         maxLength={7}
                         onChange={(event) =>
                           onAlterar(faixa.chaveLocal, { cor: event.target.value.trim() })
@@ -176,7 +175,7 @@ export function TabelaFaixas({
             })}
           </TableBody>
         </Table>
-      </div>
+      </Card>
 
       {podeEditar && (
         <div>

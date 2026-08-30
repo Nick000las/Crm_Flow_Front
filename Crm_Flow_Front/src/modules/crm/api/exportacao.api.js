@@ -1,4 +1,8 @@
 /**
+ * @file Export síncrono: o back gera o arquivo no request (até `EXPORTACAO.MAX_LINHAS`). Com
+ * `crm.massa`: `formato: 'csv'` e as colunas `usuarioResponsavelId`/`createdAt`.
+ */
+/**
  * Export síncrono: o back gera o arquivo no request (até `EXPORTACAO.MAX_LINHAS`).
  * Com `crm.massa`: `formato: 'csv'` e as colunas `usuarioResponsavelId`/`createdAt`.
  *

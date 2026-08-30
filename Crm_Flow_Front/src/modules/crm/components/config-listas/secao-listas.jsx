@@ -1,12 +1,20 @@
-import { Plus } from 'lucide-react';
+/**
+ * @file Configurações › Listas: status, origem, motivos de perda, tipos de atividade e tags do
+ * tenant. A key de cada opção é o que o lead grava, e não muda ao renomear; desativar tira dos
+ * seletores sem mexer em lead nenhum. A aba fica na URL (`?lista=`) para dar link direto.
+ */
 import { useState } from 'react';
+import { Plus } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
+
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
+import { LoadingState } from '@/components/loading-state';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { isAccessError } from '@/services/api';
+
 import { ROTULOS_LISTA, TIPOS_LISTA } from '../../constants';
 import { useListas, useReordenarOpcoes } from '../../hooks/use-listas';
 import { ExcluirOpcaoDialog } from './excluir-opcao-dialog';
@@ -20,11 +28,9 @@ const LINHAS_SKELETON = 6;
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando listas…
-      </span>
+      <LoadingState label="Carregando listas…" />
       {Array.from({ length: LINHAS_SKELETON }, (_, indice) => (
-        <Skeleton className="h-11 rounded-none" key={indice} />
+        <Skeleton className="h-11" key={indice} />
       ))}
     </div>
   );
@@ -51,9 +57,11 @@ export function SecaoListas() {
   if (isAccessError(listasQuery.error)) {
     return <AcessoIndisponivel error={listasQuery.error} />;
   }
+
   if (listasQuery.error) {
     return <ApiErrorAlert error={listasQuery.error} id="config-listas-carregar-erro" />;
   }
+
   if (listasQuery.isPending) {
     return <Carregando />;
   }
@@ -64,6 +72,7 @@ export function SecaoListas() {
   function trocarLista(proximo) {
     setAviso(null);
     reordenar.reset();
+
     setSearchParams(proximo === TIPOS_LISTA.STATUS ? {} : { [PARAM_LISTA]: proximo }, {
       replace: true,
     });
@@ -104,7 +113,12 @@ export function SecaoListas() {
           {opcoes.length > 0 && botaoNovo}
         </div>
 
-        <p className={aviso ? 'border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
+        <p
+          className={
+            aviso ? 'rounded-lg border border-border bg-surface px-3 py-2 text-sm' : 'sr-only'
+          }
+          role="status"
+        >
           {aviso}
         </p>
         <ApiErrorAlert

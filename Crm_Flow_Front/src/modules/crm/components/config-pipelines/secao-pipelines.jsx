@@ -1,14 +1,21 @@
-import { Plus } from 'lucide-react';
+/**
+ * @file Configurações › Pipelines: um pipeline por aba (`?pipeline=`, para dar link direto),
+ * com os status e a automação. Todos leem; alterar, só gestão.
+ */
 import { useState } from 'react';
+import { Plus } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
+
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
+import { LoadingState } from '@/components/loading-state';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { podeVer } from '@/lib/acesso';
 import { isAccessError } from '@/services/api';
+
 import { LIMITE_PIPELINES, PAPEIS_GESTAO } from '../../constants';
 import { usePipelines } from '../../hooks/use-pipelines';
 import { ControleTravado } from '../controle-travado';
@@ -21,11 +28,9 @@ const MOTIVO_LIMITE = `O limite é de ${LIMITE_PIPELINES} pipelines, incluindo V
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando pipelines…
-      </span>
+      <LoadingState label="Carregando pipelines…" />
       {Array.from({ length: 5 }, (_, indice) => (
-        <Skeleton className="h-11 rounded-none" key={indice} />
+        <Skeleton className="h-11" key={indice} />
       ))}
     </div>
   );
@@ -46,9 +51,11 @@ export function SecaoPipelines() {
   if (isAccessError(pipelinesQuery.error)) {
     return <AcessoIndisponivel error={pipelinesQuery.error} />;
   }
+
   if (pipelinesQuery.error) {
     return <ApiErrorAlert error={pipelinesQuery.error} id="config-pipelines-carregar-erro" />;
   }
+
   if (pipelinesQuery.isPending) {
     return <Carregando />;
   }
@@ -88,7 +95,12 @@ export function SecaoPipelines() {
         )}
       </div>
 
-      <p className={aviso ? 'border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
+      <p
+        className={
+          aviso ? 'rounded-lg border border-border bg-surface px-3 py-2 text-sm' : 'sr-only'
+        }
+        role="status"
+      >
         {aviso}
       </p>
 

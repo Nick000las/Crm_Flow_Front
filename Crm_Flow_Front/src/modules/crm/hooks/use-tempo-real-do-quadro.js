@@ -1,6 +1,12 @@
-import { useQueryClient } from '@tanstack/react-query';
+/**
+ * @file Mantém o quadro aberto em dia: entra na sala, junta os avisos e relê os cards com o
+ * filtro da tela.
+ */
 import { useEffect, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
+
 import { BOARD_TYPE, relerCards } from '../api/quadro.api';
 import {
   aplicarNaColuna,
@@ -48,6 +54,7 @@ export function useTempoRealDoQuadro({ socket, quadroRef, consulta, ocupado }) {
     if (!socket) {
       return;
     }
+
     const sala = { boardType: BOARD_TYPE, quadroRef };
     const pendentes = new Set();
     const colunasDaRecarga = new Set();
@@ -73,17 +80,23 @@ export function useTempoRealDoQuadro({ socket, quadroRef, consulta, ocupado }) {
 
     function recarregarColunas() {
       janelaDaRecarga = null;
+
       if (tela.current.ocupado) {
         abrirJanelaDaRecarga();
+
         return;
       }
+
       const recarregaCards = !ordenaPorAtualizacao(tela.current.consulta?.ordem);
+
       for (const colunaRef of colunasDaRecarga) {
         queryClient.invalidateQueries({ queryKey: crmKeys.quadroResumo(quadroRef, colunaRef) });
+
         if (recarregaCards) {
           queryClient.invalidateQueries({ queryKey: crmKeys.quadroCards(quadroRef, colunaRef) });
         }
       }
+
       colunasDaRecarga.clear();
     }
 
@@ -97,6 +110,7 @@ export function useTempoRealDoQuadro({ socket, quadroRef, consulta, ocupado }) {
 
       // Antes de aplicar: gravar nas colunas tira delas a marca de velhas.
       queryClient.invalidateQueries({ queryKey: crmKeys.leads(), refetchType: 'none' });
+
       for (const colunaRef of dadosPorColuna.keys()) {
         queryClient.setQueryData(chaveDaColuna(colunaRef), (dados) =>
           aplicarNaColuna(dados, colunaRef, releitura, consultaLida.ordem),
@@ -107,10 +121,13 @@ export function useTempoRealDoQuadro({ socket, quadroRef, consulta, ocupado }) {
       if ([...afetadas.colunas].some((colunaRef) => !dadosPorColuna.has(colunaRef))) {
         queryClient.invalidateQueries({ queryKey: crmKeys.quadroColunas(quadroRef) });
       }
+
       const alvos = afetadas.desconhecido ? dadosPorColuna.keys() : afetadas.colunas;
+
       for (const colunaRef of alvos) {
         colunasDaRecarga.add(colunaRef);
       }
+
       if (colunasDaRecarga.size > 0) {
         abrirJanelaDaRecarga();
       }
@@ -120,6 +137,7 @@ export function useTempoRealDoQuadro({ socket, quadroRef, consulta, ocupado }) {
       if (!ativo) {
         return;
       }
+
       if (erro?.status === STATUS_NAO_ENCONTRADO) {
         sair();
         setSemAcessoEm(quadroRef);
@@ -130,17 +148,23 @@ export function useTempoRealDoQuadro({ socket, quadroRef, consulta, ocupado }) {
 
     async function reler() {
       janelaDosAvisos = null;
+
       if (!livre()) {
         abrirJanelaDosAvisos();
+
         return;
       }
+
       const ids = [...pendentes];
       const consultaLida = tela.current.consulta;
       const { filtros } = consultaLida;
+
       pendentes.clear();
 
       let respostas;
+
       lendo = true;
+
       try {
         respostas = await Promise.all(
           lotesDeIds(ids).map((lote) =>
@@ -149,20 +173,25 @@ export function useTempoRealDoQuadro({ socket, quadroRef, consulta, ocupado }) {
         );
       } catch (erro) {
         tratarFalha(erro);
+
         return;
       } finally {
         lendo = false;
       }
+
       if (!ativo) {
         return;
       }
 
       const mesmaConsulta = JSON.stringify(tela.current.consulta) === JSON.stringify(consultaLida);
+
       if (!mesmaConsulta || !livre()) {
         ids.forEach((id) => pendentes.add(id));
         abrirJanelaDosAvisos();
+
         return;
       }
+
       aplicar(
         {
           itens: respostas.flatMap((resposta) => resposta.itens),
@@ -176,6 +205,7 @@ export function useTempoRealDoQuadro({ socket, quadroRef, consulta, ocupado }) {
       if (boardType !== BOARD_TYPE || quadroDoAviso !== quadroRef) {
         return;
       }
+
       entidadeIds.forEach((id) => pendentes.add(id));
       abrirJanelaDosAvisos();
     }
@@ -184,18 +214,22 @@ export function useTempoRealDoQuadro({ socket, quadroRef, consulta, ocupado }) {
       if (!ativo) {
         return;
       }
+
       // `ok: false` ou sem resposta: o quadro funciona, só não se atualiza sozinho.
       await socket
         .timeout(TEMPO_DA_SALA_MS)
         .emitWithAck('quadro:watch', sala)
         .catch(() => null);
+
       if (!ativo) {
         return;
       }
+
       if (salaAberta.current === quadroRef) {
         // Os avisos perdidos não voltam.
         recarregarQuadro();
       }
+
       salaAberta.current = quadroRef;
     }
 
@@ -206,6 +240,7 @@ export function useTempoRealDoQuadro({ socket, quadroRef, consulta, ocupado }) {
       socket.off('quadro:changed', aoMudar);
       socket.off('connect', entrar);
       socket.off('realtime:ready', entrar);
+
       if (socket.connected) {
         socket.emit('quadro:unwatch', sala);
       }
@@ -214,6 +249,7 @@ export function useTempoRealDoQuadro({ socket, quadroRef, consulta, ocupado }) {
     socket.on('quadro:changed', aoMudar);
     socket.on('connect', entrar);
     socket.on('realtime:ready', entrar);
+
     if (socket.connected) {
       queueMicrotask(entrar);
     }

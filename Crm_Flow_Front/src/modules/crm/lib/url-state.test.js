@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import {
-  ESTADO_LISTA_PADRAO,
   escreverEstadoLista,
+  ESTADO_LISTA_PADRAO,
   estadoDaVisao,
   lerEstadoLista,
   totalDePaginas,
@@ -56,6 +57,7 @@ test('filtro vai e volta pela URL e some quando vazio', () => {
   const comFiltro = escreverEstadoLista(new URLSearchParams(), { filtro });
 
   assert.deepEqual(lerEstadoLista(comFiltro).filtro, filtro);
+
   assert.equal(
     escreverEstadoLista(comFiltro, { filtro: ESTADO_LISTA_PADRAO.filtro }).has('f'),
     false,
@@ -75,6 +77,7 @@ test('a view grava busca e situação só quando não são o padrão', () => {
   const filtro = { filtros: [{ chave: 'email', operador: 'vazio' }] };
 
   assert.deepEqual(visaoDoEstado({ ...ESTADO_LISTA_PADRAO, filtro }), filtro);
+
   assert.deepEqual(
     visaoDoEstado({ ...ESTADO_LISTA_PADRAO, filtro, busca: 'ana', situacao: 'arquivados' }),
     {
@@ -94,6 +97,7 @@ test('estadoDaVisao lê a view salva e volta para a 1ª página', () => {
     situacao: 'arquivados',
     pagina: 1,
   });
+
   assert.deepEqual(estadoDaVisao(null), {
     busca: '',
     filtro: ESTADO_LISTA_PADRAO.filtro,
@@ -123,6 +127,8 @@ test('cicloDeVida vazio ou desconhecido some da URL', () => {
   });
 
   assert.equal(params.has('f'), false);
+
   const lido = lerEstadoLista(new URLSearchParams({ f: '{"filtros":[],"cicloDeVida":["x"]}' }));
+
   assert.deepEqual(lido.filtro, { filtros: [] });
 });

@@ -1,4 +1,9 @@
+/**
+ * @file Renderiza seletor colunas, na área de CRM, expondo os estados e eventos necessários à
+ * interface.
+ */
 import { Columns3 } from 'lucide-react';
+
 import { buttonVariants } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -22,16 +27,11 @@ export function SeletorColunas({ colunas, selecionadas, onAlternar }) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        className={cn(buttonVariants({ variant: 'outline' }), 'h-9 rounded-none')}
-      >
+      <DropdownMenuTrigger className={cn(buttonVariants({ variant: 'outline' }), 'h-9 ')}>
         <Columns3 aria-hidden="true" />
         Colunas
       </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="end"
-        className="max-h-80 w-60 rounded-none shadow-none ring-border"
-      >
+      <DropdownMenuContent align="end" className="max-h-80 w-60 ring-border">
         <DropdownMenuGroup>
           <DropdownMenuLabel>Colunas visíveis</DropdownMenuLabel>
           {colunas.map((coluna) => {

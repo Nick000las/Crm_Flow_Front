@@ -1,3 +1,8 @@
+/**
+ * @file Falhas legíveis: o título do lead e a primeira mensagem de campo (com o rótulo do
+ * campo, ex.: "Motivo da perda: é obrigatório…"), senão a mensagem do erro. Lead que saiu da
+ * página (404) aparece pelo id curto.
+ */
 import { RESPONSAVEL_NENHUM } from './filtro.js';
 
 /**
@@ -59,9 +64,11 @@ export function alteracoesDoForm(form) {
 
   for (const chave of ['status', 'fonteLead']) {
     const { ativa, valor } = form[chave];
+
     if (!ativa) {
       continue;
     }
+
     if (valor) {
       alteracoes[chave] = valor;
     } else {
@@ -71,6 +78,7 @@ export function alteracoesDoForm(form) {
 
   if (form.responsavel.ativa) {
     const { valor } = form.responsavel;
+
     if (!valor) {
       erros.responsavel = MENSAGENS_MASSA.SEM_VALOR;
     } else {
@@ -80,6 +88,7 @@ export function alteracoesDoForm(form) {
 
   if (form.tags.ativa) {
     const { adicionar, remover } = form.tags;
+
     if (adicionar.length === 0 && remover.length === 0) {
       erros.tags = MENSAGENS_MASSA.SEM_TAGS;
     } else {
@@ -93,6 +102,7 @@ export function alteracoesDoForm(form) {
   if (Object.keys(erros).length > 0) {
     return { erros };
   }
+
   if (Object.keys(alteracoes).length === 0) {
     return { erros: { geral: MENSAGENS_MASSA.NENHUMA } };
   }
@@ -151,5 +161,6 @@ function mensagemDoErro(erro, rotuloPorChave) {
   if (campo) {
     return `${rotuloPorChave.get(campo) ?? campo}: ${mensagens[0]}`;
   }
+
   return erro?.message || 'Não foi possível alterar este lead.';
 }

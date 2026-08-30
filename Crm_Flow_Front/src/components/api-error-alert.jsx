@@ -1,5 +1,10 @@
+/**
+ * @file Renderiza api error alert, na área de aplicação, expondo os estados e eventos
+ * necessários à interface.
+ */
 import { CircleAlert } from 'lucide-react';
-import { cn } from '@/lib/utils';
+
+import { Alert } from '@/components/ui/alert';
 import { isAbortError, toApiError } from '@/services/api-error';
 
 export function ApiErrorAlert({ error, className, id, title = 'Não foi possível continuar' }) {
@@ -11,23 +16,15 @@ export function ApiErrorAlert({ error, className, id, title = 'Não foi possíve
   const fieldMessages = Object.values(apiError.fields).flat();
 
   return (
-    <div
-      className={cn(
-        'flex gap-3 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-destructive',
-        className,
-      )}
-      id={id}
-      role="alert"
-    >
-      <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+    <Alert variant="destructive" icon={CircleAlert} className={className} id={id}>
       <div className="grid gap-0.5 text-sm">
-        <p className="font-medium">{title}</p>
-        <p>{apiError.message}</p>
+        <p className="leading-snug font-medium">{title}</p>
+        <p className="leading-relaxed opacity-90">{apiError.message}</p>
         {fieldMessages.length > 0 && <p className="sr-only">{fieldMessages.join('. ')}</p>}
         {apiError.requestId && (
-          <p className="mt-1 text-xs opacity-80">Referência: {apiError.requestId}</p>
+          <p className="mt-1 font-mono text-xs opacity-75">Referência: {apiError.requestId}</p>
         )}
       </div>
-    </div>
+    </Alert>
   );
 }

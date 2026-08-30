@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import { ApiError, createApiErrorFromResponse, isAccessError } from './api-error.js';
 
 function resposta403(code) {
@@ -38,10 +39,12 @@ test('isAccessError reconhece só os 403 de contratação/rollout', () => {
     isAccessError(createApiErrorFromResponse(resposta403('FEATURE_NOT_ENABLED'), 403)),
     true,
   );
+
   assert.equal(
     isAccessError(createApiErrorFromResponse(resposta403('MODULE_NOT_ENABLED'), 403)),
     true,
   );
+
   assert.equal(isAccessError(new ApiError('x', { code: 'FORBIDDEN' })), false);
   assert.equal(isAccessError(null), false);
 });

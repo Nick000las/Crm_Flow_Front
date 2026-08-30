@@ -1,20 +1,16 @@
+/**
+ * @file Gráfico, blocos, grupos e a lista aberta, a partir de uma resposta já carregada.
+ */
 import { useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
-import { LoadingState } from '@/components/loading-state';
+import { MetricsSkeleton } from '@/components/loading-skeletons';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { isAccessError } from '@/services/api';
-import { AtualizarDataDialog } from './atualizar-data-dialog';
-import { AvisoCamposDesligados } from './aviso-campos-desligados';
-import { CardsBlocos } from './cards-blocos';
-import { FiltrosForecast } from './filtros-forecast';
-import { ForecastVazio } from './forecast-vazio';
-import { GraficoForecast } from './grafico-forecast';
-import { GruposForecast } from './grupos-forecast';
-import { ListaDoForecast } from './lista-do-forecast';
-import { TabelaForecast } from './tabela-forecast';
+
 import { FORECAST, PAPEIS_GESTAO, TIPOS_MES } from '../../constants';
 import { useCampos } from '../../hooks/use-campos';
 import { useForecast, useListaDoForecast } from '../../hooks/use-forecast';
@@ -36,11 +32,11 @@ import {
   veCampoStatus,
 } from '../../lib/forecast';
 import {
+  contadorSelecao,
+  rotuloDoMes,
   ROTULOS_BLOCO,
   ROTULOS_TIPO_MES,
   TEXTOS_FORECAST,
-  contadorSelecao,
-  rotuloDoMes,
 } from '../../lib/forecast-textos';
 import {
   cardsDosBlocos,
@@ -50,6 +46,15 @@ import {
   serieDoGrafico,
 } from '../../lib/forecast-vista';
 import { ROTAS_CRM } from '../../rotas';
+import { AtualizarDataDialog } from './atualizar-data-dialog';
+import { AvisoCamposDesligados } from './aviso-campos-desligados';
+import { CardsBlocos } from './cards-blocos';
+import { FiltrosForecast } from './filtros-forecast';
+import { ForecastVazio } from './forecast-vazio';
+import { GraficoForecast } from './grafico-forecast';
+import { GruposForecast } from './grupos-forecast';
+import { ListaDoForecast } from './lista-do-forecast';
+import { TabelaForecast } from './tabela-forecast';
 
 const SEM_ITENS = [];
 
@@ -60,7 +65,9 @@ function tituloDaLista(lista, comAbas) {
   if ('bloco' in lista) {
     return ROTULOS_BLOCO[lista.bloco];
   }
+
   const mes = maiuscula(rotuloDoMes(lista.mes));
+
   return comAbas ? mes : `${mes} · ${ROTULOS_TIPO_MES[lista.tipo]}`;
 }
 
@@ -109,21 +116,28 @@ export function ForecastPrevisao() {
 
   function mudarPeriodo(proximo) {
     const erros = validarPeriodo(proximo.de, proximo.ate);
+
     if (proximo.de && proximo.ate && Object.keys(erros).length === 0) {
       setRascunho(null);
       atualizar({ de: proximo.de, ate: proximo.ate });
+
       return;
     }
+
     setRascunho({ ...proximo, erros });
   }
 
   function abrirMes(mes) {
     const aberta = consulta.lista && 'mes' in consulta.lista && consulta.lista.mes === mes;
+
     if (aberta) {
       atualizar({ lista: null });
+
       return;
     }
+
     const tipos = tiposDaLista(mes, resposta.hoje);
+
     // Mês atual: abre em "Em aberto", que é onde há o que fazer.
     atualizar({
       lista: { mes, tipo: tipos.includes(TIPOS_MES.ABERTO) ? TIPOS_MES.ABERTO : tipos[0] },
@@ -132,6 +146,7 @@ export function ForecastPrevisao() {
 
   function abrirBloco(bloco) {
     const aberto = consulta.lista && 'bloco' in consulta.lista && consulta.lista.bloco === bloco;
+
     atualizar({ lista: aberto ? null : { bloco } });
   }
 
@@ -145,6 +160,7 @@ export function ForecastPrevisao() {
     ate: consulta.ate ?? periodo?.ate ?? '',
   };
   const errosDoPeriodo = { ...(rascunho?.erros ?? errosDaUrl) };
+
   if (
     erroDeFiltro?.tipo === 'filtro' &&
     (erroDeFiltro.campo === 'de' || erroDeFiltro.campo === 'ate')
@@ -200,7 +216,7 @@ export function ForecastPrevisao() {
           <ApiErrorAlert error={forecastQuery.error} title="Não foi possível carregar o forecast" />
         )}
 
-        {!resposta && forecastQuery.isPending && <LoadingState label="Carregando o forecast…" />}
+        {!resposta && forecastQuery.isPending && <MetricsSkeleton label="Carregando o forecast…" />}
 
         {resposta && (
           <ConteudoDoForecast
@@ -306,7 +322,7 @@ function ConteudoDoForecast({
           acoes={
             comAcao ? (
               <>
-                <span className="font-mono text-xs text-muted-foreground tabular-nums">
+                <span className="text-xs text-muted-foreground tabular-nums">
                   {contadorSelecao(selecao.leads.length, FORECAST.MAX_IDS)}
                 </span>
                 <Button disabled={selecao.leads.length === 0} onClick={onAtualizarData}>

@@ -1,11 +1,17 @@
+/**
+ * @file Define as rotas de app routes, na área de aplicação, conectando telas ou endpoints aos
+ * seus pontos de entrada.
+ */
+import { Navigate, useLocation, useRoutes } from 'react-router-dom';
+
 import { LoadingState } from '@/components/loading-state';
-import { Navigate, useRoutes, useLocation } from 'react-router-dom';
 import { SessionRecovery } from '@/components/session-recovery';
 import { useAuth } from '@/hooks/useAuth';
+
 import { useAdminRoutes } from './(admin)/admin.routes';
-import { useAuthRoutes } from './(auth)/auth.routes';
-import AppLayout from './(app)/app-layout';
 import { appRoutes } from './(app)/app.routes';
+import AppLayout from './(app)/app-layout';
+import { useAuthRoutes } from './(auth)/auth.routes';
 
 export default function AppRoutes() {
   const { isAuthenticated, loading, sessionError, retrySession } = useAuth();

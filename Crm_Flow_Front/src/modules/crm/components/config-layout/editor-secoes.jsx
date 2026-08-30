@@ -1,6 +1,13 @@
+/**
+ * @file Seções da ficha. Um campo fica em uma seção só: cada seção oferece os campos que
+ * nenhuma outra usa. O que sobrar vai, sozinho, para a seção automática no fim ("Outros
+ * campos"), que o back calcula e não se edita.
+ */
 import { Plus, Trash2 } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+
 import { LIMITES_LAYOUT } from '../../constants';
 import { moverPara } from '../../lib/ordem';
 import { BotaoIcone } from '../botao-icone';
@@ -31,6 +38,7 @@ export function EditorSecoes({ secoes, opcoes, automatica, erro, onChange }) {
 
   function mover(de, para) {
     const proximas = moverPara(secoes, de, para);
+
     if (proximas !== secoes) {
       onChange(proximas);
     }
@@ -42,7 +50,7 @@ export function EditorSecoes({ secoes, opcoes, automatica, erro, onChange }) {
         <h3 className="text-sm font-medium" id="layout-secoes-titulo">
           Seções da ficha
         </h3>
-        <span className="font-mono text-[11px] text-muted-foreground tabular-nums">
+        <span className="text-[11px] text-muted-foreground tabular-nums">
           {secoes.length}/{LIMITES_LAYOUT.SECOES}
         </span>
       </div>
@@ -61,7 +69,7 @@ export function EditorSecoes({ secoes, opcoes, automatica, erro, onChange }) {
             <div className="flex items-center gap-1">
               <Input
                 aria-label={`Nome da seção ${indice + 1}`}
-                className="h-9 flex-1 rounded-none"
+                className="flex-1"
                 maxLength={LIMITES_LAYOUT.NOME_SECAO}
                 onChange={(event) => alterar(indice, { nome: event.target.value })}
                 placeholder="Nome da seção"

@@ -1,18 +1,26 @@
-import { RotateCcw } from 'lucide-react';
+/**
+ * @file Configurações › Layout do lead. DONO/MASTER editam o padrão da empresa e o próprio;
+ * OPERADOR, só o próprio (o back barra o padrão com 403). Todos têm "Voltar ao padrão" quando
+ * há um layout próprio.
+ */
 import { useMemo, useState } from 'react';
+import { RotateCcw } from 'lucide-react';
+
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
+import { LoadingState } from '@/components/loading-state';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { podeVer } from '@/lib/acesso';
 import { isAccessError } from '@/services/api';
+
 import { CONTEXTO, PAPEIS_GESTAO } from '../../constants';
 import { useCampos } from '../../hooks/use-campos';
 import { useLayout } from '../../hooks/use-layout';
 import { camposDoContexto } from '../../lib/contextos';
-import { MODO, identificadorPermitido, layoutDoEditor, opcoesDoEditor } from '../../lib/layout';
+import { identificadorPermitido, layoutDoEditor, MODO, opcoesDoEditor } from '../../lib/layout';
 import { FormLayout } from './form-layout';
 import { VoltarPadraoDialog } from './voltar-padrao-dialog';
 
@@ -25,11 +33,9 @@ const CAMPOS_VAZIOS = [];
 function Carregando() {
   return (
     <div className="grid gap-3" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando layout…
-      </span>
+      <LoadingState label="Carregando layout…" />
       {Array.from({ length: 4 }, (_, indice) => (
-        <Skeleton className="h-16 rounded-none" key={indice} />
+        <Skeleton className="h-16" key={indice} />
       ))}
     </div>
   );
@@ -42,6 +48,7 @@ function useOpcoesDoEditor() {
 
   return useMemo(() => {
     const naFicha = camposDoContexto(campos, CONTEXTO.FICHA);
+
     return {
       identificador: naFicha
         .filter(identificadorPermitido)
@@ -69,9 +76,11 @@ export function SecaoLayout() {
   if (isAccessError(layoutQuery.error)) {
     return <AcessoIndisponivel error={layoutQuery.error} />;
   }
+
   if (layoutQuery.error) {
     return <ApiErrorAlert error={layoutQuery.error} id="config-layout-carregar-erro" />;
   }
+
   if (layoutQuery.isPending) {
     return <Carregando />;
   }
@@ -115,7 +124,12 @@ export function SecaoLayout() {
         )}
       </div>
 
-      <p className={aviso ? 'border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
+      <p
+        className={
+          aviso ? 'rounded-lg border border-border bg-surface px-3 py-2 text-sm' : 'sr-only'
+        }
+        role="status"
+      >
         {aviso}
       </p>
 

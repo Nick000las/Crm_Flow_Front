@@ -1,12 +1,19 @@
-import { Handshake, Plus, Trash2 } from 'lucide-react';
+/**
+ * @file Aba "Oportunidades" do drawer: uma pessoa pode ter várias, cada uma em um pipeline e
+ * com o próprio status.
+ */
 import { useState } from 'react';
+import { Handshake, Plus, Trash2 } from 'lucide-react';
+
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { ConfirmationDialog } from '@/components/confirmation-dialog';
-import { ModulePlaceholder } from '@/components/module-placeholder';
+import { EmptyState } from '@/components/empty-state';
+import { LoadingState } from '@/components/loading-state';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { isAccessError } from '@/services/api';
+
 import { useCampos } from '../../hooks/use-campos';
 import { useAcaoDaOportunidade, useOportunidades } from '../../hooks/use-oportunidades';
 import { usePipelines } from '../../hooks/use-pipelines';
@@ -26,11 +33,9 @@ const AVISO_DA_ACAO = Object.freeze({
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando oportunidades…
-      </span>
+      <LoadingState label="Carregando oportunidades…" />
       {Array.from({ length: 2 }, (_, indice) => (
-        <Skeleton className="h-20 rounded-none" key={indice} />
+        <Skeleton className="h-20" key={indice} />
       ))}
     </div>
   );
@@ -58,12 +63,15 @@ export function AbaOportunidades({ lead, nomePorId }) {
   const acao = useAcaoDaOportunidade(lead.id);
 
   const erro = oportunidadesQuery.error ?? pipelinesQuery.error;
+
   if (isAccessError(erro)) {
     return <AcessoIndisponivel error={erro} />;
   }
+
   if (erro) {
     return <ApiErrorAlert error={erro} id="oportunidades-erro" />;
   }
+
   if (oportunidadesQuery.isPending || pipelinesQuery.isPending) {
     return <Carregando />;
   }
@@ -95,7 +103,12 @@ export function AbaOportunidades({ lead, nomePorId }) {
     <div className="grid gap-4">
       {oportunidades.length > 0 && <div>{botaoNovo}</div>}
 
-      <p className={aviso ? 'border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
+      <p
+        className={
+          aviso ? 'rounded-lg border border-border bg-surface px-3 py-2 text-sm' : 'sr-only'
+        }
+        role="status"
+      >
         {aviso}
       </p>
       <ApiErrorAlert
@@ -105,13 +118,13 @@ export function AbaOportunidades({ lead, nomePorId }) {
       />
 
       {oportunidades.length === 0 ? (
-        <ModulePlaceholder
+        <EmptyState
           description="Registre as negociações e os atendimentos desta pessoa."
           icon={Handshake}
           title="Nenhuma oportunidade ainda"
         >
           {botaoNovo}
-        </ModulePlaceholder>
+        </EmptyState>
       ) : (
         <ul>
           {oportunidades.map((oportunidade) => {
@@ -146,7 +159,7 @@ export function AbaOportunidades({ lead, nomePorId }) {
       <div className="grid gap-2 border-t border-border pt-3">
         <Button
           aria-expanded={comLixeira}
-          className="w-fit rounded-none"
+          className="w-fit"
           onClick={() => setComLixeira((atual) => !atual)}
           size="sm"
           type="button"

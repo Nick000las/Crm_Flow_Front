@@ -1,7 +1,13 @@
-import { Pencil, Plus, Trash2, Users } from 'lucide-react';
+/**
+ * @file Grupos de distribuição: salvam na hora (fora do rascunho das regras). O grupo é destino
+ * de regra; excluir um em uso dá 409.
+ */
 import { useState } from 'react';
-import { ModulePlaceholder } from '@/components/module-placeholder';
+import { Pencil, Plus, Trash2, Users } from 'lucide-react';
+
+import { EmptyState } from '@/components/empty-state';
 import { Button } from '@/components/ui/button';
+
 import { BotaoIcone } from '../botao-icone';
 import { ExcluirGrupoDialog } from './excluir-grupo-dialog';
 import { GrupoDialog } from './grupo-dialog';
@@ -9,13 +15,17 @@ import { GrupoDialog } from './grupo-dialog';
 /** "Ana, Bia e mais 3" — membro desativado não aparece. */
 function textoDosMembros(membros, nomePorId) {
   const nomes = membros.map((id) => nomePorId.get(id)).filter(Boolean);
+
   if (nomes.length === 0) {
     return 'Nenhum membro ativo';
   }
+
   const MAX_NOMES = 3;
+
   if (nomes.length <= MAX_NOMES) {
     return nomes.join(', ');
   }
+
   return `${nomes.slice(0, MAX_NOMES).join(', ')} e mais ${nomes.length - MAX_NOMES}`;
 }
 
@@ -61,13 +71,13 @@ export function GruposDistribuicao({ grupos, usuarios, nomePorId, podeEditar, on
       </div>
 
       {grupos.length === 0 ? (
-        <ModulePlaceholder
+        <EmptyState
           description="Crie um grupo para dividir os leads de uma regra entre várias pessoas."
           icon={Users}
           title="Nenhum grupo ainda"
         >
           {botaoNovo}
-        </ModulePlaceholder>
+        </EmptyState>
       ) : (
         <ul className="border border-border">
           {grupos.map((grupo) => (

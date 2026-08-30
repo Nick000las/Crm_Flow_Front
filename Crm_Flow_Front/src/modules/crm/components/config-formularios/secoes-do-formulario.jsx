@@ -1,8 +1,14 @@
+/**
+ * @file Seções e itens do formulário: campos do CRM e perguntas próprias. Um `DndContext` só,
+ * com um `SortableContext` por seção: o item arrasta dentro da seção e para outra. Teclado: o
+ * puxador, ↑/↓ e o seletor "Seção".
+ */
+import { useCallback, useRef, useState } from 'react';
 import {
+  closestCenter,
   DndContext,
   KeyboardSensor,
   PointerSensor,
-  closestCenter,
   useDroppable,
   useSensor,
   useSensors,
@@ -13,11 +19,13 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { MessageSquarePlus, Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { canScrollDragArea, dragBoundsModifier } from '@/lib/drag-bounds';
 import { cn } from '@/lib/utils';
+
 import {
   adicionarItem,
   adicionarPergunta,
@@ -64,7 +72,7 @@ function AlvoDaSecaoVazia({ chaveLocal, children }) {
     <div
       className={cn(
         'border border-dashed border-border px-3 py-6 text-center text-xs text-muted-foreground transition-colors duration-200',
-        isOver && 'border-foreground',
+        isOver && 'border-primary ring-2 ring-primary/20',
       )}
       ref={setNodeRef}
     >
@@ -97,6 +105,8 @@ export function SecoesDoFormulario({
   erroDasSecoes,
   onChange,
 }) {
+  const boundary = useRef(null);
+  const limitDrag = useCallback((args) => dragBoundsModifier(() => boundary.current)(args), []);
   const sensores = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: DISTANCIA_MINIMA_PX } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -112,6 +122,7 @@ export function SecoesDoFormulario({
   }));
   const rotuloDe = (chaveLocal) => {
     const item = itens.find((atual) => atual.chaveLocal === chaveLocal);
+
     return item ? rotuloDoItem(item, campoPorId) : 'Item';
   };
   const rotuloDoAlvo = (over) => {
@@ -119,6 +130,7 @@ export function SecoesDoFormulario({
     const indice = rascunho.secoes.findIndex((atual) => atual.chaveLocal === secao);
     const nome = indice >= 0 ? nomeDaSecao(rascunho.secoes[indice], indice) : 'seção';
     const posicao = over.data.current?.sortable?.index;
+
     return posicao === undefined ? nome : `${nome}, posição ${posicao + 1}`;
   };
   const emEdicao = perguntaAberta?.chaveLocal
@@ -129,11 +141,13 @@ export function SecoesDoFormulario({
     if (!over || active.id === over.id) {
       return;
     }
+
     const daSecaoVazia = over.data.current?.secao;
     const sortable = over.data.current?.sortable;
     const destino = daSecaoVazia
       ? { secao: daSecaoVazia, indice: 0 }
       : sortable && { secao: sortable.containerId, indice: sortable.index };
+
     if (destino) {
       onChange(moverItem(rascunho, String(active.id), destino));
     }
@@ -148,7 +162,7 @@ export function SecoesDoFormulario({
   }
 
   return (
-    <div className="grid gap-3">
+    <div className="grid gap-3" ref={boundary} data-drag-boundary>
       <DndContext
         accessibility={{
           announcements: {
@@ -167,6 +181,8 @@ export function SecoesDoFormulario({
           screenReaderInstructions: { draggable: INSTRUCOES },
         }}
         collisionDetection={closestCenter}
+        modifiers={[limitDrag]}
+        autoScroll={{ canScroll: (element) => canScrollDragArea(element, boundary.current) }}
         onDragEnd={aoSoltar}
         sensors={sensores}
       >
@@ -178,7 +194,7 @@ export function SecoesDoFormulario({
           return (
             <section
               aria-label={nome}
-              className="grid gap-2 border border-border bg-muted/30 p-3"
+              className="grid gap-3 rounded-xl border border-border bg-surface p-4"
               key={secao.chaveLocal}
             >
               <div className="flex flex-wrap items-center gap-2">
@@ -188,7 +204,7 @@ export function SecoesDoFormulario({
                 <Input
                   aria-describedby={erroDaSecao ? `${idTitulo}-erro` : undefined}
                   aria-invalid={erroDaSecao ? true : undefined}
-                  className="h-9 min-w-48 flex-1 rounded-none bg-background"
+                  className="min-w-48 flex-1 bg-background"
                   id={idTitulo}
                   onChange={(event) =>
                     onChange(renomearSecao(rascunho, secao.chaveLocal, event.target.value))
@@ -205,6 +221,7 @@ export function SecoesDoFormulario({
                 />
                 <BotaoIcone
                   icone={Trash2}
+                  variant="destructive"
                   onClick={() => onChange(removerSecao(rascunho, secao.chaveLocal))}
                   rotulo={`Remover ${nome} (os itens saem do formulário)`}
                 />
@@ -259,6 +276,7 @@ export function SecoesDoFormulario({
                     className="w-full bg-background sm:w-72"
                     onChange={(campoId) => {
                       const campo = campoPorId.get(campoId);
+
                       if (campo) {
                         onChange(adicionarItem(rascunho, secao.chaveLocal, campo));
                       }
@@ -272,7 +290,7 @@ export function SecoesDoFormulario({
                   />
                 )}
                 <Button
-                  className="rounded-none bg-background"
+                  className="bg-background"
                   onClick={() => setPerguntaAberta({ secao: secao.chaveLocal })}
                   size="sm"
                   type="button"
@@ -304,12 +322,7 @@ export function SecoesDoFormulario({
         </p>
       )}
       <div>
-        <Button
-          className="rounded-none"
-          onClick={() => onChange(adicionarSecao(rascunho))}
-          type="button"
-          variant="outline"
-        >
+        <Button onClick={() => onChange(adicionarSecao(rascunho))} type="button" variant="outline">
           <Plus aria-hidden="true" />
           Nova seção
         </Button>

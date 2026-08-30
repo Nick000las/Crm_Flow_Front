@@ -1,3 +1,8 @@
+/**
+ * @file Regras da subseção Configurações › Campos. O back valida tudo de novo (400 em
+ * `fields.visibilidade/obrigatorio/label`); isto só desabilita antes o que ele recusaria, com o
+ * motivo para o usuário.
+ */
 import { CONTEXTO } from '../constants.js';
 
 /**
@@ -38,13 +43,16 @@ export function bloqueios(campo) {
     if (!capacidades.canHide) {
       return MOTIVOS.ESSENCIAL;
     }
+
     if (contexto === CONTEXTO.CRIACAO && obrigatorio) {
       return MOTIVOS.OBRIGATORIO_NA_CRIACAO;
     }
+
     return null;
   };
 
   let motivoObrigatorio = null;
+
   if (!capacidades.canMakeOptional) {
     motivoObrigatorio = MOTIVOS.OBRIGATORIEDADE_FIXA;
   } else if (!obrigatorio && !visibilidade[CONTEXTO.CRIACAO]) {
@@ -76,9 +84,11 @@ export function parcialDeVisibilidade(contexto, ligado) {
  */
 export function parcialDoNome(campo, texto) {
   const label = texto.trim();
+
   if (label === campo.label) {
     return null;
   }
+
   if (campo.labelPadrao && label === campo.labelPadrao) {
     return { label: null };
   }

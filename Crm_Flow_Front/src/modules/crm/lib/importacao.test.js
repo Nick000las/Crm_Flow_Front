@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
+
 import {
-  PASSO,
   autoMapear,
   estadoInicial,
   mapeamentoParaEnvio,
   normalizar,
+  PASSO,
   percentualConcluido,
   problemasDoMapeamento,
   relatorioCsv,
@@ -59,9 +60,11 @@ describe('mapeamento', () => {
       'O campo obrigatório "Nome" não foi mapeado',
       'Mapeie ao menos a coluna de e-mail ou a de telefone',
     ]);
+
     assert.deepEqual(problemasDoMapeamento({ A: 'nome', B: 'email', C: 'email' }, campos), [
       '"E-mail" foi escolhido para mais de uma coluna',
     ]);
+
     assert.deepEqual(problemasDoMapeamento({ A: 'nome', B: 'telefone' }, campos), []);
   });
 });
@@ -108,6 +111,7 @@ describe('wizardReducer', () => {
     const comJob = wizardReducer(lido, { tipo: 'validado', validacao: { jobId: 'j1' } });
 
     assert.equal(wizardReducer(semJob, { tipo: 'confirmado' }).passo, PASSO.REVISAR);
+
     assert.deepEqual(
       [
         wizardReducer(comJob, { tipo: 'confirmado' }).passo,

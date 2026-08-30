@@ -1,4 +1,8 @@
+/**
+ * @file ↑/↓ de uma linha: a alternativa direta ao arrastar.
+ */
 import { ArrowDown, ArrowUp } from 'lucide-react';
+
 import { BotaoIcone } from '../botao-icone';
 
 /**

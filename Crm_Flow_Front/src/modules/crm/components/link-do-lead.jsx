@@ -1,4 +1,9 @@
+/**
+ * @file Link que abre o Sheet do lead, preservando busca e página. O `id` é o alvo do foco
+ * quando o Sheet fecha.
+ */
 import { Link } from 'react-router-dom';
+
 import { useNavegacaoLeads } from '../hooks/use-navegacao-leads';
 import { idLinkDoLead } from '../rotas';
 

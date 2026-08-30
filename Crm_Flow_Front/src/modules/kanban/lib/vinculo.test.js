@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { FLAG_VINCULO, contatoDaPessoa, podeVincular } from './vinculo.js';
+
+import { contatoDaPessoa, FLAG_VINCULO, podeVincular } from './vinculo.js';
 
 const usuario = { role: 'OPERADOR', modulosAtivos: ['crm'], featuresAtivas: [FLAG_VINCULO] };
 

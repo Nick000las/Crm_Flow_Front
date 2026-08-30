@@ -1,3 +1,8 @@
+/**
+ * @file Nova URL com a aba. Trocar de aba limpa a consulta da outra (de/ate/mes, lista,
+ * pipeline…) e só guarda `aba`; a Previsão, que é o padrão, nem isso. A mesma aba devolve uma
+ * cópia sem mudança.
+ */
 import { podeVer } from '../../../lib/acesso.js';
 import { ABAS_FORECAST, CRM_FEATURES, PAPEIS_GESTAO } from '../constants.js';
 import { TEXTOS_ASSERTIVIDADE } from './assertividade-textos.js';
@@ -36,6 +41,7 @@ export function abasVisiveis(user) {
  */
 export function abaDaUrl(searchParams, user) {
   const aba = searchParams.get(PARAM_ABA);
+
   return abasVisiveis(user).some((def) => def.valor === aba) ? aba : ABAS_FORECAST.PREVISAO;
 }
 
@@ -49,12 +55,16 @@ export function abaDaUrl(searchParams, user) {
  */
 export function escreverAba(searchParams, aba) {
   const atual = searchParams.get(PARAM_ABA) || ABAS_FORECAST.PREVISAO;
+
   if (aba === atual) {
     return new URLSearchParams(searchParams);
   }
+
   const saida = new URLSearchParams();
+
   if (aba && aba !== ABAS_FORECAST.PREVISAO) {
     saida.set(PARAM_ABA, aba);
   }
+
   return saida;
 }

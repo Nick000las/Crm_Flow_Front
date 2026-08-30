@@ -1,5 +1,11 @@
+/**
+ * @file Ordem escolhida, por tenant e por quadro. Fica no `localStorage` porque é conveniência
+ * de quem está vendo. O filtro não: ele mora na URL.
+ */
 import { useCallback, useMemo, useState } from 'react';
+
 import { lerPreferencia, salvarPreferencia } from '@/lib/preferencia-local';
+
 import { ordemValida } from '../lib/quadro-consulta';
 
 const PREFIXO_CHAVE = 'crm:quadro-ordem:';

@@ -1,3 +1,6 @@
+/**
+ * @file Os quadros que a galeria sabe abrir.
+ */
 const MODO_NATIVO = 'nativo';
 
 /**
@@ -48,6 +51,7 @@ export function rotaDoQuadro(board) {
   if (!ehQuadroDeEntidade(board)) {
     return `/kanban?quadro=${board.id}`;
   }
+
   return ROTA_POR_TIPO[board.boardType]?.(board.quadroRef) ?? null;
 }
 

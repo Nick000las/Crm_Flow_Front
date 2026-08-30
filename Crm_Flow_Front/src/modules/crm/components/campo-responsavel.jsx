@@ -1,3 +1,7 @@
+/**
+ * @file Responsável pelo lead — não é campo de `/fields`; as opções vêm de `/crm/usuarios`. O
+ * significado do vazio depende do modo (ver `rotuloVazio`).
+ */
 import { CampoForm } from './campo-form';
 import { SelectSimples } from './select-simples';
 

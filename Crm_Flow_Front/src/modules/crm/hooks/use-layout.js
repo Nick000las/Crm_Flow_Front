@@ -1,6 +1,11 @@
+/**
+ * @file Toda mutação devolve o layout inteiro (`{ padrao, meu, efetivo… }`).
+ */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
 import { temFeature } from '@/lib/acesso';
+
 import { obterLayout, removerMeu, salvarMeu, salvarPadrao } from '../api/layout.api';
 import { CRM_FEATURES } from '../constants';
 import { crmKeys } from '../query-keys';
@@ -40,15 +45,18 @@ function useMutacaoDeLayout(mutationFn) {
 
 export function useSalvarPadrao() {
   const { authApi } = useAuth();
+
   return useMutacaoDeLayout((layout) => salvarPadrao(authApi, layout));
 }
 
 export function useSalvarMeu() {
   const { authApi } = useAuth();
+
   return useMutacaoDeLayout((parcial) => salvarMeu(authApi, parcial));
 }
 
 export function useRemoverMeu() {
   const { authApi } = useAuth();
+
   return useMutacaoDeLayout(() => removerMeu(authApi));
 }

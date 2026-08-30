@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
+
 import {
   ehListaLivre,
   humanizar,
@@ -75,6 +76,7 @@ describe('seletor e filtro', () => {
       valor: 'frio',
       rotulo: 'Frio (inativa)',
     });
+
     assert.equal(opcoesDoSeletor(status, 'novo').length, 2);
   });
 
@@ -83,6 +85,7 @@ describe('seletor e filtro', () => {
       opcoesDoFiltro(status).map((item) => item.rotulo),
       ['Novo', 'Fechado', 'Frio (inativa)'],
     );
+
     assert.deepEqual(opcoesDoFiltro(tags)[0], { valor: 'cliente_vip', rotulo: 'Cliente VIP' });
     assert.deepEqual(opcoesDoFiltro({ camada: 3, opcoes: ['A'] }), [{ valor: 'A', rotulo: 'A' }]);
   });

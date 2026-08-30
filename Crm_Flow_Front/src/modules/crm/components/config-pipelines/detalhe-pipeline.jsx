@@ -1,9 +1,14 @@
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+/**
+ * @file Um pipeline: dados, status e, em atendimento, a automação.
+ */
 import { useState } from 'react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
+
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { ConfirmationDialog } from '@/components/confirmation-dialog';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+
 import {
   ROTULOS_CATEGORIA,
   ROTULOS_TIPO_PIPELINE,
@@ -23,7 +28,7 @@ import { AutomacaoForm } from './automacao-form';
 import { ExcluirPipelineDialog } from './excluir-pipeline-dialog';
 import { PipelineDialog } from './pipeline-dialog';
 
-const TITULO_CLASS = 'font-mono text-[11px] tracking-wide text-muted-foreground uppercase';
+const TITULO_CLASS = 'text-[11px] tracking-wide text-muted-foreground uppercase';
 
 const contagem = (total) =>
   total === 1 ? '1 oportunidade' : `${total.toLocaleString('pt-BR')} oportunidades`;
@@ -43,9 +48,7 @@ function StatusEmLeitura({ status }) {
             {typeof item.probabilidadePadrao === 'number' && (
               <>
                 {' · '}
-                <span className="font-mono tabular-nums">
-                  {comPorcento(item.probabilidadePadrao)}
-                </span>
+                <span className="tabular-nums">{comPorcento(item.probabilidadePadrao)}</span>
               </>
             )}
           </span>
@@ -135,9 +138,10 @@ function AcoesDoPipeline({ pipeline, pipelines, onAviso }) {
         <ControleTravado motivo={motivoExcluir} motivoId={`${idBase}-excluir-motivo`}>
           <BotaoIcone
             aria-describedby={motivoExcluir ? `${idBase}-excluir-motivo` : undefined}
-            className={motivoExcluir ? 'pointer-events-none rounded-none' : 'rounded-none'}
+            className={motivoExcluir ? 'pointer-events-none' : undefined}
             disabled={Boolean(motivoExcluir)}
             icone={Trash2}
+            variant="destructive"
             onClick={() => setExcluindo(true)}
             rotulo="Excluir pipeline"
           />
@@ -263,7 +267,7 @@ export function DetalhePipeline({ pipeline, pipelines, podeEditar, onAviso }) {
             {!pipeline.ativo && ' · Inativo'}
             {!pipeline.visivelOperador && ' · Oculto para operadores'}
             {' · '}
-            <span className="font-mono tabular-nums">{contagem(pipeline.oportunidades)}</span>
+            <span className="tabular-nums">{contagem(pipeline.oportunidades)}</span>
           </p>
         </div>
         {podeEditar && (

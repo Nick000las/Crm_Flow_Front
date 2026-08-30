@@ -1,14 +1,19 @@
+/**
+ * @file URL com página além da última (link antigo, leads excluídos).
+ */
 import { Archive, SearchX, Trash2, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { ModulePlaceholder } from '@/components/module-placeholder';
+
+import { EmptyState } from '@/components/empty-state';
 import { Button, buttonVariants } from '@/components/ui/button';
+
 import { DIAS_NA_LIXEIRA, SITUACOES_LEAD } from '../constants';
 import { ROTAS_CRM } from '../rotas';
 
 /** Tenant sem leads ainda. Importar só aparece para quem pode importar. */
 export function LeadsVazio({ acaoNovo, podeImportar }) {
   return (
-    <ModulePlaceholder
+    <EmptyState
       icon={Users}
       title="Nenhum lead ainda"
       description="Os leads do CRM aparecem aqui assim que forem cadastrados ou importados."
@@ -21,7 +26,7 @@ export function LeadsVazio({ acaoNovo, podeImportar }) {
           </Link>
         )}
       </div>
-    </ModulePlaceholder>
+    </EmptyState>
   );
 }
 
@@ -43,12 +48,12 @@ const VAZIO_DA_SITUACAO = Object.freeze({
 export function SituacaoVazia({ situacao }) {
   const { icon, title, description } = VAZIO_DA_SITUACAO[situacao];
 
-  return <ModulePlaceholder description={description} icon={icon} title={title} />;
+  return <EmptyState description={description} icon={icon} title={title} />;
 }
 
 export function LeadsNaoEncontrados({ onLimpar }) {
   return (
-    <ModulePlaceholder
+    <EmptyState
       icon={SearchX}
       title="Nenhum lead encontrado"
       description="Nenhum lead corresponde à busca e aos filtros atuais."
@@ -56,14 +61,14 @@ export function LeadsNaoEncontrados({ onLimpar }) {
       <Button onClick={onLimpar} variant="outline">
         Limpar busca e filtros
       </Button>
-    </ModulePlaceholder>
+    </EmptyState>
   );
 }
 
 /** URL com página além da última (link antigo, leads excluídos). */
 export function PaginaSemLeads({ onPrimeiraPagina }) {
   return (
-    <ModulePlaceholder
+    <EmptyState
       icon={SearchX}
       title="Esta página não tem leads"
       description="A lista ficou menor do que a página pedida."
@@ -71,6 +76,6 @@ export function PaginaSemLeads({ onPrimeiraPagina }) {
       <Button onClick={onPrimeiraPagina} variant="outline">
         Ir para a primeira página
       </Button>
-    </ModulePlaceholder>
+    </EmptyState>
   );
 }

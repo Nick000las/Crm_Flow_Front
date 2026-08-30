@@ -1,10 +1,17 @@
+/**
+ * @file Configurações › Distribuição (`crm.distribuicao`): quem recebe cada lead novo. Regras
+ * (rascunho + um PUT com tudo) e grupos (salvam na hora). Todos leem; só DONO/MASTER alteram.
+ */
 import { useState } from 'react';
+
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
+import { LoadingState } from '@/components/loading-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { podeVer } from '@/lib/acesso';
 import { isAccessError } from '@/services/api';
+
 import { PAPEIS_GESTAO, TIPOS_DESTINO } from '../../constants';
 import { useCampos } from '../../hooks/use-campos';
 import { useDistribuicao } from '../../hooks/use-distribuicao';
@@ -16,11 +23,9 @@ import { GruposDistribuicao } from './grupos-distribuicao';
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando distribuição…
-      </span>
+      <LoadingState label="Carregando distribuição…" />
       {Array.from({ length: 4 }, (_, indice) => (
-        <Skeleton className="h-14 rounded-none" key={indice} />
+        <Skeleton className="h-14" key={indice} />
       ))}
     </div>
   );
@@ -57,9 +62,11 @@ export function SecaoDistribuicao() {
   if (isAccessError(erro)) {
     return <AcessoIndisponivel error={erro} />;
   }
+
   if (erro) {
     return <ApiErrorAlert error={erro} id="distribuicao-carregar-erro" />;
   }
+
   if (distribuicaoQuery.isPending || camposQuery.isPending) {
     return <Carregando />;
   }
@@ -79,7 +86,12 @@ export function SecaoDistribuicao() {
         {!podeEditar && <p>Só DONO e MASTER alteram a distribuição.</p>}
       </div>
 
-      <p className={aviso ? 'border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
+      <p
+        className={
+          aviso ? 'rounded-lg border border-border bg-surface px-3 py-2 text-sm' : 'sr-only'
+        }
+        role="status"
+      >
         {aviso}
       </p>
 

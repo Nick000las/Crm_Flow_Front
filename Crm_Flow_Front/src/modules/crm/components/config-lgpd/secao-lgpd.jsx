@@ -1,12 +1,20 @@
+/**
+ * @file Configurações › Privacidade (`crm.lgpd`): base legal padrão e se ela é obrigatória.
+ * Todos leem; só DONO/MASTER alteram. Anonimizar um lead fica no próprio lead (menu "⋯").
+ */
 import { useState } from 'react';
+
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
+import { LoadingState } from '@/components/loading-state';
 import { Button } from '@/components/ui/button';
+import { Form } from '@/components/ui/form';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/hooks/useAuth';
 import { podeVer } from '@/lib/acesso';
 import { isAccessError } from '@/services/api';
+
 import { PAPEIS_GESTAO } from '../../constants';
 import { useConfigLgpd, useSalvarLgpd } from '../../hooks/use-lgpd';
 import { SelectSimples } from '../select-simples';
@@ -14,11 +22,9 @@ import { SelectSimples } from '../select-simples';
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando privacidade…
-      </span>
+      <LoadingState label="Carregando privacidade…" />
       {Array.from({ length: 3 }, (_, indice) => (
-        <Skeleton className="h-12 rounded-none" key={indice} />
+        <Skeleton className="h-12" key={indice} />
       ))}
     </div>
   );
@@ -48,6 +54,7 @@ function FormLgpd({ config, podeEditar, onSalvo }) {
 
   function alterar(parcial) {
     setValores((atuais) => ({ ...atuais, ...parcial }));
+
     if (salvar.error) {
       salvar.reset();
     }
@@ -55,13 +62,14 @@ function FormLgpd({ config, podeEditar, onSalvo }) {
 
   function handleSubmit(event) {
     event.preventDefault();
+
     if (mudou) {
       salvar.mutate(paraEnvio(valores), { onSuccess: () => onSalvo('Configuração salva.') });
     }
   }
 
   return (
-    <form className="grid max-w-2xl gap-5" noValidate onSubmit={handleSubmit}>
+    <Form className="grid max-w-2xl gap-5" noValidate onSubmit={handleSubmit}>
       <div className="grid gap-1.5">
         <label className="text-sm font-medium" htmlFor="lgpd-base-padrao">
           Base legal padrão
@@ -103,8 +111,14 @@ function FormLgpd({ config, podeEditar, onSalvo }) {
 
       {podeEditar && (
         <div className="flex flex-wrap gap-2 border-t border-border pt-4">
-          <Button aria-busy={salvar.isPending} disabled={!mudou || travado} type="submit">
-            {salvar.isPending ? 'Salvando…' : 'Salvar'}
+          <Button
+            aria-busy={salvar.isPending}
+            disabled={!mudou || travado}
+            type="submit"
+            loading={salvar.isPending}
+            loadingText="Salvando…"
+          >
+            {'Salvar'}
           </Button>
           <Button
             disabled={!mudou || travado}
@@ -119,7 +133,7 @@ function FormLgpd({ config, podeEditar, onSalvo }) {
           </Button>
         </div>
       )}
-    </form>
+    </Form>
   );
 }
 
@@ -138,9 +152,11 @@ export function SecaoLgpd() {
   if (isAccessError(erro)) {
     return <AcessoIndisponivel error={erro} />;
   }
+
   if (erro) {
     return <ApiErrorAlert error={erro} id="lgpd-carregar-erro" />;
   }
+
   if (configQuery.isPending) {
     return <Carregando />;
   }
@@ -162,7 +178,12 @@ export function SecaoLgpd() {
         </p>
       </div>
 
-      <p className={aviso ? 'border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
+      <p
+        className={
+          aviso ? 'rounded-lg border border-border bg-surface px-3 py-2 text-sm' : 'sr-only'
+        }
+        role="status"
+      >
         {aviso}
       </p>
 

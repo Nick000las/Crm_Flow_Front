@@ -1,8 +1,15 @@
+/**
+ * @file Formulário dinâmico do lead: itera `/crm/leads/fields` sem saber a camada de cada
+ * campo.
+ */
 import { useState } from 'react';
+
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
+import { Form } from '@/components/ui/form';
 import { semChave } from '@/lib/objetos';
 import { isAbortError, toApiError } from '@/services/api';
+
 import { TIPOS_CAMPO } from '../constants';
 import { useChecarDuplicados } from '../hooks/use-duplicidade';
 import {
@@ -11,17 +18,17 @@ import {
   descreverCandidato,
   ehErroDeDuplicidade,
 } from '../lib/duplicidade';
-import { camposComRegras } from '../lib/regras';
-import { ROTAS_CRM } from '../rotas';
 import {
+  camposDoStatus,
   CHAVE_OPT_OUT,
   CHAVE_RESPONSAVEL,
-  camposDoStatus,
   errosDoServidor,
   idNoForm,
   podeEditarCampo,
   validarNoCliente,
 } from '../lib/form-lead';
+import { camposComRegras } from '../lib/regras';
+import { ROTAS_CRM } from '../rotas';
 import { CampoDinamico } from './campo-dinamico';
 import { CampoOptOut } from './campo-opt-out';
 import { CampoResponsavel } from './campo-responsavel';
@@ -42,7 +49,11 @@ const htmlId = (idCampo) => `${PREFIXO_ID}${idCampo.replaceAll('.', '-')}`;
 function ParecidosAoVivo({ candidatos }) {
   return (
     <div
-      className={candidatos.length > 0 ? 'border border-border px-3 py-2 text-sm' : 'sr-only'}
+      className={
+        candidatos.length > 0
+          ? 'rounded-lg border border-border bg-surface px-3 py-2 text-sm'
+          : 'sr-only'
+      }
       role="status"
     >
       {candidatos.length > 0 && (
@@ -153,6 +164,7 @@ export function LeadForm({
 
   function checarDuplicados() {
     const consulta = consultaDeDuplicados(campos, valores, leadId);
+
     if (consulta) {
       checar.mutate(consulta);
     } else {
@@ -168,7 +180,9 @@ export function LeadForm({
 
   function mostrarErros(porCampo) {
     setErros(porCampo);
+
     const primeiro = Object.keys(porCampo)[0];
+
     if (primeiro) {
       document.getElementById(htmlId(primeiro))?.focus();
     }
@@ -179,8 +193,10 @@ export function LeadForm({
     setErroGeral(null);
 
     const errosCliente = validarNoCliente(camposVisiveis, valores);
+
     if (Object.keys(errosCliente).length > 0) {
       mostrarErros(errosCliente);
+
       return;
     }
 
@@ -197,13 +213,19 @@ export function LeadForm({
       }
 
       const apiError = toApiError(error);
+
       if (ehErroDeDuplicidade(apiError)) {
         setDuplicidade(apiError);
+
         return;
       }
+
       setDuplicidade(null);
+
       const { porCampo, gerais } = errosDoServidor(apiError.fields, campos);
+
       mostrarErros(porCampo);
+
       // Sem campo onde mostrar (ou com mensagens gerais), o alerta do topo explica.
       if (gerais.length > 0 || Object.keys(porCampo).length === 0) {
         setErroGeral(apiError);
@@ -246,7 +268,7 @@ export function LeadForm({
   };
 
   return (
-    <form
+    <Form
       aria-describedby={erroGeral ? ERRO_GERAL_ID : undefined}
       className="flex min-h-0 flex-1 flex-col"
       noValidate
@@ -292,10 +314,16 @@ export function LeadForm({
         <Button disabled={enviando} onClick={onCancelar} type="button" variant="outline">
           Cancelar
         </Button>
-        <Button aria-busy={enviando} disabled={enviando} type="submit">
-          {enviando ? 'Salvando…' : rotuloEnviar}
+        <Button
+          aria-busy={enviando}
+          disabled={enviando}
+          type="submit"
+          loading={enviando}
+          loadingText="Salvando…"
+        >
+          {rotuloEnviar}
         </Button>
       </footer>
-    </form>
+    </Form>
   );
 }

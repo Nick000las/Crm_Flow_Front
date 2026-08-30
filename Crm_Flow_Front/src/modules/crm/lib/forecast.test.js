@@ -1,15 +1,16 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import { ApiError } from '../../../services/api-error.js';
 import { FORECAST } from '../constants.js';
 import {
-  CONSULTA_PADRAO,
-  MENSAGENS_PERIODO,
   chaveDaSelecao,
+  CONSULTA_PADRAO,
   erroDoForecast,
   escreverConsulta,
   lerConsulta,
   listaDeAbertas,
+  MENSAGENS_PERIODO,
   mesesEntre,
   opcoesDeAgrupar,
   paramsDaLista,
@@ -45,11 +46,13 @@ test('ida e volta pela URL mantém a consulta', () => {
     tamanho: 100,
   };
   const escrita = escreverConsulta(url(''), consulta);
+
   assert.deepEqual(lerConsulta(escrita), consulta);
   assert.equal(escrita.get('pipeline'), 'p1');
   assert.equal(escrita.get('responsavel'), 'u1');
 
   const comBloco = escreverConsulta(url(''), { lista: { bloco: 'semPrevisao' } });
+
   assert.equal(comBloco.toString(), 'bloco=semPrevisao');
   assert.deepEqual(lerConsulta(comBloco).lista, { bloco: 'semPrevisao' });
 });
@@ -60,11 +63,13 @@ test('omite agrupar total, página 1 e o tamanho padrão', () => {
     pagina: 1,
     tamanho: FORECAST.TAMANHO_PADRAO,
   });
+
   assert.equal(escrita.toString(), '');
 });
 
 test('mantém params que não são do forecast', () => {
   const escrita = escreverConsulta(url('aba=x&de=2026-01'), { ate: '2026-03' });
+
   assert.equal(escrita.get('aba'), 'x');
   assert.equal(escrita.get('de'), '2026-01');
   assert.equal(escrita.get('ate'), '2026-03');
@@ -74,6 +79,7 @@ test('valores inválidos caem fora', () => {
   const consulta = lerConsulta(
     url('de=2026-13&ate=26-01&agrupar=semana&pagina=0&tamanho=30&mes=2026-11&tipo=talvez'),
   );
+
   assert.equal(consulta.de, null);
   assert.equal(consulta.ate, null);
   assert.equal(consulta.agrupar, 'total');
@@ -95,12 +101,14 @@ test('agrupar=status sem pipeline vira total', () => {
   assert.equal(lerConsulta(url('agrupar=responsavel')).agrupar, 'responsavel');
 
   const semPipeline = escreverConsulta(url('agrupar=status&pipeline=p1'), { pipelineId: null });
+
   assert.equal(semPipeline.has('agrupar'), false);
   assert.equal(semPipeline.has('pipeline'), false);
 });
 
 test('mudar um filtro fecha a lista e volta à página 1', () => {
   const aberta = url('mes=2026-11&tipo=aberto&pagina=3');
+
   for (const mudanca of [
     { de: '2026-01' },
     { ate: '2026-12' },
@@ -109,30 +117,36 @@ test('mudar um filtro fecha a lista e volta à página 1', () => {
     { agrupar: 'responsavel' },
   ]) {
     const consulta = lerConsulta(escreverConsulta(aberta, mudanca));
+
     assert.equal(consulta.lista, null, JSON.stringify(mudanca));
     assert.equal(consulta.pagina, 1);
   }
 
   // O mesmo valor de antes não é mudança.
   const igual = lerConsulta(escreverConsulta(url('de=2026-01&bloco=atrasadas'), { de: '2026-01' }));
+
   assert.deepEqual(igual.lista, { bloco: 'atrasadas' });
 });
 
 test('trocar a lista volta à página 1; a página sozinha não mexe na lista', () => {
   const aberta = url('bloco=atrasadas&pagina=4');
   const outra = lerConsulta(escreverConsulta(aberta, { lista: { bloco: 'semPrevisao' } }));
+
   assert.equal(outra.pagina, 1);
 
   const pagina = lerConsulta(escreverConsulta(aberta, { pagina: 5 }));
+
   assert.deepEqual(pagina.lista, { bloco: 'atrasadas' });
   assert.equal(pagina.pagina, 5);
 
   const tamanho = lerConsulta(escreverConsulta(aberta, { tamanho: 100 }));
+
   assert.equal(tamanho.pagina, 1);
 });
 
 test('paramsDoForecast omite o vazio e o agrupar total', () => {
   assert.deepEqual(paramsDoForecast(CONSULTA_PADRAO), {});
+
   assert.deepEqual(
     paramsDoForecast({ ...CONSULTA_PADRAO, de: '2026-01', pipelineId: 'p1', agrupar: 'status' }),
     { de: '2026-01', pipelineId: 'p1', agrupar: 'status' },
@@ -143,6 +157,7 @@ test('paramsDaLista usa o período da URL ou o da resposta', () => {
   assert.equal(paramsDaLista(CONSULTA_PADRAO, { de: '2026-08', ate: '2027-02' }), null);
 
   const mes = { ...CONSULTA_PADRAO, lista: { mes: '2026-11', tipo: 'realizado' } };
+
   assert.deepEqual(paramsDaLista(mes, { de: '2026-08', ate: '2027-02' }), {
     mes: '2026-11',
     tipo: 'realizado',
@@ -153,6 +168,7 @@ test('paramsDaLista usa o período da URL ou o da resposta', () => {
   });
 
   const daUrl = { ...mes, de: '2026-01', ate: '2026-06', pipelineId: 'p1', responsavelId: 'u1' };
+
   assert.deepEqual(paramsDaLista(daUrl, { de: '2026-08', ate: '2027-02' }), {
     mes: '2026-11',
     tipo: 'realizado',
@@ -176,8 +192,10 @@ test('o bloco vai para a rota em snake_case', () => {
     alemDoHorizonte: 'alem_do_horizonte',
     semValor: 'sem_valor',
   };
+
   for (const [bloco, naRota] of Object.entries(casos)) {
     const params = paramsDaLista({ ...CONSULTA_PADRAO, lista: { bloco } });
+
     assert.equal(params.bloco, naRota);
     assert.equal('mes' in params, false);
   }
@@ -187,6 +205,7 @@ test('chaveDaSelecao ignora página e tamanho, mas não a lista nem os filtros',
   const periodo = { de: '2026-08', ate: '2027-02' };
   const base = { ...CONSULTA_PADRAO, lista: { bloco: 'atrasadas' } };
   const chave = chaveDaSelecao(base, periodo);
+
   assert.equal(chaveDaSelecao({ ...base, pagina: 3, tamanho: 100 }, periodo), chave);
   assert.notEqual(chaveDaSelecao({ ...base, lista: { bloco: 'semPrevisao' } }, periodo), chave);
   assert.notEqual(chaveDaSelecao({ ...base, pipelineId: 'p1' }, periodo), chave);
@@ -204,9 +223,11 @@ test('validarPeriodo: 24 meses passa, 25 não; invertido e formato', () => {
   assert.deepEqual(validarPeriodo('2026-01', '2027-12'), {});
   assert.deepEqual(validarPeriodo('2026-01', '2028-01'), { ate: MENSAGENS_PERIODO.longo });
   assert.equal(MENSAGENS_PERIODO.longo, 'Escolha um período de até 24 meses');
+
   assert.deepEqual(validarPeriodo('2026-05', '2026-04'), {
     de: 'O mês inicial precisa vir antes do final',
   });
+
   assert.deepEqual(validarPeriodo('2026-5', '2026-04'), { de: 'Use o formato AAAA-MM' });
   assert.deepEqual(validarPeriodo('2026-05', '2026-00'), { ate: 'Use o formato AAAA-MM' });
   assert.deepEqual(validarPeriodo(null, null), {});
@@ -228,13 +249,16 @@ test('tiposDaLista: passado realizado, futuro aberto, atual os dois', () => {
 
 test('opcoesDeAgrupar: Por status só com pipeline e vendo Status', () => {
   const valores = (contexto) => opcoesDeAgrupar(contexto).map((opcao) => opcao.valor);
+
   assert.deepEqual(valores({ pipelineId: null, veStatus: true }), ['total', 'responsavel']);
   assert.deepEqual(valores({ pipelineId: 'p1', veStatus: false }), ['total', 'responsavel']);
+
   assert.deepEqual(valores({ pipelineId: 'p1', veStatus: true }), [
     'total',
     'responsavel',
     'status',
   ]);
+
   assert.equal(opcoesDeAgrupar({ pipelineId: 'p1', veStatus: true })[2].rotulo, 'Por status');
 });
 
@@ -252,10 +276,12 @@ test('pipelinesDoForecast: só vendas ativos; oculto sai só para o operador', (
     { id: 'c', nome: 'Antigo', tipo: 'sales', ativo: false, visivelOperador: true },
     { id: 'd', nome: 'Oculto', tipo: 'sales', ativo: true, visivelOperador: false },
   ];
+
   assert.deepEqual(pipelinesDoForecast(pipelines, 'DONO'), [
     { valor: 'a', rotulo: 'Vendas' },
     { valor: 'd', rotulo: 'Oculto' },
   ]);
+
   assert.deepEqual(pipelinesDoForecast(pipelines, 'OPERADOR'), [{ valor: 'a', rotulo: 'Vendas' }]);
   assert.deepEqual(pipelinesDoForecast(undefined, 'DONO'), []);
 });
@@ -269,6 +295,7 @@ test('listaDeAbertas: blocos e mês em aberto', () => {
 
 test('podeAtualizarData: lista de abertas e data editável, senão esconde', () => {
   const atrasadas = { bloco: 'atrasadas' };
+
   assert.equal(podeAtualizarData([DATA_EDITAVEL], atrasadas), true);
   assert.equal(podeAtualizarData([DATA_EDITAVEL], { mes: '2026-11', tipo: 'realizado' }), false);
   assert.equal(podeAtualizarData([DATA_SO_VER], atrasadas), false);
@@ -294,8 +321,10 @@ test('resumoDaAcao: texto do motivo, nunca o código; nome com fallback', () => 
     },
     selecionados,
   );
+
   assert.equal(resumo.atualizadas, 1);
   assert.equal(resumo.texto, '1 atualizada');
+
   assert.deepEqual(resumo.ignoradas, [
     { id: 'o2', nome: 'Bruno', motivo: 'Já foi encerrada.' },
     { id: 'o3', nome: 'Oportunidade', motivo: 'Não foi possível atualizar.' },
@@ -307,6 +336,7 @@ test('resumoDaAcao: texto do motivo, nunca o código; nome com fallback', () => 
 
 test('erroDoForecast: pipeline 404, filtro 400, o resto null', () => {
   const pipeline = new ApiError('x', { status: 404, code: 'RESOURCE_NOT_FOUND' });
+
   assert.deepEqual(erroDoForecast(pipeline), {
     tipo: 'pipeline',
     mensagem: 'Pipeline não encontrado',
@@ -317,6 +347,7 @@ test('erroDoForecast: pipeline 404, filtro 400, o resto null', () => {
     code: 'VALIDATION_ERROR',
     fields: { agrupar: ['Escolha um pipeline para agrupar por status'] },
   });
+
   assert.deepEqual(erroDoForecast(filtro), {
     tipo: 'filtro',
     campo: 'agrupar',
@@ -324,6 +355,7 @@ test('erroDoForecast: pipeline 404, filtro 400, o resto null', () => {
   });
 
   const outroCampo = new ApiError('x', { status: 400, fields: { mes: ['m'] } });
+
   assert.equal(erroDoForecast(outroCampo), null);
   assert.equal(erroDoForecast(new ApiError('x', { status: 500 })), null);
   assert.equal(erroDoForecast(new ApiError('x', { status: 403, code: 'FORBIDDEN' })), null);

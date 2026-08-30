@@ -1,13 +1,18 @@
+/**
+ * @file Uma oportunidade. Toda chave comercial é opcional: campo oculto para o papel não vem.
+ * Sem um handler (arquivada, lead anonimizado, sem permissão), o botão dele some.
+ */
 import { Archive, ArchiveRestore, ArrowRightLeft, Pencil, Trash2 } from 'lucide-react';
+
 import { formatarData, formatarMoeda } from '../../lib/formatadores';
-import { campoDoMotivo } from '../../lib/oportunidades';
 import { humanizar, rotuloOpcao } from '../../lib/opcoes';
+import { campoDoMotivo } from '../../lib/oportunidades';
 import { statusDoPipeline } from '../../lib/pipelines';
 import { textoDaProbabilidade } from '../../lib/probabilidade';
 import { BotaoIcone } from '../botao-icone';
 import { OpcaoBadge } from '../opcao-badge';
 
-const DADO = 'font-mono tabular-nums';
+const DADO = 'tabular-nums';
 
 function Detalhe({ rotulo, children }) {
   return (
@@ -147,7 +152,7 @@ export function ItemOportunidade({
       </dl>
 
       {oportunidade.origemReabertaEm && (
-        <p className="border border-border px-3 py-2 text-sm">
+        <p className="rounded-lg border border-border bg-surface px-3 py-2 text-sm">
           A venda que originou este atendimento foi reaberta.
         </p>
       )}

@@ -1,5 +1,10 @@
+/**
+ * @file Lead em modo leitura. Com layout, pelas seções configuradas; sem, por camada. A
+ * formatação é a mesma da tabela (`CelulaLead`), para o valor nunca aparecer de dois jeitos.
+ * Valor e Responsável ficam em "Negócio", a não ser que o layout já os tenha posto numa seção.
+ */
 import { CAMADA } from '../constants';
-import { TIPO_COLUNA, lerValorDaColuna, lerValorDoCampo } from '../lib/colunas';
+import { lerValorDaColuna, lerValorDoCampo, TIPO_COLUNA } from '../lib/colunas';
 import { colunaDoItem } from '../lib/layout';
 import { CelulaLead } from './celula-lead';
 
@@ -29,9 +34,7 @@ function Item({ label, children }) {
 function Grupo({ titulo, children }) {
   return (
     <section className="grid gap-1">
-      <h3 className="font-mono text-[11px] tracking-wide text-muted-foreground uppercase">
-        {titulo}
-      </h3>
+      <h3 className="text-[11px] tracking-wide text-muted-foreground uppercase">{titulo}</h3>
       <dl className="divide-y divide-border border-y border-border">{children}</dl>
     </section>
   );
@@ -63,6 +66,7 @@ function SecoesDoLayout({ lead, secoes, nomePorId }) {
 function GruposPorCamada({ lead, campos, nomePorId }) {
   return GRUPOS.map(({ camada, titulo }) => {
     const doGrupo = campos.filter((campo) => campo.camada === camada);
+
     if (doGrupo.length === 0) {
       return null;
     }
@@ -125,7 +129,7 @@ export function LeadDetalhe({ lead, campos, layout, nomePorId }) {
         </Grupo>
       )}
 
-      <p className="font-mono text-[11px] text-muted-foreground">
+      <p className="text-[11px] text-muted-foreground">
         ID <span className="select-all">{lead.id}</span>
       </p>
     </div>

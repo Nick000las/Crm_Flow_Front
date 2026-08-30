@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { LADO, escolhasParaEnvio, ladoQueFica, linhasDaMesclagem } from './mesclagem.js';
+
+import { escolhasParaEnvio, LADO, ladoQueFica, linhasDaMesclagem } from './mesclagem.js';
 
 const CAMPOS = [
   { chave: 'nome', label: 'Nome', tipo: 'texto', camada: 1, coluna: 'nome' },
@@ -66,6 +67,7 @@ test('linhasDaMesclagem mostra só o que difere, sem tags nem dados comerciais',
       ['usuarioResponsavelId', true],
     ],
   );
+
   assert.deepEqual(linhas.at(-1), {
     chave: 'usuarioResponsavelId',
     label: 'Responsável',
@@ -79,6 +81,7 @@ test('escolhasParaEnvio manda só o lado secundário', () => {
   assert.deepEqual(escolhasParaEnvio({ nome: LADO.B, usuarioResponsavelId: LADO.A }, LADO.A), {
     nome: 'secundario',
   });
+
   assert.deepEqual(escolhasParaEnvio({ nome: LADO.B }, LADO.B), undefined);
   assert.equal(escolhasParaEnvio({}, LADO.A), undefined);
 });

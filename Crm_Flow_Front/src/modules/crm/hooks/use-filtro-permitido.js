@@ -1,6 +1,12 @@
+/**
+ * @file O filtro que dá para pedir: um link ou uma view antiga pode citar o que este tenant ou
+ * papel não tem (o back daria 403 ou 400). Vale na tabela e no quadro.
+ */
 import { useMemo } from 'react';
+
 import { useAuth } from '@/hooks/useAuth';
 import { temFeature } from '@/lib/acesso';
+
 import { CHAVE_VALOR, CONTEXTO, CRM_FEATURES } from '../constants';
 import { comDataConversao as temDataConversao, filtroComDataConversao } from '../lib/ciclo-de-vida';
 import { camposDoContexto } from '../lib/contextos';

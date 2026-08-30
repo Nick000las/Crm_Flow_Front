@@ -1,12 +1,19 @@
+/**
+ * @file Busca, filtros, views e ordem do quadro: as mesmas peças da lista de leads, e a mesma
+ * view vale nas duas telas. O quadro só tem cards ativos, então a `situacao` de uma view não se
+ * aplica aqui.
+ */
 import { ArrowDownWideNarrow, ArrowUpNarrowWide } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
-import { FILTRO_VAZIO, chipsDoFiltro } from '../../lib/filtro';
-import { DIRECAO, opcoesDeOrdem } from '../../lib/quadro-consulta';
-import { placeholderDaBusca } from '../../lib/layout';
-import { estadoDaVisao, visaoDoEstado } from '../../lib/url-state';
+
 import { SITUACOES_LEAD } from '../../constants';
 import { useLayoutEfetivo } from '../../hooks/use-layout';
 import { useFaixasScore } from '../../hooks/use-score';
+import { chipsDoFiltro, FILTRO_VAZIO } from '../../lib/filtro';
+import { placeholderDaBusca } from '../../lib/layout';
+import { DIRECAO, opcoesDeOrdem } from '../../lib/quadro-consulta';
+import { estadoDaVisao, visaoDoEstado } from '../../lib/url-state';
 import { BuscaLeads } from '../busca-leads';
 import { ChipsFiltro } from '../chips-filtro';
 import { ConstrutorFiltro } from '../construtor-filtro';
@@ -48,9 +55,14 @@ export function FiltrosDoQuadro({
   const crescente = ordem.direcao === DIRECAO.ASC;
   const IconeDaDirecao = crescente ? ArrowUpNarrowWide : ArrowDownWideNarrow;
 
+  const chips = chipsDoFiltro(estado.filtro, campos, nomePorId, faixasScore);
+
   return (
-    <>
-      <div className="mb-3 flex flex-wrap items-center gap-2">
+    <section
+      aria-label="Busca, filtros e ordenação do pipeline"
+      className="space-y-2.5 rounded-xl border border-border bg-card/80 p-3 shadow-xs"
+    >
+      <div className="flex flex-wrap items-center gap-2">
         <BuscaLeads
           busca={estado.busca}
           onBuscaChange={(busca) => atualizar({ busca })}
@@ -70,7 +82,10 @@ export function FiltrosDoQuadro({
           }
           visaoAtual={visaoDoEstado({ ...estado, situacao: SITUACOES_LEAD.ATIVOS })}
         />
-        <div className="flex items-center gap-1 sm:ml-auto">
+        <div className="flex items-center gap-1.5 sm:ml-auto">
+          <span className="hidden text-xs font-medium text-muted-foreground xl:inline">
+            Ordenar
+          </span>
           <SelectSimples
             aria-label="Ordenar por"
             className="w-48"
@@ -84,23 +99,28 @@ export function FiltrosDoQuadro({
                 ? 'Ordem crescente. Mudar para decrescente'
                 : 'Ordem decrescente. Mudar para crescente'
             }
-            className="size-9 rounded-none"
+            className="size-9"
             onClick={() => onOrdem({ ...ordem, direcao: crescente ? DIRECAO.DESC : DIRECAO.ASC })}
             size="icon"
             title={crescente ? 'Crescente' : 'Decrescente'}
             type="button"
             variant="outline"
           >
-            <IconeDaDirecao aria-hidden="true" />
+            <IconeDaDirecao className="size-4" aria-hidden="true" />
           </Button>
         </div>
       </div>
-      <ChipsFiltro
-        chavesComErro={chavesComErro}
-        chips={chipsDoFiltro(estado.filtro, campos, nomePorId, faixasScore)}
-        onLimpar={() => atualizar({ filtro: FILTRO_VAZIO })}
-        onRemover={(chip) => atualizar({ filtro: chip.remover() })}
-      />
-    </>
+
+      {chips.length > 0 && (
+        <div className="border-t border-border/60 pt-2.5">
+          <ChipsFiltro
+            chavesComErro={chavesComErro}
+            chips={chips}
+            onLimpar={() => atualizar({ filtro: FILTRO_VAZIO })}
+            onRemover={(chip) => atualizar({ filtro: chip.remover() })}
+          />
+        </div>
+      )}
+    </section>
   );
 }

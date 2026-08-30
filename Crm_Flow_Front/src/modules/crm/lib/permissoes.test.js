@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import {
-  MENSAGENS_PERMISSOES,
   errosDasPermissoes,
+  MENSAGENS_PERMISSOES,
   permissoesMudaram,
   permissoesParaEnvio,
   validarPermissoes,
@@ -53,7 +54,9 @@ test('ida e volta: o PUT leva o mapa inteiro do papel', () => {
   assert.deepEqual(permissoesParaEnvio(valores), {
     OPERADOR: { 'c-email': 'edit', 'c-nome': 'edit', 'c-renda': 'hidden', 'c-tel': 'view' },
   });
+
   assert.equal(permissoesMudaram(valores, CONFIG), false);
+
   assert.equal(
     permissoesMudaram({ OPERADOR: { ...valores.OPERADOR, 'c-renda': 'view' } }, CONFIG),
     true,
@@ -64,6 +67,7 @@ test('e-mail e telefone restritos juntos dão erro no papel', () => {
   const valores = valoresDasPermissoes(CONFIG);
 
   assert.deepEqual(validarPermissoes(valores, CONFIG), {});
+
   assert.deepEqual(
     validarPermissoes({ OPERADOR: { ...valores.OPERADOR, 'c-email': 'hidden' } }, CONFIG),
     {

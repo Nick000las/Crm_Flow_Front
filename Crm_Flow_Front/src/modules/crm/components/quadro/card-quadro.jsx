@@ -1,6 +1,12 @@
+/**
+ * @file Um card. `restrito`: o back não descreveu o registro para este papel, então não abre
+ * nem move. Quem decide se arrasta é o back (`podeMover`).
+ */
 import { useDraggable } from '@dnd-kit/core';
-import { ArrowRightLeft } from 'lucide-react';
+import { ArrowRightLeft, UserRound } from 'lucide-react';
+
 import { buttonVariants } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+
 import { CHAVE_RESPONSAVEL } from '../../lib/form-lead';
 import { textoDoCard } from '../../lib/quadro';
 import { idCardDoQuadro } from '../../rotas';
@@ -19,7 +26,8 @@ const SELOS = Object.freeze({
   ORIGEM_REABERTA: 'origem_reaberta',
   ALERTA_FORMULARIO: 'alerta_formulario',
 });
-const CAIXA = 'grid gap-1.5 border border-border bg-background p-3 text-sm';
+const CAIXA =
+  'grid gap-2.5 rounded-xl p-3.5 text-sm shadow-xs transition-[border-color,box-shadow] duration-150 hover:border-border-strong hover:shadow-sm';
 
 const comTexto = (itens, campos, nomePorId) =>
   (itens ?? [])
@@ -33,7 +41,11 @@ const comTexto = (itens, campos, nomePorId) =>
 function Selo({ selo }) {
   switch (selo.tipo) {
     case SELOS.ORIGEM_REABERTA:
-      return <span className="border border-border px-1.5 text-[11px]">Venda reaberta</span>;
+      return (
+        <span className="inline-flex items-center rounded-md border border-border bg-muted/60 px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground">
+          Venda reaberta
+        </span>
+      );
     case SELOS.ESFRIANDO:
       return <SeloEsfriando esfriandoDesde={selo.desde} />;
     case SELOS.ALERTA_FORMULARIO:
@@ -78,16 +90,23 @@ function CorpoDoCard({ card, campos, nomePorId, titulo }) {
         </p>
       ))}
       {destaques.length > 0 && (
-        <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-2 text-xs">
+        <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-2 gap-y-1 rounded-lg bg-muted/35 px-2.5 py-2 text-xs">
           {destaques.map(({ item, texto }) => (
             <div className="contents" key={item.ref}>
               <dt className="text-muted-foreground">{item.label}</dt>
-              <dd className="truncate text-right font-mono tabular-nums">{texto}</dd>
+              <dd className="truncate text-right font-medium text-foreground tabular-nums">
+                {texto}
+              </dd>
             </div>
           ))}
         </dl>
       )}
-      {responsavel && <p className="truncate text-xs text-muted-foreground">{responsavel}</p>}
+      {responsavel && (
+        <p className="flex items-center gap-1.5 truncate border-t border-border/60 pt-2 text-xs text-muted-foreground">
+          <UserRound className="size-3.5 shrink-0 opacity-70" aria-hidden="true" />
+          <span className="truncate">{responsavel}</span>
+        </p>
+      )}
       {selos.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {selos.map((selo) => (
@@ -102,14 +121,14 @@ function CorpoDoCard({ card, campos, nomePorId, titulo }) {
 /** Cópia do card que acompanha o ponteiro. */
 export function CardArrastado({ card, campos, nomePorId }) {
   return (
-    <div className={cn(CAIXA, 'w-64 cursor-grabbing')}>
+    <Card layout="plain" className={cn(CAIXA, 'w-64 cursor-grabbing')}>
       <CorpoDoCard
         campos={campos}
         card={card}
         nomePorId={nomePorId}
         titulo={<p className="font-medium break-words">{card.titulo}</p>}
       />
-    </div>
+    </Card>
   );
 }
 
@@ -122,12 +141,12 @@ function MenuMover({ titulo, destinos, onMover }) {
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label={`Mover ${titulo}`}
-        className={cn(buttonVariants({ variant: 'ghost', size: 'icon-xs' }), 'rounded-none')}
+        className={buttonVariants({ variant: 'ghost', size: 'icon-xs' })}
         title="Mover para…"
       >
         <ArrowRightLeft aria-hidden="true" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48 rounded-none shadow-none ring-border">
+      <DropdownMenuContent align="end" className="w-48">
         {destinos.map((coluna) => (
           <DropdownMenuItem key={coluna.ref} onClick={() => onMover(coluna)}>
             {coluna.nome}
@@ -161,11 +180,17 @@ export function CardQuadro({ card, colunaRef, destinos, campos, nomePorId, onAbr
   });
 
   if (card.restrito) {
-    return <li className={cn(CAIXA, 'text-muted-foreground')}>Registro restrito</li>;
+    return (
+      <Card as="li" layout="plain" className={cn(CAIXA, 'text-muted-foreground')}>
+        Registro restrito
+      </Card>
+    );
   }
 
   return (
-    <li
+    <Card
+      as="li"
+      layout="plain"
       {...listeners}
       className={cn(CAIXA, arrastavel && 'cursor-grab', isDragging && 'opacity-40')}
       ref={setNodeRef}
@@ -177,7 +202,7 @@ export function CardQuadro({ card, colunaRef, destinos, campos, nomePorId, onAbr
         titulo={
           <div className="flex items-start justify-between gap-1">
             <button
-              className="min-w-0 text-left font-medium break-words underline-offset-4 outline-none hover:underline focus-visible:underline focus-visible:ring-2 focus-visible:ring-ring/50"
+              className="min-w-0 cursor-pointer text-left text-sm font-semibold leading-snug break-words text-foreground outline-none transition-colors hover:text-primary focus-visible:ring-2 focus-visible:ring-ring/50"
               id={idCardDoQuadro(card.entidadeId)}
               onClick={onAbrir}
               type="button"
@@ -190,6 +215,6 @@ export function CardQuadro({ card, colunaRef, destinos, campos, nomePorId, onAbr
           </div>
         }
       />
-    </li>
+    </Card>
   );
 }

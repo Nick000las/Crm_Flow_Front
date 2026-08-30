@@ -1,4 +1,10 @@
 /**
+ * @file Campos de uma tela. `/crm/leads/fields` já traz `visibilidade` por campo; filtrar aqui
+ * dá o mesmo resultado de `?contexto=` com uma chamada (e um cache) só para a lista inteira.
+ * Campo sem `visibilidade` (back anterior ao M2) conta como visível — é o comportamento de
+ * antes.
+ */
+/**
  * Campos de uma tela. `/crm/leads/fields` já traz `visibilidade` por campo;
  * filtrar aqui dá o mesmo resultado de `?contexto=` com uma chamada (e um
  * cache) só para a lista inteira.

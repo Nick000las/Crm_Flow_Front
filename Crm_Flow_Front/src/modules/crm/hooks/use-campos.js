@@ -1,5 +1,10 @@
+/**
+ * @file Fonte única dos campos do lead: lista, form, filtro e export leem daqui.
+ */
 import { useQuery } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
+
 import { listarCampos } from '../api/campos.api';
 import { crmKeys } from '../query-keys';
 

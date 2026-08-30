@@ -1,3 +1,7 @@
+/**
+ * @file Renderiza excluir atividade dialog, na área de CRM, expondo os estados e eventos
+ * necessários à interface.
+ */
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import {
   AlertDialog,
@@ -9,6 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+
 import { useExcluirAtividade } from '../../hooks/use-atividades';
 
 /**
@@ -26,9 +31,11 @@ export function ExcluirAtividadeDialog({ leadId, atividade, onOpenChange, onExcl
     if (excluir.isPending) {
       return;
     }
+
     if (!proximo) {
       excluir.reset();
     }
+
     onOpenChange(proximo);
   }
 
@@ -43,7 +50,7 @@ export function ExcluirAtividadeDialog({ leadId, atividade, onOpenChange, onExcl
 
   return (
     <AlertDialog onOpenChange={handleOpenChange} open={Boolean(atividade)}>
-      <AlertDialogContent className="rounded-none">
+      <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Remover atividade</AlertDialogTitle>
           <AlertDialogDescription>

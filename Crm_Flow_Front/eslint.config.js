@@ -1,13 +1,15 @@
 import js from '@eslint/js';
+import { defineConfig, globalIgnores } from 'eslint/config';
 import prettier from 'eslint-config-prettier';
-import shared from './eslint.rules.js';
-import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
-import { defineConfig, globalIgnores } from 'eslint/config';
+import globals from 'globals';
+
+import shared from './eslint.rules.js';
+import project from './tooling/eslint/index.js';
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(['dist', 'dist-e2e', 'playwright-report', 'test-results']),
   {
     files: ['**/*.{js,jsx}'],
     extends: [
@@ -45,6 +47,54 @@ export default defineConfig([
       'react-refresh/only-export-components': 'off',
     },
   },
+  {
+    files: ['src/**/*.jsx'],
+    ignores: ['src/components/ui/**'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'JSXOpeningElement[name.name="form"]',
+          message: 'Use Form de @/components/ui/form para preservar o foco e os atalhos de envio.',
+        },
+        {
+          selector: 'JSXOpeningElement[name.name=/^(input|select|textarea)$/]',
+          message:
+            'Use Input, Textarea, NativeSelect, Select, Checkbox ou Radio de @/components/ui para manter o padrão compartilhado.',
+        },
+      ],
+    },
+  },
   prettier,
   shared,
+  {
+    files: ['src/**/*.{js,jsx}'],
+    ignores: ['**/*.test.js'],
+    plugins: { project },
+    rules: { 'project/file-purpose': 'error' },
+  },
+  {
+    files: ['src/modules/**/*.api.js'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: [
+                'react',
+                'react-dom',
+                'react-router-dom',
+                '**/components/**',
+                '**/pages/**',
+                '**/hooks/**',
+              ],
+              message:
+                'Arquivos .api.js contêm apenas transporte e contratos; interface e estado pertencem a components/pages/hooks.',
+            },
+          ],
+        },
+      ],
+    },
+  },
 ]);

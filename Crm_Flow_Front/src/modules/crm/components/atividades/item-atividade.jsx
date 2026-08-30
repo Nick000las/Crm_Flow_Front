@@ -1,23 +1,31 @@
+/**
+ * @file Uma atividade: checkbox de concluir/reabrir, tipo, título, notas, quando e quem
+ * registrou.
+ */
 import { Pencil, Trash2 } from 'lucide-react';
+
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
+
 import { estaAtrasada, estaConcluida, opcaoDoTipo } from '../../lib/atividades';
 import { formatarInstante } from '../../lib/formatadores';
 import { BotaoIcone } from '../botao-icone';
 import { OpcaoBadge } from '../opcao-badge';
 
-const DADO = 'font-mono text-xs tabular-nums';
+const DADO = 'text-xs tabular-nums';
 
 /** Quando: a conclusão, se concluída; senão, a agenda (com "atrasada"). */
 function Quando({ atividade }) {
   if (estaConcluida(atividade)) {
     return <span className={DADO}>Concluída em {formatarInstante(atividade.concluidaEm)}</span>;
   }
+
   if (!atividade.agendadaPara) {
     return <span>Sem data</span>;
   }
 
   const atrasada = estaAtrasada(atividade);
+
   return (
     <span className={cn(DADO, atrasada && 'text-destructive')}>
       {atrasada ? 'Atrasada · ' : ''}

@@ -1,3 +1,6 @@
+/**
+ * @file Depois da edição em massa: só as falhas continuam marcadas.
+ */
 import { useState } from 'react';
 
 const VAZIA = Object.freeze({ chave: null, leads: Object.freeze([]) });
@@ -28,19 +31,24 @@ export function useSelecaoLeads(chaveDaConsulta, maximo) {
   /** Cabeçalho: com todos da página marcados desmarca; senão, completa até o máximo. */
   function alternarPagina(daPagina) {
     const todos = daPagina.length > 0 && daPagina.every((lead) => ids.has(lead.id));
+
     if (todos) {
       const daPaginaIds = new Set(daPagina.map((lead) => lead.id));
+
       definir(leads.filter((lead) => !daPaginaIds.has(lead.id)));
+
       return;
     }
 
     const faltando = daPagina.filter((lead) => !ids.has(lead.id));
+
     definir([...leads, ...faltando].slice(0, maximo));
   }
 
   /** Depois da edição em massa: só as falhas continuam marcadas. */
   function manter(idsParaManter) {
     const manterIds = new Set(idsParaManter);
+
     definir(leads.filter((lead) => manterIds.has(lead.id)));
   }
 

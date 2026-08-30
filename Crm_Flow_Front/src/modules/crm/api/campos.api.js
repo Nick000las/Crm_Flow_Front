@@ -1,4 +1,7 @@
 /**
+ * @file Campos ativos do tenant (Camadas 1, 2 visível e 3), já ordenados.
+ */
+/**
  * Campos ativos do tenant (Camadas 1, 2 visível e 3), já ordenados.
  *
  * @param {import('@/hooks/create-auth-session').AuthApi} authApi

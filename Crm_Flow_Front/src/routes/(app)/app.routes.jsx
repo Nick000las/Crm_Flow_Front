@@ -1,4 +1,8 @@
+/**
+ * @file Rotas autenticadas. O portão de acesso mora na rota-pai (AppLayout).
+ */
 import { Navigate } from 'react-router-dom';
+
 import ConfiguracoesPage from '@/modules/configuracoes/pages/configuracoes-page';
 import { LeadSheet } from '@/modules/crm/components/lead-sheet';
 import { PAPEIS_GESTAO } from '@/modules/crm/constants';
@@ -9,9 +13,10 @@ import LeadsPage from '@/modules/crm/pages/leads-page';
 import QuadroPage from '@/modules/crm/pages/quadro-page';
 import { ROTAS_CRM } from '@/modules/crm/rotas';
 import DashboardPage from '@/modules/dashboard/pages/dashboard-page';
-import KanbanLayout from '@/modules/kanban/pages/kanban-layout';
 import BoardsManagementRoute from '@/modules/kanban/pages/boards-management-route';
 import KanbanEntryPage from '@/modules/kanban/pages/kanban-entry-page';
+import KanbanLayout from '@/modules/kanban/pages/kanban-layout';
+
 import { RequireRole } from '../require-role';
 
 /** Rotas autenticadas. O portão de acesso mora na rota-pai (AppLayout). */

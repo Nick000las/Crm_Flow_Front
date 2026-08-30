@@ -1,5 +1,10 @@
+/**
+ * @file Editar no dialog e o checkbox de concluir/reabrir. @param {string} leadId.
+ */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 import { useAuth } from '@/hooks/useAuth';
+
 import {
   criarAtividade,
   editarAtividade,

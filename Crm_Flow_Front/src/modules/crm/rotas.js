@@ -1,4 +1,7 @@
 /**
+ * @file Link do nome na linha — destino do foco quando o Sheet do lead fecha.
+ */
+/**
  * Caminhos e ids de foco do CRM em um lugar só: tabela, Sheet e página
  * navegam e devolvem o foco pelos mesmos nomes.
  */

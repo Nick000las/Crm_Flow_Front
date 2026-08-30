@@ -1,12 +1,21 @@
-import { RefreshCw } from 'lucide-react';
+/**
+ * @file Configurações › Pontuação (`crm.score`): regras que somam pontos e as faixas que dão
+ * nome e cor ao score. Todos leem; só DONO/MASTER alteram. Salvar e "Recalcular agora" só
+ * respondem no fim do recálculo — enquanto isso, a configuração recarrega a cada segundo com o
+ * progresso.
+ */
 import { useState } from 'react';
+import { RefreshCw } from 'lucide-react';
+
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
+import { LoadingState } from '@/components/loading-state';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { podeVer } from '@/lib/acesso';
 import { isAccessError } from '@/services/api';
+
 import { CHAVE_SCORE, PAPEIS_GESTAO } from '../../constants';
 import { useCampos } from '../../hooks/use-campos';
 import { useConfigScore, useRecalcularScore, useSalvarScore } from '../../hooks/use-score';
@@ -19,11 +28,9 @@ const PORCENTAGEM = 100;
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando pontuação…
-      </span>
+      <LoadingState label="Carregando pontuação…" />
       {Array.from({ length: 4 }, (_, indice) => (
-        <Skeleton className="h-14 rounded-none" key={indice} />
+        <Skeleton className="h-14" key={indice} />
       ))}
     </div>
   );
@@ -32,9 +39,11 @@ function Carregando() {
 /** Barra do recálculo em andamento e a data do último (`role="status"`). */
 function Recalculo({ recalculo }) {
   const texto = textoDoRecalculo(recalculo);
+
   if (!texto) {
     return null;
   }
+
   const emAndamento = Boolean(recalculo?.emAndamento);
   const parte =
     recalculo.total > 0 ? Math.round((recalculo.processados / recalculo.total) * PORCENTAGEM) : 0;
@@ -84,9 +93,11 @@ export function SecaoScore() {
   if (isAccessError(erro)) {
     return <AcessoIndisponivel error={erro} />;
   }
+
   if (erro) {
     return <ApiErrorAlert error={erro} id="score-carregar-erro" />;
   }
+
   if (scoreQuery.isPending || camposQuery.isPending) {
     return <Carregando />;
   }
@@ -118,9 +129,11 @@ export function SecaoScore() {
             }}
             size="sm"
             variant="outline"
+            loading={recalcular.isPending}
+            loadingText="Recalculando…"
           >
             <RefreshCw aria-hidden="true" />
-            {recalcular.isPending ? 'Recalculando…' : 'Recalcular agora'}
+            {'Recalcular agora'}
           </Button>
         )}
       </div>
@@ -130,7 +143,12 @@ export function SecaoScore() {
         title="Não foi possível recalcular"
       />
 
-      <p className={aviso ? 'border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
+      <p
+        className={
+          aviso ? 'rounded-lg border border-border bg-surface px-3 py-2 text-sm' : 'sr-only'
+        }
+        role="status"
+      >
         {aviso}
       </p>
 

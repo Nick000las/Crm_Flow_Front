@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import {
   documentoSemMascara,
   formatarCep,
@@ -104,8 +105,10 @@ test('formatarIntervalo e formatarEndereco', () => {
     formatarIntervalo({ de: '2026-02-01', ate: '2026-02-10' }),
     '01/02/2026 a 10/02/2026',
   );
+
   assert.equal(formatarIntervalo({ de: '2026-02-01' }), 'a partir de 01/02/2026');
   assert.equal(formatarIntervalo(null), null);
+
   assert.equal(
     formatarEndereco({
       cep: '01310100',
@@ -117,6 +120,7 @@ test('formatarIntervalo e formatarEndereco', () => {
     }),
     'Av. Paulista, 1000 - Bela Vista, São Paulo/SP, 01310-100',
   );
+
   assert.equal(formatarEndereco({ cidade: 'Recife' }), 'Recife');
   assert.equal(formatarEndereco({}), null);
 });

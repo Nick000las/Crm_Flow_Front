@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import { MENSAGENS } from './form-lead.js';
 import {
   acessoAosDados,
@@ -94,17 +95,21 @@ test('validarOportunidade segue os limites do back', () => {
   const valores = valoresDaOportunidade(OPORTUNIDADE);
 
   assert.deepEqual(validarOportunidade(valores), {});
+
   assert.deepEqual(validarOportunidade({ ...valores, valor: '-1' }), {
     valor: MENSAGENS.VALOR_NEGATIVO,
   });
+
   assert.deepEqual(validarOportunidade({ ...valores, valor: 'abc' }), {
     valor: MENSAGENS.NUMERO_INVALIDO,
   });
+
   for (const probabilidade of ['101', '-1', '10,5']) {
     assert.deepEqual(validarOportunidade({ ...valores, probabilidadeFechamento: probabilidade }), {
       probabilidadeFechamento: MENSAGENS.PROBABILIDADE_INVALIDA,
     });
   }
+
   assert.deepEqual(validarOportunidade({ ...valores, probabilidadeFechamento: '' }), {});
 });
 
@@ -154,10 +159,12 @@ test('payloadDoStatus só leva o motivo em status perdido', () => {
     payloadDoStatus(OPORTUNIDADE, { status: 'perdido', motivoPerda: 'preco' }, 'perdido'),
     { status: 'perdido', motivoPerda: 'preco', ...versao },
   );
+
   assert.deepEqual(
     payloadDoStatus(OPORTUNIDADE, { status: 'ganho', motivoPerda: 'preco' }, 'ganho'),
     { status: 'ganho', ...versao },
   );
+
   assert.deepEqual(
     payloadDoStatus(OPORTUNIDADE, { status: 'perdido', motivoPerda: '' }, 'perdido'),
     {
@@ -176,15 +183,18 @@ test('payloadDoStatus leva a probabilidade escolhida só em status aberto', () =
     probabilidadeFechamento: 35,
     ...versao,
   });
+
   // Vazia = volta à do status: não vai.
   assert.deepEqual(
     payloadDoStatus(OPORTUNIDADE, { ...valores, probabilidadeFechamento: '' }, 'aberto'),
     { status: 'proposta', ...versao },
   );
+
   assert.deepEqual(payloadDoStatus(OPORTUNIDADE, { ...valores, status: 'ganho' }, 'ganho'), {
     status: 'ganho',
     ...versao,
   });
+
   assert.equal(pedeProbabilidadeNoStatus('aberto'), true);
   assert.equal(pedeProbabilidadeNoStatus('perdido'), false);
 });
@@ -216,5 +226,6 @@ test('errosDoDialog separa o que tem campo do que não tem', () => {
     porCampo: { motivoPerda: 'Informe o motivo' },
     outros: ['Empresa é obrigatória'],
   });
+
   assert.deepEqual(errosDoDialog(null, []), { porCampo: {}, outros: [] });
 });

@@ -1,4 +1,7 @@
 /**
+ * @file "Voltar ao padrão": apaga o override de quem está logado.
+ */
+/**
  * Layout do lead (flag `crm.layout`). Toda resposta é
  * `{ padrao, padraoConfigurado, meu, efetivo }`.
  *

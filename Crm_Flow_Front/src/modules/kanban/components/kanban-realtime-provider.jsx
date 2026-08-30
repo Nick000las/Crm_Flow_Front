@@ -1,6 +1,12 @@
+/**
+ * @file Renderiza kanban realtime provider, na área de Kanban, expondo os estados e eventos
+ * necessários à interface.
+ */
 import { useEffect, useMemo, useState } from 'react';
+
 import { useAuth } from '@/hooks/useAuth';
 import { API_BASE_URL } from '@/services/api';
+
 import { KanbanRealtimeContext } from '../lib/kanban-realtime-context';
 
 const RECONNECT_DELAY_MS = 3000;
@@ -20,12 +26,17 @@ export function KanbanRealtimeProvider({ children }) {
       if (refreshing || !active) {
         return;
       }
+
       refreshing = true;
+
       const token = await authApi.refreshAccessToken();
+
       if (!active) {
         return;
       }
+
       refreshing = false;
+
       if (token) {
         connection.auth = { accessToken: token };
         connection.connect();
@@ -39,7 +50,9 @@ export function KanbanRealtimeProvider({ children }) {
         if (!active || !accessToken) {
           return;
         }
+
         const url = new URL(API_BASE_URL);
+
         connection = io(`${url.origin}/kanban`, {
           path: `${url.pathname.replace(/\/$/, '')}/socket.io`,
           auth: { accessToken },
@@ -47,6 +60,7 @@ export function KanbanRealtimeProvider({ children }) {
           autoConnect: false,
           forceNew: true,
         });
+
         setSocket(connection);
         setStatus('connecting');
         connection.on('connect', () => setStatus('connected'));
@@ -54,6 +68,7 @@ export function KanbanRealtimeProvider({ children }) {
         connection.on('realtime:unavailable', () => setStatus('reconnecting'));
         connection.on('realtime:ready', () => setStatus('connected'));
         connection.on('kanban:session-expired', refreshSession);
+
         connection.on('connect_error', (error) => {
           if (error.data?.code === 'AUTH_TOKEN_INVALID') {
             setStatus('reconnecting');
@@ -62,8 +77,10 @@ export function KanbanRealtimeProvider({ children }) {
             setStatus('unavailable');
           } else {
             setStatus('reconnecting');
+
             if (error.data?.code === 'REALTIME_UNAVAILABLE') {
               clearTimeout(retry);
+
               retry = window.setTimeout(() => {
                 if (active) {
                   connection.connect();
@@ -72,6 +89,7 @@ export function KanbanRealtimeProvider({ children }) {
             }
           }
         });
+
         connection.connect();
       })
       .catch(() => {
@@ -89,5 +107,6 @@ export function KanbanRealtimeProvider({ children }) {
   }, [accessToken, authApi]);
 
   const value = useMemo(() => ({ socket, status }), [socket, status]);
+
   return <KanbanRealtimeContext.Provider value={value}>{children}</KanbanRealtimeContext.Provider>;
 }

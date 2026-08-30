@@ -1,9 +1,16 @@
+/**
+ * @file Um item do formulário: campo do CRM (a resposta grava na pessoa) ou pergunta do
+ * formulário (a resposta fica só no formulário), marcado de forma visível. `indisponivel`: o
+ * campo foi desligado ou removido, e o back recusa salvar.
+ */
 import { Pencil, Trash2 } from 'lucide-react';
+
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
+
 import { ROTULOS_TIPO } from '../../constants';
-import { MENSAGENS_FORMULARIO, OPCOES_POLITICA, ehPergunta } from '../../lib/formularios';
+import { ehPergunta, MENSAGENS_FORMULARIO, OPCOES_POLITICA } from '../../lib/formularios';
 import { BotaoIcone } from '../botao-icone';
 import { ControleTravado } from '../controle-travado';
 import { BotoesOrdem } from '../ordenavel/botoes-ordem';
@@ -12,7 +19,8 @@ import { useLinhaOrdenavel } from '../ordenavel/use-linha-ordenavel';
 import { SelectSimples } from '../select-simples';
 import { SeloSensivel } from '../selo-sensivel';
 
-const MARCA = 'border border-border px-1.5 font-mono text-[11px] text-muted-foreground uppercase';
+const MARCA =
+  'rounded-md border border-border bg-surface px-1.5 text-[11px] text-muted-foreground uppercase';
 
 /** Um interruptor com rótulo, no tamanho pequeno da linha. */
 function Interruptor({ id, rotulo, checked, disabled = false, onChange, describedBy }) {
@@ -106,7 +114,7 @@ export function ItemDoFormulario({
             {rotulo}
           </span>
           {tipo && (
-            <span className="ml-2 font-mono text-[11px] text-muted-foreground">
+            <span className="ml-2 text-[11px] text-muted-foreground">
               {ROTULOS_TIPO[tipo] ?? tipo}
             </span>
           )}
@@ -129,7 +137,12 @@ export function ItemDoFormulario({
             rotulo={`Editar a pergunta ${rotulo}`}
           />
         )}
-        <BotaoIcone icone={Trash2} onClick={onRemover} rotulo={`Tirar ${rotulo} do formulário`} />
+        <BotaoIcone
+          icone={Trash2}
+          variant="destructive"
+          onClick={onRemover}
+          rotulo={`Tirar ${rotulo} do formulário`}
+        />
       </div>
 
       {(campo || pergunta) && (

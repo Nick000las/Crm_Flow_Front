@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import {
   avisoDoCampoDesligado,
   contadorSelecao,
@@ -24,6 +25,7 @@ test('texto de campo desligado para gestão usa o "Ligue" do contrato', () => {
     avisoDoCampoDesligado('dataPrevistaFechamento', true),
     'Ligue Data prevista de fechamento em Configurações → Campos para o forecast posicionar as oportunidades.',
   );
+
   assert.equal(
     avisoDoCampoDesligado('probabilidadeFechamento', true),
     'Ligue Probabilidade de fechamento em Configurações → Campos para ajustar a probabilidade de cada oportunidade. Enquanto isso, vale a probabilidade padrão do status.',
@@ -35,6 +37,7 @@ test('quem não é gestão recebe "Peça ao responsável pela conta para ligar"'
     avisoDoCampoDesligado('dataPrevistaFechamento', false),
     'Peça ao responsável pela conta para ligar Data prevista de fechamento em Configurações → Campos para o forecast posicionar as oportunidades.',
   );
+
   assert.equal(
     avisoDoCampoDesligado('probabilidadeFechamento', false),
     'Peça ao responsável pela conta para ligar Probabilidade de fechamento em Configurações → Campos para ajustar a probabilidade de cada oportunidade. Enquanto isso, vale a probabilidade padrão do status.',
@@ -80,6 +83,7 @@ test('entrada inválida volta igual nos dois rótulos de mês', () => {
     assert.equal(rotuloDoMes(entrada), entrada);
     assert.equal(rotuloCurtoDoMes(entrada), entrada);
   }
+
   assert.equal(rotuloDoMes(undefined), undefined);
   assert.equal(rotuloCurtoDoMes(undefined), undefined);
 });
