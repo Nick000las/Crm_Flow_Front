@@ -1,10 +1,29 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Navigate, useRoutes } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import EmailLogin from '../modules/auth/pages/email-login';
+import { useAdminRoutes } from './(admin)/admin.routes';
+import { useAuthRoutes } from './(auth)/auth.routes';
+import AppLayout from './(app)/app-layout';
+import { appRoutes } from './(app)/app.routes';
 
 export default function AppRoutes() {
-  const { isAuthenticated, loading, user } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
+  const authRoutes = useAuthRoutes();
+  const adminRoutes = useAdminRoutes();
+
+  // `useRoutes` precisa ser chamado em toda renderização — o portão de
+  // carregamento fica depois dele, não antes.
+  const element = useRoutes([
+    { path: 'admin', children: adminRoutes },
+    ...authRoutes,
+    {
+      path: '/',
+      // Portão de acesso: sem sessão, o elemento-pai redireciona e os
+      // filhos nunca chegam a renderizar. O `*` de `appRoutes` já cobre
+      // qualquer rota desconhecida, então não há catch-all no topo.
+      element: isAuthenticated ? <AppLayout /> : <Navigate to="/login" replace />,
+      children: appRoutes,
+    },
+  ]);
 
   if (loading) {
     return (
@@ -14,47 +33,5 @@ export default function AppRoutes() {
     );
   }
 
-  return (
-    <Routes>
-      <Route
-        path="/"
-        element={
-          isAuthenticated ? (
-            <AuthenticatedHome user={user} />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
-      <Route
-        path="/login"
-        element={
-          isAuthenticated ? <Navigate to="/" replace /> : <EmailLogin />
-        }
-      />
-      <Route
-        path="*"
-        element={<Navigate to={isAuthenticated ? '/' : '/login'} replace />}
-      />
-    </Routes>
-  );
-}
-
-function AuthenticatedHome({ user }) {
-  return (
-    <main className="grid min-h-svh place-items-center bg-muted/40 px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Flow CRM</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            {user?.email
-              ? `Sessão iniciada como ${user.email}.`
-              : 'Sessão iniciada com sucesso.'}
-          </p>
-        </CardContent>
-      </Card>
-    </main>
-  );
+  return element;
 }
