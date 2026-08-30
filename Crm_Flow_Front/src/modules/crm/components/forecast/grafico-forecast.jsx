@@ -12,16 +12,16 @@ import {
 } from 'recharts';
 import { cn } from '@/lib/utils';
 
-/** Cores só por tokens do tema: valem nos dois temas (grafite sobre a superfície). */
-const COR_REALIZADO = 'var(--foreground)';
-const COR_EM_ABERTO = 'var(--muted-foreground)';
+/** Cores só por tokens do tema: valem nos dois temas (cores semânticas sobre a superfície). */
+const COR_REALIZADO = 'var(--success)';
+const COR_EM_ABERTO = 'var(--info)';
 const COR_GRADE = 'var(--border)';
 const COR_SUPERFICIE = 'var(--card)';
 
 const TICK = {
   fill: 'var(--muted-foreground)',
   fontSize: 11,
-  style: { fontFamily: 'var(--font-mono)' },
+  style: { fontFamily: 'var(--font-sans)' },
 };
 
 const moedaCompacta = new Intl.NumberFormat('pt-BR', {
@@ -60,16 +60,16 @@ function DicaDoGrafico({ active, payload }) {
     return null;
   }
   return (
-    <div className="grid min-w-44 gap-1.5 border border-border bg-popover p-3 text-xs text-popover-foreground">
+    <div className="grid min-w-44 gap-1.5 rounded-xl border border-border bg-popover p-3 shadow-lg text-xs text-popover-foreground">
       <p className="flex items-center justify-between gap-3 font-medium">
         <span>{ponto.rotuloLongo}</span>
-        {ponto.atual && <span className="font-mono text-[10px] uppercase">Mês atual</span>}
+        {ponto.atual && <span className="text-[10px] uppercase">Mês atual</span>}
       </p>
       <dl className="grid gap-1">
         {ponto.tooltip.map((linha) => (
           <div className="flex justify-between gap-4" key={linha.rotulo}>
             <dt className="text-muted-foreground">{linha.rotulo}</dt>
-            <dd className="font-mono tabular-nums">{linha.texto}</dd>
+            <dd className="tabular-nums">{linha.texto}</dd>
           </div>
         ))}
       </dl>
@@ -241,11 +241,11 @@ export function GraficoForecast({ serie, mesAberto, onAbrirMes }) {
               aria-label={`${ponto.rotuloLongo}${ponto.atual ? ' (mês atual)' : ''}`}
               aria-pressed={aberto}
               className={cn(
-                'h-8 border px-2.5 font-mono text-xs tabular-nums outline-none transition-colors duration-200',
+                'h-8 cursor-pointer rounded-lg border px-2.5 text-xs font-medium tabular-nums outline-none transition-colors duration-150',
                 'focus-visible:ring-2 focus-visible:ring-ring/50',
                 aberto
-                  ? 'border-foreground bg-foreground text-background'
-                  : 'border-border hover:bg-muted',
+                  ? 'border-primary bg-primary/10 text-primary'
+                  : 'border-border bg-card hover:border-border-strong hover:bg-accent',
                 ponto.atual && !aberto && 'bg-muted',
               )}
               key={ponto.mes}

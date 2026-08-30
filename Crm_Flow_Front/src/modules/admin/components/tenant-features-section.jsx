@@ -1,3 +1,4 @@
+import { Form } from '@/components/ui/form';
 import { useState } from 'react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
@@ -67,7 +68,7 @@ export function TenantFeaturesSection({ tenant, adminApi, onSaved }) {
       </CardHeader>
 
       <CardContent>
-        <form className="grid gap-6" onSubmit={handleSubmit}>
+        <Form className="grid gap-6" noValidate onSubmit={handleSubmit}>
           {erroCatalogo ? (
             <ApiErrorAlert
               error={erroCatalogo}
@@ -80,7 +81,7 @@ export function TenantFeaturesSection({ tenant, adminApi, onSaved }) {
           ) : (
             grupos.map(({ moduleKey, features }) => (
               <fieldset className="grid gap-3" key={moduleKey}>
-                <legend className="mb-3 font-mono text-[11px] uppercase tracking-wide text-muted-foreground">
+                <legend className="mb-3 text-[11px] uppercase tracking-wide text-muted-foreground">
                   {moduleKey}
                   {!contratados.includes(moduleKey) && ' · não contratado'}
                 </legend>
@@ -97,7 +98,7 @@ export function TenantFeaturesSection({ tenant, adminApi, onSaved }) {
                           id={id}
                           onCheckedChange={(marcado) => alternar(featureKey, marcado)}
                         />
-                        <Label className="font-mono text-xs font-normal" htmlFor={id}>
+                        <Label className="text-xs font-normal" htmlFor={id}>
                           {featureKey}
                         </Label>
                       </div>
@@ -119,7 +120,7 @@ export function TenantFeaturesSection({ tenant, adminApi, onSaved }) {
               {isSubmitting ? 'Salvando...' : 'Salvar flags'}
             </Button>
           </div>
-        </form>
+        </Form>
       </CardContent>
     </Card>
   );

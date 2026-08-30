@@ -3,18 +3,16 @@ import { cn } from '@/lib/utils';
 import { getTenantStatusLabel, getTenantStatusTone } from '../lib/tenant-status';
 
 /**
- * Selo de status: borda de 1px, canto reto e um quadrado sólido de 6px — não a
- * pílula preenchida padrão do `Badge`. Mantém a tela quase monocromática e
- * deixa o preenchimento de cor para os poucos lugares que o design system
- * reserva ao accent.
+ * Rótulo e indicador de status; o tema claro aplica superfícies semânticas suaves.
  */
 export function TenantStatusBadge({ status, className }) {
   const tone = getTenantStatusTone(status);
 
   return (
     <Badge
+      data-status={status}
       className={cn(
-        'gap-1.5 rounded-none border-border px-2 font-mono text-[11px] uppercase tracking-wide',
+        'theme-tenant-status gap-1.5 border-border px-2 text-[11px] uppercase tracking-wide',
         tone,
         className,
       )}

@@ -1,3 +1,4 @@
+import { Form } from '@/components/ui/form';
 import { useState } from 'react';
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
@@ -29,7 +30,7 @@ import { CampoForm } from '../campo-form';
 import { SelectSimples } from '../select-simples';
 
 const CAMPOS_DO_SERVIDOR = ['tipo', 'titulo', 'notas', 'agendadaPara'];
-const INPUT_CLASS = 'h-9 rounded-none';
+const INPUT_CLASS = 'h-9 ';
 
 /** Montado só com o dialog aberto: cada abertura parte da atividade atual. */
 function FormAtividade({ leadId, atividade, tipos, onSalvo }) {
@@ -80,7 +81,7 @@ function FormAtividade({ leadId, atividade, tipos, onSalvo }) {
   }
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       <CampoForm erro={erroDe('tipo')} id="atividade-tipo" label="Tipo" obrigatorio>
         {(controle) => (
           <SelectSimples
@@ -110,7 +111,7 @@ function FormAtividade({ leadId, atividade, tipos, onSalvo }) {
         {(controle) => (
           <Textarea
             {...controle}
-            className="min-h-24 rounded-none"
+            className="min-h-24"
             maxLength={LIMITES_ATIVIDADE.NOTAS}
             onChange={(event) => alterar('notas', event.target.value)}
             value={valores.notas}
@@ -136,7 +137,7 @@ function FormAtividade({ leadId, atividade, tipos, onSalvo }) {
           {(controle) => (
             <Input
               {...controle}
-              className={`${INPUT_CLASS} font-mono tabular-nums`}
+              className={`${INPUT_CLASS} tabular-nums`}
               onChange={(event) => alterar('agendadaPara', event.target.value)}
               type="datetime-local"
               value={valores.agendadaPara}
@@ -155,11 +156,17 @@ function FormAtividade({ leadId, atividade, tipos, onSalvo }) {
         >
           Cancelar
         </DialogClose>
-        <Button aria-busy={mutacao.isPending} disabled={mutacao.isPending} type="submit">
-          {mutacao.isPending ? 'Salvando…' : editando ? 'Salvar alterações' : 'Registrar'}
+        <Button
+          aria-busy={mutacao.isPending}
+          disabled={mutacao.isPending}
+          type="submit"
+          loading={mutacao.isPending}
+          loadingText="Salvando…"
+        >
+          {editando ? 'Salvar alterações' : 'Registrar'}
         </Button>
       </DialogFooter>
-    </form>
+    </Form>
   );
 }
 
@@ -188,7 +195,7 @@ export function AtividadeDialog({
 }) {
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="rounded-none sm:max-w-md">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{atividade ? 'Editar atividade' : 'Registrar atividade'}</DialogTitle>
           <DialogDescription>

@@ -1,3 +1,4 @@
+import { Form } from '@/components/ui/form';
 import { useState } from 'react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
@@ -36,7 +37,7 @@ function FormAnonimizar({ lead, comFormularios, onAnonimizado }) {
   }
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       <div className="grid gap-2 text-sm">
         <p>
           <span className="font-medium">Sai de vez:</span> nome (vira "Lead anonimizado"), e-mail,
@@ -58,13 +59,13 @@ function FormAnonimizar({ lead, comFormularios, onAnonimizado }) {
 
       <div className="grid gap-1.5">
         <Label htmlFor={CONFIRMACAO_ID}>
-          Para confirmar, digite <span className="font-mono">{esperado}</span>
+          Para confirmar, digite <span>{esperado}</span>
         </Label>
         <Input
           aria-describedby={AJUDA_ID}
           autoComplete="off"
           autoFocus
-          className="h-9 rounded-none"
+          className="h-9"
           id={CONFIRMACAO_ID}
           onChange={(event) => {
             setDigitado(event.target.value);
@@ -96,11 +97,13 @@ function FormAnonimizar({ lead, comFormularios, onAnonimizado }) {
           disabled={!confere || anonimizar.isPending}
           type="submit"
           variant="destructive"
+          loading={anonimizar.isPending}
+          loadingText="Anonimizando…"
         >
-          {anonimizar.isPending ? 'Anonimizando…' : 'Anonimizar de vez'}
+          {'Anonimizar de vez'}
         </Button>
       </DialogFooter>
-    </form>
+    </Form>
   );
 }
 
@@ -124,7 +127,7 @@ export function AnonimizarLeadDialog({
 }) {
   return (
     <Dialog onOpenChange={onOpenChange} open={Boolean(lead)}>
-      <DialogContent className="rounded-none sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Anonimizar lead</DialogTitle>
           <DialogDescription>

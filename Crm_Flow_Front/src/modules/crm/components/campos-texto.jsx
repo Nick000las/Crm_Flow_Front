@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { LIMITE_TEXTO_LONGO, TIPOS_CAMPO } from '../constants';
 import { mascararCep, mascararCnpj, mascararCpf, mascararTelefone } from '../lib/formatadores';
 
-export const INPUT_CLASS = 'h-9 rounded-none';
+export const INPUT_CLASS = 'h-9 ';
 
 /** `type`/`inputMode` do input de texto por tipo (e-mail nativo inclusive). */
 const ATRIBUTOS = Object.freeze({
@@ -35,13 +35,13 @@ export function CampoTextoLongo({ value, onChange, controle }) {
       <Textarea
         {...controle}
         aria-describedby={describedBy}
-        className="min-h-24 rounded-none"
+        className="min-h-24"
         maxLength={LIMITE_TEXTO_LONGO}
         onChange={(event) => onChange(event.target.value)}
         value={value}
       />
       <p
-        className="justify-self-end font-mono text-[11px] text-muted-foreground tabular-nums"
+        className="justify-self-end text-[11px] text-muted-foreground tabular-nums"
         id={contadorId}
       >
         {value.length.toLocaleString('pt-BR')}/{LIMITE_TEXTO_LONGO.toLocaleString('pt-BR')}
@@ -56,13 +56,13 @@ export function CampoMonetario({ value, onChange, controle }) {
     <div className="relative">
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center font-mono text-sm text-muted-foreground"
+        className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-sm text-muted-foreground"
       >
         R$
       </span>
       <Input
         {...controle}
-        className={cn(INPUT_CLASS, 'pl-9 font-mono tabular-nums')}
+        className={cn(INPUT_CLASS, 'pl-9 tabular-nums')}
         inputMode="decimal"
         onChange={(event) => onChange(event.target.value)}
         placeholder="0,00"
@@ -78,7 +78,7 @@ export function CampoTelefone({ value, onChange, controle }) {
     <Input
       {...controle}
       autoComplete="tel"
-      className={cn(INPUT_CLASS, 'font-mono tabular-nums')}
+      className={cn(INPUT_CLASS, 'tabular-nums')}
       inputMode="tel"
       onChange={(event) => onChange(mascararTelefone(event.target.value))}
       placeholder="(11) 91234-5678"
@@ -112,7 +112,7 @@ export function CampoDocumento({ campo, value, onChange, controle }) {
     <Input
       {...controle}
       {...atributos}
-      className={cn(INPUT_CLASS, 'font-mono tabular-nums')}
+      className={cn(INPUT_CLASS, 'tabular-nums')}
       onChange={(event) => onChange(mascarar(event.target.value))}
       value={value}
     />
@@ -123,7 +123,7 @@ export function CampoHora({ value, onChange, controle }) {
   return (
     <Input
       {...controle}
-      className={cn(INPUT_CLASS, 'w-32 font-mono tabular-nums')}
+      className={cn(INPUT_CLASS, 'w-32 tabular-nums')}
       onChange={(event) => onChange(event.target.value)}
       type="time"
       value={value}

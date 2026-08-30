@@ -64,8 +64,10 @@ export function ImportacaoArquivo({ onLido }) {
           disabled={preview.isPending}
           onClick={() => inputRef.current?.click()}
           variant="outline"
+          loading={preview.isPending}
+          loadingText="Lendo planilha…"
         >
-          {preview.isPending ? 'Lendo planilha…' : 'Escolher arquivo'}
+          {'Escolher arquivo'}
         </Button>
         <input
           accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"

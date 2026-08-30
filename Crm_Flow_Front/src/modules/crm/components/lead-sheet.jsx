@@ -1,3 +1,4 @@
+import { LoadingState } from '@/components/loading-state';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
@@ -40,11 +41,9 @@ import { LeadForm } from './lead-form';
 function Carregando() {
   return (
     <div className="grid gap-3 px-4" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando lead…
-      </span>
+      <LoadingState label="Carregando lead…" />
       {Array.from({ length: 6 }, (_, indice) => (
-        <Skeleton className="h-8 rounded-none" key={indice} />
+        <Skeleton className="h-8" key={indice} />
       ))}
     </div>
   );
@@ -173,7 +172,7 @@ function SheetDoLead({ leadId }) {
       open={aberto}
     >
       <SheetContent
-        className="w-full gap-0 rounded-none p-0 shadow-none sm:max-w-lg"
+        className="w-full gap-0 p-0 sm:max-w-lg"
         // Devolve o foco a quem abriu; se a linha sumiu (exclusão), o padrão.
         finalFocus={() =>
           document.getElementById(
@@ -202,13 +201,16 @@ function SheetDoLead({ leadId }) {
 
         <div className="flex min-h-0 flex-1 flex-col pt-4">
           {aviso && (
-            <p className="mx-4 mb-4 border border-border px-3 py-2 text-sm" role="status">
+            <p
+              className="mx-4 mb-4 rounded-lg border border-border bg-surface px-3 py-2 text-sm"
+              role="status"
+            >
               {aviso}
             </p>
           )}
           {maisNovo && mostrarForm && (
             <div
-              className="mx-4 mb-4 grid justify-items-start gap-2 border border-border px-3 py-2"
+              className="mx-4 mb-4 grid justify-items-start gap-2 rounded-lg border border-border bg-surface px-3 py-2"
               role="alert"
             >
               <p className="text-sm">Outra pessoa alterou este lead enquanto você editava.</p>

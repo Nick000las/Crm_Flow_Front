@@ -59,8 +59,8 @@ export function ColunaQuadro({
     <section
       aria-label={coluna.nome}
       className={cn(
-        'flex w-72 shrink-0 flex-col gap-2 border border-border bg-muted/30 p-2 transition-colors duration-200',
-        isOver && 'border-foreground',
+        'flex w-[min(20rem,calc(100vw-4rem))] shrink-0 flex-col gap-3 rounded-xl border border-border bg-surface p-3 transition-colors duration-150',
+        isOver && 'border-primary bg-primary/5 ring-2 ring-primary/20',
       )}
       ref={setNodeRef}
     >
@@ -68,10 +68,10 @@ export function ColunaQuadro({
         <div className="flex items-baseline justify-between gap-2">
           <h2 className="truncate text-sm font-medium">{titulo}</h2>
           {total !== undefined && (
-            <span className="font-mono text-xs text-muted-foreground tabular-nums">{total}</span>
+            <span className="text-xs text-muted-foreground tabular-nums">{total}</span>
           )}
         </div>
-        {soma && <p className="font-mono text-xs text-muted-foreground tabular-nums">{soma}</p>}
+        {soma && <p className="text-xs text-muted-foreground tabular-nums">{soma}</p>}
       </header>
 
       {cardsQuery.isPending ? (
@@ -79,8 +79,8 @@ export function ColunaQuadro({
           <span className="sr-only" role="status">
             Carregando cards de {coluna.nome}…
           </span>
-          <Skeleton className="h-20 rounded-none" />
-          <Skeleton className="h-20 rounded-none" />
+          <Skeleton className="h-20" />
+          <Skeleton className="h-20" />
         </div>
       ) : cardsQuery.error ? (
         <ApiErrorAlert error={cardsQuery.error} id={`quadro-coluna-${coluna.ref}-erro`} />
@@ -108,21 +108,22 @@ export function ColunaQuadro({
       {cardsQuery.hasNextPage && (
         <Button
           aria-busy={cardsQuery.isFetchingNextPage}
-          className="rounded-none"
           disabled={cardsQuery.isFetchingNextPage}
           onClick={() => cardsQuery.fetchNextPage()}
           size="sm"
           type="button"
           variant="ghost"
+          loading={cardsQuery.isFetchingNextPage}
+          loadingText="Carregando…"
         >
-          {cardsQuery.isFetchingNextPage ? 'Carregando…' : 'Carregar mais'}
+          {'Carregar mais'}
         </Button>
       )}
 
       {onAdicionar && coluna.ativa && (
         <Button
           aria-label={`Adicionar em ${coluna.nome}`}
-          className="justify-start rounded-none"
+          className="justify-start"
           onClick={onAdicionar}
           size="sm"
           type="button"

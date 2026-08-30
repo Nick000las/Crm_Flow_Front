@@ -1,3 +1,4 @@
+import { LoadingState } from '@/components/loading-state';
 import { useState } from 'react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
@@ -25,7 +26,7 @@ import {
   textoDaEscrita,
 } from '../../lib/respostas-formulario';
 
-const MARCA = 'border border-border px-1.5 font-mono text-[11px] text-muted-foreground uppercase';
+const MARCA = 'border border-border px-1.5 text-[11px] text-muted-foreground uppercase';
 const CAMPOS_VAZIOS = [];
 
 /** "Usar este valor": a edição normal do lead, com um campo só. */
@@ -37,7 +38,6 @@ function UsarValor({ lead, campo, valor, rotulo, onUsado }) {
       <div>
         <Button
           aria-busy={atualizar.isPending}
-          className="rounded-none"
           disabled={atualizar.isPending}
           onClick={() =>
             atualizar.mutate(
@@ -48,8 +48,10 @@ function UsarValor({ lead, campo, valor, rotulo, onUsado }) {
           size="sm"
           type="button"
           variant="outline"
+          loading={atualizar.isPending}
+          loadingText="Gravando…"
         >
-          {atualizar.isPending ? 'Gravando…' : 'Usar este valor'}
+          {'Usar este valor'}
           <span className="sr-only"> em {rotulo}</span>
         </Button>
       </div>
@@ -79,7 +81,7 @@ function Item({ item, lead, campos, nomePorId, usados, onUsado, apagada }) {
     podeEditarCampo(campoAtual);
 
   return (
-    <li className="grid gap-1 border border-border px-3 py-2 text-sm">
+    <li className="grid gap-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm">
       <div className="flex flex-wrap items-baseline gap-2">
         <span className={MARCA}>{pergunta ? 'Pergunta' : 'Campo do CRM'}</span>
         <span className="font-medium">{rotulo}</span>
@@ -128,11 +130,9 @@ function Conteudo({ lead, respostaId, nomePorId }) {
   if (respostaQuery.isPending) {
     return (
       <div className="grid gap-2" aria-busy="true">
-        <span className="sr-only" role="status">
-          Carregando resposta…
-        </span>
-        <Skeleton className="h-16 rounded-none" />
-        <Skeleton className="h-16 rounded-none" />
+        <LoadingState label="Carregando resposta…" />
+        <Skeleton className="h-16" />
+        <Skeleton className="h-16" />
       </div>
     );
   }
@@ -144,13 +144,13 @@ function Conteudo({ lead, respostaId, nomePorId }) {
   return (
     <div className="grid max-h-[70vh] gap-4 overflow-y-auto pr-1">
       {apagada && (
-        <p className="border border-border px-3 py-2 text-sm" role="status">
+        <p className="rounded-lg border border-border bg-surface px-3 py-2 text-sm" role="status">
           {MENSAGEM_RESPOSTAS_APAGADAS}
         </p>
       )}
       <dl className="grid gap-x-4 gap-y-1 text-xs sm:grid-cols-[auto_minmax(0,1fr)]">
         <dt className="text-muted-foreground">Respondido em</dt>
-        <dd className="font-mono tabular-nums">{formatarInstante(resposta.respondidoEm)}</dd>
+        <dd className="tabular-nums">{formatarInstante(resposta.respondidoEm)}</dd>
         <dt className="text-muted-foreground">Quem preencheu</dt>
         <dd>{rotuloDeQuemPreencheu(resposta)}</dd>
         {resumo && (
@@ -162,7 +162,7 @@ function Conteudo({ lead, respostaId, nomePorId }) {
         {resposta.origem && (
           <>
             <dt className="text-muted-foreground">Origem</dt>
-            <dd className="font-mono break-all">
+            <dd className="break-all">
               {[resposta.origem.ip, resposta.origem.navegador].filter(Boolean).join(' · ') || '—'}
             </dd>
           </>
@@ -197,9 +197,9 @@ function Conteudo({ lead, respostaId, nomePorId }) {
       <div className="grid gap-1">
         <p className="text-xs font-medium text-muted-foreground">
           Termo aceito em{' '}
-          <span className="font-mono tabular-nums">{formatarInstante(resposta.aceitoEm)}</span>
+          <span className="tabular-nums">{formatarInstante(resposta.aceitoEm)}</span>
         </p>
-        <p className="border border-border px-3 py-2 text-sm whitespace-pre-wrap">
+        <p className="rounded-lg border border-border bg-surface px-3 py-2 text-sm whitespace-pre-wrap">
           {resposta.termo}
         </p>
       </div>
@@ -222,11 +222,11 @@ function Conteudo({ lead, respostaId, nomePorId }) {
 export function RespostaDialog({ lead, resposta, nomePorId, onFechar }) {
   return (
     <Dialog onOpenChange={(aberto) => !aberto && onFechar()} open={Boolean(resposta)}>
-      <DialogContent className="rounded-none sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>
             {resposta?.formulario.nome}
-            <span className="ml-2 font-mono text-xs font-normal text-muted-foreground">
+            <span className="ml-2 text-xs font-normal text-muted-foreground">
               v{resposta?.versao.versao}
             </span>
           </DialogTitle>

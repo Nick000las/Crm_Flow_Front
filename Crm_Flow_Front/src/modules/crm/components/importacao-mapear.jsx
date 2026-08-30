@@ -16,8 +16,7 @@ import { problemasDoMapeamento } from '../lib/importacao';
 import { exigeLote, problemaDoLote } from '../lib/lgpd';
 import { SelectSimples } from './select-simples';
 
-const HEAD_CLASS =
-  'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
+const HEAD_CLASS = 'text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
 const AMOSTRAS = 3;
 const NAO_IMPORTAR = 'Não importar';
 
@@ -168,14 +167,11 @@ export function ImportacaoMapear({
   return (
     <div className="grid gap-6">
       <p className="text-sm text-muted-foreground">
-        <span className="font-mono text-foreground">{nomeArquivo}</span> ·{' '}
-        <span className="font-mono tabular-nums">
-          {preview.totalLinhas.toLocaleString('pt-BR')}
-        </span>{' '}
-        linhas
+        <span className="text-foreground">{nomeArquivo}</span> ·{' '}
+        <span className="tabular-nums">{preview.totalLinhas.toLocaleString('pt-BR')}</span> linhas
       </p>
 
-      <div className="overflow-x-auto border border-border">
+      <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-xs">
         <Table>
           <TableHeader>
             <TableRow>
@@ -203,7 +199,7 @@ export function ImportacaoMapear({
                     value={mapeamento[coluna] ?? ''}
                   />
                 </TableCell>
-                <TableCell className="font-mono text-xs text-muted-foreground">
+                <TableCell className="text-xs text-muted-foreground">
                   {preview.linhas.slice(0, AMOSTRAS).map((linha, indice) => (
                     <span className="block max-w-56 truncate" key={indice}>
                       {textoDaAmostra(linha[coluna])}
@@ -246,8 +242,10 @@ export function ImportacaoMapear({
           aria-busy={validacao.isPending}
           disabled={problemas.length > 0 || validacao.isPending}
           onClick={onValidar}
+          loading={validacao.isPending}
+          loadingText="Validando…"
         >
-          {validacao.isPending ? 'Validando…' : 'Validar planilha'}
+          {'Validar planilha'}
         </Button>
       </div>
     </div>

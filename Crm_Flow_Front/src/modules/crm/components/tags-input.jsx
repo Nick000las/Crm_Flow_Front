@@ -1,6 +1,7 @@
 import { X } from 'lucide-react';
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
+import { isComposingKeyEvent } from '@/lib/keyboard-shortcuts';
 
 const TECLAS_ADICIONAR = new Set(['Enter', ',']);
 
@@ -30,6 +31,15 @@ export function TagsInput({ value, onChange, id, sugestoes = [], ...controle }) 
   }
 
   function handleKeyDown(event) {
+    if (
+      isComposingKeyEvent(event) ||
+      event.repeat ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.altKey
+    ) {
+      return;
+    }
     if (TECLAS_ADICIONAR.has(event.key)) {
       event.preventDefault();
       adicionar();
@@ -64,7 +74,7 @@ export function TagsInput({ value, onChange, id, sugestoes = [], ...controle }) 
       )}
       <Input
         {...controle}
-        className="h-9 rounded-none"
+        className="h-9"
         id={id}
         list={disponiveis.length > 0 ? listaId : undefined}
         onBlur={adicionar}

@@ -18,7 +18,7 @@ export function SeloAnonimizado({ anonimizadoEm, className }) {
   return (
     <Badge
       className={cn(
-        'gap-1 rounded-none border-border px-1.5 text-[11px] font-normal text-muted-foreground',
+        'gap-1 border-border px-1.5 text-[11px] font-normal text-muted-foreground',
         className,
       )}
       title={data ? `Anonimizado em ${data}` : undefined}

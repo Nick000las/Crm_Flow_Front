@@ -1,5 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { ThemeProvider } from './components/theme-provider.jsx';
+import { MotionConfig } from 'motion/react';
 import './index.css';
 import App from './app.jsx';
 import { AuthProvider } from './hooks/useAuth.js';
@@ -24,18 +26,22 @@ if (publica) {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        {publica ? (
-          <FormularioPublicoApp />
-        ) : (
-          <AuthProvider>
-            <AdminAuthProvider>
-              <App />
-            </AdminAuthProvider>
-          </AuthProvider>
-        )}
-      </BrowserRouter>
-    </QueryClientProvider>
+    <MotionConfig reducedMotion="user">
+      <ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <BrowserRouter>
+            {publica ? (
+              <FormularioPublicoApp />
+            ) : (
+              <AuthProvider>
+                <AdminAuthProvider>
+                  <App />
+                </AdminAuthProvider>
+              </AuthProvider>
+            )}
+          </BrowserRouter>
+        </QueryClientProvider>
+      </ThemeProvider>
+    </MotionConfig>
   </StrictMode>,
 );

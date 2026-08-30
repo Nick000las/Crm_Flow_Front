@@ -1,5 +1,5 @@
 import { ListChecks } from 'lucide-react';
-import { ModulePlaceholder } from '@/components/module-placeholder';
+import { EmptyState } from '@/components/empty-state';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { temCategoria } from '../../lib/listas';
 import { moverPara } from '../../lib/ordem';
@@ -7,8 +7,7 @@ import { AJUDA_PROBABILIDADE_PADRAO } from '../../lib/probabilidade';
 import { ListaOrdenavel } from '../ordenavel/lista-ordenavel';
 import { LinhaOpcao } from './linha-opcao';
 
-const HEAD_CLASS =
-  'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
+const HEAD_CLASS = 'text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
 
 /**
  * Opções de uma lista, na ordem dos seletores, com arrastar e ↑/↓.
@@ -37,13 +36,13 @@ export function TabelaOpcoes({
 }) {
   if (opcoes.length === 0) {
     return (
-      <ModulePlaceholder
+      <EmptyState
         description="As opções desta lista aparecem nos seletores do lead e nos filtros."
         icon={ListChecks}
         title="Nenhuma opção ainda"
       >
         {acaoVazio}
-      </ModulePlaceholder>
+      </EmptyState>
     );
   }
 
@@ -67,7 +66,10 @@ export function TabelaOpcoes({
           Probabilidade: {AJUDA_PROBABILIDADE_PADRAO} Ganho é sempre 100% e perdido, 0%.
         </p>
       )}
-      <div aria-busy={ordemOcupada} className="overflow-x-auto border border-border">
+      <div
+        aria-busy={ordemOcupada}
+        className="overflow-x-auto rounded-xl border border-border bg-card shadow-xs"
+      >
         <Table>
           <TableHeader>
             <TableRow>

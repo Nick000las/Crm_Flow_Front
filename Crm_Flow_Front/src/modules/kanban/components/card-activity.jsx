@@ -9,10 +9,9 @@ const ACTIONS = {
   'card.move': 'moveu o card',
   'card.archive': 'arquivou o card',
   'card.restore': 'restaurou o card',
+  'comment.update': 'editou um comentário',
   'comment.create': 'comentou no card',
   'card.delete': 'excluiu o card',
-  'card.link': 'vinculou uma pessoa ao card',
-  'card.unlink': 'removeu o vínculo com a pessoa',
 };
 export function CardActivity({ cardId, authApi, revision }) {
   const [rows, setRows] = useState([]);

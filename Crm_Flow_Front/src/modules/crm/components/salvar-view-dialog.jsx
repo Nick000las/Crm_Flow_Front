@@ -1,3 +1,4 @@
+import { Form } from '@/components/ui/form';
 import { useState } from 'react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
@@ -51,8 +52,8 @@ export function SalvarViewDialog({ open, onOpenChange, filtros }) {
 
   return (
     <Dialog onOpenChange={handleOpenChange} open={open}>
-      <DialogContent className="rounded-none">
-        <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+      <DialogContent>
+        <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Salvar visão atual</DialogTitle>
             <DialogDescription>
@@ -65,7 +66,7 @@ export function SalvarViewDialog({ open, onOpenChange, filtros }) {
               <Input
                 {...controle}
                 autoFocus
-                className="h-9 rounded-none"
+                className="h-9"
                 onChange={(event) => {
                   setNome(event.target.value);
                   if (salvar.error) {
@@ -92,11 +93,13 @@ export function SalvarViewDialog({ open, onOpenChange, filtros }) {
               aria-busy={salvar.isPending}
               disabled={salvar.isPending || !nome.trim()}
               type="submit"
+              loading={salvar.isPending}
+              loadingText="Salvando…"
             >
-              {salvar.isPending ? 'Salvando…' : 'Salvar'}
+              {'Salvar'}
             </Button>
           </DialogFooter>
-        </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

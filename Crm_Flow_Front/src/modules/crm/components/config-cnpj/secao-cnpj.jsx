@@ -1,3 +1,5 @@
+import { LoadingState } from '@/components/loading-state';
+import { Form } from '@/components/ui/form';
 import { useState } from 'react';
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
@@ -30,11 +32,9 @@ const EFEITO_DO_MODO = Object.freeze({
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando configuração…
-      </span>
+      <LoadingState label="Carregando configuração…" />
       {Array.from({ length: 5 }, (_, indice) => (
-        <Skeleton className="h-12 rounded-none" key={indice} />
+        <Skeleton className="h-12" key={indice} />
       ))}
     </div>
   );
@@ -70,7 +70,7 @@ function FormCnpj({ config, campos, podeEditar, onSalvo }) {
   }
 
   return (
-    <form className="grid gap-5" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-5" noValidate onSubmit={handleSubmit}>
       <div className="grid max-w-2xl gap-4">
         <label className="flex items-center gap-2 text-sm" htmlFor="cnpj-ativo">
           <Switch
@@ -162,8 +162,14 @@ function FormCnpj({ config, campos, podeEditar, onSalvo }) {
 
       {podeEditar && (
         <div className="flex flex-wrap gap-2 border-t border-border pt-4">
-          <Button aria-busy={salvar.isPending} disabled={!mudou || ocupado} type="submit">
-            {salvar.isPending ? 'Salvando…' : 'Salvar'}
+          <Button
+            aria-busy={salvar.isPending}
+            disabled={!mudou || ocupado}
+            type="submit"
+            loading={salvar.isPending}
+            loadingText="Salvando…"
+          >
+            {'Salvar'}
           </Button>
           <Button
             disabled={!mudou || ocupado}
@@ -178,7 +184,7 @@ function FormCnpj({ config, campos, podeEditar, onSalvo }) {
           </Button>
         </div>
       )}
-    </form>
+    </Form>
   );
 }
 
@@ -218,7 +224,12 @@ export function SecaoCnpj() {
         {!podeEditar && <p>Só DONO e MASTER alteram o enriquecimento.</p>}
       </div>
 
-      <p className={aviso ? 'border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
+      <p
+        className={
+          aviso ? 'rounded-lg border border-border bg-surface px-3 py-2 text-sm' : 'sr-only'
+        }
+        role="status"
+      >
         {aviso}
       </p>
 

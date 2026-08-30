@@ -43,7 +43,7 @@ export function ExcluirRegraDialog({ regra, descricao, onOpenChange, onExcluida 
 
   return (
     <AlertDialog onOpenChange={handleOpenChange} open={Boolean(regra)}>
-      <AlertDialogContent className="rounded-none">
+      <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Excluir regra</AlertDialogTitle>
           <AlertDialogDescription>

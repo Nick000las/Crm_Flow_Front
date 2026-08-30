@@ -1,7 +1,9 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Form } from '@/components/ui/form';
+import { NativeDialog } from '@/components/ui/native-dialog';
 import './confirmation-dialog.css';
 
 /**
@@ -22,20 +24,12 @@ export function ConfirmationDialog({
   onClose,
 }) {
   const id = useId();
-  const dialog = useRef(null);
   const cancel = useRef(null);
   const inFlight = useRef(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const pending = busy || submitting;
   const message = error || submitError;
-
-  useEffect(() => {
-    const element = dialog.current;
-    element.showModal();
-    cancel.current?.focus();
-    return () => element.close();
-  }, []);
 
   async function confirm() {
     if (pending || inFlight.current) {
@@ -58,8 +52,8 @@ export function ConfirmationDialog({
   }
 
   return createPortal(
-    <dialog
-      ref={dialog}
+    <NativeDialog
+      initialFocusRef={cancel}
       className="confirmation-dialog"
       role="alertdialog"
       aria-labelledby={`${id}-title`}
@@ -84,21 +78,22 @@ export function ConfirmationDialog({
           </p>
         )}
       </div>
-      <footer className="confirmation-dialog-footer">
+      <Form
+        className="confirmation-dialog-footer"
+        noValidate
+        onSubmit={(event) => {
+          event.preventDefault();
+          confirm();
+        }}
+      >
         <Button ref={cancel} type="button" variant="outline" disabled={pending} onClick={onClose}>
           {cancelLabel}
         </Button>
-        <Button
-          type="button"
-          variant="destructive"
-          loading={pending}
-          disabled={pending}
-          onClick={confirm}
-        >
+        <Button type="submit" variant="destructive" loading={pending} disabled={pending}>
           {pending ? pendingLabel : confirmLabel}
         </Button>
-      </footer>
-    </dialog>,
+      </Form>
+    </NativeDialog>,
     document.body,
   );
 }

@@ -12,7 +12,8 @@ import { useLinhaOrdenavel } from '../ordenavel/use-linha-ordenavel';
 import { SelectSimples } from '../select-simples';
 import { SeloSensivel } from '../selo-sensivel';
 
-const MARCA = 'border border-border px-1.5 font-mono text-[11px] text-muted-foreground uppercase';
+const MARCA =
+  'rounded-md border border-border bg-surface px-1.5 text-[11px] text-muted-foreground uppercase';
 
 /** Um interruptor com rótulo, no tamanho pequeno da linha. */
 function Interruptor({ id, rotulo, checked, disabled = false, onChange, describedBy }) {
@@ -106,7 +107,7 @@ export function ItemDoFormulario({
             {rotulo}
           </span>
           {tipo && (
-            <span className="ml-2 font-mono text-[11px] text-muted-foreground">
+            <span className="ml-2 text-[11px] text-muted-foreground">
               {ROTULOS_TIPO[tipo] ?? tipo}
             </span>
           )}
@@ -129,7 +130,12 @@ export function ItemDoFormulario({
             rotulo={`Editar a pergunta ${rotulo}`}
           />
         )}
-        <BotaoIcone icone={Trash2} onClick={onRemover} rotulo={`Tirar ${rotulo} do formulário`} />
+        <BotaoIcone
+          icone={Trash2}
+          variant="destructive"
+          onClick={onRemover}
+          rotulo={`Tirar ${rotulo} do formulário`}
+        />
       </div>
 
       {(campo || pergunta) && (

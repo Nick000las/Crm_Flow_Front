@@ -8,8 +8,7 @@ import {
 } from '@/components/ui/table';
 import { COLUNAS_RESPONSAVEL, TEXTOS_ASSERTIVIDADE } from '../../../lib/assertividade-textos';
 
-const HEAD_CLASS =
-  'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
+const HEAD_CLASS = 'text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
 
 /**
  * Assertividade por responsável do mês aberto. "Sem responsável" e
@@ -24,7 +23,7 @@ export function TabelaPorResponsavel({ titulo, linhas }) {
   const vazia = !linhas || linhas.length === 0;
 
   return (
-    <div className="overflow-x-auto border border-border">
+    <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-xs">
       <Table>
         <caption className="border-b border-border p-3 text-left text-sm font-medium">
           {titulo}
@@ -61,14 +60,10 @@ export function TabelaPorResponsavel({ titulo, linhas }) {
                   <TableCell className="font-medium" scope="row">
                     {linha.rotulo}
                   </TableCell>
-                  <TableCell className="text-right font-mono tabular-nums">
-                    {linha.previsto}
-                  </TableCell>
-                  <TableCell className="text-right font-mono tabular-nums">
-                    {linha.realizado}
-                  </TableCell>
+                  <TableCell className="text-right tabular-nums">{linha.previsto}</TableCell>
+                  <TableCell className="text-right tabular-nums">{linha.realizado}</TableCell>
                   <TableCell className="text-right">
-                    <span className="font-mono tabular-nums">{linha.pct}</span>
+                    <span className="tabular-nums">{linha.pct}</span>
                     {linha.rotuloFaixa && (
                       <span className="ml-2 text-xs text-muted-foreground">
                         {linha.rotuloFaixa}

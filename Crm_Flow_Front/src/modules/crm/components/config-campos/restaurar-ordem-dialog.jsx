@@ -41,7 +41,7 @@ export function RestaurarOrdemDialog({ open, onOpenChange, onRestaurado }) {
 
   return (
     <AlertDialog onOpenChange={handleOpenChange} open={open}>
-      <AlertDialogContent className="rounded-none">
+      <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Voltar à ordem padrão?</AlertDialogTitle>
           <AlertDialogDescription>

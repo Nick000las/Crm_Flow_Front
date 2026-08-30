@@ -5,8 +5,7 @@ import { moverPara } from '../../lib/ordem';
 import { ListaOrdenavel } from '../ordenavel/lista-ordenavel';
 import { LinhaCampo } from './linha-campo';
 
-const HEAD_CLASS =
-  'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
+const HEAD_CLASS = 'text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
 
 /**
  * Matriz de campos com ordem por arrastar (`ListaOrdenavel`) e ↑/↓.
@@ -32,7 +31,10 @@ export function ListaCampos({ campos, ordemOcupada, onReordenar, onEditar, onExc
 
   return (
     <ListaOrdenavel ids={ids} onMover={mover} rotuloDe={rotuloDe}>
-      <div aria-busy={ordemOcupada} className="overflow-x-auto border border-border">
+      <div
+        aria-busy={ordemOcupada}
+        className="overflow-x-auto rounded-xl border border-border bg-card shadow-xs"
+      >
         <Table>
           <TableHeader>
             <TableRow>

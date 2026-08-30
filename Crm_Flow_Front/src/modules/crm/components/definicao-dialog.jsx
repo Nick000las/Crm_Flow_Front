@@ -1,3 +1,4 @@
+import { Form } from '@/components/ui/form';
 import { useState } from 'react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
@@ -71,13 +72,13 @@ function FormDefinicao({ definicao, proximaOrdem, onSalvo }) {
   }
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       <CampoForm erro={erroDe('label')} id="definicao-label" label="Nome do campo" obrigatorio>
         {(controle) => (
           <Input
             {...controle}
             autoFocus
-            className="h-9 rounded-none"
+            className="h-9"
             onChange={(event) => alterar('label', event.target.value)}
             value={valores.label}
           />
@@ -126,11 +127,17 @@ function FormDefinicao({ definicao, proximaOrdem, onSalvo }) {
         >
           Cancelar
         </DialogClose>
-        <Button aria-busy={mutacao.isPending} disabled={mutacao.isPending} type="submit">
-          {mutacao.isPending ? 'Salvando…' : editando ? 'Salvar alterações' : 'Criar campo'}
+        <Button
+          aria-busy={mutacao.isPending}
+          disabled={mutacao.isPending}
+          type="submit"
+          loading={mutacao.isPending}
+          loadingText="Salvando…"
+        >
+          {editando ? 'Salvar alterações' : 'Criar campo'}
         </Button>
       </DialogFooter>
-    </form>
+    </Form>
   );
 }
 
@@ -148,24 +155,22 @@ function FormDefinicao({ definicao, proximaOrdem, onSalvo }) {
 export function DefinicaoDialog({ open, onOpenChange, definicao, proximaOrdem, onSalvo }) {
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="rounded-none sm:max-w-md">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{definicao ? 'Editar campo' : 'Novo campo personalizado'}</DialogTitle>
           <DialogDescription>
             Aparece no formulário do lead, nos filtros e nas colunas da tabela.
           </DialogDescription>
         </DialogHeader>
-        {open && (
-          <FormDefinicao
-            definicao={definicao}
-            key={definicao?.id ?? 'novo'}
-            onSalvo={() => {
-              onOpenChange(false);
-              onSalvo();
-            }}
-            proximaOrdem={proximaOrdem}
-          />
-        )}
+        <FormDefinicao
+          definicao={definicao}
+          key={definicao?.id ?? 'novo'}
+          onSalvo={() => {
+            onOpenChange(false);
+            onSalvo();
+          }}
+          proximaOrdem={proximaOrdem}
+        />
       </DialogContent>
     </Dialog>
   );

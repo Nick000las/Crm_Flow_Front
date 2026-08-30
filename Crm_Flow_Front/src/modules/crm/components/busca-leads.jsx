@@ -29,7 +29,7 @@ export function BuscaLeads({ busca, onBuscaChange, placeholder }) {
       />
       <Input
         aria-label="Buscar leads"
-        className="h-9 rounded-none pl-8"
+        className="h-9 pl-8"
         onChange={(event) => {
           setTexto(event.target.value);
           buscarComAtraso(event.target.value);

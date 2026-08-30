@@ -1,3 +1,4 @@
+import { Form } from '@/components/ui/form';
 import { useState } from 'react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
@@ -42,7 +43,11 @@ const htmlId = (idCampo) => `${PREFIXO_ID}${idCampo.replaceAll('.', '-')}`;
 function ParecidosAoVivo({ candidatos }) {
   return (
     <div
-      className={candidatos.length > 0 ? 'border border-border px-3 py-2 text-sm' : 'sr-only'}
+      className={
+        candidatos.length > 0
+          ? 'rounded-lg border border-border bg-surface px-3 py-2 text-sm'
+          : 'sr-only'
+      }
       role="status"
     >
       {candidatos.length > 0 && (
@@ -246,7 +251,7 @@ export function LeadForm({
   };
 
   return (
-    <form
+    <Form
       aria-describedby={erroGeral ? ERRO_GERAL_ID : undefined}
       className="flex min-h-0 flex-1 flex-col"
       noValidate
@@ -292,10 +297,16 @@ export function LeadForm({
         <Button disabled={enviando} onClick={onCancelar} type="button" variant="outline">
           Cancelar
         </Button>
-        <Button aria-busy={enviando} disabled={enviando} type="submit">
-          {enviando ? 'Salvando…' : rotuloEnviar}
+        <Button
+          aria-busy={enviando}
+          disabled={enviando}
+          type="submit"
+          loading={enviando}
+          loadingText="Salvando…"
+        >
+          {rotuloEnviar}
         </Button>
       </footer>
-    </form>
+    </Form>
   );
 }

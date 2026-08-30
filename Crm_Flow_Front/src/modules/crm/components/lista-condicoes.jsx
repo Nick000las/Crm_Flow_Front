@@ -65,7 +65,7 @@ export function ListaCondicoes({
         return (
           <div className="grid gap-3 border border-border p-3" key={chaves[indice]}>
             <div className="flex items-center justify-between gap-2">
-              <p className="font-mono text-[11px] tracking-wide text-muted-foreground uppercase">
+              <p className="text-[11px] tracking-wide text-muted-foreground uppercase">
                 Condição {indice + 1}
               </p>
               <BotaoIcone

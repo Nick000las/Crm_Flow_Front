@@ -28,9 +28,7 @@ function LinhasDuplicadas({ duplicados, estrategia, escolhas, onEscolher }) {
     <section aria-labelledby="importacao-duplicadas-titulo" className="grid gap-2">
       <h3 className="text-sm font-medium" id="importacao-duplicadas-titulo">
         Parecidas com leads existentes{' '}
-        <span className="font-mono text-xs text-muted-foreground tabular-nums">
-          ({duplicados.length})
-        </span>
+        <span className="text-xs text-muted-foreground tabular-nums">({duplicados.length})</span>
       </h3>
       <ul className="border border-border">
         {visiveis.map((duplicado) => {
@@ -44,12 +42,8 @@ function LinhasDuplicadas({ duplicados, estrategia, escolhas, onEscolher }) {
             >
               <div className="grid gap-1 text-sm">
                 <p className="flex flex-wrap items-center gap-2">
-                  <span className="font-mono text-xs tabular-nums">Linha {duplicado.linha}</span>
-                  {bloqueada && (
-                    <Badge className="rounded-none" variant="outline">
-                      Bloqueada: não pode criar
-                    </Badge>
-                  )}
+                  <span className="text-xs tabular-nums">Linha {duplicado.linha}</span>
+                  {bloqueada && <Badge variant="outline">Bloqueada: não pode criar</Badge>}
                 </p>
                 <ul className="text-muted-foreground">
                   {duplicado.leads.map((lead) => (
@@ -120,9 +114,8 @@ export function ImportacaoRevisar({
   return (
     <div className="grid gap-6">
       <p className="text-lg" role="status">
-        <span className="font-mono tabular-nums">{linhasValidas.toLocaleString('pt-BR')}</span>{' '}
-        válidas de{' '}
-        <span className="font-mono tabular-nums">{totalLinhas.toLocaleString('pt-BR')}</span> linhas
+        <span className="tabular-nums">{linhasValidas.toLocaleString('pt-BR')}</span> válidas de{' '}
+        <span className="tabular-nums">{totalLinhas.toLocaleString('pt-BR')}</span> linhas
       </p>
 
       {!jobId && (
@@ -177,6 +170,7 @@ export function ImportacaoRevisar({
             aria-busy={confirmacao.isPending}
             disabled={confirmacao.isPending}
             onClick={() => onConfirmar(acoesParaEnvio(escolhas))}
+            loading={confirmacao.isPending}
           >
             {confirmacao.isPending
               ? 'Confirmando…'

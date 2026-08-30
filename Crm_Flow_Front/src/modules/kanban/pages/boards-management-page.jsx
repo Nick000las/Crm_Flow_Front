@@ -1,14 +1,17 @@
-import { LoadingState } from '@/components/loading-state';
-import { Button } from '@/components/ui/button';
+import { quadrosNativos } from '../lib/board-modo';
+import { ArrowUpRight, KanbanSquare, Pencil, Plus, RefreshCw, Trash2, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { Plus, Pencil, Trash2, Users } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
 import { ConfirmationDialog } from '@/components/confirmation-dialog';
+import { EmptyState } from '@/components/empty-state';
+import { LoadingState } from '@/components/loading-state';
+import { ModalPresence } from '@/components/motion/modal-presence';
 import { PageHeader } from '@/components/page-header';
-import { useKanbanEvents } from '../hooks/use-kanban-events';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
 import { BoardSettingsForm } from '../components/board-settings-form';
-import { quadrosNativos } from '../lib/board-modo';
+import { useKanbanEvents } from '../hooks/use-kanban-events';
 import { getBoardTypeLabel } from '../lib/board-types';
 import './kanban.css';
 
@@ -44,9 +47,9 @@ export default function BoardsManagementPage() {
           setError('');
         }
       })
-      .catch((error) => {
+      .catch((requestError) => {
         if (active) {
-          setError(error.message);
+          setError(requestError.message);
         }
       })
       .finally(() => {
@@ -73,9 +76,9 @@ export default function BoardsManagementPage() {
           setMembersError('');
         }
       })
-      .catch((error) => {
+      .catch((requestError) => {
         if (active) {
-          setMembersError(error.message);
+          setMembersError(requestError.message);
         }
       })
       .finally(() => {
@@ -102,6 +105,11 @@ export default function BoardsManagementPage() {
     }
   });
 
+  function openNewBoard() {
+    setFormError('');
+    setEditing({ participantes: members.filter((member) => member.id === user?.id) });
+  }
+
   async function edit(board) {
     setPendingAction(`edit:${board.id}`);
     setBusy(true);
@@ -110,8 +118,8 @@ export default function BoardsManagementPage() {
     try {
       const participantes = await authApi.get(`/kanban/boards/${board.id}/membros`);
       setEditing({ ...board, participantes });
-    } catch (error) {
-      setError(error.message);
+    } catch (requestError) {
+      setError(requestError.message);
     } finally {
       setBusy(false);
       setPendingAction(null);
@@ -128,8 +136,8 @@ export default function BoardsManagementPage() {
       } else {
         await authApi.post('/kanban/boards', payload);
       }
-    } catch (error) {
-      setFormError(error.message);
+    } catch (requestError) {
+      setFormError(requestError.message);
       setBusy(false);
       setPendingAction(null);
       return;
@@ -150,8 +158,8 @@ export default function BoardsManagementPage() {
       setBoards((current) => current.filter((item) => item.id !== board.id));
       setNotice('Quadro excluído.');
       setDeleting(null);
-    } catch (error) {
-      setError(error.message);
+    } catch (requestError) {
+      setError(requestError.message);
       return false;
     } finally {
       setBusy(false);
@@ -164,114 +172,176 @@ export default function BoardsManagementPage() {
   }
 
   return (
-    <>
+    <div className="space-y-6">
       <PageHeader
+        eyebrow="Kanban"
         title="Gerenciar quadros"
-        description="Configure os quadros e escolha a equipe de cada um."
+        description="Configure os quadros e escolha a equipe com acesso a cada um."
+        actions={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={busy || loading}
+              loading={refreshing}
+              loadingText="Atualizando…"
+              onClick={() => {
+                setError('');
+                setRefresh((value) => value + 1);
+              }}
+            >
+              <RefreshCw className="size-4" aria-hidden="true" />
+              Atualizar
+            </Button>
+            <Button type="button" disabled={busy || loading} onClick={openNewBoard}>
+              <Plus className="size-4" aria-hidden="true" />
+              Novo quadro
+            </Button>
+          </>
+        }
       />
-      <div className="kb-toolbar">
-        <button
-          disabled={busy || loading}
-          onClick={() => {
-            setFormError('');
-            setEditing({ participantes: members.filter((member) => member.id === user?.id) });
-          }}
-        >
-          <Plus size={16} /> Novo quadro
-        </button>
-        <Button
-          variant="outline"
-          disabled={busy || loading}
-          loading={refreshing}
-          loadingText="Atualizando…"
-          onClick={() => {
-            setError('');
-            setRefresh((value) => value + 1);
-          }}
-        >
-          Atualizar
-        </Button>
-      </div>
+
       {error && (
         <p role="alert" className="kb-error">
           {error}
         </p>
       )}
-      {notice && <p role="status">{notice}</p>}
+
+      {notice && (
+        <p
+          role="status"
+          className="rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-foreground shadow-xs"
+        >
+          {notice}
+        </p>
+      )}
+
       {loading ? (
         <LoadingState label="Carregando quadros…" />
       ) : boards.length === 0 && !error ? (
-        <div className="kb-empty">
-          <h2>Nenhum quadro criado</h2>
-          <p>Crie um quadro e selecione as pessoas que vão participar.</p>
-        </div>
+        <EmptyState
+          icon={KanbanSquare}
+          title="Nenhum quadro criado"
+          description="Crie um quadro e selecione as pessoas que vão participar."
+          action={
+            <Button type="button" onClick={openNewBoard}>
+              <Plus className="size-4" aria-hidden="true" />
+              Novo quadro
+            </Button>
+          }
+        />
       ) : (
-        <div className="kb-management-list">
+        <div className="grid gap-3">
           {boards.map((board) => (
-            <article key={board.id} className="kb-board-summary">
-              <div>
-                <h2>{board.nome}</h2>
-                <p className="kb-hint">{getBoardTypeLabel(board.boardType)}</p>
-                <p className="kb-participant-count">
-                  <Users size={16} /> {board.totalParticipantes}{' '}
-                  {board.totalParticipantes === 1 ? 'participante' : 'participantes'}
-                </p>
+            <article
+              key={board.id}
+              className="group flex flex-col gap-4 rounded-xl border border-border bg-card p-4 shadow-xs transition-colors hover:border-border-strong sm:flex-row sm:items-center sm:justify-between sm:p-5"
+            >
+              <div className="flex min-w-0 items-start gap-3.5">
+                <span
+                  className="grid size-10 shrink-0 place-items-center rounded-lg border border-border bg-surface text-muted-foreground transition-colors group-hover:border-primary/30 group-hover:bg-primary/10 group-hover:text-primary"
+                  aria-hidden="true"
+                >
+                  <KanbanSquare className="size-5" strokeWidth={1.6} />
+                </span>
+
+                <div className="min-w-0 space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="truncate text-base font-semibold tracking-tight text-foreground">
+                      {board.nome}
+                    </h2>
+                    <Badge variant="secondary" className="font-normal">
+                      {getBoardTypeLabel(board.boardType)}
+                    </Badge>
+                  </div>
+
+                  <p className="flex items-center gap-1.5 text-xs text-muted-foreground tabular-nums">
+                    <Users className="size-3.5 shrink-0" aria-hidden="true" />
+                    <span>
+                      {board.totalParticipantes}{' '}
+                      {board.totalParticipantes === 1 ? 'participante' : 'participantes'}
+                    </span>
+                  </p>
+                </div>
               </div>
-              <div className="kb-actions">
-                <Link to={`/kanban?quadro=${board.id}`}>Abrir quadro</Link>
+
+              <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3 sm:shrink-0 sm:border-t-0 sm:pt-0">
                 <Button
+                  size="sm"
+                  variant="outline"
+                  nativeButton={false}
+                  render={<Link to={`/kanban?quadro=${board.id}`} />}
+                >
+                  Abrir quadro
+                  <ArrowUpRight className="size-3.5" aria-hidden="true" />
+                </Button>
+
+                <Button
+                  type="button"
+                  size="sm"
                   variant="outline"
                   disabled={busy}
                   loading={pendingAction === `edit:${board.id}`}
-                  loadingText="Carregando equipe…"
+                  loadingText="Carregando…"
                   onClick={() => edit(board)}
                 >
-                  <Pencil size={16} /> Editar quadro e equipe
+                  <Pencil className="size-3.5" aria-hidden="true" />
+                  Editar equipe
                 </Button>
-                <button
-                  className="kb-button-danger"
+
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="destructive"
                   disabled={busy}
                   onClick={() => {
                     setError('');
                     setDeleting(board);
                   }}
                 >
-                  <Trash2 size={16} /> Excluir quadro
-                </button>
+                  <Trash2 className="size-3.5" aria-hidden="true" />
+                  Excluir
+                </Button>
               </div>
             </article>
           ))}
         </div>
       )}
-      {deleting && (
-        <ConfirmationDialog
-          title="Excluir quadro?"
-          description={`O quadro “${deleting.nome}”, seus cards e comentários serão excluídos. Esta ação não pode ser desfeita.`}
-          confirmLabel="Excluir quadro"
-          busy={busy}
-          error={error}
-          onConfirm={() => remove(deleting)}
-          onClose={() => setDeleting(null)}
-        />
-      )}
-      {editing && (
-        <BoardSettingsForm
-          board={editing}
-          members={members}
-          busy={busy}
-          saving={pendingAction === 'save'}
-          membersLoading={membersLoading}
-          membersError={membersError}
-          onRetryMembers={() => {
-            setMembersLoading(true);
-            setMembersError('');
-            setMembersRevision((value) => value + 1);
-          }}
-          error={formError}
-          onSave={save}
-          onClose={() => setEditing(null)}
-        />
-      )}
-    </>
+
+      <ModalPresence>
+        {deleting && (
+          <ConfirmationDialog
+            title="Excluir quadro?"
+            description={`O quadro “${deleting.nome}”, seus cards e comentários serão excluídos. Esta ação não pode ser desfeita.`}
+            confirmLabel="Excluir quadro"
+            busy={busy}
+            error={error}
+            onConfirm={() => remove(deleting)}
+            onClose={() => setDeleting(null)}
+          />
+        )}
+      </ModalPresence>
+
+      <ModalPresence>
+        {editing && (
+          <BoardSettingsForm
+            board={editing}
+            members={members}
+            busy={busy}
+            saving={pendingAction === 'save'}
+            membersLoading={membersLoading}
+            membersError={membersError}
+            onRetryMembers={() => {
+              setMembersLoading(true);
+              setMembersError('');
+              setMembersRevision((value) => value + 1);
+            }}
+            error={formError}
+            onSave={save}
+            onClose={() => setEditing(null)}
+          />
+        )}
+      </ModalPresence>
+    </div>
   );
 }

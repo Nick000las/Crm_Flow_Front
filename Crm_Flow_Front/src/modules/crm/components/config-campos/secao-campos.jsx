@@ -1,3 +1,4 @@
+import { LoadingState } from '@/components/loading-state';
 import { Plus, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
@@ -19,11 +20,9 @@ const LINHAS_SKELETON = 8;
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando campos…
-      </span>
+      <LoadingState label="Carregando campos…" />
       {Array.from({ length: LINHAS_SKELETON }, (_, indice) => (
-        <Skeleton className="h-11 rounded-none" key={indice} />
+        <Skeleton className="h-11" key={indice} />
       ))}
     </div>
   );
@@ -88,7 +87,12 @@ export function SecaoCampos() {
         </div>
       </div>
 
-      <p className={aviso ? 'border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
+      <p
+        className={
+          aviso ? 'rounded-lg border border-border bg-surface px-3 py-2 text-sm' : 'sr-only'
+        }
+        role="status"
+      >
         {aviso}
       </p>
       <ApiErrorAlert

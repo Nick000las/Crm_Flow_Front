@@ -7,7 +7,7 @@ import { textoDaProbabilidade } from '../../lib/probabilidade';
 import { BotaoIcone } from '../botao-icone';
 import { OpcaoBadge } from '../opcao-badge';
 
-const DADO = 'font-mono tabular-nums';
+const DADO = 'tabular-nums';
 
 function Detalhe({ rotulo, children }) {
   return (
@@ -147,7 +147,7 @@ export function ItemOportunidade({
       </dl>
 
       {oportunidade.origemReabertaEm && (
-        <p className="border border-border px-3 py-2 text-sm">
+        <p className="rounded-lg border border-border bg-surface px-3 py-2 text-sm">
           A venda que originou este atendimento foi reaberta.
         </p>
       )}

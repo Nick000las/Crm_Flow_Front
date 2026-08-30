@@ -35,7 +35,7 @@ function Progresso({ job }) {
           style={{ width: `${percentual}%` }}
         />
       </div>
-      <p className="font-mono text-xs text-muted-foreground tabular-nums">
+      <p className="text-xs text-muted-foreground tabular-nums">
         {formatar(job.linhas_processadas)} / {formatar(job.total_linhas)} linhas · {percentual}%
       </p>
     </div>
@@ -47,10 +47,8 @@ function Contadores({ job }) {
     <dl className="grid grid-cols-2 border border-border sm:grid-cols-4">
       {CONTADORES.map(({ chave, rotulo }) => (
         <div className="grid gap-1 border-border p-3 not-last:border-r" key={chave}>
-          <dt className="font-mono text-[11px] tracking-wide text-muted-foreground uppercase">
-            {rotulo}
-          </dt>
-          <dd className="font-mono text-xl tabular-nums">{formatar(job[chave])}</dd>
+          <dt className="text-[11px] tracking-wide text-muted-foreground uppercase">{rotulo}</dt>
+          <dd className="text-xl tabular-nums">{formatar(job[chave])}</dd>
         </div>
       ))}
     </dl>
@@ -86,7 +84,7 @@ export function ImportacaoProcessar({ jobId, onNovaImportacao }) {
     );
   }
   if (isPending) {
-    return <Skeleton className="h-24 rounded-none" />;
+    return <Skeleton className="h-24" />;
   }
 
   const pendente = job.status === IMPORT_JOB_STATUS.PENDENTE;
@@ -121,6 +119,7 @@ export function ImportacaoProcessar({ jobId, onNovaImportacao }) {
             aria-busy={confirmar.isPending}
             disabled={confirmar.isPending}
             onClick={() => confirmar.mutate(jobId)}
+            loading={confirmar.isPending}
           >
             {confirmar.isPending
               ? 'Confirmando…'

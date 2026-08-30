@@ -78,7 +78,6 @@ export function LinhaFiltro({ linha, campos, erro, erroDoServidor = false, onCha
       </div>
       <Button
         aria-label={`Remover filtro de ${campo.label}`}
-        className="rounded-none"
         onClick={onRemover}
         size="icon"
         type="button"

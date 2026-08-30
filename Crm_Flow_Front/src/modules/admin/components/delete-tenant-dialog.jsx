@@ -1,5 +1,7 @@
+import { Form } from '@/components/ui/form';
 import { useState } from 'react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
+import { FieldError } from '@/components/field-error';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -74,7 +76,7 @@ export function DeleteTenantDialog({ open, onOpenChange, adminApi, tenant, onDel
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md" showCloseButton={!isSubmitting}>
-        <form onSubmit={handleSubmit}>
+        <Form noValidate onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Excluir tenant</DialogTitle>
             <DialogDescription>
@@ -97,13 +99,8 @@ export function DeleteTenantDialog({ open, onOpenChange, adminApi, tenant, onDel
                 id="delete-tenant-confirm"
                 name="confirmacao"
                 onChange={() => setConfirmacaoError(null)}
-                required
               />
-              {confirmacaoError && (
-                <p className="text-sm text-destructive" id={CONFIRM_ERROR_ID}>
-                  {confirmacaoError}
-                </p>
-              )}
+              <FieldError id={CONFIRM_ERROR_ID} message={confirmacaoError} />
             </div>
 
             <ApiErrorAlert error={submitError} id={SUBMIT_ERROR_ID} />
@@ -126,7 +123,7 @@ export function DeleteTenantDialog({ open, onOpenChange, adminApi, tenant, onDel
               {isSubmitting ? 'Excluindo...' : 'Excluir tenant'}
             </Button>
           </DialogFooter>
-        </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

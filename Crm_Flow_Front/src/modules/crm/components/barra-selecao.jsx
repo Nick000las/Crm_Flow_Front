@@ -1,4 +1,5 @@
 import { Combine, PencilLine } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
 const PARA_MESCLAR = 2;
@@ -7,14 +8,6 @@ const PARA_MESCLAR = 2;
  * Barra acima da tabela com os leads marcados. As ações dependem do que está
  * ligado: "Editar em massa" (`crm.massa`) e "Mesclar" (gestão com
  * `crm.duplicidade`, só com exatamente 2).
- *
- * @param {{
- *   total: number,
- *   onLimpar: () => void,
- *   onEditarEmMassa?: () => void,
- *   onMesclar?: () => void,
- *   bloqueioMesclar?: string | null,
- * }} props ação omitida = botão oculto; `bloqueioMesclar` = por que não mescla (ex.: lead anonimizado)
  */
 export function BarraSelecao({
   total,
@@ -23,18 +16,14 @@ export function BarraSelecao({
   onMesclar,
   bloqueioMesclar = null,
 }) {
-  if (total === 0) {
-    return null;
-  }
-
   // Sem massa, a seleção existe só para mesclar: a dica de quantos faltam vale.
   const dicaMesclar = onMesclar && !onEditarEmMassa && total < PARA_MESCLAR;
 
-  return (
-    <div className="mb-3 flex flex-wrap items-center gap-2 border border-border px-3 py-2 text-sm">
-      <span className="font-mono text-xs tabular-nums" role="status">
+  return total > 0 ? (
+    <div className="mb-3 flex flex-wrap items-center gap-2.5 rounded-xl border border-primary/25 bg-card px-3.5 py-2.5 text-sm shadow-xs">
+      <Badge variant="secondary" className="text-xs tabular-nums" role="status">
         {total} {total === 1 ? 'selecionado' : 'selecionados'}
-      </span>
+      </Badge>
       {dicaMesclar && <span className="text-muted-foreground">Marque mais um para mesclar.</span>}
       {onMesclar && bloqueioMesclar && (
         <span className="text-muted-foreground">{bloqueioMesclar}</span>
@@ -66,5 +55,5 @@ export function BarraSelecao({
         </Button>
       </div>
     </div>
-  );
+  ) : null;
 }

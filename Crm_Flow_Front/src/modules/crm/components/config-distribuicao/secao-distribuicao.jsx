@@ -1,3 +1,4 @@
+import { LoadingState } from '@/components/loading-state';
 import { useState } from 'react';
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
@@ -16,11 +17,9 @@ import { GruposDistribuicao } from './grupos-distribuicao';
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando distribuição…
-      </span>
+      <LoadingState label="Carregando distribuição…" />
       {Array.from({ length: 4 }, (_, indice) => (
-        <Skeleton className="h-14 rounded-none" key={indice} />
+        <Skeleton className="h-14" key={indice} />
       ))}
     </div>
   );
@@ -79,7 +78,12 @@ export function SecaoDistribuicao() {
         {!podeEditar && <p>Só DONO e MASTER alteram a distribuição.</p>}
       </div>
 
-      <p className={aviso ? 'border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
+      <p
+        className={
+          aviso ? 'rounded-lg border border-border bg-surface px-3 py-2 text-sm' : 'sr-only'
+        }
+        role="status"
+      >
         {aviso}
       </p>
 

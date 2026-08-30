@@ -45,7 +45,7 @@ export function ExcluirGrupoDialog({ grupo, onOpenChange, onExcluido }) {
 
   return (
     <AlertDialog onOpenChange={handleOpenChange} open={Boolean(grupo)}>
-      <AlertDialogContent className="rounded-none">
+      <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Excluir grupo</AlertDialogTitle>
           <AlertDialogDescription>

@@ -1,3 +1,4 @@
+import { Form } from '@/components/ui/form';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -46,7 +47,7 @@ function FormRegraDistribuicao({ regra, campos, opcoesDestino, errosDoServidor, 
   const erroGeral = erroDe('regra') ?? erroDe('id');
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       <CampoForm
         erro={erroDe('nome')}
         id="distribuicao-regra-nome"
@@ -57,7 +58,7 @@ function FormRegraDistribuicao({ regra, campos, opcoesDestino, errosDoServidor, 
           <Input
             {...controle}
             autoFocus
-            className="h-9 rounded-none"
+            className="h-9"
             onChange={(event) => alterar({ nome: event.target.value })}
             placeholder="Ex.: Leads do site"
             value={valores.nome}
@@ -110,7 +111,7 @@ function FormRegraDistribuicao({ regra, campos, opcoesDestino, errosDoServidor, 
         <DialogClose render={<Button type="button" variant="outline" />}>Cancelar</DialogClose>
         <Button type="submit">Concluir</Button>
       </DialogFooter>
-    </form>
+    </Form>
   );
 }
 
@@ -139,7 +140,7 @@ export function RegraDistribuicaoDialog({
 }) {
   return (
     <Dialog onOpenChange={onOpenChange} open={Boolean(regra)}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-none sm:max-w-xl">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>{nova ? 'Nova regra' : 'Editar regra'}</DialogTitle>
           <DialogDescription>

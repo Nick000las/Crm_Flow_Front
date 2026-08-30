@@ -1,3 +1,5 @@
+import { LoadingState } from '@/components/loading-state';
+import { Form } from '@/components/ui/form';
 import { useState } from 'react';
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
@@ -20,11 +22,9 @@ const OPCOES_ACAO = Object.values(ACOES_DUPLICIDADE).map((valor) => ({
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando regras…
-      </span>
+      <LoadingState label="Carregando regras…" />
       {Array.from({ length: 4 }, (_, indice) => (
-        <Skeleton className="h-12 rounded-none" key={indice} />
+        <Skeleton className="h-12" key={indice} />
       ))}
     </div>
   );
@@ -54,7 +54,7 @@ function FormRegras({ regras, podeEditar, onSalvo }) {
   }
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       <ul className="border border-border">
         {regras.map(({ campo, label }) => {
           const atual = valores[campo];
@@ -102,8 +102,10 @@ function FormRegras({ regras, podeEditar, onSalvo }) {
             aria-busy={salvar.isPending}
             disabled={!mudancas || salvar.isPending}
             type="submit"
+            loading={salvar.isPending}
+            loadingText="Salvando…"
           >
-            {salvar.isPending ? 'Salvando…' : 'Salvar regras'}
+            {'Salvar regras'}
           </Button>
           <Button
             disabled={!mudancas || salvar.isPending}
@@ -118,7 +120,7 @@ function FormRegras({ regras, podeEditar, onSalvo }) {
           </Button>
         </div>
       )}
-    </form>
+    </Form>
   );
 }
 
@@ -157,7 +159,12 @@ export function SecaoDuplicidade() {
         {!podeEditar && <p>Só DONO e MASTER alteram as regras.</p>}
       </div>
 
-      <p className={aviso ? 'border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
+      <p
+        className={
+          aviso ? 'rounded-lg border border-border bg-surface px-3 py-2 text-sm' : 'sr-only'
+        }
+        role="status"
+      >
         {aviso}
       </p>
 

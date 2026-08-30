@@ -10,7 +10,7 @@ export function BotaoIcone({ rotulo, icone: Icone, ...props }) {
   return (
     <Button
       aria-label={rotulo}
-      className="rounded-none"
+
       size="icon-sm"
       title={rotulo}
       variant="ghost"

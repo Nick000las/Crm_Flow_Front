@@ -1,3 +1,5 @@
+import { focusFirstInvalidField } from '@/lib/form-validation';
+import { Form } from '@/components/ui/form';
 import { useState } from 'react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
@@ -42,6 +44,7 @@ function FormPipeline({ pipeline, onSalvo }) {
     const limpo = nome.trim();
     if (!limpo) {
       setErroNome(NOME_OBRIGATORIO);
+      focusFirstInvalidField(event.currentTarget, ['pipeline-nome']);
       return;
     }
 
@@ -54,13 +57,13 @@ function FormPipeline({ pipeline, onSalvo }) {
   }
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       <CampoForm erro={erroNome ?? erroDe('nome')} id="pipeline-nome" label="Nome" obrigatorio>
         {(controle) => (
           <Input
             {...controle}
             autoFocus
-            className="h-9 rounded-none"
+            className="h-9"
             onChange={(event) => {
               setNome(event.target.value);
               setErroNome(null);
@@ -89,11 +92,17 @@ function FormPipeline({ pipeline, onSalvo }) {
         >
           Cancelar
         </DialogClose>
-        <Button aria-busy={mutacao.isPending} disabled={mutacao.isPending} type="submit">
-          {mutacao.isPending ? 'Salvando…' : editando ? 'Salvar nome' : 'Criar pipeline'}
+        <Button
+          aria-busy={mutacao.isPending}
+          disabled={mutacao.isPending}
+          type="submit"
+          loading={mutacao.isPending}
+          loadingText="Salvando…"
+        >
+          {editando ? 'Salvar nome' : 'Criar pipeline'}
         </Button>
       </DialogFooter>
-    </form>
+    </Form>
   );
 }
 
@@ -110,7 +119,7 @@ function FormPipeline({ pipeline, onSalvo }) {
 export function PipelineDialog({ open, onOpenChange, onSalvo, pipeline }) {
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="rounded-none sm:max-w-md">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{pipeline ? 'Renomear pipeline' : 'Novo pipeline'}</DialogTitle>
           <DialogDescription>

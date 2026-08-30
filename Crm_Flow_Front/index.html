@@ -4,8 +4,28 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Frontend do Flow CRM conectado à API do projeto." />
+    <meta
+      name="description"
+      content="Flow CRM — Plataforma B2B de CRM, Kanban e gestão operacional."
+    />
     <title>Flow CRM</title>
+    <script>
+      (() => {
+        try {
+          const stored = window.localStorage.getItem('flow-crm:theme');
+          const preference =
+            stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
+          const isDark =
+            preference === 'dark' ||
+            (preference === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          const root = document.documentElement;
+          root.classList.toggle('dark', isDark);
+          root.style.colorScheme = isDark ? 'dark' : 'light';
+        } catch {
+          // Ambiente sem acesso a localStorage ou matchMedia: mantém tema padrão.
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

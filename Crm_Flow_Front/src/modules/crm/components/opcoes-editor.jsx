@@ -1,6 +1,8 @@
 import { Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { isComposingKeyEvent } from '@/lib/keyboard-shortcuts';
+import { useLayoutEffect, useRef } from 'react';
 
 /**
  * Lista editável das opções de um campo de seleção: uma linha por opção,
@@ -14,11 +16,29 @@ import { Input } from '@/components/ui/input';
  * }} props
  */
 export function OpcoesEditor({ opcoes, onChange, erro, erroId }) {
+  const listRef = useRef(null);
+  const pendingFocus = useRef(null);
+  useLayoutEffect(() => {
+    if (pendingFocus.current !== null) {
+      listRef.current?.querySelectorAll('input')[pendingFocus.current]?.focus();
+      pendingFocus.current = null;
+    }
+  });
+  function focusOption(index) {
+    const input = listRef.current?.querySelectorAll('input')[index];
+    if (input) {
+      input.focus();
+    } else {
+      pendingFocus.current = index;
+    }
+  }
+
   const alterar = (indice, texto) =>
     onChange(opcoes.map((opcao, atual) => (atual === indice ? texto : opcao)));
   const remover = (indice) => {
     const restantes = opcoes.filter((_, atual) => atual !== indice);
     onChange(restantes.length > 0 ? restantes : ['']);
+    focusOption(Math.min(indice, Math.max(restantes.length - 1, 0)));
   };
 
   return (
@@ -31,24 +51,32 @@ export function OpcoesEditor({ opcoes, onChange, erro, erroId }) {
         <span className="sr-only">(obrigatório)</span>
       </legend>
 
-      <ol className="grid gap-1.5">
+      <ol ref={listRef} className="grid gap-1.5">
         {opcoes.map((opcao, indice) => (
           // Índice como key: as linhas não têm id próprio e só mudam pelo próprio editor.
           <li className="flex items-center gap-1.5" key={indice}>
-            <span className="w-5 text-right font-mono text-[11px] text-muted-foreground tabular-nums">
+            <span className="w-5 text-right text-[11px] text-muted-foreground tabular-nums">
               {indice + 1}
             </span>
             <Input
               aria-invalid={erro ? true : undefined}
               aria-label={`Opção ${indice + 1}`}
-              className="h-9 rounded-none"
+              className="h-9"
               onChange={(event) => alterar(indice, event.target.value)}
               onKeyDown={(event) => {
                 // Enter na última opção já abre a próxima.
-                if (event.key === 'Enter') {
+                if (
+                  event.key === 'Enter' &&
+                  !isComposingKeyEvent(event) &&
+                  !event.repeat &&
+                  !event.ctrlKey &&
+                  !event.metaKey &&
+                  !event.altKey
+                ) {
                   event.preventDefault();
                   if (indice === opcoes.length - 1 && opcao.trim()) {
                     onChange([...opcoes, '']);
+                    focusOption(indice + 1);
                   }
                 }
               }}
@@ -56,7 +84,6 @@ export function OpcoesEditor({ opcoes, onChange, erro, erroId }) {
             />
             <Button
               aria-label={`Remover opção ${indice + 1}`}
-              className="rounded-none"
               onClick={() => remover(indice)}
               size="icon"
               type="button"
@@ -69,8 +96,11 @@ export function OpcoesEditor({ opcoes, onChange, erro, erroId }) {
       </ol>
 
       <Button
-        className="w-fit rounded-none"
-        onClick={() => onChange([...opcoes, ''])}
+        className="w-fit"
+        onClick={() => {
+          onChange([...opcoes, '']);
+          focusOption(opcoes.length);
+        }}
         size="sm"
         type="button"
         variant="outline"

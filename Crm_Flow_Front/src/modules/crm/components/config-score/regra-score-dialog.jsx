@@ -1,3 +1,4 @@
+import { Form } from '@/components/ui/form';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -45,14 +46,14 @@ function FormRegraScore({ regra, campos, errosDoServidor, onConfirmar }) {
   const erroGeral = erroDe('item');
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_8rem]">
         <CampoForm erro={erroDe('nome')} id="score-regra-nome" label="Nome da regra" obrigatorio>
           {(controle) => (
             <Input
               {...controle}
               autoFocus
-              className="h-9 rounded-none"
+              className="h-9"
               onChange={(event) => alterar({ nome: event.target.value })}
               placeholder="Ex.: Veio do site"
               value={valores.nome}
@@ -69,7 +70,7 @@ function FormRegraScore({ regra, campos, errosDoServidor, onConfirmar }) {
           {(controle) => (
             <Input
               {...controle}
-              className="h-9 rounded-none font-mono tabular-nums"
+              className="h-9 tabular-nums"
               inputMode="numeric"
               onChange={(event) => alterar({ pontos: event.target.value })}
               value={valores.pontos}
@@ -106,7 +107,7 @@ function FormRegraScore({ regra, campos, errosDoServidor, onConfirmar }) {
         <DialogClose render={<Button type="button" variant="outline" />}>Cancelar</DialogClose>
         <Button type="submit">Concluir</Button>
       </DialogFooter>
-    </form>
+    </Form>
   );
 }
 
@@ -133,7 +134,7 @@ export function RegraScoreDialog({
 }) {
   return (
     <Dialog onOpenChange={onOpenChange} open={Boolean(regra)}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-none sm:max-w-xl">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>{nova ? 'Nova regra' : 'Editar regra'}</DialogTitle>
           <DialogDescription>

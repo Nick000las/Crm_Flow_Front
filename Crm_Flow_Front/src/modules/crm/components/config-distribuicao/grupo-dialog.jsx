@@ -1,3 +1,4 @@
+import { Form } from '@/components/ui/form';
 import { useState } from 'react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
@@ -62,14 +63,14 @@ function FormGrupo({ grupo, usuarios, onSalvo }) {
   }
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       {/* 409 de nome repetido chega em `fields.nome`. */}
       <CampoForm erro={erroNome ?? erroDe('nome')} id="grupo-nome" label="Nome" obrigatorio>
         {(controle) => (
           <Input
             {...controle}
             autoFocus
-            className="h-9 rounded-none"
+            className="h-9"
             onChange={(event) => {
               setNome(event.target.value);
               limparErros();
@@ -122,11 +123,17 @@ function FormGrupo({ grupo, usuarios, onSalvo }) {
         >
           Cancelar
         </DialogClose>
-        <Button aria-busy={mutacao.isPending} disabled={mutacao.isPending} type="submit">
-          {mutacao.isPending ? 'Salvando…' : editando ? 'Salvar alterações' : 'Criar grupo'}
+        <Button
+          aria-busy={mutacao.isPending}
+          disabled={mutacao.isPending}
+          type="submit"
+          loading={mutacao.isPending}
+          loadingText="Salvando…"
+        >
+          {editando ? 'Salvar alterações' : 'Criar grupo'}
         </Button>
       </DialogFooter>
-    </form>
+    </Form>
   );
 }
 
@@ -145,24 +152,22 @@ function FormGrupo({ grupo, usuarios, onSalvo }) {
 export function GrupoDialog({ open, onOpenChange, grupo, usuarios, onSalvo }) {
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="rounded-none sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{grupo ? 'Editar grupo' : 'Novo grupo'}</DialogTitle>
           <DialogDescription>
             Um grupo pode ser o destino de uma regra de distribuição.
           </DialogDescription>
         </DialogHeader>
-        {open && (
-          <FormGrupo
-            grupo={grupo}
-            key={grupo?.id ?? 'novo'}
-            onSalvo={(salvo) => {
-              onOpenChange(false);
-              onSalvo(salvo);
-            }}
-            usuarios={usuarios}
-          />
-        )}
+        <FormGrupo
+          grupo={grupo}
+          key={grupo?.id ?? 'novo'}
+          onSalvo={(salvo) => {
+            onOpenChange(false);
+            onSalvo(salvo);
+          }}
+          usuarios={usuarios}
+        />
       </DialogContent>
     </Dialog>
   );

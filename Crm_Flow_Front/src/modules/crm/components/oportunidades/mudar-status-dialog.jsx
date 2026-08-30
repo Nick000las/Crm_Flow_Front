@@ -1,3 +1,5 @@
+import { focusFirstInvalidField } from '@/lib/form-validation';
+import { Form } from '@/components/ui/form';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -77,6 +79,7 @@ function FormStatus({ oportunidade, pipelines, campos, leadId, onSalvo }) {
     const invalida = comProbabilidade ? validarProbabilidade(probabilidade) : null;
     setErroProbabilidade(invalida);
     if (invalida) {
+      focusFirstInvalidField(event.currentTarget, ['oportunidade-status-probabilidade']);
       return;
     }
 
@@ -106,7 +109,7 @@ function FormStatus({ oportunidade, pipelines, campos, leadId, onSalvo }) {
   }
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       <CampoForm erro={porCampo.status} id="oportunidade-status" label="Status" obrigatorio>
         {(controle) => (
           <SelectSimples
@@ -147,7 +150,7 @@ function FormStatus({ oportunidade, pipelines, campos, leadId, onSalvo }) {
           {(controle) => (
             <Input
               {...controle}
-              className={`${INPUT_CLASS} w-48 font-mono tabular-nums`}
+              className={`${INPUT_CLASS} w-48 tabular-nums`}
               inputMode="numeric"
               onChange={(event) => {
                 setErroProbabilidade(null);
@@ -176,11 +179,13 @@ function FormStatus({ oportunidade, pipelines, campos, leadId, onSalvo }) {
           aria-busy={mudar.isPending}
           disabled={mudar.isPending || !status || status === oportunidade.status}
           type="submit"
+          loading={mudar.isPending}
+          loadingText="Salvando…"
         >
-          {mudar.isPending ? 'Salvando…' : 'Mudar status'}
+          {'Mudar status'}
         </Button>
       </DialogFooter>
-    </form>
+    </Form>
   );
 }
 
@@ -207,7 +212,7 @@ export function MudarStatusDialog({
 }) {
   return (
     <Dialog onOpenChange={onOpenChange} open={Boolean(oportunidade)}>
-      <DialogContent className="rounded-none sm:max-w-md">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Mudar status</DialogTitle>
           <DialogDescription>

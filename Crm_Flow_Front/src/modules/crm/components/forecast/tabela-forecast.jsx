@@ -11,8 +11,7 @@ import {
 import { cn } from '@/lib/utils';
 import { celulaDaLista } from '../../lib/forecast-vista';
 
-const HEAD_CLASS =
-  'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
+const HEAD_CLASS = 'text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
 
 /**
  * @typedef {{
@@ -52,7 +51,7 @@ function SelecionarPagina({ selecao, itens }) {
  */
 export function TabelaForecast({ itens, colunas, nomePorId, linkDoLead, selecao = null }) {
   return (
-    <div className="overflow-x-auto border border-border">
+    <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-xs">
       <Table>
         <TableHeader>
           <TableRow>
@@ -91,7 +90,7 @@ export function TabelaForecast({ itens, colunas, nomePorId, linkDoLead, selecao 
                   const texto = celulaDaLista(item, coluna, nomePorId);
                   return (
                     <TableCell
-                      className={cn(coluna.numerica && 'text-right font-mono tabular-nums')}
+                      className={cn(coluna.numerica && 'text-right tabular-nums')}
                       key={coluna.id}
                     >
                       {coluna.id === 'pessoa' ? (

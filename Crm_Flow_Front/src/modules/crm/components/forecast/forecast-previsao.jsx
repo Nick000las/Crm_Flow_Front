@@ -306,7 +306,7 @@ function ConteudoDoForecast({
           acoes={
             comAcao ? (
               <>
-                <span className="font-mono text-xs text-muted-foreground tabular-nums">
+                <span className="text-xs text-muted-foreground tabular-nums">
                   {contadorSelecao(selecao.leads.length, FORECAST.MAX_IDS)}
                 </span>
                 <Button disabled={selecao.leads.length === 0} onClick={onAtualizarData}>

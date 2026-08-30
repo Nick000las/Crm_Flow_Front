@@ -1,7 +1,8 @@
+import { Form } from '@/components/ui/form';
 import { Pencil, Plus, Shuffle, Trash2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
-import { ModulePlaceholder } from '@/components/module-placeholder';
+import { EmptyState } from '@/components/empty-state';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { semChave } from '@/lib/objetos';
@@ -65,9 +66,7 @@ function LinhaRegra({
       )}
     >
       {podeEditar && <PuxadorOrdem {...puxador} rotulo={nome} />}
-      <span className="w-6 font-mono text-xs text-muted-foreground tabular-nums">
-        {indice + 1}.
-      </span>
+      <span className="w-6 text-xs text-muted-foreground tabular-nums">{indice + 1}.</span>
 
       <div className="grid min-w-0 flex-1 gap-0.5">
         <p className="text-sm font-medium">{nome}</p>
@@ -230,7 +229,7 @@ export function FormDistribuicao({
 
   return (
     <>
-      <form className="grid gap-5" noValidate onSubmit={handleSubmit}>
+      <Form className="grid gap-5" noValidate onSubmit={handleSubmit}>
         <div className="grid max-w-2xl gap-4">
           <label className="flex items-center gap-2 text-sm" htmlFor="distribuicao-ativo">
             <Switch
@@ -266,7 +265,7 @@ export function FormDistribuicao({
               <p className="text-xs text-muted-foreground">
                 Avaliadas de cima para baixo: a primeira que casar define o responsável.
                 {valores.regras.length > 0 && (
-                  <span className="font-mono">
+                  <span>
                     {' '}
                     {valores.regras.length}/{DISTRIBUICAO.MAX_REGRAS}
                   </span>
@@ -277,13 +276,13 @@ export function FormDistribuicao({
           </div>
 
           {valores.regras.length === 0 ? (
-            <ModulePlaceholder
+            <EmptyState
               description="Sem regras, todo lead novo segue o que está escolhido em “Quando nenhuma regra casar”."
               icon={Shuffle}
               title="Nenhuma regra ainda"
             >
               {botaoNovaRegra}
-            </ModulePlaceholder>
+            </EmptyState>
           ) : (
             <ListaOrdenavel
               ids={ids}
@@ -352,8 +351,14 @@ export function FormDistribuicao({
 
         {podeEditar && (
           <div className="flex flex-wrap gap-2 border-t border-border pt-4">
-            <Button aria-busy={salvar.isPending} disabled={!mudou || ocupado} type="submit">
-              {salvar.isPending ? 'Salvando…' : 'Salvar'}
+            <Button
+              aria-busy={salvar.isPending}
+              disabled={!mudou || ocupado}
+              type="submit"
+              loading={salvar.isPending}
+              loadingText="Salvando…"
+            >
+              {'Salvar'}
             </Button>
             <Button
               disabled={!mudou || ocupado}
@@ -365,9 +370,9 @@ export function FormDistribuicao({
             </Button>
           </div>
         )}
-      </form>
+      </Form>
 
-      {/* Fora do <form>: o submit do dialog sobe pela árvore do React (portal) e salvaria a seção. */}
+      {/* Fora do <Form>: o submit do dialog sobe pela árvore do React (portal) e salvaria a seção. */}
       <RegraDistribuicaoDialog
         campos={campos}
         errosDoServidor={emEdicao ? erros.porRegra[emEdicao.regra.chaveLocal] : undefined}

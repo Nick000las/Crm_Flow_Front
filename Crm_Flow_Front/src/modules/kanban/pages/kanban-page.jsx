@@ -1,9 +1,13 @@
+import { TIPO_PESSOA, podeVincular } from '../lib/vinculo';
+import { ModalPresence } from '@/components/motion/modal-presence';
+import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { LoadingState } from '@/components/loading-state';
 import { Spinner } from '@/components/ui/spinner';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useKanbanEvents } from '../hooks/use-kanban-events';
+import { BoardReport } from '../components/board-report';
 import { CardEditor } from '../components/card-editor';
 import { KanbanCard } from '../components/kanban-card';
 import { BoardFilters } from '../components/board-filters';
@@ -11,16 +15,30 @@ import { BoardArchives } from '../components/board-archives';
 import { EmailPreferences } from '../components/email-preferences';
 import { getCardDetails, getDueState } from '../lib/card-details';
 import { EditorDialog } from '../components/editor-dialog';
-import { Plus, Pencil, Trash2, ArrowLeft, ArrowRight, X } from 'lucide-react';
+import {
+  Archive,
+  ArrowLeft,
+  ArrowRight,
+  BarChart3,
+  ChevronDown,
+  Eye,
+  FileText,
+  Mail,
+  Pencil,
+  Plus,
+  RefreshCw,
+  Trash2,
+  X,
+} from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { ConfirmationDialog } from '@/components/confirmation-dialog';
-import { PageHeader } from '@/components/page-header';
 import { getBoardTypeLabel } from '../lib/board-types';
-import { TIPO_PESSOA, podeVincular } from '../lib/vinculo';
 import './kanban.css';
 
 export default function KanbanPage({ boardId }) {
   const { authApi, user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [reportOpen, setReportOpen] = useState(false);
   const [loadedBoard, setBoard] = useState(null);
   const board = loadedBoard?.id === boardId ? loadedBoard : null;
   const [error, setError] = useState('');
@@ -138,7 +156,7 @@ export default function KanbanPage({ boardId }) {
         commentsVersion.current++;
         pendingSync.current = false;
         setBoard(null);
-        setEditor(null);
+        closeCard();
         setDeleting(null);
         setArchiveOpen(false);
         setError(
@@ -152,7 +170,7 @@ export default function KanbanPage({ boardId }) {
         setDeleting(null);
       }
       if (['card.delete', 'card.archive'].includes(event.type) && event.cardId === editor?.id) {
-        setEditor(null);
+        closeCard();
         setDeleting(null);
         commentsVersion.current++;
         if (event.actorId !== user?.id) {
@@ -220,11 +238,95 @@ export default function KanbanPage({ boardId }) {
       setPendingOperation(null);
     }
   }
-  async function openCard(card) {
-    setEditor({ kind: 'card', ...card });
+  /**
+   * Vincular muda o `updatedAt` do card: o editor recebe o novo, senão o
+   * salvar daria conflito, mas não remonta, para o rascunho ficar. O DELETE
+   * não devolve o card, então a versão vem sempre do GET.
+   */
+  async function changeLink(entidadeId) {
+    const path = `/kanban/cards/${editor.id}/vinculo`;
+
+    await run(async () => {
+      if (entidadeId) {
+        await authApi.put(path, { entidadeTipo: TIPO_PESSOA, entidadeId });
+      } else {
+        await authApi.delete(path);
+      }
+      const { updatedAt, vinculo } = await authApi.get(`/kanban/cards/${editor.id}`);
+      setEditor((current) => current && { ...current, updatedAt, vinculo });
+      await reload();
+    }, 'card.link');
+  }
+
+  async function openCard(card, tab = 'details') {
+    setEditor({ kind: 'card', ...card, initialTab: tab });
+    setSearchParams(
+      (current) => {
+        current.set('card', card.id);
+        return current;
+      },
+      { replace: true },
+    );
     setComments([]);
     setError('');
     await loadComments(card.id).catch(() => {});
+  }
+  const linkedCardId = searchParams.get('card');
+  useEffect(() => {
+    if (!linkedCardId || editor) {
+      return;
+    }
+    let active = true;
+    authApi
+      .get(`/kanban/cards/${encodeURIComponent(linkedCardId)}`)
+      .then((linked) => {
+        if (!active) {
+          return;
+        }
+        if (linked.boardId !== boardId || linked.archivedAt) {
+          throw new Error('Card indisponível neste quadro.');
+        }
+        setEditor({ kind: 'card', ...linked });
+        loadComments(linked.id).catch(() => {});
+      })
+      .catch((error) => {
+        if (active) {
+          setError(error.message);
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [linkedCardId, editor, authApi, boardId, loadComments]);
+  function closeCard() {
+    setEditor(null);
+    setSearchParams(
+      (current) => {
+        current.delete('card');
+        return current;
+      },
+      { replace: true },
+    );
+  }
+  async function duplicateCard(modelo) {
+    return run(async () => {
+      const copy = await authApi.post(`/kanban/cards/${editor.id}/duplicar`, { modelo });
+      await reload();
+      if (modelo) {
+        setNotice('Modelo salvo. Use a opção Modelos do quadro.');
+      } else {
+        await openCard(copy);
+      }
+    }, 'card.duplicate');
+  }
+  async function quickUpdate(card, patch) {
+    return run(async () => {
+      await authApi.patch(`/kanban/cards/${card.id}`, {
+        ...patch,
+        expectedUpdatedAt: card.updatedAt,
+      });
+      await reload();
+    }, 'card.quick-update');
   }
   async function move(card, columnId, position) {
     if (busy) {
@@ -287,32 +389,13 @@ export default function KanbanPage({ boardId }) {
       // Depois da confirmação da API, uma falha ao recarregar não deve permitir
       // reenviar a criação e duplicar o card.
       saved = true;
-      setEditor(null);
+      closeCard();
       await reload();
     }, 'card.save');
     if (!saved) {
       // Revalida também quando a API detecta versão antiga antes do socket chegar.
       reload({ clearError: false }).catch((error) => setError(error.message));
     }
-  }
-  /**
-   * Vincular muda o `updatedAt` do card: o editor recebe o novo, senão o
-   * salvar daria conflito, mas não remonta, para o rascunho ficar. O DELETE
-   * não devolve o card, então a versão vem sempre do GET.
-   */
-  async function changeLink(entidadeId) {
-    const path = `/kanban/cards/${editor.id}/vinculo`;
-
-    await run(async () => {
-      if (entidadeId) {
-        await authApi.put(path, { entidadeTipo: TIPO_PESSOA, entidadeId });
-      } else {
-        await authApi.delete(path);
-      }
-      const { updatedAt, vinculo } = await authApi.get(`/kanban/cards/${editor.id}`);
-      setEditor((current) => current && { ...current, updatedAt, vinculo });
-      await reload();
-    }, 'card.link');
   }
   function matchesFilters(card) {
     const details = getCardDetails(card);
@@ -347,7 +430,7 @@ export default function KanbanPage({ boardId }) {
         await loadComments(editor.id);
       } else {
         if (deleting.kind === 'card') {
-          setEditor(null);
+          closeCard();
           commentsVersion.current++;
         }
         await reload();
@@ -367,39 +450,121 @@ export default function KanbanPage({ boardId }) {
     }, `column.move:${board.colunas[index].id}`);
   }
   return (
-    <>
-      <PageHeader
-        title={board?.nome ?? 'Quadro Kanban'}
-        description="Acompanhe as etapas e organize o trabalho da equipe."
-      />
-      <Link className="kb-back-link" to="/kanban">
-        <ArrowLeft size={16} aria-hidden="true" /> Voltar aos quadros
-      </Link>
-      <div className="kb-toolbar kb-board-actions">
-        <Button
-          variant="outline"
-          disabled={busy || loading}
-          loading={boardRequests > 0 || pendingOperation === 'board.refresh'}
-          loadingText="Atualizando quadro…"
-          onClick={() => run(reload)}
-        >
-          Atualizar
-        </Button>
-        {board && canManage && (
-          <Button variant="outline" disabled={busy} onClick={() => setEditor({ kind: 'column' })}>
-            <Plus size={16} /> Coluna
+    <div className="space-y-4">
+      <header className="space-y-3 border-b border-border pb-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="ghost"
+            size="xs"
+            nativeButton={false}
+            render={<Link to="/kanban" />}
+            className="-ml-2 text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
+            Voltar aos quadros
           </Button>
-        )}
-        {board && (
-          <Button variant="outline" disabled={busy} onClick={() => setArchiveOpen(true)}>
-            Arquivados
-          </Button>
-        )}
-        <Button variant="outline" onClick={() => setEmailOpen(true)}>
-          E-mails
-        </Button>
-        {board && !canEdit && <span className="kb-hint">Acesso somente para leitura</span>}
-      </div>
+          {board?.boardType && (
+            <span className="inline-flex items-center rounded-md border border-border bg-muted/60 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+              {getBoardTypeLabel(board.boardType)}
+            </span>
+          )}
+          {board && !canEdit && (
+            <span className="inline-flex items-center gap-1 rounded-md border border-border bg-muted/60 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+              <Eye className="h-3 w-3" aria-hidden="true" />
+              Somente leitura
+            </span>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div className="min-w-0 space-y-1">
+            <h1 className="truncate text-2xl font-semibold tracking-tight text-foreground">
+              {board?.nome ?? 'Quadro Kanban'}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Acompanhe as etapas e organize o trabalho da equipe.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {board && canEdit && (board.modelos ?? []).length > 0 && (
+              <div className="relative">
+                <FileText
+                  className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground"
+                  aria-hidden="true"
+                />
+                <select
+                  aria-label="Criar card a partir de modelo"
+                  value=""
+                  disabled={busy}
+                  onChange={(event) => {
+                    const model = board.modelos.find((item) => item.id === event.target.value);
+                    if (model) {
+                      setEditor({
+                        kind: 'card',
+                        titulo: model.titulo,
+                        responsavelId: model.responsavelId,
+                        colunaId: model.colunaId,
+                        dadosExtras: { ...model.dadosExtras, modelo: false, seguidores: [] },
+                      });
+                    }
+                  }}
+                  className="h-8 appearance-none rounded-lg border border-input bg-card pl-8 pr-8 text-xs font-medium text-foreground transition-colors hover:bg-accent focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-ring/25 disabled:opacity-50 dark:bg-surface"
+                >
+                  <option value="">Usar modelo…</option>
+                  {board.modelos.map((model) => (
+                    <option key={model.id} value={model.id}>
+                      {model.titulo}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown
+                  className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground"
+                  aria-hidden="true"
+                />
+              </div>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={busy || loading}
+              loading={boardRequests > 0 || pendingOperation === 'board.refresh'}
+              loadingText="Atualizando…"
+              onClick={() => run(reload)}
+            >
+              <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
+              Atualizar
+            </Button>
+            {board && (
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={busy}
+                onClick={() => setArchiveOpen(true)}
+              >
+                <Archive className="h-3.5 w-3.5" aria-hidden="true" />
+                Arquivados
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={() => setEmailOpen(true)}>
+              <Mail className="h-3.5 w-3.5" aria-hidden="true" />
+              E-mails
+            </Button>
+            {board && (
+              <Button variant="outline" size="sm" onClick={() => setReportOpen(true)}>
+                <BarChart3 className="h-3.5 w-3.5" aria-hidden="true" />
+                Relatório
+              </Button>
+            )}
+            {board && canManage && (
+              <Button size="sm" disabled={busy} onClick={() => setEditor({ kind: 'column' })}>
+                <Plus className="h-4 w-4" aria-hidden="true" />
+                Nova coluna
+              </Button>
+            )}
+          </div>
+        </div>
+      </header>
       {board && (
         <BoardFilters
           key={`${user?.id}:${boardId}`}
@@ -420,22 +585,38 @@ export default function KanbanPage({ boardId }) {
           )}
         />
       )}
-      {archiveOpen && (
-        <BoardArchives
-          boardId={boardId}
-          authApi={authApi}
-          canEdit={canEdit}
-          onClose={() => setArchiveOpen(false)}
-          onRestored={reload}
-        />
-      )}
-      {emailOpen && <EmailPreferences authApi={authApi} onClose={() => setEmailOpen(false)} />}
+      <ModalPresence>
+        {reportOpen && board && (
+          <BoardReport board={board} authApi={authApi} onClose={() => setReportOpen(false)} />
+        )}
+      </ModalPresence>
+      <ModalPresence>
+        {archiveOpen && (
+          <BoardArchives
+            boardId={boardId}
+            authApi={authApi}
+            canEdit={canEdit}
+            onClose={() => setArchiveOpen(false)}
+            onRestored={reload}
+          />
+        )}
+      </ModalPresence>
+      <ModalPresence>
+        {emailOpen && <EmailPreferences authApi={authApi} onClose={() => setEmailOpen(false)} />}
+      </ModalPresence>
       {error && (
         <p role="alert" className="kb-error">
           {error}
         </p>
       )}
-      {notice && <p role="status">{notice}</p>}
+      {notice && (
+        <p
+          role="status"
+          className="rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs font-medium text-foreground"
+        >
+          {notice}
+        </p>
+      )}
       {loading ? (
         <LoadingState label="Carregando quadro…" />
       ) : !board ? (
@@ -445,318 +626,385 @@ export default function KanbanPage({ boardId }) {
         </div>
       ) : (
         <>
-          <p className="kb-hint">
-            {getBoardTypeLabel(board.boardType)} · Arraste os cards ou use os controles de posição
-            dentro de cada card.
-          </p>
           <div className="kb-board">
-            {board.colunas.map((column, index) => (
-              <section
-                key={column.id}
-                className="kb-column"
-                aria-busy={pendingOperation === `column.move:${column.id}`}
-                aria-label={column.nome}
-                data-wip-exceeded={
-                  column.wipLimit && column.cards.length > column.wipLimit ? true : undefined
-                }
-                data-drop-end={dropTarget?.columnId === column.id && !dropTarget.cardId}
-                onDragOver={(e) => {
-                  if (canEdit && !busy && !filtered) {
-                    e.preventDefault();
-                    setDropTarget({ columnId: column.id });
-                  }
-                }}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  if (!canEdit || busy || filtered) {
-                    return;
-                  }
-                  const id = e.dataTransfer.getData('text/plain');
-                  const card = board.colunas.flatMap((c) => c.cards).find((c) => c.id === id);
-                  if (card) {
-                    const targetCards = column.cards.filter((c) => c.id !== id);
-                    const targetIndex =
-                      dropTarget?.columnId === column.id && dropTarget.cardId
-                        ? targetCards.findIndex((item) => item.id === dropTarget.cardId)
-                        : -1;
-                    const position =
-                      targetIndex < 0
-                        ? targetCards.length
-                        : targetIndex + (dropTarget.side === 'after' ? 1 : 0);
-                    if (dropTarget?.cardId !== id) {
-                      move(card, column.id, position);
+            {board.colunas.map((column, index) => {
+              const visibleCards = column.cards.filter(matchesFilters);
+              const wipExceeded = Boolean(column.wipLimit && column.cards.length > column.wipLimit);
+              return (
+                <section
+                  key={column.id}
+                  className="kb-column"
+                  aria-busy={pendingOperation === `column.move:${column.id}`}
+                  aria-label={column.nome}
+                  data-wip-exceeded={wipExceeded ? true : undefined}
+                  data-drop-end={dropTarget?.columnId === column.id && !dropTarget.cardId}
+                  onDragOver={(e) => {
+                    if (canEdit && !busy && !filtered) {
+                      e.preventDefault();
+                      setDropTarget({ columnId: column.id });
                     }
-                    setDropTarget(null);
-                  }
-                }}
-              >
-                <header>
-                  <h2>
-                    {column.nome}{' '}
-                    <span>
-                      {column.cards.length}
-                      {column.wipLimit ? ` / ${column.wipLimit}` : ''}
-                    </span>
-                    {pendingOperation === `column.move:${column.id}` && (
-                      <Spinner className="ml-2 inline-block" />
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    if (!canEdit || busy || filtered) {
+                      return;
+                    }
+                    const id = e.dataTransfer.getData('text/plain');
+                    const card = board.colunas.flatMap((c) => c.cards).find((c) => c.id === id);
+                    if (card) {
+                      const targetCards = column.cards.filter((c) => c.id !== id);
+                      const targetIndex =
+                        dropTarget?.columnId === column.id && dropTarget.cardId
+                          ? targetCards.findIndex((item) => item.id === dropTarget.cardId)
+                          : -1;
+                      const position =
+                        targetIndex < 0
+                          ? targetCards.length
+                          : targetIndex + (dropTarget.side === 'after' ? 1 : 0);
+                      if (dropTarget?.cardId !== id) {
+                        move(card, column.id, position);
+                      }
+                      setDropTarget(null);
+                    }
+                  }}
+                >
+                  <header className="mb-3 flex items-center justify-between gap-2">
+                    <h2 className="flex min-w-0 items-center gap-2 text-sm font-semibold tracking-tight text-foreground">
+                      <span className="truncate">{column.nome}</span>
+                      <span
+                        className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[11px] font-medium tabular-nums ${
+                          wipExceeded
+                            ? 'bg-destructive/15 text-destructive'
+                            : 'bg-muted text-muted-foreground'
+                        }`}
+                      >
+                        {column.cards.length}
+                        {column.wipLimit ? `/${column.wipLimit}` : ''}
+                      </span>
+                      {pendingOperation === `column.move:${column.id}` && (
+                        <Spinner className="ml-1 inline-block shrink-0" />
+                      )}
+                    </h2>
+                    {canManage && (
+                      <div className="flex shrink-0 items-center gap-0.5">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-xs"
+                          aria-label="Mover coluna para esquerda"
+                          disabled={busy || index === 0}
+                          onClick={() => reorderColumn(index, -1)}
+                          className="text-muted-foreground hover:text-foreground"
+                        >
+                          <ArrowLeft className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-xs"
+                          aria-label="Mover coluna para direita"
+                          disabled={busy || index === board.colunas.length - 1}
+                          onClick={() => reorderColumn(index, 1)}
+                          className="text-muted-foreground hover:text-foreground"
+                        >
+                          <ArrowRight className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-xs"
+                          aria-label={`Editar ${column.nome}`}
+                          disabled={busy}
+                          onClick={() => setEditor({ kind: 'column', ...column })}
+                          className="text-muted-foreground hover:text-foreground"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-xs"
+                          aria-label={`Excluir ${column.nome}`}
+                          disabled={busy}
+                          onClick={() =>
+                            requestDeletion({
+                              kind: 'column',
+                              id: column.id,
+                              path: `/kanban/colunas/${column.id}`,
+                              name: column.nome,
+                            })
+                          }
+                          className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     )}
-                  </h2>
-                  {canManage && (
-                    <div className="kb-actions">
-                      <button
-                        aria-label="Mover coluna para esquerda"
-                        disabled={busy || index === 0}
-                        onClick={() => reorderColumn(index, -1)}
-                      >
-                        <ArrowLeft size={14} />
-                      </button>
-                      <button
-                        aria-label="Mover coluna para direita"
-                        disabled={busy || index === board.colunas.length - 1}
-                        onClick={() => reorderColumn(index, 1)}
-                      >
-                        <ArrowRight size={14} />
-                      </button>
-                      <button
-                        aria-label={`Editar ${column.nome}`}
-                        disabled={busy}
-                        onClick={() => setEditor({ kind: 'column', ...column })}
-                      >
-                        <Pencil size={14} />
-                      </button>
-                      <button
-                        className="kb-button-danger"
-                        aria-label={`Excluir ${column.nome}`}
-                        disabled={busy}
-                        onClick={() =>
-                          requestDeletion({
-                            kind: 'column',
-                            id: column.id,
-                            path: `/kanban/colunas/${column.id}`,
-                            name: column.nome,
-                          })
+                  </header>
+
+                  {column.wipLimit && column.cards.length >= column.wipLimit && (
+                    <p className="kb-wip-warning" role="status">
+                      {wipExceeded ? 'Limite de trabalho excedido' : 'Limite de trabalho atingido'}
+                    </p>
+                  )}
+
+                  <div className="flex flex-1 flex-col gap-2.5 pb-3">
+                    {visibleCards.map((card) => (
+                      <div
+                        key={card.id}
+                        className="kb-drop-target"
+                        data-position={
+                          dropTarget?.cardId === card.id && dropTarget?.columnId === column.id
+                            ? dropTarget.side
+                            : undefined
                         }
                       >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  )}
-                </header>
-                {column.wipLimit && column.cards.length >= column.wipLimit && (
-                  <p className="kb-wip-warning" role="status">
-                    {column.cards.length > column.wipLimit
-                      ? 'Limite de trabalho excedido'
-                      : 'Limite de trabalho atingido'}
-                  </p>
-                )}
-                {column.cards.filter(matchesFilters).map((card) => (
-                  <div
-                    key={card.id}
-                    className="kb-drop-target"
-                    data-position={
-                      dropTarget?.cardId === card.id && dropTarget?.columnId === column.id
-                        ? dropTarget.side
-                        : undefined
-                    }
-                  >
-                    <KanbanCard
-                      key={card.id}
-                      card={card}
-                      column={column}
-                      columns={board.colunas}
-                      member={members.find((member) => member.id === card.responsavelId)}
-                      busy={busy}
-                      moving={pendingOperation === `card.move:${card.id}`}
-                      draggable={canEdit && !busy && !filtered}
-                      readOnly={!canEdit}
-                      onDropTarget={(cardId, side) =>
-                        setDropTarget({ columnId: column.id, cardId, side })
-                      }
-                      onDragStop={() => setDropTarget(null)}
-                      onOpen={() => openCard(card)}
-                      onMove={(columnId, position) => move(card, columnId, position)}
-                    />
+                        <KanbanCard
+                          key={card.id}
+                          card={card}
+                          column={column}
+                          columns={board.colunas}
+                          member={members.find((member) => member.id === card.responsavelId)}
+                          busy={busy}
+                          moving={pendingOperation === `card.move:${card.id}`}
+                          draggable={canEdit && !busy && !filtered}
+                          readOnly={!canEdit}
+                          onDropTarget={(cardId, side) =>
+                            setDropTarget({ columnId: column.id, cardId, side })
+                          }
+                          onDragStop={() => setDropTarget(null)}
+                          onOpen={(tab) =>
+                            openCard(card, typeof tab === 'string' ? tab : 'details')
+                          }
+                          members={members}
+                          onQuickUpdate={(patch) => quickUpdate(card, patch)}
+                          onMove={(columnId, position) => move(card, columnId, position)}
+                        />
+                      </div>
+                    ))}
+                    {visibleCards.length === 0 && (
+                      <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed border-border/70 bg-background/30 px-3 py-8 text-center text-xs text-muted-foreground">
+                        {column.cards.length
+                          ? 'Nenhum card corresponde aos filtros'
+                          : 'Nenhum card nesta etapa'}
+                      </div>
+                    )}
                   </div>
-                ))}
-                {!column.cards.some(matchesFilters) && (
-                  <p className="kb-hint">
-                    {column.cards.length
-                      ? 'Nenhum card corresponde aos filtros'
-                      : 'Nenhum card nesta etapa'}
-                  </p>
-                )}
-                <button
-                  className="kb-add"
-                  disabled={busy || !canEdit}
-                  onClick={() => setEditor({ kind: 'card', colunaId: column.id })}
-                >
-                  <Plus size={16} /> Adicionar card
-                </button>
-              </section>
-            ))}
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={busy || !canEdit}
+                    onClick={() => setEditor({ kind: 'card', colunaId: column.id })}
+                    className="mt-auto w-full justify-center border-dashed border-border/90 bg-card/60 text-muted-foreground hover:border-border-strong hover:bg-accent hover:text-foreground"
+                  >
+                    <Plus className="h-4 w-4" aria-hidden="true" />
+                    Adicionar card
+                  </Button>
+                </section>
+              );
+            })}
           </div>
-          {!board.colunas.length && <p>Este quadro ainda não tem colunas.</p>}
+          {!board.colunas.length && (
+            <div className="rounded-xl border border-dashed border-border bg-card/40 p-10 text-center">
+              <p className="text-sm font-medium text-foreground">
+                Este quadro ainda não tem colunas.
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Crie uma nova coluna acima para começar a organizar seus cards.
+              </p>
+            </div>
+          )}
         </>
       )}
-      {editor?.kind === 'card' && (
-        <CardEditor
-          key={`${editor.id || `new-${editor.colunaId}`}-${editor.versao ?? 0}`}
-          card={editor}
-          authApi={authApi}
-          readOnly={!canEdit}
-          canLink={podeVincular(user, canEdit)}
-          onChangeLink={changeLink}
-          archiving={pendingOperation === 'card.archive'}
-          onArchive={() =>
-            run(async () => {
-              await authApi.patch(`/kanban/cards/${editor.id}/arquivar`, {
-                expectedUpdatedAt: editor.updatedAt,
-              });
-              setEditor(null);
-              await reload();
-            }, 'card.archive')
-          }
-          latestCard={board?.colunas
-            .flatMap((column) => column.cards)
-            .find((card) => card.id === editor.id)}
-          columnName={board?.colunas.find((column) => column.id === editor.colunaId)?.nome}
-          members={members}
-          comments={comments}
-          commentsLoading={commentsLoading}
-          commentsError={commentsError}
-          commentSubmitting={pendingOperation === 'comment.create'}
-          saving={pendingOperation === 'card.save'}
-          reloading={pendingOperation === 'card.reload'}
-          busy={busy}
-          error={error}
-          user={user}
-          onSave={saveCard}
-          onClose={() => setEditor(null)}
-          onReload={() =>
-            run(async () => {
-              const [card] = await Promise.all([
-                authApi.get(`/kanban/cards/${editor.id}`),
-                reload(),
-              ]);
-              setEditor((current) => ({
+      <ModalPresence>
+        {editor?.kind === 'card' && (
+          <CardEditor
+            canLink={podeVincular(user, canEdit)}
+            onChangeLink={changeLink}
+            key={`${editor.id || 'new'}-${editor.editorRevision ?? editor.colunaId}`}
+            card={editor}
+            initialTab={editor.initialTab}
+            columns={board?.colunas ?? []}
+            onDuplicate={duplicateCard}
+            onFollow={(seguindo) =>
+              run(async () => {
+                const updated = await authApi.put(`/kanban/cards/${editor.id}/seguir`, {
+                  seguindo,
+                });
+                setEditor({ kind: 'card', ...updated });
+                await reload();
+              }, 'card.follow')
+            }
+            onCopyLink={() =>
+              run(async () => {
+                const url = new URL(window.location.href);
+                url.searchParams.set('card', editor.id);
+                await navigator.clipboard.writeText(url.href);
+                setNotice('Link do card copiado.');
+              })
+            }
+            onEditComment={(id, conteudo) =>
+              run(async () => {
+                await authApi.patch(`/kanban/comments/${id}`, { conteudo });
+                await loadComments(editor.id);
+              }, 'comment.update')
+            }
+            authApi={authApi}
+            readOnly={!canEdit}
+            archiving={pendingOperation === 'card.archive'}
+            onArchive={() =>
+              run(async () => {
+                await authApi.patch(`/kanban/cards/${editor.id}/arquivar`, {
+                  expectedUpdatedAt: editor.updatedAt,
+                });
+                closeCard();
+                await reload();
+              }, 'card.archive')
+            }
+            latestCard={board?.colunas
+              .flatMap((column) => column.cards)
+              .find((card) => card.id === editor.id)}
+            columnName={board?.colunas.find((column) => column.id === editor.colunaId)?.nome}
+            members={members}
+            comments={comments}
+            commentsLoading={commentsLoading}
+            commentsError={commentsError}
+            commentSubmitting={pendingOperation === 'comment.create'}
+            saving={pendingOperation === 'card.save'}
+            reloading={pendingOperation === 'card.reload'}
+            busy={busy}
+            error={error}
+            user={user}
+            onSave={saveCard}
+            onClose={closeCard}
+            onReload={() =>
+              run(async () => {
+                const [card] = await Promise.all([
+                  authApi.get(`/kanban/cards/${editor.id}`),
+                  reload(),
+                ]);
+                setEditor({ kind: 'card', ...card, editorRevision: card.updatedAt });
+              }, 'card.reload')
+            }
+            onDelete={() =>
+              requestDeletion({
                 kind: 'card',
-                ...card,
-                versao: (current?.versao ?? 0) + 1,
-              }));
-            }, 'card.reload')
-          }
-          onDelete={() =>
-            requestDeletion({
-              kind: 'card',
-              id: editor.id,
-              path: `/kanban/cards/${editor.id}`,
-              name: editor.titulo,
-            })
-          }
-          onComment={(conteudo, mencionados) =>
-            run(async () => {
-              const created = await authApi.post(`/kanban/cards/${editor.id}/comments`, {
-                conteudo,
-                mencionados,
-              });
-              setComments((current) =>
-                current.some((comment) => comment.id === created.id)
-                  ? current
-                  : [...current, created],
-              );
-              // O comentário já existe; uma falha na consulta não deve sugerir reenviar.
-              await loadComments(editor.id).catch((error) => setCommentsError(error.message));
-            }, 'comment.create')
-          }
-          onDeleteComment={(id) =>
-            requestDeletion({
-              kind: 'comment',
-              id,
-              path: `/kanban/comments/${id}`,
-              name: 'comentário',
-            })
-          }
-        />
-      )}
-      {deleting && (
-        <ConfirmationDialog
-          title={
-            deleting.kind === 'column'
-              ? 'Excluir coluna?'
-              : deleting.kind === 'comment'
-                ? 'Excluir comentário?'
-                : 'Excluir card?'
-          }
-          description={
-            deleting.kind === 'card'
-              ? `O card “${deleting.name}” e seus comentários serão excluídos. Esta ação não pode ser desfeita.`
-              : deleting.kind === 'column'
-                ? `A coluna “${deleting.name}” será excluída. Ela precisa estar vazia para continuar.`
-                : 'O comentário será excluído permanentemente. Esta ação não pode ser desfeita.'
-          }
-          confirmLabel={
-            deleting.kind === 'column'
-              ? 'Excluir coluna'
-              : deleting.kind === 'comment'
-                ? 'Excluir comentário'
-                : 'Excluir card'
-          }
-          busy={busy}
-          error={error}
-          onConfirm={remove}
-          onClose={() => setDeleting(null)}
-        />
-      )}
-      {editor?.kind === 'column' && (
-        <EditorDialog busy={busy} onClose={() => setEditor(null)}>
-          <header>
-            <h2 id="kb-editor-title">{editor.id ? 'Editar coluna' : 'Criar coluna'}</h2>
-            <button aria-label="Fechar" disabled={busy} onClick={() => setEditor(null)}>
-              <X size={18} />
-            </button>
-          </header>
-          <form onSubmit={saveColumn}>
-            <label>
-              Nome
-              <input
-                autoFocus
-                name="nome"
-                required
-                maxLength={200}
-                defaultValue={editor.nome || ''}
-              />
-            </label>
-            <label>
-              Limite de cards em andamento (opcional)
-              <input
-                type="number"
-                name="wipLimit"
-                min="1"
-                max="10000"
-                defaultValue={editor.wipLimit ?? ''}
-                placeholder="Sem limite"
-              />
-            </label>
-            <p className="kb-hint">
-              Exibe um aviso ao atingir o limite, sem bloquear movimentações.
-            </p>
-            <Button
-              variant="outline"
-              type="submit"
-              disabled={busy}
-              loading={pendingOperation === 'column.save'}
-              loadingText="Salvando coluna…"
-            >
-              Salvar coluna
-            </Button>
-          </form>
-          {error && (
-            <p role="alert" className="kb-error">
-              {error}
-            </p>
-          )}
-        </EditorDialog>
-      )}
-    </>
+                id: editor.id,
+                path: `/kanban/cards/${editor.id}`,
+                name: editor.titulo,
+              })
+            }
+            onComment={(conteudo, mencionados) =>
+              run(async () => {
+                const created = await authApi.post(`/kanban/cards/${editor.id}/comments`, {
+                  conteudo,
+                  mencionados,
+                });
+                setComments((current) =>
+                  current.some((comment) => comment.id === created.id)
+                    ? current
+                    : [...current, created],
+                );
+                // O comentário já existe; uma falha na consulta não deve sugerir reenviar.
+                await loadComments(editor.id).catch((error) => setCommentsError(error.message));
+              }, 'comment.create')
+            }
+            onDeleteComment={(id) =>
+              requestDeletion({
+                kind: 'comment',
+                id,
+                path: `/kanban/comments/${id}`,
+                name: 'comentário',
+              })
+            }
+          />
+        )}
+      </ModalPresence>
+      <ModalPresence>
+        {deleting && (
+          <ConfirmationDialog
+            title={
+              deleting.kind === 'column'
+                ? 'Excluir coluna?'
+                : deleting.kind === 'comment'
+                  ? 'Excluir comentário?'
+                  : 'Excluir card?'
+            }
+            description={
+              deleting.kind === 'card'
+                ? `O card “${deleting.name}” e seus comentários serão excluídos. Esta ação não pode ser desfeita.`
+                : deleting.kind === 'column'
+                  ? `A coluna “${deleting.name}” será excluída. Ela precisa estar vazia para continuar.`
+                  : 'O comentário será excluído permanentemente. Esta ação não pode ser desfeita.'
+            }
+            confirmLabel={
+              deleting.kind === 'column'
+                ? 'Excluir coluna'
+                : deleting.kind === 'comment'
+                  ? 'Excluir comentário'
+                  : 'Excluir card'
+            }
+            busy={busy}
+            error={error}
+            onConfirm={remove}
+            onClose={() => setDeleting(null)}
+          />
+        )}
+      </ModalPresence>
+      <ModalPresence>
+        {editor?.kind === 'column' && (
+          <EditorDialog busy={busy} onClose={() => setEditor(null)}>
+            <header>
+              <h2 id="kb-editor-title">{editor.id ? 'Editar coluna' : 'Criar coluna'}</h2>
+              <button aria-label="Fechar" disabled={busy} onClick={() => setEditor(null)}>
+                <X size={18} />
+              </button>
+            </header>
+            <Form noValidate onSubmit={saveColumn}>
+              <label>
+                Nome
+                <input
+                  autoFocus
+                  name="nome"
+                  required
+                  maxLength={200}
+                  defaultValue={editor.nome || ''}
+                />
+              </label>
+              <label>
+                Limite de cards em andamento (opcional)
+                <input
+                  type="number"
+                  name="wipLimit"
+                  min="1"
+                  max="10000"
+                  defaultValue={editor.wipLimit ?? ''}
+                  placeholder="Sem limite"
+                />
+              </label>
+              <p className="kb-hint">
+                Exibe um aviso ao atingir o limite, sem bloquear movimentações.
+              </p>
+              <Button
+                variant="outline"
+                type="submit"
+                disabled={busy}
+                loading={pendingOperation === 'column.save'}
+                loadingText="Salvando coluna…"
+              >
+                Salvar coluna
+              </Button>
+            </Form>
+            {error && (
+              <p role="alert" className="kb-error">
+                {error}
+              </p>
+            )}
+          </EditorDialog>
+        )}
+      </ModalPresence>
+    </div>
   );
 }

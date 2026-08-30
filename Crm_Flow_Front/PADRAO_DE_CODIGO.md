@@ -39,7 +39,10 @@ com confirmação digitada do subdomínio.
 
 Use `Button` com `variant="destructive"`; no CSS legado do Kanban, use
 `kb-button-danger`. As regras de ESLint bloqueiam `confirm`, `alert` e `prompt`
-nativos. Navegação entre páginas de um módulo pertence ao menu lateral.
+nativos. Todo `<form>` deve declarar `noValidate` e exibir erros de validação
+inline com `FieldError` (`src/components/field-error.jsx`) e
+`src/lib/form-validation.js`, nunca balões nativos de validação do navegador.
+Navegação entre páginas de um módulo pertence ao menu lateral.
 
 ## Carregamentos
 
@@ -64,12 +67,18 @@ chamadas antes do `await`. Efeitos de componentes independentes já concorrem e
 mantêm seus próprios spinners e erros. Operações que dependem do resultado da
 anterior continuam sequenciais, como salvar e depois consultar o estado salvo.
 
-## Animações
+## Animações e tema
 
-Use `src/styles/motion.css`: 120 ms para feedback e 180 ms para entradas.
-`PageTransition` anima o conteúdo dos shells sem remontar os componentes.
-Modais, cards, comentários e botões compartilham efeitos discretos. Respeite
-`prefers-reduced-motion` e não atrase ações ou requisições para esperar animações.
+A aplicação usa `motion` (`motion/react`) envolvido por
+`<MotionConfig reducedMotion="user">` em `src/main.jsx`, junto aos tokens base
+de `src/styles/motion.css` e `src/components/motion/motion-tokens.js`. Reutilize
+os primitivos em `src/components/motion/` (`FadeIn`, `StaggerList`,
+`StaggerItem`, `InteractiveCard`) e `PageTransition`, que anima trocas de rota
+sem remontar os componentes. Respeite `prefers-reduced-motion` e não atrase
+ações ou requisições para esperar animações.
+
+O tema **Light / Dark / System** é controlado por `ThemeProvider` e `useTheme`,
+com seletor acessível em `ThemeToggle` e tokens OKLCH em `src/index.css`.
 
 ## Organização das instruções de IA
 

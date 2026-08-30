@@ -14,7 +14,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
 import { estaArquivado } from '../lib/arquivo';
 
 /**
@@ -49,11 +48,11 @@ export function AcoesLead({
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label={`Ações de ${lead.nome}`}
-        className={cn(buttonVariants({ variant: 'ghost', size: 'icon-sm' }), 'rounded-none')}
+        className={buttonVariants({ variant: 'ghost', size: 'icon-sm' })}
       >
         <MoreHorizontal aria-hidden="true" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-40 rounded-none shadow-none ring-border">
+      <DropdownMenuContent align="end" className="w-40 ring-border">
         {!anonimizado && (
           <DropdownMenuItem onClick={onEditar}>
             <Pencil aria-hidden="true" />

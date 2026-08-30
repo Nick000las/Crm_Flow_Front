@@ -1,6 +1,6 @@
 import { Pencil, Plus, Trash2, Users } from 'lucide-react';
 import { useState } from 'react';
-import { ModulePlaceholder } from '@/components/module-placeholder';
+import { EmptyState } from '@/components/empty-state';
 import { Button } from '@/components/ui/button';
 import { BotaoIcone } from '../botao-icone';
 import { ExcluirGrupoDialog } from './excluir-grupo-dialog';
@@ -61,13 +61,13 @@ export function GruposDistribuicao({ grupos, usuarios, nomePorId, podeEditar, on
       </div>
 
       {grupos.length === 0 ? (
-        <ModulePlaceholder
+        <EmptyState
           description="Crie um grupo para dividir os leads de uma regra entre várias pessoas."
           icon={Users}
           title="Nenhum grupo ainda"
         >
           {botaoNovo}
-        </ModulePlaceholder>
+        </EmptyState>
       ) : (
         <ul className="border border-border">
           {grupos.map((grupo) => (

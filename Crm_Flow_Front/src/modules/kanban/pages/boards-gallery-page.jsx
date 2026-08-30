@@ -1,14 +1,16 @@
-import { LoadingState } from '@/components/loading-state';
-import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { KanbanSquare, RefreshCw, Search } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
+import { KanbanSquare, RefreshCw, Search, Settings2 } from 'lucide-react';
+import { EmptyState } from '@/components/empty-state';
+import { LoadingState } from '@/components/loading-state';
+import { StaggerItem, StaggerList } from '@/components/motion/stagger-list';
 import { PageHeader } from '@/components/page-header';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
 import { AvailableBoardCard } from '../components/available-board-card';
 import { useAvailableBoards } from '../hooks/use-available-boards';
 import './kanban.css';
-import './boards-gallery.css';
 
 export default function BoardsGalleryPage() {
   const { user } = useAuth();
@@ -21,79 +23,119 @@ export default function BoardsGalleryPage() {
   );
 
   return (
-    <>
-      <PageHeader title="Kanban" description="Escolha um quadro para começar a trabalhar." />
-      <div className="kb-gallery-toolbar">
-        <label className="kb-gallery-search">
-          <Search size={18} aria-hidden="true" />
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="Operação visual"
+        title="Kanban"
+        description="Escolha um quadro para acompanhar etapas, prioridades e entregas da equipe."
+        actions={
+          canManage ? (
+            <Button variant="outline" nativeButton={false} render={<Link to="/kanban/quadros" />}>
+              <Settings2 className="size-4" aria-hidden="true" />
+              Gerenciar quadros
+            </Button>
+          ) : null
+        }
+      />
+
+      <div className="flex flex-wrap items-center gap-3">
+        <label className="flex h-9.5 min-w-[min(100%,14rem)] flex-1 items-center gap-2.5 rounded-lg border border-input bg-card px-3 text-muted-foreground shadow-xs transition-[border-color,box-shadow] duration-150 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/35 sm:max-w-md dark:bg-surface">
+          <Search className="size-4 shrink-0" aria-hidden="true" />
           <span className="sr-only">Buscar quadros por nome</span>
           <input
             type="search"
             placeholder="Buscar um quadro…"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
+            className="w-full min-w-0 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground/75"
           />
         </label>
+
         <Button
           type="button"
           variant="outline"
-          className="kb-gallery-refresh"
           disabled={loading}
           loading={refreshing}
           loadingText="Atualizando…"
           onClick={refresh}
         >
-          <RefreshCw size={16} aria-hidden="true" /> Atualizar
+          <RefreshCw className="size-4" aria-hidden="true" />
+          Atualizar
         </Button>
       </div>
+
       {error && (
         <p role="alert" className="kb-error">
           {error}
         </p>
       )}
+
       {loading ? (
         <LoadingState label="Carregando seus quadros…" />
       ) : error && boards.length === 0 ? (
-        <div className="kb-gallery-empty">
-          <h2>Não foi possível carregar os quadros</h2>
-          <p>Use Atualizar para tentar novamente.</p>
-        </div>
+        <EmptyState
+          icon={KanbanSquare}
+          title="Não foi possível carregar os quadros"
+          description="Use Atualizar para tentar novamente."
+          action={
+            <Button type="button" variant="outline" onClick={refresh}>
+              <RefreshCw className="size-4" aria-hidden="true" />
+              Tentar novamente
+            </Button>
+          }
+        />
       ) : boards.length === 0 ? (
-        <div className="kb-gallery-empty">
-          <KanbanSquare size={32} aria-hidden="true" />
-          <h2>Nenhum quadro disponível</h2>
-          <p>
-            {canManage
+        <EmptyState
+          icon={KanbanSquare}
+          title="Nenhum quadro disponível"
+          description={
+            canManage
               ? 'Crie um quadro e escolha a equipe na página Gerenciar quadros.'
-              : 'Peça ao administrador para incluir você na equipe de um quadro.'}
-          </p>
-          {canManage && <Link to="/kanban/quadros">Ir para gestão de quadros</Link>}
-        </div>
+              : 'Peça ao administrador para incluir você na equipe de um quadro.'
+          }
+          action={
+            canManage ? (
+              <Button nativeButton={false} render={<Link to="/kanban/quadros" />}>
+                Ir para gestão de quadros
+              </Button>
+            ) : null
+          }
+        />
       ) : (
-        <>
-          <p role="status" className="kb-gallery-count">
-            {normalizedQuery
-              ? `${visibleBoards.length} de ${boards.length} quadros`
-              : `${boards.length} ${boards.length === 1 ? 'quadro disponível' : 'quadros disponíveis'}`}
-          </p>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between gap-2">
+            <p role="status" className="text-xs font-medium text-muted-foreground">
+              {normalizedQuery
+                ? `${visibleBoards.length} de ${boards.length} quadros`
+                : `${boards.length} ${boards.length === 1 ? 'quadro disponível' : 'quadros disponíveis'}`}
+            </p>
+            <Badge variant="outline" className="text-[11px] tabular-nums">
+              {visibleBoards.length}
+            </Badge>
+          </div>
+
           {visibleBoards.length > 0 ? (
-            <div className="kb-gallery-grid">
+            <StaggerList className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] gap-4">
               {visibleBoards.map((board) => (
-                <AvailableBoardCard key={board.id ?? board.quadroRef} board={board} />
+                <StaggerItem key={board.id ?? board.quadroRef} className="h-full">
+                  <AvailableBoardCard board={board} />
+                </StaggerItem>
               ))}
-            </div>
+            </StaggerList>
           ) : (
-            <div className="kb-gallery-empty">
-              <Search size={32} aria-hidden="true" />
-              <h2>Nenhum quadro encontrado</h2>
-              <p>Tente buscar por outro nome.</p>
-              <button type="button" onClick={() => setQuery('')}>
-                Limpar busca
-              </button>
-            </div>
+            <EmptyState
+              icon={Search}
+              title="Nenhum quadro encontrado"
+              description="Tente buscar por outro nome ou limpe o filtro atual."
+              action={
+                <Button type="button" variant="outline" onClick={() => setQuery('')}>
+                  Limpar busca
+                </Button>
+              }
+            />
           )}
-        </>
+        </div>
       )}
-    </>
+    </div>
   );
 }

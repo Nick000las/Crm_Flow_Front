@@ -18,12 +18,12 @@ export function SeloScore({ valor }) {
   const numero = formatarNumero(valor) ?? String(valor);
 
   if (!faixa) {
-    return <span className="font-mono tabular-nums">{numero}</span>;
+    return <span className="tabular-nums">{numero}</span>;
   }
 
   return (
     <Badge
-      className="gap-1.5 rounded-none border-border px-1.5 text-[11px] font-normal text-foreground"
+      className="gap-1.5 border-border px-1.5 text-[11px] font-normal text-foreground"
       variant="outline"
     >
       <span
@@ -35,7 +35,7 @@ export function SeloScore({ valor }) {
         style={{ backgroundColor: faixa.cor }}
       />
       {faixa.rotulo}
-      <span className="font-mono tabular-nums text-muted-foreground">{numero}</span>
+      <span className="tabular-nums text-muted-foreground">{numero}</span>
     </Badge>
   );
 }

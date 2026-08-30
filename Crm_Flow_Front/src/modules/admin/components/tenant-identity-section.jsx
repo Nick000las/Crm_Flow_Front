@@ -1,3 +1,4 @@
+import { Form } from '@/components/ui/form';
 import { useState } from 'react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
@@ -76,7 +77,7 @@ export function TenantIdentitySection({ tenant, adminApi, onSaved }) {
       </CardHeader>
 
       <CardContent>
-        <form className="grid gap-4" onSubmit={handleSubmit}>
+        <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
           <Campo
             defaultValue={tenant.nome ?? ''}
             disabled={isSubmitting}
@@ -88,7 +89,6 @@ export function TenantIdentitySection({ tenant, adminApi, onSaved }) {
           />
 
           <Campo
-            className="font-mono"
             defaultValue={tenant.dominioCustomizado ?? ''}
             disabled={isSubmitting}
             erro={getFieldError(submitError, 'dominioCustomizado')}
@@ -101,7 +101,6 @@ export function TenantIdentitySection({ tenant, adminApi, onSaved }) {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Campo
-              className="font-mono"
               defaultValue={tenant.dataRegion ?? ''}
               disabled={isSubmitting}
               erro={getFieldError(submitError, 'dataRegion')}
@@ -113,7 +112,6 @@ export function TenantIdentitySection({ tenant, adminApi, onSaved }) {
             />
 
             <Campo
-              className="font-mono"
               defaultValue={tenant.retencaoConversaMeses ?? ''}
               disabled={isSubmitting}
               erro={getFieldError(submitError, 'retencaoConversaMeses')}
@@ -129,7 +127,6 @@ export function TenantIdentitySection({ tenant, adminApi, onSaved }) {
 
           {/* A key mostra o fuso canônico devolvido pelo backend após salvar. */}
           <Campo
-            className="font-mono"
             defaultValue={tenant.fusoHorario ?? ''}
             key={tenant.fusoHorario ?? ''}
             disabled={isSubmitting}
@@ -159,7 +156,7 @@ export function TenantIdentitySection({ tenant, adminApi, onSaved }) {
               </p>
             )}
           </div>
-        </form>
+        </Form>
       </CardContent>
     </Card>
   );

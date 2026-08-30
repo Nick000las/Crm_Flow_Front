@@ -6,7 +6,7 @@ import { formatarInstante } from '../../lib/formatadores';
 import { BotaoIcone } from '../botao-icone';
 import { OpcaoBadge } from '../opcao-badge';
 
-const DADO = 'font-mono text-xs tabular-nums';
+const DADO = 'text-xs tabular-nums';
 
 /** Quando: a conclusão, se concluída; senão, a agenda (com "atrasada"). */
 function Quando({ atividade }) {

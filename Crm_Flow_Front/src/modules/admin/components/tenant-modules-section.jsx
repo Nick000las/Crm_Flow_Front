@@ -1,3 +1,5 @@
+import { ModalPresence } from '@/components/motion/modal-presence';
+import { Form } from '@/components/ui/form';
 import { ConfirmationDialog } from '@/components/confirmation-dialog';
 import { useState } from 'react';
 import { X } from 'lucide-react';
@@ -93,9 +95,7 @@ export function TenantModulesSection({ tenant, adminApi, onSaved }) {
 
       <CardContent className="grid gap-6">
         <div className="grid gap-2">
-          <p className="font-mono text-[11px] uppercase tracking-wide text-muted-foreground">
-            Contratados
-          </p>
+          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Contratados</p>
 
           {contratados.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nenhum módulo contratado.</p>
@@ -103,7 +103,7 @@ export function TenantModulesSection({ tenant, adminApi, onSaved }) {
             <ul className="flex flex-wrap gap-2">
               {contratados.map((moduleKey) => (
                 <li
-                  className="flex items-center gap-1 border border-border py-1 pl-2.5 pr-1 font-mono text-xs"
+                  className="flex items-center gap-1 border border-border py-1 pl-2.5 pr-1 text-xs"
                   key={moduleKey}
                 >
                   {moduleKey}
@@ -128,9 +128,9 @@ export function TenantModulesSection({ tenant, adminApi, onSaved }) {
           )}
         </div>
 
-        <form className="grid gap-4 border-t border-border pt-6" onSubmit={handleSubmit}>
+        <Form className="grid gap-4 border-t border-border pt-6" noValidate onSubmit={handleSubmit}>
           <fieldset className="grid gap-3">
-            <legend className="font-mono text-[11px] uppercase tracking-wide text-muted-foreground">
+            <legend className="text-[11px] uppercase tracking-wide text-muted-foreground">
               Redefinir contratação
             </legend>
 
@@ -156,28 +156,30 @@ export function TenantModulesSection({ tenant, adminApi, onSaved }) {
               {isSubmitting ? 'Salvando...' : 'Salvar módulos'}
             </Button>
           </div>
-        </form>
+        </Form>
       </CardContent>
-      {pendingRemoval && (
-        <ConfirmationDialog
-          title="Remover acesso a módulos?"
-          description={
-            pendingRemoval.kind === 'single'
-              ? `O acesso ao módulo “${pendingRemoval.moduleKey}” será desativado para esta empresa.`
-              : `Os usuários deixarão de acessar os módulos: ${pendingRemoval.removed.join(', ')}.`
-          }
-          confirmLabel="Remover acesso"
-          pendingLabel="Removendo acesso…"
-          busy={isSubmitting || Boolean(removendo)}
-          error={submitError?.message}
-          onConfirm={() =>
-            pendingRemoval.kind === 'single'
-              ? removerModulo(pendingRemoval.moduleKey)
-              : salvarModulos(pendingRemoval.selected)
-          }
-          onClose={() => setPendingRemoval(null)}
-        />
-      )}
+      <ModalPresence>
+        {pendingRemoval && (
+          <ConfirmationDialog
+            title="Remover acesso a módulos?"
+            description={
+              pendingRemoval.kind === 'single'
+                ? `O acesso ao módulo “${pendingRemoval.moduleKey}” será desativado para esta empresa.`
+                : `Os usuários deixarão de acessar os módulos: ${pendingRemoval.removed.join(', ')}.`
+            }
+            confirmLabel="Remover acesso"
+            pendingLabel="Removendo acesso…"
+            busy={isSubmitting || Boolean(removendo)}
+            error={submitError?.message}
+            onConfirm={() =>
+              pendingRemoval.kind === 'single'
+                ? removerModulo(pendingRemoval.moduleKey)
+                : salvarModulos(pendingRemoval.selected)
+            }
+            onClose={() => setPendingRemoval(null)}
+          />
+        )}
+      </ModalPresence>
     </Card>
   );
 }

@@ -7,46 +7,67 @@
   border-radius: var(--radius-xl);
   background: var(--popover);
   color: var(--popover-foreground);
-  box-shadow: 0 20px 60px #0003;
+  box-shadow: var(--elevation-lg);
 }
+
 .confirmation-dialog::backdrop {
-  background: #0007;
+  background: var(--modal-backdrop-color);
+  backdrop-filter: none;
 }
+
 .confirmation-dialog-content {
   padding: 1.5rem;
 }
+
 .confirmation-dialog-icon {
   display: inline-flex;
-  padding: 0.65rem;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
   margin-bottom: 1rem;
-  border-radius: 50%;
-  background: color-mix(in oklch, var(--destructive) 12%, transparent);
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in oklch, var(--destructive) 22%, transparent);
+  background: color-mix(in oklch, var(--destructive) 10%, transparent);
   color: var(--destructive);
 }
+
 .confirmation-dialog h2 {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
   overflow-wrap: anywhere;
 }
+
 .confirmation-dialog p {
-  margin-top: 0.65rem;
+  margin-top: 0.5rem;
   font-size: 0.875rem;
   line-height: 1.6;
   color: var(--muted-foreground);
   overflow-wrap: anywhere;
 }
+
 .confirmation-dialog p.confirmation-dialog-error {
+  margin-top: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in oklch, var(--destructive) 28%, transparent);
+  background: color-mix(in oklch, var(--destructive) 8%, transparent);
   color: var(--destructive);
+  font-size: 0.8125rem;
 }
+
 .confirmation-dialog-footer {
   display: flex;
   justify-content: flex-end;
   flex-wrap: wrap;
-  gap: 0.65rem;
-  padding: 1rem 1.5rem;
-  background: var(--muted);
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  background: var(--surface);
   border-top: 1px solid var(--border);
 }
+
 @media (max-width: 400px) {
   .confirmation-dialog-footer > button {
     flex: 1;

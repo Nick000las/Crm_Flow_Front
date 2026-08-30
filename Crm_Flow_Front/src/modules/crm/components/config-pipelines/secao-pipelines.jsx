@@ -1,3 +1,4 @@
+import { LoadingState } from '@/components/loading-state';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -21,11 +22,9 @@ const MOTIVO_LIMITE = `O limite é de ${LIMITE_PIPELINES} pipelines, incluindo V
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando pipelines…
-      </span>
+      <LoadingState label="Carregando pipelines…" />
       {Array.from({ length: 5 }, (_, indice) => (
-        <Skeleton className="h-11 rounded-none" key={indice} />
+        <Skeleton className="h-11" key={indice} />
       ))}
     </div>
   );
@@ -88,7 +87,12 @@ export function SecaoPipelines() {
         )}
       </div>
 
-      <p className={aviso ? 'border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
+      <p
+        className={
+          aviso ? 'rounded-lg border border-border bg-surface px-3 py-2 text-sm' : 'sr-only'
+        }
+        role="status"
+      >
         {aviso}
       </p>
 

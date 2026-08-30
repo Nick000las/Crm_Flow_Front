@@ -21,7 +21,7 @@ import { SeloScore } from './selo-score';
 
 const MAX_BADGES = 2;
 const TAMANHO_ID_CURTO = 8;
-const DADO = 'font-mono text-xs tabular-nums';
+const DADO = 'text-xs tabular-nums';
 /** Documentos (M11) chegam sem máscara: o front aplica pelo tipo. */
 const MASCARA_POR_TIPO = Object.freeze({
   [TIPOS_CAMPO.CPF]: formatarCpf,

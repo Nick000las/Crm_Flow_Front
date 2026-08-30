@@ -1,3 +1,4 @@
+import { LoadingState } from '@/components/loading-state';
 import { RotateCcw, ShieldOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -23,8 +24,7 @@ import { LinkDoLead } from './link-do-lead';
 import { SeloAnonimizado } from './selo-anonimizado';
 import { SeloEsfriando } from './selo-esfriando';
 
-const HEAD_CLASS =
-  'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
+const HEAD_CLASS = 'text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
 const LINHAS_SKELETON = 8;
 
 /** Marca ou desmarca a página inteira (edição em massa). */
@@ -89,10 +89,11 @@ function Cabecalho({ colunas, identificador, comAcoes, lixeira, selecao = null, 
  */
 export function LeadsTableSkeleton({ colunas, identificador }) {
   return (
-    <div className="overflow-x-auto border border-border" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando leads…
-      </span>
+    <div
+      className="theme-data-table overflow-x-auto rounded-xl border border-border bg-card shadow-xs"
+      aria-busy="true"
+    >
+      <LoadingState label="Carregando leads…" />
       <Table>
         <Cabecalho colunas={colunas} identificador={identificador} />
         <TableBody>
@@ -100,12 +101,12 @@ export function LeadsTableSkeleton({ colunas, identificador }) {
             <TableRow key={linha}>
               {identificador && (
                 <TableCell>
-                  <Skeleton className="h-4 w-32 rounded-none" />
+                  <Skeleton className="h-4 w-32" />
                 </TableCell>
               )}
               {colunas.map((coluna) => (
                 <TableCell key={coluna.id}>
-                  <Skeleton className="h-4 w-24 rounded-none" />
+                  <Skeleton className="h-4 w-24" />
                 </TableCell>
               ))}
             </TableRow>
@@ -182,14 +183,15 @@ function Restaurar({ lead, titulo, restaurando, onRestaurar }) {
     <Button
       aria-busy={restaurando}
       aria-label={`Restaurar ${titulo}`}
-      className="rounded-none"
       disabled={restaurando}
       onClick={() => onRestaurar(lead)}
       size="sm"
       variant="ghost"
+      loading={restaurando}
+      loadingText="Restaurando…"
     >
       <RotateCcw aria-hidden="true" />
-      {restaurando ? 'Restaurando…' : 'Restaurar'}
+      {'Restaurar'}
     </Button>
   );
 }
@@ -242,7 +244,7 @@ export function LeadsTable({
   return (
     <div
       className={cn(
-        'overflow-x-auto border border-border transition-opacity duration-200',
+        'theme-data-table overflow-x-auto rounded-xl border border-border bg-card shadow-xs transition-opacity duration-200',
         atualizando && 'opacity-60',
       )}
       aria-busy={atualizando}
@@ -262,6 +264,7 @@ export function LeadsTable({
 
             return (
               <TableRow
+                data-selected={selecao?.ids.has(lead.id) || undefined}
                 className={lixeira ? undefined : 'cursor-pointer hover:bg-muted/40'}
                 key={lead.id}
                 onClick={
@@ -316,7 +319,7 @@ export function LeadsTable({
                   );
                 })}
                 {lixeira && (
-                  <TableCell className="font-mono text-xs whitespace-nowrap text-muted-foreground">
+                  <TableCell className="text-xs whitespace-nowrap text-muted-foreground">
                     {lead.mesclado_em_id ? <MescladoEm lead={lead} /> : textoDaPurga(lead.purga_em)}
                   </TableCell>
                 )}

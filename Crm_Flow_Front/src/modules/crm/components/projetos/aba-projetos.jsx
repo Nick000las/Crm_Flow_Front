@@ -17,17 +17,14 @@ export function AbaProjetos({ projetos }) {
         >
           <Link
             className="w-fit text-sm font-medium break-words underline-offset-2 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring/50"
-            to={`/kanban?quadro=${encodeURIComponent(projeto.boardId)}`}
+            to={`/kanban?quadro=${encodeURIComponent(projeto.boardId)}&card=${encodeURIComponent(projeto.cardId)}`}
           >
             {projeto.titulo}
           </Link>
           <p className="text-sm text-muted-foreground">
             {projeto.boardNome} · {projeto.colunaNome}
           </p>
-          <time
-            className="font-mono text-xs text-muted-foreground tabular-nums"
-            dateTime={projeto.updatedAt}
-          >
+          <time className="text-xs text-muted-foreground tabular-nums" dateTime={projeto.updatedAt}>
             {formatarInstante(projeto.updatedAt)}
           </time>
         </li>

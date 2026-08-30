@@ -45,7 +45,7 @@ export function ExcluirDefinicaoDialog({ definicao, onOpenChange, onExcluido }) 
 
   return (
     <AlertDialog onOpenChange={handleOpenChange} open={Boolean(definicao)}>
-      <AlertDialogContent className="rounded-none">
+      <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Excluir campo</AlertDialogTitle>
           <AlertDialogDescription>

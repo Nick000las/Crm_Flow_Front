@@ -50,7 +50,7 @@ export function ExcluirOpcaoDialog({ tipo, opcao, onOpenChange, onExcluida, pipe
 
   return (
     <AlertDialog onOpenChange={handleOpenChange} open={Boolean(opcao)}>
-      <AlertDialogContent className="rounded-none">
+      <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Excluir opção</AlertDialogTitle>
           <AlertDialogDescription>

@@ -1,3 +1,5 @@
+import { LoadingState } from '@/components/loading-state';
+import { Form } from '@/components/ui/form';
 import { useState } from 'react';
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
@@ -25,8 +27,7 @@ import { ControleTravado } from '../controle-travado';
 import { SelectSimples } from '../select-simples';
 import { SeloSensivel } from '../selo-sensivel';
 
-const HEAD_CLASS =
-  'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
+const HEAD_CLASS = 'text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
 const OPCOES_ACESSO = Object.entries(ROTULOS_ACESSO).map(([valor, rotulo]) => ({ valor, rotulo }));
 const ROTULO_PAPEL = Object.freeze({ OPERADOR: 'Operador' });
 const MOTIVO_SEMPRE_EDITAVEL = 'Sempre editável: o lead não existe sem ele.';
@@ -35,11 +36,9 @@ const SEM_ERROS = Object.freeze({ porCampo: {}, porPapel: {}, outros: [] });
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando permissões…
-      </span>
+      <LoadingState label="Carregando permissões…" />
       {Array.from({ length: 6 }, (_, indice) => (
-        <Skeleton className="h-10 rounded-none" key={indice} />
+        <Skeleton className="h-10" key={indice} />
       ))}
     </div>
   );
@@ -80,7 +79,7 @@ function FormPermissoes({ config, onSalvo }) {
   }
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       {(errosDePapel.length > 0 || erros.outros.length > 0) && (
         <ul
           className="grid gap-1 border border-destructive px-3 py-2 text-sm text-destructive"
@@ -97,7 +96,10 @@ function FormPermissoes({ config, onSalvo }) {
         </ul>
       )}
 
-      <div aria-busy={salvar.isPending} className="overflow-x-auto border border-border">
+      <div
+        aria-busy={salvar.isPending}
+        className="overflow-x-auto rounded-xl border border-border bg-card shadow-xs"
+      >
         <Table>
           <TableHeader>
             <TableRow>
@@ -118,9 +120,7 @@ function FormPermissoes({ config, onSalvo }) {
                   <span className="text-sm">{campo.label}</span>
                   {campo.sensivel && <SeloSensivel className="ml-2" />}
                   {campo.camada === CAMADA.CAMADA_3 && (
-                    <span className="ml-2 font-mono text-[11px] text-muted-foreground">
-                      personalizado
-                    </span>
+                    <span className="ml-2 text-[11px] text-muted-foreground">personalizado</span>
                   )}
                 </TableCell>
                 {config.papeis.map((papel) => {
@@ -170,8 +170,14 @@ function FormPermissoes({ config, onSalvo }) {
       )}
 
       <div className="flex flex-wrap gap-2 border-t border-border pt-4">
-        <Button aria-busy={salvar.isPending} disabled={!mudou || salvar.isPending} type="submit">
-          {salvar.isPending ? 'Salvando…' : 'Salvar'}
+        <Button
+          aria-busy={salvar.isPending}
+          disabled={!mudou || salvar.isPending}
+          type="submit"
+          loading={salvar.isPending}
+          loadingText="Salvando…"
+        >
+          {'Salvar'}
         </Button>
         <Button
           disabled={!mudou || salvar.isPending}
@@ -186,7 +192,7 @@ function FormPermissoes({ config, onSalvo }) {
           Descartar
         </Button>
       </div>
-    </form>
+    </Form>
   );
 }
 
@@ -226,7 +232,12 @@ export function SecaoPermissoes() {
         </p>
       </div>
 
-      <p className={aviso ? 'border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
+      <p
+        className={
+          aviso ? 'rounded-lg border border-border bg-surface px-3 py-2 text-sm' : 'sr-only'
+        }
+        role="status"
+      >
         {aviso}
       </p>
 

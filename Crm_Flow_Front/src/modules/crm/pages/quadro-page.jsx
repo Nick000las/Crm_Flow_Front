@@ -1,3 +1,4 @@
+import { LoadingState } from '@/components/loading-state';
 import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { useQueryClient } from '@tanstack/react-query';
 import { KanbanSquare, RefreshCw, Settings2 } from 'lucide-react';
@@ -12,13 +13,12 @@ import {
 } from 'react-router-dom';
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
-import { ModulePlaceholder } from '@/components/module-placeholder';
+import { EmptyState } from '@/components/empty-state';
 import { PageHeader } from '@/components/page-header';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { podeVer } from '@/lib/acesso';
-import { cn } from '@/lib/utils';
 import { isAccessError, toApiError } from '@/services/api';
 import { CamposObrigatoriosDialog } from '../components/quadro/campos-obrigatorios-dialog';
 import { CardArrastado } from '../components/quadro/card-quadro';
@@ -51,11 +51,9 @@ const DISTANCIA_MINIMA_PX = 4;
 function Carregando() {
   return (
     <div className="flex gap-3" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando quadro…
-      </span>
+      <LoadingState label="Carregando quadro…" />
       {Array.from({ length: 4 }, (_, indice) => (
-        <Skeleton className="h-64 w-72 shrink-0 rounded-none" key={indice} />
+        <Skeleton className="h-64 w-72 shrink-0" key={indice} />
       ))}
     </div>
   );
@@ -63,15 +61,15 @@ function Carregando() {
 
 function QuadroIndisponivel() {
   return (
-    <ModulePlaceholder
+    <EmptyState
       description="Este pipeline foi desativado ou não está disponível para você."
       icon={KanbanSquare}
       title="Quadro indisponível"
     >
-      <Link className={cn(buttonVariants({ variant: 'outline' }), 'rounded-none')} to="/kanban">
+      <Link className={buttonVariants({ variant: 'outline' })} to="/kanban">
         Voltar aos quadros
       </Link>
-    </ModulePlaceholder>
+    </EmptyState>
   );
 }
 
@@ -187,7 +185,6 @@ export default function QuadroPage() {
   const acoes = (
     <>
       <Button
-        className="rounded-none"
         onClick={() => queryClient.invalidateQueries({ queryKey: crmKeys.quadro(quadroRef) })}
         type="button"
         variant="outline"
@@ -197,7 +194,7 @@ export default function QuadroPage() {
       </Button>
       {gestao && (
         <Link
-          className={cn(buttonVariants({ variant: 'outline' }), 'rounded-none')}
+          className={buttonVariants({ variant: 'outline' })}
           to={ROTAS_CRM.pipelineNaConfiguracao(quadroRef)}
         >
           <Settings2 aria-hidden="true" />
@@ -260,6 +257,7 @@ export default function QuadroPage() {
     <>
       <PageHeader
         actions={acoes}
+        eyebrow="Pipeline comercial"
         description="Arraste os cards ou use “Mover para…”. Cada coluna é um status."
         title={pipeline?.nome ?? 'Quadro'}
       />
@@ -279,7 +277,9 @@ export default function QuadroPage() {
 
       <p
         className={
-          aviso || state?.aviso ? 'mb-3 border border-border px-3 py-2 text-sm' : 'sr-only'
+          aviso || state?.aviso
+            ? 'mb-3 rounded-lg border border-border bg-surface px-3 py-2 text-sm'
+            : 'sr-only'
         }
         role="status"
       >

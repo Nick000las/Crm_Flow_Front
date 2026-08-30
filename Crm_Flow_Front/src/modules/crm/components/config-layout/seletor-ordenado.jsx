@@ -81,7 +81,7 @@ export function SeletorOrdenado({ id, legenda, ajuda, valor, opcoes, max, erro, 
       <legend className="mb-1 flex w-full items-baseline justify-between gap-2 text-sm font-medium">
         {legenda}
         {max !== undefined && (
-          <span className="font-mono text-[11px] font-normal text-muted-foreground tabular-nums">
+          <span className="text-[11px] font-normal text-muted-foreground tabular-nums">
             {valor.length}/{max}
           </span>
         )}

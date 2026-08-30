@@ -41,10 +41,7 @@ function SeloSituacao({ situacao }) {
 
   return (
     <p className="flex items-center gap-2 text-sm">
-      <Badge
-        className="rounded-none border-destructive font-mono text-[11px] text-destructive"
-        variant="outline"
-      >
+      <Badge className="border-destructive text-[11px] text-destructive" variant="outline">
         {situacao}
       </Badge>
       <span className="text-muted-foreground">Situação cadastral na Receita</span>
@@ -75,11 +72,11 @@ function OutrosDados({ dados, comSugestoes, gestao }) {
   return (
     <section
       aria-label="Dados da Receita sem campo no lead"
-      className="grid gap-2 border border-border px-3 py-2"
+      className="grid gap-2 rounded-lg border border-border bg-surface px-3 py-2"
     >
       {dados.length > 0 && (
         <>
-          <p className="font-mono text-[11px] tracking-wide text-muted-foreground uppercase">
+          <p className="text-[11px] tracking-wide text-muted-foreground uppercase">
             {comSugestoes ? 'Outros dados da Receita' : 'Dados da Receita'}
           </p>
           <dl className="grid gap-x-3 gap-y-1 text-sm sm:grid-cols-[auto_minmax(0,1fr)]">
@@ -234,15 +231,17 @@ export function LupaCnpj({ idBase, cnpj, campos, valores, onAplicar, onErroNoCam
           size="sm"
           type="button"
           variant="outline"
+          loading={consultar.isPending}
+          loadingText="Consultando a Receita…"
         >
           <Search aria-hidden="true" />
-          {consultar.isPending ? 'Consultando a Receita…' : 'Buscar dados na Receita'}
+          {'Buscar dados na Receita'}
         </Button>
       </div>
 
       <div aria-live="polite" className="grid gap-2">
         {erro?.code === SERVICO_INDISPONIVEL && (
-          <div className="flex flex-wrap items-center gap-2 border border-border px-3 py-2 text-sm">
+          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm">
             {MENSAGENS_CNPJ.INDISPONIVEL}
             <Button onClick={buscar} size="sm" type="button" variant="ghost">
               Tentar de novo
@@ -258,7 +257,7 @@ export function LupaCnpj({ idBase, cnpj, campos, valores, onAplicar, onErroNoCam
         )}
 
         {resultado && resultado.status !== 'ok' && (
-          <p className="border border-border px-3 py-2 text-sm">
+          <p className="rounded-lg border border-border bg-surface px-3 py-2 text-sm">
             {MENSAGEM_POR_STATUS[resultado.status]}
           </p>
         )}

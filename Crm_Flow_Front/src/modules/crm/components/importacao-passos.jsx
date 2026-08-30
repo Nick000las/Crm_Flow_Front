@@ -30,7 +30,7 @@ export function ImportacaoPassos({ atual }) {
           >
             <span
               className={cn(
-                'grid size-5 place-items-center border font-mono text-[11px] tabular-nums',
+                'grid size-5 place-items-center border text-[11px] tabular-nums',
                 ativo ? 'border-foreground' : 'border-border',
                 feito && 'bg-muted',
               )}

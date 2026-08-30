@@ -1,8 +1,9 @@
+import { LoadingState } from '@/components/loading-state';
 import { ListTodo, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
-import { ModulePlaceholder } from '@/components/module-placeholder';
+import { EmptyState } from '@/components/empty-state';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { isAccessError } from '@/services/api';
@@ -17,11 +18,9 @@ import { ItemAtividade } from './item-atividade';
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando atividades…
-      </span>
+      <LoadingState label="Carregando atividades…" />
       {Array.from({ length: 3 }, (_, indice) => (
-        <Skeleton className="h-14 rounded-none" key={indice} />
+        <Skeleton className="h-14" key={indice} />
       ))}
     </div>
   );
@@ -30,9 +29,7 @@ function Carregando() {
 function Grupo({ titulo, children }) {
   return (
     <section className="grid gap-1">
-      <h3 className="font-mono text-[11px] tracking-wide text-muted-foreground uppercase">
-        {titulo}
-      </h3>
+      <h3 className="text-[11px] tracking-wide text-muted-foreground uppercase">{titulo}</h3>
       <ul>{children}</ul>
     </section>
   );
@@ -102,7 +99,12 @@ export function AbaAtividades({ leadId }) {
         </Button>
       </div>
 
-      <p className={aviso ? 'border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
+      <p
+        className={
+          aviso ? 'rounded-lg border border-border bg-surface px-3 py-2 text-sm' : 'sr-only'
+        }
+        role="status"
+      >
         {aviso}
       </p>
       <ApiErrorAlert
@@ -112,7 +114,7 @@ export function AbaAtividades({ leadId }) {
       />
 
       {abertas.length === 0 && concluidas.length === 0 ? (
-        <ModulePlaceholder
+        <EmptyState
           description="Registre ligações, reuniões e tarefas para acompanhar o que foi feito com este lead."
           icon={ListTodo}
           title="Nenhuma atividade ainda"

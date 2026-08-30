@@ -1,0 +1,233 @@
+/* Identidade do modo claro. O modo escuro continua usando seus próprios tokens. */
+:root:not(.dark) {
+  --primary-soft: #fff0e6;
+  --primary-ink: var(--foreground);
+  --surface-highlight: #fffaf5;
+}
+
+:root:not(.dark) .theme-dashboard-welcome {
+  border-color: var(--border);
+  background: var(--card);
+}
+
+:root:not(.dark) .theme-auth-aside {
+  background:
+    radial-gradient(
+      ellipse at 30% 35%,
+      color-mix(in srgb, var(--primary) 8%, transparent),
+      transparent 65%
+    ),
+    linear-gradient(150deg, #edf3fc, var(--surface-highlight));
+}
+
+:root:not(.dark) .theme-module-card {
+  --module-tone: var(--primary);
+}
+
+:root:not(.dark) .theme-module-card[data-module='crm'] {
+  --module-tone: var(--info);
+}
+
+:root:not(.dark) .theme-module-card[data-module='kanban'] {
+  --module-tone: var(--chart-4);
+}
+
+:root:not(.dark) .theme-module-icon {
+  border-color: color-mix(in srgb, var(--module-tone) 24%, white);
+  background: color-mix(in srgb, var(--module-tone) 9%, white);
+  color: var(--module-tone);
+}
+
+:root:not(.dark) :is([data-slot='input'], [data-slot='textarea'])::placeholder {
+  color: var(--muted-foreground);
+  opacity: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  :root:not(.dark) .theme-module-card:hover {
+    border-color: color-mix(in srgb, var(--module-tone) 40%, white);
+    box-shadow: var(--elevation-md);
+  }
+
+  :root:not(.dark) .theme-button-primary:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--primary) 90%, black);
+  }
+
+  :root:not(.dark) .theme-button-outline:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--primary) 40%, white);
+    background: var(--primary-soft);
+    color: var(--primary-ink);
+  }
+
+  :root:not(.dark) [data-slot='input']:hover:not(:disabled):not(:focus),
+  :root:not(.dark) [data-slot='textarea']:hover:not(:disabled):not(:focus) {
+    border-color: var(--foreground);
+  }
+}
+
+:root:not(.dark) [data-slot='table-container'] {
+  background: var(--card);
+}
+
+:root:not(.dark) .theme-data-toolbar {
+  border-color: var(--border);
+  background: var(--card);
+}
+
+:root:not(.dark) .theme-data-table {
+  background: var(--card);
+}
+
+:root:not(.dark)
+  :where(
+    [data-slot='popover-content'],
+    [data-slot='dropdown-menu-content'],
+    [data-slot='dropdown-menu-sub-content'],
+    [data-slot='select-content']
+  ) {
+  border-color: var(--border);
+}
+
+:root:not(.dark) [data-slot='table-header'] {
+  background: var(--surface);
+}
+
+:root:not(.dark) [data-slot='table-head'] {
+  color: var(--secondary-foreground);
+}
+
+:root:not(.dark) [data-slot='table-body'] [data-slot='table-row']:hover {
+  background: var(--muted);
+}
+
+:root:not(.dark) [data-slot='table-row']:is([data-selected='true'], [data-state='selected']) {
+  background: var(--primary-soft);
+}
+
+:root:not(.dark) .theme-empty-state {
+  border-color: var(--border-strong);
+  background: var(--card);
+}
+
+:root:not(.dark) .theme-empty-icon {
+  border-color: color-mix(in srgb, var(--primary) 20%, white);
+  background: var(--primary-soft);
+  color: var(--primary-ink);
+}
+
+:root:not(.dark) .kb-column {
+  border-color: #d3deed;
+  background: var(--surface);
+}
+
+:root:not(.dark) .kb-filter-panel {
+  background: var(--card);
+}
+
+:root:not(.dark) :where(.kb-filter-main select, .kb-saved-filters input, .kb-search-field) {
+  border-color: var(--input);
+  background: var(--card);
+}
+
+:root:not(.dark) .kb-column h2 {
+  color: var(--foreground);
+}
+
+:root:not(.dark) .kb-column h2 span {
+  background: var(--card);
+  color: var(--secondary-foreground);
+  opacity: 1;
+}
+
+:root:not(.dark) .kb-card {
+  border-color: var(--border);
+}
+
+:root:not(.dark) .theme-tenant-status {
+  --status-tone: var(--muted-foreground);
+  border-color: color-mix(in srgb, var(--status-tone) 25%, white);
+  background: color-mix(in srgb, var(--status-tone) 8%, white);
+  color: var(--status-tone);
+}
+
+:root:not(.dark) .theme-tenant-status[data-status='active'] {
+  --status-tone: var(--success);
+}
+
+:root:not(.dark) .theme-tenant-status[data-status='trial'] {
+  --status-tone: var(--info);
+}
+
+:root:not(.dark) .theme-tenant-status[data-status='past_due'] {
+  --status-tone: var(--warning);
+}
+
+:root:not(.dark) .theme-tenant-status[data-status='suspenso'] {
+  --status-tone: var(--destructive);
+}
+
+/* A navegação mantém a mesma paleta nos dois temas. */
+:root :is(.theme-module-rail, .theme-page-sidebar) {
+  --background: oklch(0.185 0.014 258);
+  --foreground: oklch(0.945 0.008 255);
+  --surface: oklch(0.21 0.015 258);
+  --card: oklch(0.232 0.016 258);
+  --muted-foreground: oklch(0.715 0.014 255);
+  --accent: oklch(0.285 0.018 258);
+  --border: oklch(1 0 0 / 11%);
+  --border-strong: oklch(1 0 0 / 20%);
+  --ring: oklch(0.75 0.168 54 / 55%);
+  --sidebar: oklch(0.156 0.015 258);
+  --sidebar-foreground: oklch(0.915 0.008 255);
+  --sidebar-accent: oklch(0.235 0.017 258);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.75 0.168 54 / 55%);
+}
+
+:root .theme-page-sidebar {
+  background: var(--surface);
+}
+
+/* Superfícies brancas no quadro e nos seus formulários. */
+:root:not(.dark)
+  :is(
+    .kb-card,
+    .kb-board-summary,
+    .kb-layout-option,
+    .kb-layout-option:has(input:checked),
+    .kb-card-properties,
+    .kb-card-editor-sidebar,
+    .kb-team-option:has(input:checked)
+  ) {
+  background: #ffffff;
+}
+
+:root:not(.dark)
+  :is(.kb-toolbar, .kb-column, .kb-editor, .kb-filter-panel, .kb-card-filters)
+  :is(input:not([type='checkbox']):not([type='radio']), textarea, select, button) {
+  background: #ffffff;
+}
+
+:root:not(.dark)
+  :is(.kb-toolbar, .kb-column, .kb-editor, .kb-filter-panel, .kb-card-filters)
+  button {
+  color: var(--foreground);
+  border-color: var(--border-strong);
+}
+
+:root:not(.dark)
+  :is(.kb-toolbar, .kb-column, .kb-editor, .kb-filter-panel, .kb-card-filters)
+  button:hover:not(:disabled) {
+  background: #ffffff;
+  border-color: var(--foreground);
+}
+
+:root:not(.dark) .kb-editor .kb-button-primary {
+  color: var(--foreground);
+  border-color: var(--primary);
+}
+
+:root:not(.dark) :is(.kb-column, .kb-editor) .kb-button-danger {
+  color: var(--destructive);
+  border-color: var(--destructive);
+}

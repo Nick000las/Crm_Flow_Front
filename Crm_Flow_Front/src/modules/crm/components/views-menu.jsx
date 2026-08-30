@@ -18,7 +18,7 @@ import { useViews } from '../hooks/use-views';
 import { ExcluirViewDialog } from './excluir-view-dialog';
 import { SalvarViewDialog } from './salvar-view-dialog';
 
-const MENU_CLASS = 'w-56 rounded-none shadow-none ring-border';
+const MENU_CLASS = 'w-56   ring-border';
 
 /**
  * Views salvas do usuário. Aplicar substitui busca e filtro da URL;
@@ -40,9 +40,7 @@ export function ViewsMenu({ visaoAtual, onAplicar }) {
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger
-          className={cn(buttonVariants({ variant: 'outline' }), 'h-9 rounded-none')}
-        >
+        <DropdownMenuTrigger className={cn(buttonVariants({ variant: 'outline' }), 'h-9 ')}>
           <Bookmark aria-hidden="true" />
           Views
         </DropdownMenuTrigger>
@@ -58,7 +56,7 @@ export function ViewsMenu({ visaoAtual, onAplicar }) {
               <DropdownMenuItem key={view.id} onClick={() => onAplicar(view.filtros)}>
                 {view.nome}
                 {view.sistema && (
-                  <span className="ml-auto font-mono text-[10px] tracking-wide text-muted-foreground uppercase">
+                  <span className="ml-auto text-[10px] tracking-wide text-muted-foreground uppercase">
                     <span className="sr-only">, view do </span>sistema
                   </span>
                 )}

@@ -55,7 +55,7 @@ function EscolherOutro({ lead, onEscolher }) {
       <ApiErrorAlert error={resultados.error} id="mesclar-busca-erro" />
 
       {resultados.isPending ? (
-        <Skeleton className="h-24 rounded-none" />
+        <Skeleton className="h-24" />
       ) : outros.length === 0 ? (
         <p className="text-sm text-muted-foreground" role="status">
           Nenhum outro lead encontrado.
@@ -129,7 +129,7 @@ function Comparar({ idA, idB, campos, nomePorId, onMesclado }) {
     return <ApiErrorAlert error={erroAoCarregar} id="mesclar-carregar-erro" />;
   }
   if (!a || !b) {
-    return <Skeleton className="h-40 rounded-none" />;
+    return <Skeleton className="h-40" />;
   }
 
   const porLado = { [LADO.A]: a, [LADO.B]: b };
@@ -148,13 +148,13 @@ function Comparar({ idA, idB, campos, nomePorId, onMesclado }) {
 
   return (
     <div className="grid gap-4">
-      <div className="overflow-x-auto border border-border">
+      <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-xs">
         <table className="w-full text-sm">
           <caption className="sr-only">Comparação dos dois leads</caption>
           <thead>
             <tr className="border-b border-border">
               <th
-                className="px-3 py-2 text-left font-mono text-[11px] font-normal tracking-wide text-muted-foreground uppercase"
+                className="px-3 py-2 text-left text-[11px] font-normal tracking-wide text-muted-foreground uppercase"
                 scope="col"
               >
                 Campo
@@ -227,9 +227,9 @@ function Comparar({ idA, idB, campos, nomePorId, onMesclado }) {
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Campo vazio de um lado fica com o valor do outro. Tags são unidas. As oportunidades dos
-        dois continuam existindo e o lead mostra a principal. Atividades e histórico vão para o
-        lead que fica; o outro vai para a lixeira e não pode ser restaurado.
+        Campo vazio de um lado fica com o valor do outro. Tags são unidas. As oportunidades dos dois
+        continuam existindo e o lead mostra a principal. Atividades e histórico vão para o lead que
+        fica; o outro vai para a lixeira e não pode ser restaurado.
       </p>
 
       <ApiErrorAlert error={mesclar.error} id="mesclar-erro" title="Não foi possível mesclar" />
@@ -240,8 +240,14 @@ function Comparar({ idA, idB, campos, nomePorId, onMesclado }) {
         >
           Cancelar
         </DialogClose>
-        <Button aria-busy={mesclar.isPending} disabled={mesclar.isPending} onClick={confirmar}>
-          {mesclar.isPending ? 'Mesclando…' : 'Mesclar leads'}
+        <Button
+          aria-busy={mesclar.isPending}
+          disabled={mesclar.isPending}
+          onClick={confirmar}
+          loading={mesclar.isPending}
+          loadingText="Mesclando…"
+        >
+          {'Mesclar leads'}
         </Button>
       </DialogFooter>
     </div>
@@ -284,7 +290,7 @@ export function MesclarDialog({ leads, campos, nomePorId, onOpenChange, onMescla
 
   return (
     <Dialog onOpenChange={handleOpenChange} open={leads.length > 0}>
-      <DialogContent className="rounded-none sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Mesclar leads</DialogTitle>
           <DialogDescription>Junta dois leads do mesmo contato em um só.</DialogDescription>

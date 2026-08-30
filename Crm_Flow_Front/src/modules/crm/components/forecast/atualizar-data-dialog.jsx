@@ -1,3 +1,5 @@
+import { focusFirstInvalidField } from '@/lib/form-validation';
+import { Form } from '@/components/ui/form';
 import { useState } from 'react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
@@ -30,7 +32,7 @@ function Descricao({ total }) {
         'na oportunidade selecionada'
       ) : (
         <>
-          em <span className="font-mono tabular-nums">{total}</span> oportunidades
+          em <span className="tabular-nums">{total}</span> oportunidades
         </>
       )}
       .
@@ -42,14 +44,17 @@ function Descricao({ total }) {
 function Resultado({ resumo, onFechar }) {
   return (
     <div className="grid gap-4">
-      <p className="border border-border px-3 py-2 font-mono text-xs tabular-nums" role="status">
+      <p
+        className="rounded-lg border border-border bg-surface px-3 py-2 text-xs tabular-nums"
+        role="status"
+      >
         {resumo.texto}
       </p>
       {resumo.ignoradas.length > 0 && (
         <div className="grid gap-1.5">
           <p className="text-sm font-medium">
             Não atualizadas{' '}
-            <span className="font-mono text-xs text-muted-foreground tabular-nums">
+            <span className="text-xs text-muted-foreground tabular-nums">
               ({resumo.ignoradas.length})
             </span>
           </p>
@@ -101,6 +106,7 @@ function FormData({ selecionados, onConcluido, onFechar }) {
     event.preventDefault();
     if (!data) {
       setErroCliente(DATA_OBRIGATORIA);
+      focusFirstInvalidField(event.currentTarget, ['forecast-data-prevista']);
       return;
     }
 
@@ -121,14 +127,14 @@ function FormData({ selecionados, onConcluido, onFechar }) {
   }
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       <Descricao total={total} />
       <CampoForm erro={erroDaData} id="forecast-data-prevista" label="Data prevista" obrigatorio>
         {(controle) => (
           <Input
             {...controle}
             autoFocus
-            className="h-9 w-44 rounded-none font-mono tabular-nums"
+            className="h-9 w-44 tabular-nums"
             disabled={ocupado}
             onChange={(event) => alterar(event.target.value)}
             required
@@ -145,7 +151,6 @@ function FormData({ selecionados, onConcluido, onFechar }) {
       )}
       {erroSemCampo && (
         <ApiErrorAlert
-          className="rounded-none"
           error={atualizar.error}
           id="forecast-data-erro"
           title="Não foi possível atualizar"
@@ -156,11 +161,17 @@ function FormData({ selecionados, onConcluido, onFechar }) {
         <DialogClose render={<Button disabled={ocupado} type="button" variant="outline" />}>
           Cancelar
         </DialogClose>
-        <Button aria-busy={ocupado} disabled={ocupado || total === 0} type="submit">
-          {ocupado ? 'Atualizando…' : TEXTOS_FORECAST.atualizarData}
+        <Button
+          aria-busy={ocupado}
+          disabled={ocupado || total === 0}
+          type="submit"
+          loading={ocupado}
+          loadingText="Atualizando…"
+        >
+          {TEXTOS_FORECAST.atualizarData}
         </Button>
       </DialogFooter>
-    </form>
+    </Form>
   );
 }
 
@@ -179,7 +190,7 @@ function FormData({ selecionados, onConcluido, onFechar }) {
 export function AtualizarDataDialog({ open, onOpenChange, selecionados, onConcluido }) {
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="rounded-none sm:max-w-md">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{TEXTOS_FORECAST.atualizarData}</DialogTitle>
         </DialogHeader>

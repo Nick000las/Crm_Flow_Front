@@ -2,6 +2,7 @@ import { Bell, BellOff, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ApiErrorAlert } from '@/components/api-error-alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from '@/components/ui/popover';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -30,7 +31,7 @@ function Carregando() {
         Carregando notificações…
       </span>
       {Array.from({ length: 3 }, (_, indice) => (
-        <Skeleton className="h-12 rounded-none" key={indice} />
+        <Skeleton className="h-14 rounded-lg" key={indice} />
       ))}
     </div>
   );
@@ -41,24 +42,24 @@ function ItemNotificacao({ notificacao, onAbrir }) {
   const naoLida = !notificacao.lida_em;
 
   return (
-    <li className="bg-popover">
+    <li>
       <button
         className={cn(
-          'grid w-full gap-0.5 border-l-2 px-2.5 py-2 text-left outline-none transition-colors duration-200',
-          'hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/50',
-          naoLida ? 'border-foreground' : 'border-transparent text-muted-foreground',
+          'grid w-full gap-0.5 rounded-lg border-l-2 px-2.5 py-2 text-left outline-none transition-colors duration-150',
+          'hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/50',
+          naoLida ? 'border-primary bg-primary/[0.04]' : 'border-transparent text-muted-foreground',
         )}
         onClick={() => onAbrir(notificacao)}
         type="button"
       >
-        <span className={cn('text-sm', naoLida && 'font-medium text-foreground')}>
+        <span className={cn('text-sm leading-snug', naoLida && 'font-medium text-foreground')}>
           {naoLida && <span className="sr-only">Não lida: </span>}
           {notificacao.titulo}
         </span>
         {notificacao.corpo && (
-          <span className="text-xs text-muted-foreground">{notificacao.corpo}</span>
+          <span className="text-xs leading-relaxed text-muted-foreground">{notificacao.corpo}</span>
         )}
-        <span className="font-mono text-[10px] text-muted-foreground tabular-nums">
+        <span className="mt-0.5 text-[10px] text-muted-foreground tabular-nums">
           {formatarInstante(notificacao.created_at)}
         </span>
       </button>
@@ -69,8 +70,7 @@ function ItemNotificacao({ notificacao, onAbrir }) {
 /**
  * Sino do shell (core, sem flag): contador de não lidas, lista paginada e
  * "Marcar todas como lidas". Clicar numa notificação marca como lida e
- * navega para o destino dela (`destinoDaNotificacao`). Sem push: a lista
- * recarrega de tempos em tempos e ao abrir.
+ * navega para o destino dela (`destinoDaNotificacao`).
  *
  * @param {{ triggerClassName: string }} props classes do item do Rail
  */
@@ -98,7 +98,6 @@ export function SinoNotificacoes({ triggerClassName }) {
   }
 
   function abrir(notificacao) {
-    // Não espera o back: a navegação não depende de marcar como lida.
     if (!notificacao.lida_em) {
       marcarLida.mutate(notificacao.id);
     }
@@ -120,7 +119,7 @@ export function SinoNotificacoes({ triggerClassName }) {
               {contador && (
                 <span
                   aria-hidden="true"
-                  className="absolute -top-0.5 -right-0.5 min-w-4 bg-background px-0.5 text-center font-mono text-[10px] leading-4 text-foreground tabular-nums"
+                  className="absolute -top-0.5 -right-0.5 min-w-4 rounded-full bg-primary px-1 text-center text-[10px] leading-4 font-semibold text-primary-foreground shadow-xs tabular-nums"
                 >
                   {contador}
                 </span>
@@ -133,16 +132,16 @@ export function SinoNotificacoes({ triggerClassName }) {
 
       <PopoverContent
         align="end"
-        className="w-[min(22rem,calc(100vw-5rem))] gap-2 rounded-none p-2 shadow-none ring-border"
+        className="w-[min(23rem,calc(100vw-5rem))] gap-2.5 rounded-xl border border-border bg-popover p-3 shadow-lg"
         side="right"
-        sideOffset={8}
+        sideOffset={10}
       >
-        <div className="flex items-baseline justify-between gap-2 px-1">
-          <PopoverTitle className="text-sm font-medium">Notificações</PopoverTitle>
+        <div className="flex items-center justify-between gap-2 px-0.5">
+          <PopoverTitle className="text-sm font-semibold tracking-tight">Notificações</PopoverTitle>
           {naoLidas > 0 && (
-            <span className="font-mono text-xs text-muted-foreground tabular-nums">
+            <Badge variant="secondary" className="text-[11px] tabular-nums">
               {naoLidas} {naoLidas === 1 ? 'não lida' : 'não lidas'}
-            </span>
+            </Badge>
           )}
         </div>
 
@@ -155,15 +154,15 @@ export function SinoNotificacoes({ triggerClassName }) {
             title="Não foi possível carregar"
           />
         ) : dados.itens.length === 0 ? (
-          <div className="grid justify-items-center gap-2 border border-dashed border-border px-4 py-8 text-center">
+          <div className="grid justify-items-center gap-2 rounded-lg border border-dashed border-border bg-surface/60 px-4 py-8 text-center">
             <BellOff className="size-5 text-muted-foreground" aria-hidden="true" />
-            <p className="text-sm text-muted-foreground">Nenhuma notificação.</p>
+            <p className="text-sm text-muted-foreground">Nenhuma notificação por enquanto.</p>
           </div>
         ) : (
           <ul
             aria-busy={query.isPlaceholderData}
             aria-label="Notificações"
-            className="grid max-h-80 gap-px overflow-y-auto border border-border bg-border"
+            className="grid max-h-80 gap-1 overflow-y-auto pr-0.5"
           >
             {dados.itens.map((notificacao) => (
               <ItemNotificacao key={notificacao.id} notificacao={notificacao} onAbrir={abrir} />
@@ -176,10 +175,10 @@ export function SinoNotificacoes({ triggerClassName }) {
           id="notificacoes-marcar-erro"
         />
 
-        <div className="flex items-center justify-between gap-2 border-t border-border pt-2">
+        <div className="flex items-center justify-between gap-2 border-t border-border pt-2.5">
           <Button
             aria-busy={marcarTodas.isPending}
-            className="h-7 rounded-none px-2 text-xs"
+            size="xs"
             disabled={naoLidas === 0 || marcarTodas.isPending}
             onClick={() => marcarTodas.mutate()}
             variant="ghost"
@@ -191,23 +190,21 @@ export function SinoNotificacoes({ triggerClassName }) {
             <nav aria-label="Páginas de notificações" className="flex items-center gap-1">
               <Button
                 aria-label="Página anterior"
-                className="rounded-none"
                 disabled={pagina <= PRIMEIRA_PAGINA}
                 onClick={() => setPagina((atual) => atual - 1)}
-                size="icon-sm"
+                size="icon-xs"
                 variant="ghost"
               >
                 <ChevronLeft aria-hidden="true" />
               </Button>
-              <span className="font-mono text-xs text-muted-foreground tabular-nums">
+              <span className="text-xs text-muted-foreground tabular-nums">
                 {pagina}/{totalPaginas}
               </span>
               <Button
                 aria-label="Próxima página"
-                className="rounded-none"
                 disabled={pagina >= totalPaginas}
                 onClick={() => setPagina((atual) => atual + 1)}
-                size="icon-sm"
+                size="icon-xs"
                 variant="ghost"
               >
                 <ChevronRight aria-hidden="true" />

@@ -84,7 +84,7 @@ export function FiltrosDoQuadro({
                 ? 'Ordem crescente. Mudar para decrescente'
                 : 'Ordem decrescente. Mudar para crescente'
             }
-            className="size-9 rounded-none"
+            className="size-9"
             onClick={() => onOrdem({ ...ordem, direcao: crescente ? DIRECAO.DESC : DIRECAO.ASC })}
             size="icon"
             title={crescente ? 'Crescente' : 'Decrescente'}

@@ -46,7 +46,7 @@ export function ModulesCheckboxGroup({
               id={id}
               onCheckedChange={(marcado) => onToggle(moduleKey, marcado)}
             />
-            <Label className="font-mono text-xs font-normal" htmlFor={id}>
+            <Label className="text-xs font-normal" htmlFor={id}>
               {moduleKey}
             </Label>
           </div>

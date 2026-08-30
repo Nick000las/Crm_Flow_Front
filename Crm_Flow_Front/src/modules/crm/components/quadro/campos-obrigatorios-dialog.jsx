@@ -1,3 +1,6 @@
+import { focusFirstInvalidField } from '@/lib/form-validation';
+import { LoadingState } from '@/components/loading-state';
+import { Form } from '@/components/ui/form';
 import { useState } from 'react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
@@ -132,6 +135,10 @@ function FormObrigatorios({
     setErroGeral(null);
     setOutros([]);
     if (Object.keys(locais).length > 0) {
+      focusFirstInvalidField(
+        event.currentTarget,
+        Object.keys(locais).map((id) => `quadro-obrigatorio-${id}`),
+      );
       return;
     }
 
@@ -150,7 +157,7 @@ function FormObrigatorios({
   }
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       {lista.map((campo) => {
         const id = idNoForm(campo);
 
@@ -167,7 +174,10 @@ function FormObrigatorios({
       })}
 
       {bloqueados.length > 0 && (
-        <div className="grid gap-1 border border-border px-3 py-2 text-sm" role="alert">
+        <div
+          className="grid gap-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm"
+          role="alert"
+        >
           <p>Estes dados dependem de outra pessoa com acesso a eles:</p>
           <ul className="list-inside list-disc">
             {bloqueados.map((mensagem) => (
@@ -193,11 +203,13 @@ function FormObrigatorios({
           aria-busy={enviando}
           disabled={enviando || bloqueados.length > 0 || lista.length === 0}
           type="submit"
+          loading={enviando}
+          loadingText="Salvando…"
         >
-          {enviando ? 'Salvando…' : `Salvar e mover`}
+          Salvar e mover
         </Button>
       </DialogFooter>
-    </form>
+    </Form>
   );
 }
 
@@ -214,11 +226,9 @@ function ConteudoDoDialog({ pendencia, campos, onMover, onRecusado, onSalvo }) {
   if (oportunidadesQuery.isPending || leadQuery.isPending) {
     return (
       <div className="grid gap-2" aria-busy="true">
-        <span className="sr-only" role="status">
-          Carregando dados do card…
-        </span>
-        <Skeleton className="h-9 rounded-none" />
-        <Skeleton className="h-9 rounded-none" />
+        <LoadingState label="Carregando dados do card…" />
+        <Skeleton className="h-9" />
+        <Skeleton className="h-9" />
       </div>
     );
   }
@@ -280,7 +290,7 @@ export function CamposObrigatoriosDialog({
 }) {
   return (
     <Dialog onOpenChange={(aberto) => !aberto && onFechar()} open={Boolean(pendencia)}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-none sm:max-w-md">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Falta preencher para mover</DialogTitle>
           <DialogDescription>

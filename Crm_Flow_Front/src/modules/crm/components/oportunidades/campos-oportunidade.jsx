@@ -77,7 +77,7 @@ export function CamposOportunidade({
           {(controle) => (
             <Input
               {...controle}
-              className={cn(INPUT_CLASS, 'font-mono tabular-nums')}
+              className={cn(INPUT_CLASS, 'tabular-nums')}
               inputMode="numeric"
               onChange={(event) => onChange('probabilidadeFechamento', event.target.value)}
               placeholder={placeholderDoPadrao(probabilidadePadrao)}
@@ -97,7 +97,7 @@ export function CamposOportunidade({
           {(controle) => (
             <Input
               {...controle}
-              className={cn(INPUT_CLASS, 'font-mono')}
+              className={INPUT_CLASS}
               onChange={(event) => onChange('dataPrevistaFechamento', event.target.value)}
               type="date"
               value={valores.dataPrevistaFechamento}

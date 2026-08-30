@@ -1,3 +1,4 @@
+import { LoadingState } from '@/components/loading-state';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import {
   Dialog,
@@ -33,7 +34,7 @@ function AlertasDaVersao({ versao }) {
       <ul className="grid gap-1.5">
         {alertas.map((alerta, indice) => (
           <li
-            className="grid gap-1 border border-border px-3 py-2 text-sm"
+            className="grid gap-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm"
             key={alerta.id ?? indice}
           >
             <span className="flex flex-wrap items-baseline gap-2">
@@ -59,11 +60,9 @@ function Conteudo({ formularioId, versaoId }) {
   if (versaoQuery.isPending) {
     return (
       <div className="grid gap-2" aria-busy="true">
-        <span className="sr-only" role="status">
-          Carregando versão…
-        </span>
-        <Skeleton className="h-24 rounded-none" />
-        <Skeleton className="h-24 rounded-none" />
+        <LoadingState label="Carregando versão…" />
+        <Skeleton className="h-24" />
+        <Skeleton className="h-24" />
       </div>
     );
   }
@@ -84,7 +83,7 @@ function Conteudo({ formularioId, versaoId }) {
 
               return (
                 <li
-                  className="grid gap-1 border border-border px-3 py-2 text-sm"
+                  className="grid gap-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm"
                   key={pergunta ? `pergunta-${pergunta.id}` : item.campoId}
                 >
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -98,7 +97,7 @@ function Conteudo({ formularioId, versaoId }) {
                           <span className="sr-only">(obrigatório)</span>
                         </>
                       )}
-                      <span className="ml-2 font-mono text-[11px] text-muted-foreground">
+                      <span className="ml-2 text-[11px] text-muted-foreground">
                         {ROTULOS_TIPO[dados.tipo] ?? dados.tipo}
                       </span>
                       {dados.sensivel && <SeloSensivel className="ml-2" />}
@@ -125,7 +124,9 @@ function Conteudo({ formularioId, versaoId }) {
       ))}
       <div className="grid gap-1">
         <p className="text-xs font-medium text-muted-foreground">Termo de aceite</p>
-        <p className="border border-border px-3 py-2 text-sm whitespace-pre-wrap">{versao.termo}</p>
+        <p className="rounded-lg border border-border bg-surface px-3 py-2 text-sm whitespace-pre-wrap">
+          {versao.termo}
+        </p>
       </div>
       <AlertasDaVersao versao={versao} />
     </div>
@@ -145,7 +146,7 @@ function Conteudo({ formularioId, versaoId }) {
 export function PreviaVersaoDialog({ formularioId, versao, onFechar }) {
   return (
     <Dialog onOpenChange={(aberto) => !aberto && onFechar()} open={Boolean(versao)}>
-      <DialogContent className="rounded-none sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Versão {versao?.versao}</DialogTitle>
           <DialogDescription>Como a pessoa vai ver o formulário.</DialogDescription>

@@ -56,3 +56,37 @@ test('recarga paralela ignora snapshot antigo e sinaliza apenas versões posteri
   );
   assert.equal(hasNewerCardVersion(card, undefined), false);
 });
+
+test('edição preserva os novos recursos e os metadados específicos do quadro', () => {
+  const extras = {
+    bloqueio: 'Aguardando aprovação',
+    links: [{ id: 'link', nome: 'Documento', url: 'https://example.com' }],
+    recorrencia: 'mensal',
+    automacoes: [{ colunaId: 'etapa', concluir: true, responsavelId: null }],
+    seguidores: ['pessoa'],
+    leadId: 'lead',
+    campoDoQuadro: { valor: 'preservado' },
+  };
+  const details = getCardDetails({ dadosExtras: extras });
+  for (const [key, value] of Object.entries(extras)) {
+    assert.deepEqual(details[key], value);
+  }
+});
+
+test('metadados legados inválidos e URLs executáveis não entram nos recursos novos', () => {
+  const details = getCardDetails({
+    dadosExtras: {
+      bloqueio: {},
+      anexos: {},
+      automacoes: [null],
+      seguidores: [null, 'pessoa'],
+      links: [{ id: 'link', nome: 'Script', url: 'javascript:alert(1)' }],
+    },
+  });
+  assert.equal(details.bloqueio, '');
+  assert.deepEqual(details.anexos, []);
+  assert.deepEqual(details.automacoes, []);
+  assert.deepEqual(details.seguidores, ['pessoa']);
+  assert.deepEqual(details.links, []);
+  assert.deepEqual(getCardDetails({ dadosExtras: 'legado' }), getCardDetails({}));
+});

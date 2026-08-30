@@ -43,8 +43,8 @@ export function EmailPreferences({ authApi, onClose }) {
         </Button>
       </header>
       <p className="kb-hint">
-        Receba novas atribuições, menções em comentários e um lembrete no dia do prazo. Não enviamos
-        avisos das suas próprias atribuições.
+        Receba novas atribuições, menções, atualizações dos cards que você segue e um lembrete no
+        dia do prazo. Não enviamos avisos das suas próprias atribuições.
       </p>
       {loading ? (
         <LoadingState label="Carregando preferência…" />

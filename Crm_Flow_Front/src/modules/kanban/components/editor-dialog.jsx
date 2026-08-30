@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { NativeDialog } from '@/components/ui/native-dialog';
 
 export function EditorDialog({
   children,
@@ -7,16 +7,8 @@ export function EditorDialog({
   titleId = 'kb-editor-title',
   className = '',
 }) {
-  const dialog = useRef(null);
-  useEffect(() => {
-    const element = dialog.current;
-    element.showModal();
-    element.querySelector('input:not([type="checkbox"]), textarea')?.focus();
-    return () => element.close();
-  }, []);
   return (
-    <dialog
-      ref={dialog}
+    <NativeDialog
       aria-labelledby={titleId}
       className={`kb-editor ${className}`}
       onCancel={(event) => {
@@ -27,6 +19,6 @@ export function EditorDialog({
       }}
     >
       {children}
-    </dialog>
+    </NativeDialog>
   );
 }

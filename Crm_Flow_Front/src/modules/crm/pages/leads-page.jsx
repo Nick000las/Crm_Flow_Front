@@ -191,7 +191,9 @@ export default function LeadsPage() {
       />
 
       <p
-        className={aviso ? 'mb-4 border border-border px-3 py-2 text-sm' : 'sr-only'}
+        className={
+          aviso ? 'mb-4 rounded-lg border border-border bg-surface px-3 py-2 text-sm' : 'sr-only'
+        }
         role="status"
       >
         {aviso}

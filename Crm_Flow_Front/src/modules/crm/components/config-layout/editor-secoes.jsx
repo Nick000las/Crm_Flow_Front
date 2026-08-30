@@ -42,7 +42,7 @@ export function EditorSecoes({ secoes, opcoes, automatica, erro, onChange }) {
         <h3 className="text-sm font-medium" id="layout-secoes-titulo">
           Seções da ficha
         </h3>
-        <span className="font-mono text-[11px] text-muted-foreground tabular-nums">
+        <span className="text-[11px] text-muted-foreground tabular-nums">
           {secoes.length}/{LIMITES_LAYOUT.SECOES}
         </span>
       </div>
@@ -61,7 +61,7 @@ export function EditorSecoes({ secoes, opcoes, automatica, erro, onChange }) {
             <div className="flex items-center gap-1">
               <Input
                 aria-label={`Nome da seção ${indice + 1}`}
-                className="h-9 flex-1 rounded-none"
+                className="h-9 flex-1"
                 maxLength={LIMITES_LAYOUT.NOME_SECAO}
                 onChange={(event) => alterar(indice, { nome: event.target.value })}
                 placeholder="Nome da seção"

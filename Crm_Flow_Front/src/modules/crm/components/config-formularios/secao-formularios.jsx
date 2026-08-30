@@ -30,7 +30,12 @@ export function SecaoFormularios() {
 
   return (
     <div className="grid gap-4">
-      <p className={aviso ? 'border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
+      <p
+        className={
+          aviso ? 'rounded-lg border border-border bg-surface px-3 py-2 text-sm' : 'sr-only'
+        }
+        role="status"
+      >
         {aviso}
       </p>
       {id ? (

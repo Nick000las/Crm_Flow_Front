@@ -1,8 +1,9 @@
-import { LoadingState } from '@/components/loading-state';
 import { ApiErrorAlert } from '@/components/api-error-alert';
+import { LoadingState } from '@/components/loading-state';
 import { PageHeader } from '@/components/page-header';
 import { useAuth } from '@/hooks/useAuth';
 import { AccountSection } from '../components/account-section';
+import { AppearanceSection } from '../components/appearance-section';
 import { MfaSection } from '../components/mfa-section';
 import { useAuthSettings } from '../hooks/use-auth-settings';
 
@@ -13,8 +14,14 @@ export default function ConfiguracoesPage() {
   const { settings, carregando, erro } = useAuthSettings(authApi);
 
   return (
-    <>
-      <PageHeader title="Configurações" description="Gerencie a segurança da sua conta." />
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="Preferências"
+        title="Configurações"
+        description="Gerencie a aparência da interface e a segurança da sua conta."
+      />
+
+      <AppearanceSection />
 
       {carregando ? (
         <div className="grid gap-6">
@@ -37,6 +44,6 @@ export default function ConfiguracoesPage() {
           />
         </div>
       )}
-    </>
+    </div>
   );
 }

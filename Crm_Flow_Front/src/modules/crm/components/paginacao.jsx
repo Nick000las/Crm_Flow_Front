@@ -33,12 +33,11 @@ export function Paginacao({
   return (
     <nav
       aria-label="Paginação"
-      className="mt-4 flex flex-wrap items-center justify-between gap-3 font-mono text-xs text-muted-foreground"
+      className="theme-pagination mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground"
     >
       <div className="flex items-center gap-2">
         <Button
           aria-label="Página anterior"
-          className="rounded-none"
           disabled={pagina <= 1}
           onClick={() => onChange({ pagina: pagina - 1 })}
           size="icon"
@@ -51,7 +50,6 @@ export function Paginacao({
         </span>
         <Button
           aria-label="Próxima página"
-          className="rounded-none"
           disabled={pagina >= ultima}
           onClick={() => onChange({ pagina: pagina + 1 })}
           size="icon"
@@ -67,7 +65,7 @@ export function Paginacao({
           onValueChange={(valor) => onChange({ tamanho: Number(valor), pagina: 1 })}
           value={String(tamanho)}
         >
-          <SelectTrigger aria-label={rotuloTamanho} className="h-8 w-20 rounded-none">
+          <SelectTrigger aria-label={rotuloTamanho} className="h-8 w-20">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

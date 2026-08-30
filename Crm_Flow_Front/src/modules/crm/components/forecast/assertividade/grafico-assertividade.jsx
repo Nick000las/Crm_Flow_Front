@@ -18,26 +18,26 @@ import {
   TEXTOS_ASSERTIVIDADE,
 } from '../../../lib/assertividade-textos';
 
-/** Cores só por tokens do tema: previsto em grafite claro, realizado em grafite. */
-const COR_PREVISTO = 'var(--muted-foreground)';
-const COR_REALIZADO = 'var(--foreground)';
+/** Cores só por tokens do tema: previsto em azul, realizado em verde. */
+const COR_PREVISTO = 'var(--info)';
+const COR_REALIZADO = 'var(--success)';
 const COR_GRADE = 'var(--border)';
 const COR_SUPERFICIE = 'var(--card)';
 
 /**
- * Faixa no rótulo: o texto é o número, sempre; o tom só reforça. Mistura com o
- * grafite do tema para manter o contraste AA nos dois temas.
+ * Faixa no rótulo: o texto é o número, sempre; o tom só reforça. Usa as cores
+ * semânticas do tema, preservando o texto como indicação principal.
  */
 const COR_FAIXA = Object.freeze({
-  otimista: 'color-mix(in oklab, var(--foreground) 62%, oklch(0.72 0.16 70))',
-  boa: 'var(--foreground)',
-  pessimista: 'color-mix(in oklab, var(--foreground) 62%, oklch(0.62 0.12 245))',
+  otimista: 'var(--warning)',
+  boa: 'var(--success)',
+  pessimista: 'var(--info)',
 });
 
 const TICK = {
   fill: 'var(--muted-foreground)',
   fontSize: 11,
-  style: { fontFamily: 'var(--font-mono)' },
+  style: { fontFamily: 'var(--font-sans)' },
 };
 
 const moedaCompacta = new Intl.NumberFormat('pt-BR', {
@@ -69,7 +69,7 @@ function RotuloDoMes({ cx, cy, payload }) {
     return (
       <text
         fontSize={9}
-        style={{ fill: 'var(--muted-foreground)', fontFamily: 'var(--font-mono)' }}
+        style={{ fill: 'var(--muted-foreground)', fontFamily: 'var(--font-sans)' }}
         textAnchor="middle"
         x={cx}
         y={cy - 6 - (linhas.length - 1) * 10}
@@ -88,7 +88,7 @@ function RotuloDoMes({ cx, cy, payload }) {
       fontWeight={600}
       style={{
         fill: ponto.faixa ? COR_FAIXA[ponto.faixa] : 'var(--muted-foreground)',
-        fontFamily: 'var(--font-mono)',
+        fontFamily: 'var(--font-sans)',
       }}
       textAnchor="middle"
       x={cx}
@@ -105,13 +105,13 @@ function DicaDoGrafico({ active, payload }) {
     return null;
   }
   return (
-    <div className="grid min-w-48 gap-1.5 border border-border bg-popover p-3 text-xs text-popover-foreground">
+    <div className="grid min-w-48 gap-1.5 rounded-xl border border-border bg-popover p-3 shadow-lg text-xs text-popover-foreground">
       <p className="font-medium">{ponto.rotuloLongo}</p>
       <dl className="grid gap-1">
         {ponto.tooltip.map((linha) => (
           <div className="flex justify-between gap-4" key={linha.rotulo}>
             <dt className="text-muted-foreground">{linha.rotulo}</dt>
-            <dd className="font-mono tabular-nums">{linha.texto}</dd>
+            <dd className="tabular-nums">{linha.texto}</dd>
           </div>
         ))}
         {ponto.rotuloFaixa && (
@@ -273,11 +273,11 @@ export function GraficoAssertividade({ pontos, mesAberto, onAbrirMes }) {
               aria-label={`${ponto.rotuloLongo}: ${resumoDoMes}`}
               aria-pressed={aberto}
               className={cn(
-                'flex h-8 items-center gap-2 border px-2.5 font-mono text-xs tabular-nums outline-none transition-colors duration-200',
+                'flex h-8 cursor-pointer items-center gap-2 rounded-lg border px-2.5 text-xs font-medium tabular-nums outline-none transition-colors duration-150',
                 'focus-visible:ring-2 focus-visible:ring-ring/50',
                 aberto
-                  ? 'border-foreground bg-foreground text-background'
-                  : 'border-border hover:bg-muted',
+                  ? 'border-primary bg-primary/10 text-primary'
+                  : 'border-border bg-card hover:border-border-strong hover:bg-accent',
               )}
               key={ponto.mes}
               onClick={() => onAbrirMes(ponto.mes)}

@@ -45,6 +45,19 @@ export default defineConfig([
       'react-refresh/only-export-components': 'off',
     },
   },
+  {
+    files: ['src/**/*.jsx'],
+    ignores: ['src/components/ui/form.jsx'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'JSXOpeningElement[name.name="form"]',
+          message: 'Use Form de @/components/ui/form para preservar o foco e os atalhos de envio.',
+        },
+      ],
+    },
+  },
   prettier,
   shared,
 ]);

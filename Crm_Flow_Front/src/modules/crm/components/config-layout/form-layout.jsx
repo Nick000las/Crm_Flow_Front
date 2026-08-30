@@ -1,3 +1,4 @@
+import { Form } from '@/components/ui/form';
 import { useState } from 'react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
@@ -78,7 +79,7 @@ export function FormLayout({ modo, base, opcoes, automatica, onSalvo }) {
     mutacao.error && (doServidor.geral.length > 0 || Object.keys(doServidor.porParte).length === 0);
 
   return (
-    <form className="grid gap-8" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-8" noValidate onSubmit={handleSubmit}>
       <div className="grid gap-6 md:grid-cols-2">
         <CampoForm
           erro={erroDe('identificador')}
@@ -152,6 +153,7 @@ export function FormLayout({ modo, base, opcoes, automatica, onSalvo }) {
           aria-busy={mutacao.isPending}
           disabled={!alterado || mutacao.isPending}
           type="submit"
+          loading={mutacao.isPending}
         >
           {mutacao.isPending
             ? 'Salvando…'
@@ -172,6 +174,6 @@ export function FormLayout({ modo, base, opcoes, automatica, onSalvo }) {
           Descartar
         </Button>
       </div>
-    </form>
+    </Form>
   );
 }

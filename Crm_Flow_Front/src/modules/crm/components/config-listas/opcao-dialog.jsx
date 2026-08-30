@@ -1,3 +1,4 @@
+import { Form } from '@/components/ui/form';
 import { useState } from 'react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
@@ -46,7 +47,7 @@ function CampoCor({ value, onChange, controle }) {
       />
       <Input
         {...controle}
-        className="h-9 rounded-none font-mono uppercase"
+        className="h-9 uppercase"
         maxLength={7}
         onChange={(event) => onChange(event.target.value.trim())}
         placeholder="Sem cor"
@@ -106,13 +107,13 @@ function FormOpcao({ tipo, opcao, pipelineId, onSalvo }) {
   }
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       <CampoForm erro={erroDe('label')} id="opcao-label" label="Nome" obrigatorio>
         {(controle) => (
           <Input
             {...controle}
             autoFocus
-            className="h-9 rounded-none"
+            className="h-9"
             onChange={(event) => alterar('label', event.target.value)}
             value={valores.label}
           />
@@ -121,8 +122,8 @@ function FormOpcao({ tipo, opcao, pipelineId, onSalvo }) {
 
       {editando && (
         <p className="-mt-2 text-xs text-muted-foreground">
-          Chave <span className="font-mono text-foreground select-all">{opcao.key}</span> — é o que
-          fica gravado nos leads; não muda ao renomear.
+          Chave <span className="text-foreground select-all">{opcao.key}</span> — é o que fica
+          gravado nos leads; não muda ao renomear.
         </p>
       )}
 
@@ -159,7 +160,7 @@ function FormOpcao({ tipo, opcao, pipelineId, onSalvo }) {
           {(controle) => (
             <Input
               {...controle}
-              className="h-9 w-24 rounded-none font-mono tabular-nums"
+              className="h-9 w-24 tabular-nums"
               inputMode="numeric"
               onChange={(event) => alterar('probabilidadePadrao', event.target.value)}
               value={valores.probabilidadePadrao}
@@ -178,11 +179,17 @@ function FormOpcao({ tipo, opcao, pipelineId, onSalvo }) {
         >
           Cancelar
         </DialogClose>
-        <Button aria-busy={mutacao.isPending} disabled={mutacao.isPending} type="submit">
-          {mutacao.isPending ? 'Salvando…' : editando ? 'Salvar alterações' : 'Criar opção'}
+        <Button
+          aria-busy={mutacao.isPending}
+          disabled={mutacao.isPending}
+          type="submit"
+          loading={mutacao.isPending}
+          loadingText="Salvando…"
+        >
+          {editando ? 'Salvar alterações' : 'Criar opção'}
         </Button>
       </DialogFooter>
-    </form>
+    </Form>
   );
 }
 
@@ -210,7 +217,7 @@ export function OpcaoDialog({
 }) {
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="rounded-none sm:max-w-md">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{opcao ? 'Editar opção' : 'Nova opção'}</DialogTitle>
           <DialogDescription>

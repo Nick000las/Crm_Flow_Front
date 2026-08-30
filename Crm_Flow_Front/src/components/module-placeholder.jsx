@@ -1,3 +1,4 @@
+import { EmptyState } from '@/components/empty-state';
 import { PLACEHOLDER_ICON } from '@/lib/modules-registry';
 
 export function ModulePlaceholder({
@@ -9,11 +10,8 @@ export function ModulePlaceholder({
   const Icon = icon ?? PLACEHOLDER_ICON;
 
   return (
-    <div className="grid justify-items-center gap-3 border border-dashed border-border px-6 py-16 text-center">
-      <Icon className="size-6 text-muted-foreground" aria-hidden="true" />
-      <p className="font-medium">{title}</p>
-      <p className="max-w-sm text-sm text-muted-foreground">{description}</p>
-      {children && <div className="mt-2">{children}</div>}
-    </div>
+    <EmptyState icon={Icon} title={title} description={description}>
+      {children}
+    </EmptyState>
   );
 }

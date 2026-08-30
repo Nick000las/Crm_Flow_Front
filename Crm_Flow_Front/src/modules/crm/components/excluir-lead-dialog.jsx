@@ -61,7 +61,7 @@ export function ExcluirLeadDialog({
 
   return (
     <AlertDialog onOpenChange={handleOpenChange} open={open}>
-      <AlertDialogContent className="rounded-none">
+      <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Excluir lead</AlertDialogTitle>
           <AlertDialogDescription>

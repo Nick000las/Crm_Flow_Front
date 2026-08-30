@@ -23,11 +23,11 @@ export function SeloCiclo({ lead, fuso, className }) {
 
   return (
     <Badge
-      className={cn('gap-1.5 rounded-none border-border px-1.5 text-[11px] font-normal', className)}
+      className={cn('gap-1.5 border-border px-1.5 text-[11px] font-normal', className)}
       variant="outline"
     >
       {resultado.ciclo === CICLOS_DE_VIDA.CLIENTE && (
-        <span aria-hidden="true" className="size-1.5 shrink-0 bg-emerald-700 dark:bg-emerald-400" />
+        <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-success" />
       )}
       {resultado.texto}
     </Badge>

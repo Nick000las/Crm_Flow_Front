@@ -26,7 +26,7 @@ export function OpcaoBadge({ opcao, className }) {
   return (
     <Badge
       className={cn(
-        'gap-1.5 rounded-none border-border px-1.5 text-[11px] font-normal',
+        'gap-1.5 border-border px-1.5 text-[11px] font-normal',
         tom ?? 'text-foreground',
         className,
       )}
@@ -45,7 +45,7 @@ export function OpcaoBadge({ opcao, className }) {
       )}
       {opcao.label}
       {!opcao.ativo && (
-        <span className="font-mono text-[10px] tracking-wide text-muted-foreground uppercase">
+        <span className="text-[10px] tracking-wide text-muted-foreground uppercase">
           <span className="sr-only">, opção </span>inativa
         </span>
       )}

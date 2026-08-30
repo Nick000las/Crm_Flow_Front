@@ -11,8 +11,7 @@ import {
 import { salvarCsv } from '@/lib/download';
 import { relatorioCsv } from '../lib/importacao';
 
-const HEAD_CLASS =
-  'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
+const HEAD_CLASS = 'text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
 // A tela mostra as primeiras; o CSV leva todas.
 const MAX_LINHAS_NA_TELA = 100;
 
@@ -37,8 +36,7 @@ export function ImportacaoErros({ erros, nomeRelatorio, titulo }) {
     <section className="grid gap-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-medium">
-          {titulo}{' '}
-          <span className="font-mono text-muted-foreground tabular-nums">({erros.length})</span>
+          {titulo} <span className="text-muted-foreground tabular-nums">({erros.length})</span>
         </h2>
         <Button
           onClick={() => salvarCsv(relatorioCsv(erros), nomeRelatorio)}
@@ -68,7 +66,7 @@ export function ImportacaoErros({ erros, nomeRelatorio, titulo }) {
           <TableBody>
             {visiveis.map((erro, indice) => (
               <TableRow key={`${erro.linha}-${erro.coluna ?? ''}-${indice}`}>
-                <TableCell className="font-mono text-xs tabular-nums">{erro.linha}</TableCell>
+                <TableCell className="text-xs tabular-nums">{erro.linha}</TableCell>
                 <TableCell className="text-muted-foreground">{erro.coluna ?? '—'}</TableCell>
                 <TableCell className="whitespace-normal">{erro.motivo}</TableCell>
               </TableRow>

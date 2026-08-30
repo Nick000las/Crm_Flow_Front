@@ -1,3 +1,7 @@
+import { FieldError } from '@/components/field-error';
+import { focusFirstInvalidField } from '@/lib/form-validation';
+import { LoadingState } from '@/components/loading-state';
+import { Form } from '@/components/ui/form';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { CheckCircle2, CircleAlert } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -33,8 +37,8 @@ const SEM_ERROS = Object.freeze({ porChave: {}, outros: [] });
 /** Moldura da página: sem menu, centrada, no visual do CRM. */
 function Moldura({ children }) {
   return (
-    <main className="min-h-svh bg-muted/30 px-4 py-10">
-      <div className="mx-auto grid w-full max-w-2xl gap-6 border border-border bg-background p-6 sm:p-8">
+    <main className="min-h-svh bg-background px-4 py-6 sm:py-10">
+      <div className="mx-auto grid w-full max-w-2xl gap-6 rounded-xl border border-border bg-card p-5 shadow-sm sm:p-8">
         {children}
       </div>
     </main>
@@ -78,6 +82,11 @@ function FormularioRespondivel({ token, dados, onEnviado, onFechou }) {
     const locais = validarEnvio(versao, valores, envio);
     if (temErros(locais)) {
       setErros({ ...locais, outros: [] });
+      focusFirstInvalidField(event.currentTarget, [
+        ...Object.keys(locais.porChave ?? {}).map((chave) => `resposta-${chave}`),
+        ...(locais.nomeResponsavel ? ['nome-responsavel'] : []),
+        ...(locais.aceite ? ['aceite-termo'] : []),
+      ]);
       return;
     }
     setErros(SEM_ERROS);
@@ -95,7 +104,7 @@ function FormularioRespondivel({ token, dados, onEnviado, onFechou }) {
   }
 
   return (
-    <form className="grid gap-6" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-6" noValidate onSubmit={handleSubmit}>
       {versao.introducao && <p className="text-sm whitespace-pre-wrap">{versao.introducao}</p>}
 
       {versao.secoes.map((secao, indice) => (
@@ -151,7 +160,7 @@ function FormularioRespondivel({ token, dados, onEnviado, onFechou }) {
               <Input
                 {...controle}
                 autoComplete="name"
-                className="h-9 rounded-none"
+                className="h-9"
                 onChange={(event) => setNomeResponsavel(event.target.value)}
                 value={nomeResponsavel}
               />
@@ -162,7 +171,7 @@ function FormularioRespondivel({ token, dados, onEnviado, onFechou }) {
 
       <div className="grid gap-2">
         <p className="text-sm font-semibold">Termo de aceite</p>
-        <p className="max-h-48 overflow-y-auto border border-border px-3 py-2 text-sm whitespace-pre-wrap">
+        <p className="max-h-48 overflow-y-auto rounded-lg border border-border bg-surface px-3 py-2 text-sm whitespace-pre-wrap">
           {versao.termo}
         </p>
         <label className="flex items-start gap-2 text-sm" htmlFor="aceite-termo">
@@ -175,11 +184,7 @@ function FormularioRespondivel({ token, dados, onEnviado, onFechou }) {
           />
           Li e aceito o termo
         </label>
-        {erros.aceite && (
-          <p className="text-xs text-destructive" id="aceite-termo-erro" role="alert">
-            {erros.aceite}
-          </p>
-        )}
+        <FieldError id="aceite-termo-erro" message={erros.aceite} />
       </div>
 
       {(erros.outros.length > 0 || temErros(erros)) && (
@@ -191,14 +196,15 @@ function FormularioRespondivel({ token, dados, onEnviado, onFechou }) {
       <div>
         <Button
           aria-busy={enviar.isPending}
-          className="rounded-none"
           disabled={enviar.isPending}
           type="submit"
+          loading={enviar.isPending}
+          loadingText="Enviando…"
         >
-          {enviar.isPending ? 'Enviando…' : 'Enviar'}
+          {'Enviar'}
         </Button>
       </div>
-    </form>
+    </Form>
   );
 }
 
@@ -245,7 +251,7 @@ export default function FormularioPublicoPage() {
       <Aviso icone={CircleAlert} texto={mensagem.texto} titulo="Não foi possível abrir">
         {mensagem.tentarDeNovo && (
           <Button
-            className="mt-2 rounded-none"
+            className="mt-2"
             onClick={() => {
               setErroQueFechou(null);
               formularioQuery.refetch();
@@ -264,12 +270,10 @@ export default function FormularioPublicoPage() {
     return (
       <Moldura>
         <div className="grid gap-3" aria-busy="true">
-          <span className="sr-only" role="status">
-            Carregando formulário…
-          </span>
-          <Skeleton className="h-8 w-56 rounded-none" />
-          <Skeleton className="h-24 rounded-none" />
-          <Skeleton className="h-24 rounded-none" />
+          <LoadingState label="Carregando formulário…" />
+          <Skeleton className="h-8 w-56" />
+          <Skeleton className="h-24" />
+          <Skeleton className="h-24" />
         </div>
       </Moldura>
     );
@@ -286,7 +290,7 @@ export default function FormularioPublicoPage() {
         <h1 className="text-xl font-semibold">{dados.formulario.nome}</h1>
         {prazo && (
           <p className="text-xs text-muted-foreground">
-            Responda até <span className="font-mono tabular-nums">{prazo}</span>
+            Responda até <span className="tabular-nums">{prazo}</span>
           </p>
         )}
       </header>

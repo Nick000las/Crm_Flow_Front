@@ -1,3 +1,4 @@
+import { Form } from '@/components/ui/form';
 import { useState } from 'react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
@@ -218,7 +219,7 @@ function FormRegra({ regra, campos, onSalvo }) {
   );
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       {editando ? (
         corpo
       ) : (
@@ -256,11 +257,17 @@ function FormRegra({ regra, campos, onSalvo }) {
         >
           Cancelar
         </DialogClose>
-        <Button aria-busy={mutacao.isPending} disabled={mutacao.isPending} type="submit">
-          {mutacao.isPending ? 'Salvando…' : editando ? 'Salvar alterações' : 'Criar regra'}
+        <Button
+          aria-busy={mutacao.isPending}
+          disabled={mutacao.isPending}
+          type="submit"
+          loading={mutacao.isPending}
+          loadingText="Salvando…"
+        >
+          {editando ? 'Salvar alterações' : 'Criar regra'}
         </Button>
       </DialogFooter>
-    </form>
+    </Form>
   );
 }
 
@@ -279,7 +286,7 @@ function FormRegra({ regra, campos, onSalvo }) {
 export function RegraDialog({ open, onOpenChange, regra, campos, onSalvo }) {
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="rounded-none sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{regra ? 'Editar regra' : 'Nova regra'}</DialogTitle>
           <DialogDescription>
@@ -288,17 +295,15 @@ export function RegraDialog({ open, onOpenChange, regra, campos, onSalvo }) {
               : 'Quando um campo fica obrigatório ou aparece no formulário do lead.'}
           </DialogDescription>
         </DialogHeader>
-        {open && (
-          <FormRegra
-            campos={campos}
-            key={regra?.id ?? 'nova'}
-            onSalvo={(aviso) => {
-              onOpenChange(false);
-              onSalvo(aviso);
-            }}
-            regra={regra}
-          />
-        )}
+        <FormRegra
+          campos={campos}
+          key={regra?.id ?? 'nova'}
+          onSalvo={(aviso) => {
+            onOpenChange(false);
+            onSalvo(aviso);
+          }}
+          regra={regra}
+        />
       </DialogContent>
     </Dialog>
   );

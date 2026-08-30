@@ -66,22 +66,21 @@ export function ConstrutorFiltro({
       setErros(resultado.erros);
       return;
     }
-
     onAplicar(resultado.filtro);
     setAberto(false);
   }
 
   return (
     <Popover onOpenChange={handleOpenChange} open={aberto}>
-      <PopoverTrigger className={cn(buttonVariants({ variant: 'outline' }), 'h-9 rounded-none')}>
+      <PopoverTrigger className={cn(buttonVariants({ variant: 'outline' }), 'h-9 ')}>
         <ListFilter aria-hidden="true" />
         Filtros
-        {total > 0 && <span className="font-mono text-xs tabular-nums">({total})</span>}
+        {total > 0 && <span className="text-xs tabular-nums">({total})</span>}
       </PopoverTrigger>
 
       <PopoverContent
         align="start"
-        className="w-[min(44rem,calc(100vw-2rem))] gap-3 rounded-none p-3 shadow-none ring-border"
+        className="w-[min(44rem,calc(100vw-2rem))] gap-3 p-3 ring-border"
       >
         <PopoverTitle className="text-sm font-medium">Filtrar leads</PopoverTitle>
 
@@ -110,7 +109,7 @@ export function ConstrutorFiltro({
         )}
 
         <Button
-          className="w-fit rounded-none"
+          className="w-fit"
           disabled={campos.length === 0 || limiteAtingido}
           onClick={() => alterarLinhas((linhas) => [...linhas, novaLinha(campos[0])])}
           size="sm"

@@ -1,3 +1,4 @@
+import { LoadingState } from '@/components/loading-state';
 import { RotateCcw } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
@@ -25,11 +26,9 @@ const CAMPOS_VAZIOS = [];
 function Carregando() {
   return (
     <div className="grid gap-3" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando layout…
-      </span>
+      <LoadingState label="Carregando layout…" />
       {Array.from({ length: 4 }, (_, indice) => (
-        <Skeleton className="h-16 rounded-none" key={indice} />
+        <Skeleton className="h-16" key={indice} />
       ))}
     </div>
   );
@@ -115,7 +114,12 @@ export function SecaoLayout() {
         )}
       </div>
 
-      <p className={aviso ? 'border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
+      <p
+        className={
+          aviso ? 'rounded-lg border border-border bg-surface px-3 py-2 text-sm' : 'sr-only'
+        }
+        role="status"
+      >
         {aviso}
       </p>
 

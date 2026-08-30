@@ -19,7 +19,8 @@ const SELOS = Object.freeze({
   ORIGEM_REABERTA: 'origem_reaberta',
   ALERTA_FORMULARIO: 'alerta_formulario',
 });
-const CAIXA = 'grid gap-1.5 border border-border bg-background p-3 text-sm';
+const CAIXA =
+  'grid gap-2 rounded-xl border border-border bg-card p-3 text-sm shadow-xs transition-colors duration-150 hover:border-border-strong';
 
 const comTexto = (itens, campos, nomePorId) =>
   (itens ?? [])
@@ -82,7 +83,7 @@ function CorpoDoCard({ card, campos, nomePorId, titulo }) {
           {destaques.map(({ item, texto }) => (
             <div className="contents" key={item.ref}>
               <dt className="text-muted-foreground">{item.label}</dt>
-              <dd className="truncate text-right font-mono tabular-nums">{texto}</dd>
+              <dd className="truncate text-right tabular-nums">{texto}</dd>
             </div>
           ))}
         </dl>
@@ -122,12 +123,12 @@ function MenuMover({ titulo, destinos, onMover }) {
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label={`Mover ${titulo}`}
-        className={cn(buttonVariants({ variant: 'ghost', size: 'icon-xs' }), 'rounded-none')}
+        className={buttonVariants({ variant: 'ghost', size: 'icon-xs' })}
         title="Mover para…"
       >
         <ArrowRightLeft aria-hidden="true" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48 rounded-none shadow-none ring-border">
+      <DropdownMenuContent align="end" className="w-48">
         {destinos.map((coluna) => (
           <DropdownMenuItem key={coluna.ref} onClick={() => onMover(coluna)}>
             {coluna.nome}

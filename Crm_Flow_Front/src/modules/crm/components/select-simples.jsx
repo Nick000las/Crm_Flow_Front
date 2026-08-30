@@ -8,8 +8,8 @@ import {
 import { cn } from '@/lib/utils';
 
 /**
- * Select de lista plana `{ valor, rotulo }`, no visual do CRM (canto reto,
- * altura da toolbar). `vazio` acrescenta uma opção que devolve `''`.
+ * Select de lista plana `{ valor, rotulo }`, com os tokens e raios compartilhados,
+ * na altura da toolbar. `vazio` acrescenta uma opção que devolve `''`.
  *
  * @param {{
  *   value: string,
@@ -40,7 +40,7 @@ export function SelectSimples({
       onValueChange={(valor) => onChange(valor ?? '')}
       value={value || null}
     >
-      <SelectTrigger {...trigger} className={cn('h-9 w-full rounded-none', className)}>
+      <SelectTrigger {...trigger} className={cn('h-9 w-full ', className)}>
         <SelectValue placeholder={textoVazio}>
           {(valor) => rotuloPorValor.get(valor) ?? textoVazio}
         </SelectValue>

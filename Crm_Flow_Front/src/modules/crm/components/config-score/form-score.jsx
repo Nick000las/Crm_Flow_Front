@@ -1,7 +1,8 @@
+import { Form } from '@/components/ui/form';
 import { Pencil, Plus, Sigma, Trash2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
-import { ModulePlaceholder } from '@/components/module-placeholder';
+import { EmptyState } from '@/components/empty-state';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { semChave } from '@/lib/objetos';
@@ -56,9 +57,7 @@ function LinhaRegra({
       aria-describedby={erro ? idErro : undefined}
       className="flex flex-wrap items-center gap-3 border-b border-border px-3 py-2 last:border-b-0"
     >
-      <span className="w-14 text-right font-mono text-sm tabular-nums">
-        {textoDosPontos(regra.pontos)}
-      </span>
+      <span className="w-14 text-right text-sm tabular-nums">{textoDosPontos(regra.pontos)}</span>
       <div className="grid min-w-0 flex-1 gap-0.5">
         <p className="text-sm font-medium">{nome}</p>
         <p className="text-sm text-muted-foreground">{descricao}</p>
@@ -208,7 +207,7 @@ export function FormScore({ config, campos, nomePorId, podeEditar, ocupado, salv
 
   return (
     <>
-      <form className="grid gap-6" noValidate onSubmit={handleSubmit}>
+      <Form className="grid gap-6" noValidate onSubmit={handleSubmit}>
         <section aria-labelledby="score-regras-titulo" className="grid gap-2">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div className="grid gap-0.5">
@@ -223,13 +222,13 @@ export function FormScore({ config, campos, nomePorId, podeEditar, ocupado, salv
           </div>
 
           {valores.regras.length === 0 ? (
-            <ModulePlaceholder
+            <EmptyState
               description="Sem regras, todo lead fica com score 0."
               icon={Sigma}
               title="Nenhuma regra ainda"
             >
               {botaoNovaRegra}
-            </ModulePlaceholder>
+            </EmptyState>
           ) : (
             <ul aria-busy={ocupado} className="border border-border">
               {valores.regras.map((regra) => {
@@ -299,8 +298,14 @@ export function FormScore({ config, campos, nomePorId, podeEditar, ocupado, salv
         {podeEditar && (
           <div className="grid gap-2 border-t border-border pt-4">
             <div className="flex flex-wrap gap-2">
-              <Button aria-busy={salvar.isPending} disabled={!mudou || travado} type="submit">
-                {salvar.isPending ? 'Salvando e recalculando…' : 'Salvar'}
+              <Button
+                aria-busy={salvar.isPending}
+                disabled={!mudou || travado}
+                type="submit"
+                loading={salvar.isPending}
+                loadingText="Salvando e recalculando…"
+              >
+                {'Salvar'}
               </Button>
               <Button
                 disabled={!mudou || travado}
@@ -316,9 +321,9 @@ export function FormScore({ config, campos, nomePorId, podeEditar, ocupado, salv
             </p>
           </div>
         )}
-      </form>
+      </Form>
 
-      {/* Fora do <form>: o submit do dialog sobe pela árvore do React (portal) e salvaria a seção. */}
+      {/* Fora do <Form>: o submit do dialog sobe pela árvore do React (portal) e salvaria a seção. */}
       <RegraScoreDialog
         campos={campos}
         errosDoServidor={emEdicao ? erros.regras[emEdicao.regra.chaveLocal] : undefined}

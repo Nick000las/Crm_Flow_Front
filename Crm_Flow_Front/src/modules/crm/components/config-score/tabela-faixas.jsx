@@ -12,10 +12,9 @@ import {
 import { SCORE } from '../../constants';
 import { BotaoIcone } from '../botao-icone';
 
-const HEAD_CLASS =
-  'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
-const INPUT_CLASS = 'h-9 rounded-none';
-const NUMERO_CLASS = 'h-9 w-24 rounded-none font-mono tabular-nums';
+const HEAD_CLASS = 'text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
+const INPUT_CLASS = 'h-9 ';
+const NUMERO_CLASS = 'h-9 w-24  tabular-nums';
 // Valor do seletor de cor quando o hex digitado ainda não é válido (ele não aceita outro formato).
 const COR_DO_SELETOR = '#6b7280';
 const HEX = /^#[0-9A-Fa-f]{6}$/;
@@ -62,7 +61,7 @@ export function TabelaFaixas({
 
   return (
     <div className="grid gap-2">
-      <div className="overflow-x-auto border border-border">
+      <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-xs">
         <Table>
           <TableHeader>
             <TableRow>
@@ -152,7 +151,7 @@ export function TabelaFaixas({
                       <Input
                         {...comum('cor')}
                         aria-label={`${nome}: cor (#RRGGBB)`}
-                        className="h-9 w-24 rounded-none font-mono uppercase"
+                        className="h-9 w-24 uppercase"
                         maxLength={7}
                         onChange={(event) =>
                           onAlterar(faixa.chaveLocal, { cor: event.target.value.trim() })

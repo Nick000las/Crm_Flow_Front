@@ -1,3 +1,4 @@
+import { Form } from '@/components/ui/form';
 import { useState } from 'react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
@@ -45,13 +46,13 @@ function FormRenomear({ campo, onSalvo }) {
   }
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       <CampoForm erro={erroDoNome} id="renomear-campo-label" label="Nome do campo" obrigatorio>
         {(controle) => (
           <Input
             {...controle}
             autoFocus
-            className="h-9 rounded-none"
+            className="h-9"
             onChange={(event) => {
               setLabel(event.target.value);
               setErroCliente(null);
@@ -100,11 +101,17 @@ function FormRenomear({ campo, onSalvo }) {
         >
           Cancelar
         </DialogClose>
-        <Button aria-busy={atualizar.isPending} disabled={atualizar.isPending} type="submit">
-          {atualizar.isPending ? 'Salvando…' : 'Salvar nome'}
+        <Button
+          aria-busy={atualizar.isPending}
+          disabled={atualizar.isPending}
+          type="submit"
+          loading={atualizar.isPending}
+          loadingText="Salvando…"
+        >
+          {'Salvar nome'}
         </Button>
       </DialogFooter>
-    </form>
+    </Form>
   );
 }
 
@@ -120,7 +127,7 @@ function FormRenomear({ campo, onSalvo }) {
 export function RenomearCampoDialog({ campo, onOpenChange, onSalvo }) {
   return (
     <Dialog onOpenChange={onOpenChange} open={Boolean(campo)}>
-      <DialogContent className="rounded-none sm:max-w-md">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Renomear campo</DialogTitle>
           <DialogDescription>

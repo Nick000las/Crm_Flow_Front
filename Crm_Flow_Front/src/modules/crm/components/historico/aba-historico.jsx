@@ -1,9 +1,10 @@
+import { LoadingState } from '@/components/loading-state';
 import { History } from 'lucide-react';
 import { useState } from 'react';
 import { TIPOS_EVENTO } from '../../constants';
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
-import { ModulePlaceholder } from '@/components/module-placeholder';
+import { EmptyState } from '@/components/empty-state';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -18,11 +19,9 @@ const CHIP_CLASS =
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando histórico…
-      </span>
+      <LoadingState label="Carregando histórico…" />
       {Array.from({ length: 4 }, (_, indice) => (
-        <Skeleton className="h-10 rounded-none" key={indice} />
+        <Skeleton className="h-10" key={indice} />
       ))}
     </div>
   );
@@ -102,7 +101,7 @@ function Evento({ evento, nomePorId, onAbrirResposta }) {
       <span aria-hidden="true" className="absolute top-1.5 -left-[3.5px] size-1.5 bg-foreground" />
       <p className="text-sm font-medium break-words">{titulo}</p>
       <p className="text-xs text-muted-foreground">
-        <time className="font-mono tabular-nums" dateTime={evento.criadoEm}>
+        <time className="tabular-nums" dateTime={evento.criadoEm}>
           {formatarInstante(evento.criadoEm)}
         </time>
         {!comAutor && ` · por ${autorDoEvento(evento)}`}
@@ -113,7 +112,7 @@ function Evento({ evento, nomePorId, onAbrirResposta }) {
         evento.detalhes?.respostaId && (
           <div>
             <Button
-              className="h-auto rounded-none px-0 text-sm"
+              className="h-auto px-0 text-sm"
               onClick={() => onAbrirResposta(evento.detalhes.respostaId)}
               type="button"
               variant="link"
@@ -194,7 +193,7 @@ export function AbaHistorico({ leadId, nomePorId, onAbrirResposta }) {
 
       {eventos.length === 0 ? (
         filtro.length > 0 ? (
-          <ModulePlaceholder
+          <EmptyState
             description="Nenhum evento destas categorias neste lead."
             icon={History}
             title="Nenhum evento nestas categorias"
@@ -202,9 +201,9 @@ export function AbaHistorico({ leadId, nomePorId, onAbrirResposta }) {
             <Button onClick={() => setSelecionadas(new Set())} size="sm" variant="outline">
               Mostrar todos
             </Button>
-          </ModulePlaceholder>
+          </EmptyState>
         ) : (
-          <ModulePlaceholder
+          <EmptyState
             description="As mudanças feitas no lead aparecem aqui."
             icon={History}
             title="Nenhum evento ainda"
@@ -240,8 +239,10 @@ export function AbaHistorico({ leadId, nomePorId, onAbrirResposta }) {
             onClick={() => historico.fetchNextPage()}
             size="sm"
             variant="outline"
+            loading={historico.isFetchingNextPage}
+            loadingText="Carregando…"
           >
-            {historico.isFetchingNextPage ? 'Carregando…' : 'Carregar mais'}
+            {'Carregar mais'}
           </Button>
         </div>
       )}

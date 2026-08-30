@@ -10,11 +10,11 @@ const ESTILO_DO_NIVEL = Object.freeze({
   },
   [NIVEIS_ALERTA.ATENCAO]: {
     icone: AlertTriangle,
-    classes: 'border-amber-500/50 bg-amber-500/10 text-amber-800 dark:text-amber-300',
+    classes: 'border-warning/40 bg-warning/10 text-warning',
   },
   [NIVEIS_ALERTA.INFO]: {
     icone: Info,
-    classes: 'border-blue-500/50 bg-blue-500/10 text-blue-800 dark:text-blue-300',
+    classes: 'border-info/40 bg-info/10 text-info',
   },
 });
 
@@ -29,7 +29,7 @@ export function CaixaDoNivel({ nivel, apagado = false, className, children }) {
   return (
     <li
       className={cn(
-        'border',
+        'rounded-lg border',
         apagado ? 'border-border text-muted-foreground' : estiloDe(nivel).classes,
         className,
       )}
@@ -53,7 +53,7 @@ export function SeloAlerta({ nivel, prefixo, className }) {
   return (
     <span
       className={cn(
-        'inline-flex w-fit items-center gap-1 border px-1.5 text-[11px] font-medium',
+        'inline-flex w-fit items-center gap-1 rounded-md border px-1.5 text-[11px] font-medium',
         classes,
         className,
       )}

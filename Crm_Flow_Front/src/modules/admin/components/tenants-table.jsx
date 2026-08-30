@@ -11,8 +11,7 @@ import {
 } from '@/components/ui/table';
 import { TenantStatusBadge } from './tenant-status-badge';
 
-const HEAD_CLASS =
-  'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
+const HEAD_CLASS = 'text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
 
 export function TenantsTable({ tenants, acaoVazio }) {
   if (tenants.length === 0) {
@@ -28,7 +27,7 @@ export function TenantsTable({ tenants, acaoVazio }) {
   }
 
   return (
-    <div className="overflow-x-auto border border-border">
+    <div className="theme-data-table overflow-x-auto border border-border">
       <Table>
         <TableHeader>
           <TableRow>
@@ -58,10 +57,8 @@ export function TenantsTable({ tenants, acaoVazio }) {
                   {tenant.nome}
                 </Link>
               </TableCell>
-              <TableCell className="font-mono text-xs text-muted-foreground">
-                {tenant.subdomain}
-              </TableCell>
-              <TableCell className="font-mono text-xs text-muted-foreground">
+              <TableCell className="text-xs text-muted-foreground">{tenant.subdomain}</TableCell>
+              <TableCell className="text-xs text-muted-foreground">
                 {formatarModulos(tenant.modulosContratados)}
               </TableCell>
               <TableCell>

@@ -32,11 +32,11 @@ function ItemDoAlerta({ alerta, onAbrirResposta, marcar }) {
       <p className="text-xs text-muted-foreground">
         {alerta.formulario.nome}
         {' · '}
-        <span className="font-mono tabular-nums">{formatarInstante(alerta.criadoEm)}</span>
+        <span className="tabular-nums">{formatarInstante(alerta.criadoEm)}</span>
         {visto && (
           <>
             {' · Visto em '}
-            <span className="font-mono tabular-nums">{formatarInstante(alerta.vistoEm)}</span>
+            <span className="tabular-nums">{formatarInstante(alerta.vistoEm)}</span>
           </>
         )}
       </p>
@@ -44,7 +44,7 @@ function ItemDoAlerta({ alerta, onAbrirResposta, marcar }) {
         <div className="flex flex-wrap gap-2">
           {!alerta.generico && (
             <Button
-              className="rounded-none bg-background"
+              className="bg-background"
               onClick={() => onAbrirResposta(alerta.respostaId)}
               size="sm"
               type="button"
@@ -57,15 +57,16 @@ function ItemDoAlerta({ alerta, onAbrirResposta, marcar }) {
           {marcar && (
             <Button
               aria-busy={marcandoEste}
-              className="rounded-none"
               disabled={marcandoEste}
               onClick={() => marcar.mutate(alerta.id)}
               size="sm"
               type="button"
               variant="ghost"
+              loading={marcandoEste}
+              loadingText="Marcando…"
             >
               <Check aria-hidden="true" />
-              {marcandoEste ? 'Marcando…' : 'Marcar como visto'}
+              {'Marcar como visto'}
               <span className="sr-only"> — {alerta.texto}</span>
             </Button>
           )}

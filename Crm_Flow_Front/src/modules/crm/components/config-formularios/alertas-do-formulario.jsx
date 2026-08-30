@@ -32,16 +32,10 @@ function LinhaDoAlerta({ alerta, numero, alvos, erros, onChange, onRemover }) {
   const idBase = `alerta-${alerta.chaveLocal}`;
 
   return (
-    <li className="grid gap-3 border border-border p-3">
+    <li className="grid gap-3 rounded-xl border border-border bg-card p-4">
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs font-medium text-muted-foreground">Alerta {numero}</p>
-        <Button
-          className="rounded-none"
-          onClick={onRemover}
-          size="sm"
-          type="button"
-          variant="ghost"
-        >
+        <Button onClick={onRemover} size="sm" type="button" variant="ghost">
           <Trash2 aria-hidden="true" />
           Remover
           <span className="sr-only"> o alerta {numero}</span>
@@ -76,7 +70,7 @@ function LinhaDoAlerta({ alerta, numero, alvos, erros, onChange, onRemover }) {
           {(controle) => (
             <Input
               {...controle}
-              className="h-9 rounded-none"
+              className="h-9"
               maxLength={LIMITES_ALERTA.TEXTO + 50}
               onChange={(event) => onChange({ ...alerta, texto: event.target.value })}
               placeholder="Ex.: Alergia a dipirona"
@@ -123,7 +117,7 @@ export function AlertasDoFormulario({ rascunho, campos, errosPorAlerta, erroGera
     });
 
   return (
-    <fieldset className="grid gap-4 border border-border p-4">
+    <fieldset className="grid gap-4 rounded-xl border border-border bg-card p-4 shadow-xs">
       <legend className="mb-3 px-1 text-sm font-semibold">Alertas</legend>
       <p className="text-sm text-muted-foreground">
         Quando a resposta casar com a condição, a pessoa ganha um alerta no topo da ficha e um selo
@@ -163,7 +157,7 @@ export function AlertasDoFormulario({ rascunho, campos, errosPorAlerta, erroGera
         <ControleTravado motivo={motivo} motivoId="formulario-alerta-motivo">
           <Button
             aria-describedby={motivo ? 'formulario-alerta-motivo' : undefined}
-            className={motivo ? 'pointer-events-none rounded-none' : 'rounded-none'}
+            className={motivo ? 'pointer-events-none' : undefined}
             disabled={Boolean(motivo)}
             onClick={() =>
               onChange({

@@ -40,7 +40,7 @@ export function VoltarPadraoDialog({ open, onOpenChange, onRestaurado }) {
 
   return (
     <AlertDialog onOpenChange={handleOpenChange} open={open}>
-      <AlertDialogContent className="rounded-none">
+      <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Voltar ao padrão da empresa?</AlertDialogTitle>
           <AlertDialogDescription>

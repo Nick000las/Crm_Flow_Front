@@ -19,7 +19,7 @@ export function SeloEsfriando({ esfriandoDesde, className }) {
   return (
     <Badge
       className={cn(
-        'rounded-none border-border px-1.5 text-[11px] font-normal text-muted-foreground',
+        ' border-border px-1.5 text-[11px] font-normal text-muted-foreground',
         className,
       )}
       title={`Esfriando desde ${formatarInstante(esfriandoDesde) ?? ''}`}

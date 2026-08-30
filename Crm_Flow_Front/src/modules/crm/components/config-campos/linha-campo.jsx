@@ -63,7 +63,7 @@ export function LinhaCampo({ campo, indice, total, ordemOcupada, onMover, onEdit
 
       <TableCell className="min-w-48">
         <span className="font-medium">{campo.label}</span>
-        <span className="block font-mono text-[11px] text-muted-foreground">
+        <span className="block text-[11px] text-muted-foreground">
           {campo.chave}
           {campo.labelPadrao &&
             campo.label !== campo.labelPadrao &&
@@ -78,7 +78,7 @@ export function LinhaCampo({ campo, indice, total, ordemOcupada, onMover, onEdit
 
       <TableCell className="text-sm whitespace-nowrap">
         {ROTULOS_TIPO[campo.tipo] ?? campo.tipo}
-        <span className="block font-mono text-[11px] text-muted-foreground uppercase">
+        <span className="block text-[11px] text-muted-foreground uppercase">
           {personalizado ? 'Personalizado' : 'Sistema'}
         </span>
       </TableCell>

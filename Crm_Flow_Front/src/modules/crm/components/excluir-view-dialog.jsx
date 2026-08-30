@@ -32,7 +32,7 @@ export function ExcluirViewDialog({ view, onOpenChange }) {
 
   return (
     <AlertDialog onOpenChange={handleOpenChange} open={Boolean(view)}>
-      <AlertDialogContent className="rounded-none">
+      <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Excluir view</AlertDialogTitle>
           <AlertDialogDescription>

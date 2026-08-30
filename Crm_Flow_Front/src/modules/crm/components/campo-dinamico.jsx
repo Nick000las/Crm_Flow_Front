@@ -30,7 +30,7 @@ function CampoNumero({ value, onChange, controle }) {
   return (
     <Input
       {...controle}
-      className={cn(INPUT_CLASS, 'font-mono tabular-nums')}
+      className={cn(INPUT_CLASS, 'tabular-nums')}
       inputMode="decimal"
       onChange={(event) => onChange(event.target.value)}
       value={value}
@@ -42,7 +42,7 @@ function CampoData({ value, onChange, controle }) {
   return (
     <Input
       {...controle}
-      className={cn(INPUT_CLASS, 'font-mono')}
+      className={INPUT_CLASS}
       onChange={(event) => onChange(event.target.value)}
       type="date"
       value={value}

@@ -1,3 +1,4 @@
+import { Form } from '@/components/ui/form';
 import { useState } from 'react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
@@ -66,7 +67,7 @@ export function AutomacaoForm({ pipeline, pipelines, podeEditar, onAviso }) {
   }
 
   return (
-    <form className="grid max-w-md gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid max-w-md gap-4" noValidate onSubmit={handleSubmit}>
       <label className="flex items-center gap-2 text-sm" htmlFor={`${idBase}-ativa`}>
         <Switch
           checked={valores.ativa}
@@ -139,10 +140,16 @@ export function AutomacaoForm({ pipeline, pipelines, podeEditar, onAviso }) {
       )}
 
       <div>
-        <Button aria-busy={salvar.isPending} disabled={salvar.isPending} type="submit">
-          {salvar.isPending ? 'Salvando…' : 'Salvar automação'}
+        <Button
+          aria-busy={salvar.isPending}
+          disabled={salvar.isPending}
+          type="submit"
+          loading={salvar.isPending}
+          loadingText="Salvando…"
+        >
+          {'Salvar automação'}
         </Button>
       </div>
-    </form>
+    </Form>
   );
 }

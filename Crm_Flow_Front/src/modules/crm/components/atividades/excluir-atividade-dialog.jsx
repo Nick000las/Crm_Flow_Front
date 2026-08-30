@@ -43,7 +43,7 @@ export function ExcluirAtividadeDialog({ leadId, atividade, onOpenChange, onExcl
 
   return (
     <AlertDialog onOpenChange={handleOpenChange} open={Boolean(atividade)}>
-      <AlertDialogContent className="rounded-none">
+      <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Remover atividade</AlertDialogTitle>
           <AlertDialogDescription>

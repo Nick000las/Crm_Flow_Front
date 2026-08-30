@@ -37,7 +37,11 @@ export default function ForecastPage() {
 
   return (
     <>
-      <PageHeader description={TEXTOS_FORECAST.subtitulo} title={TEXTOS_FORECAST.titulo} />
+      <PageHeader
+        eyebrow="CRM"
+        description={TEXTOS_FORECAST.subtitulo}
+        title={TEXTOS_FORECAST.titulo}
+      />
 
       {abas.length > 1 ? (
         <Tabs className="gap-6" onValueChange={trocarAba} value={aba}>

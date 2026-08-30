@@ -35,7 +35,7 @@ export function CampoIntervalo({ value, onChange, controle }) {
     'aria-describedby': controle['aria-describedby'],
     'aria-invalid': controle['aria-invalid'],
     disabled: controle.disabled,
-    className: cn(INPUT_CLASS, 'font-mono'),
+    className: INPUT_CLASS,
     type: 'date',
   };
 
@@ -99,7 +99,7 @@ export function CampoEndereco({ value, onChange, controle }) {
               {...ATRIBUTOS_PARTE[parte]}
               aria-describedby={controle['aria-describedby']}
               aria-invalid={controle['aria-invalid']}
-              className={cn(INPUT_CLASS, (parte === 'cep' || parte === 'uf') && 'font-mono')}
+              className={cn(INPUT_CLASS, (parte === 'cep' || parte === 'uf') && '')}
               disabled={controle.disabled}
               id={id}
               onChange={(event) => alterar(parte, event.target.value)}

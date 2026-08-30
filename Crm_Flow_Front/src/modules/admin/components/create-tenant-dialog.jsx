@@ -1,3 +1,4 @@
+import { Form } from '@/components/ui/form';
 import { useState } from 'react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
@@ -82,7 +83,7 @@ export function CreateTenantDialog({ open, onOpenChange, adminApi, onCreated }) 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-lg" showCloseButton={!isSubmitting}>
-        <form onSubmit={handleSubmit}>
+        <Form noValidate onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Novo tenant</DialogTitle>
             <DialogDescription>
@@ -102,7 +103,6 @@ export function CreateTenantDialog({ open, onOpenChange, adminApi, onCreated }) 
             />
 
             <Campo
-              className="font-mono"
               disabled={isSubmitting}
               erro={getFieldError(submitError, 'subdomain')}
               id="tenant-subdomain"
@@ -113,7 +113,7 @@ export function CreateTenantDialog({ open, onOpenChange, adminApi, onCreated }) 
             />
 
             <fieldset className="grid gap-4 border-t border-border pt-4">
-              <legend className="font-mono text-[11px] uppercase tracking-wide text-muted-foreground">
+              <legend className="text-[11px] uppercase tracking-wide text-muted-foreground">
                 Responsável
               </legend>
 
@@ -140,7 +140,7 @@ export function CreateTenantDialog({ open, onOpenChange, adminApi, onCreated }) 
             </fieldset>
 
             <fieldset className="grid gap-3 border-t border-border pt-4">
-              <legend className="font-mono text-[11px] uppercase tracking-wide text-muted-foreground">
+              <legend className="text-[11px] uppercase tracking-wide text-muted-foreground">
                 Módulos contratados
               </legend>
 
@@ -170,7 +170,7 @@ export function CreateTenantDialog({ open, onOpenChange, adminApi, onCreated }) 
               {isSubmitting ? 'Criando...' : 'Criar tenant'}
             </Button>
           </DialogFooter>
-        </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

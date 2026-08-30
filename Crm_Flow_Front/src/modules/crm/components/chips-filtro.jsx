@@ -47,7 +47,7 @@ export function ChipsFiltro({ chips, chavesComErro, onRemover, onLimpar }) {
           );
         })}
       </ul>
-      <Button className="h-7 rounded-none px-2 text-xs" onClick={onLimpar} variant="ghost">
+      <Button className="h-7 px-2 text-xs" onClick={onLimpar} variant="ghost">
         Limpar tudo
       </Button>
     </div>

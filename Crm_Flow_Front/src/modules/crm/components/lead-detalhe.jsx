@@ -29,9 +29,7 @@ function Item({ label, children }) {
 function Grupo({ titulo, children }) {
   return (
     <section className="grid gap-1">
-      <h3 className="font-mono text-[11px] tracking-wide text-muted-foreground uppercase">
-        {titulo}
-      </h3>
+      <h3 className="text-[11px] tracking-wide text-muted-foreground uppercase">{titulo}</h3>
       <dl className="divide-y divide-border border-y border-border">{children}</dl>
     </section>
   );
@@ -125,7 +123,7 @@ export function LeadDetalhe({ lead, campos, layout, nomePorId }) {
         </Grupo>
       )}
 
-      <p className="font-mono text-[11px] text-muted-foreground">
+      <p className="text-[11px] text-muted-foreground">
         ID <span className="select-all">{lead.id}</span>
       </p>
     </div>

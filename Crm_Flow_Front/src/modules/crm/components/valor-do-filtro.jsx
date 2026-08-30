@@ -8,7 +8,7 @@ import { opcoesDoFiltro } from '../lib/opcoes';
 import { SelectSimples } from './select-simples';
 import { TagsInput } from './tags-input';
 
-const INPUT_CLASS = 'h-9 rounded-none';
+const INPUT_CLASS = 'h-9 ';
 const OPCOES_BOOLEANO = Object.freeze([
   { valor: 'true', rotulo: 'Sim' },
   { valor: 'false', rotulo: 'Não' },
@@ -24,7 +24,7 @@ function InputDoTipo({ campo, value, onChange, ...controle }) {
   return (
     <Input
       {...controle}
-      className={cn(INPUT_CLASS, (numerico || data || hora) && 'font-mono tabular-nums')}
+      className={cn(INPUT_CLASS, (numerico || data || hora) && 'tabular-nums')}
       inputMode={numerico ? 'decimal' : undefined}
       onChange={(event) => onChange(event.target.value)}
       type={data ? 'date' : hora ? 'time' : 'text'}

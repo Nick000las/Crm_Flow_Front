@@ -1,8 +1,9 @@
+import { LoadingState } from '@/components/loading-state';
 import { ClipboardList, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
-import { ModulePlaceholder } from '@/components/module-placeholder';
+import { EmptyState } from '@/components/empty-state';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -24,17 +25,14 @@ import {
 import { ControleTravado } from '../controle-travado';
 import { FormularioDialog } from './formulario-dialog';
 
-const HEAD_CLASS =
-  'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
+const HEAD_CLASS = 'text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
 
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando formulários…
-      </span>
+      <LoadingState label="Carregando formulários…" />
       {Array.from({ length: 3 }, (_, indice) => (
-        <Skeleton className="h-11 rounded-none" key={indice} />
+        <Skeleton className="h-11" key={indice} />
       ))}
     </div>
   );
@@ -46,9 +44,7 @@ function Situacao({ formulario }) {
   return (
     <span className="text-sm whitespace-nowrap">
       {rotulo}
-      {versao !== null && (
-        <span className="ml-1.5 font-mono text-xs text-muted-foreground">v{versao}</span>
-      )}
+      {versao !== null && <span className="ml-1.5 text-xs text-muted-foreground">v{versao}</span>}
     </span>
   );
 }
@@ -76,7 +72,7 @@ export function ListaFormularios({ onAbrir }) {
     <ControleTravado motivo={motivoNovo} motivoId="formulario-novo-motivo">
       <Button
         aria-describedby={motivoNovo ? 'formulario-novo-motivo' : undefined}
-        className={motivoNovo ? 'pointer-events-none rounded-none' : 'rounded-none'}
+        className={motivoNovo ? 'pointer-events-none' : undefined}
         disabled={Boolean(motivoNovo)}
         onClick={() => setCriando(true)}
         type="button"
@@ -98,15 +94,15 @@ export function ListaFormularios({ onAbrir }) {
       </div>
 
       {formularios.length === 0 ? (
-        <ModulePlaceholder
+        <EmptyState
           description="Monte o primeiro com os campos que a pessoa deve responder."
           icon={ClipboardList}
           title="Nenhum formulário ainda"
         >
           {botaoNovo}
-        </ModulePlaceholder>
+        </EmptyState>
       ) : (
-        <div className="overflow-x-auto border border-border">
+        <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-xs">
           <Table>
             <TableHeader>
               <TableRow>
@@ -150,10 +146,10 @@ export function ListaFormularios({ onAbrir }) {
                   <TableCell className="text-sm">
                     {formulario.ativo ? 'Ativo' : 'Inativo'}
                   </TableCell>
-                  <TableCell className="font-mono text-sm tabular-nums">
+                  <TableCell className="text-sm tabular-nums">
                     {formulario.validadeDias} {formulario.validadeDias === 1 ? 'dia' : 'dias'}
                   </TableCell>
-                  <TableCell className="font-mono text-sm tabular-nums">
+                  <TableCell className="text-sm tabular-nums">
                     {formatarInstante(formulario.atualizadoEm)}
                   </TableCell>
                 </TableRow>

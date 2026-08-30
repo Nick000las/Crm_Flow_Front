@@ -1,3 +1,4 @@
+import { LoadingState } from '@/components/loading-state';
 import { RotateCcw } from 'lucide-react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
@@ -25,10 +26,8 @@ export function LixeiraOportunidades({ leadId, pipelines, podeRestaurar, onResta
   if (lixeiraQuery.isPending) {
     return (
       <div aria-busy="true">
-        <span className="sr-only" role="status">
-          Carregando lixeira…
-        </span>
-        <Skeleton className="h-10 rounded-none" />
+        <LoadingState label="Carregando lixeira…" />
+        <Skeleton className="h-10" />
       </div>
     );
   }
@@ -50,14 +49,13 @@ export function LixeiraOportunidades({ leadId, pipelines, podeRestaurar, onResta
 
           return (
             <li
-              className="flex items-center justify-between gap-2 border border-border px-3 py-2 text-sm"
+              className="flex items-center justify-between gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm"
               key={oportunidade.id}
             >
               <span className="min-w-0 break-words">{titulo}</span>
               {podeRestaurar && (
                 <Button
                   aria-label={`Restaurar ${titulo}`}
-                  className="rounded-none"
                   disabled={acao.isPending}
                   onClick={() =>
                     acao.mutate(

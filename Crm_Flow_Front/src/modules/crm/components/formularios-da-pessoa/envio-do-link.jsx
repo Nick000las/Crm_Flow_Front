@@ -4,7 +4,6 @@ import { useId, useRef, useState } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { salvarBlob } from '@/lib/download';
-import { cn } from '@/lib/utils';
 import {
   MOTIVOS_LINK,
   linkDoWhatsapp,
@@ -63,9 +62,7 @@ export function EnvioDoLink({ obtido, telefone, primeiroNome }) {
     <div className="grid gap-3 border border-border p-3">
       <p className="text-sm">
         <span className="font-medium">{obtido.formulario}</span>
-        <span className="ml-2 font-mono text-xs text-muted-foreground">
-          v{obtido.link.versao.versao}
-        </span>
+        <span className="ml-2 text-xs text-muted-foreground">v{obtido.link.versao.versao}</span>
         <span className="ml-2 text-xs text-muted-foreground">
           {obtido.criado ? 'Link criado agora.' : 'Este é o link que já estava ativo.'}
         </span>
@@ -75,7 +72,7 @@ export function EnvioDoLink({ obtido, telefone, primeiroNome }) {
         Link do formulário
       </label>
       <Input
-        className="h-9 rounded-none font-mono text-xs"
+        className="h-9 text-xs"
         id={`${id}-url`}
         onFocus={(event) => event.target.select()}
         readOnly
@@ -84,14 +81,14 @@ export function EnvioDoLink({ obtido, telefone, primeiroNome }) {
       />
 
       <div className="flex flex-wrap gap-2">
-        <Button className="rounded-none" onClick={copiar} size="sm" type="button">
+        <Button onClick={copiar} size="sm" type="button">
           <Copy aria-hidden="true" />
           Copiar
         </Button>
         <ControleTravado motivo={motivoWhatsapp} motivoId={`${id}-whatsapp-motivo`}>
           {whatsapp ? (
             <a
-              className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'rounded-none')}
+              className={buttonVariants({ variant: 'outline', size: 'sm' })}
               href={whatsapp}
               rel="noopener noreferrer"
               target="_blank"
@@ -103,7 +100,7 @@ export function EnvioDoLink({ obtido, telefone, primeiroNome }) {
           ) : (
             <Button
               aria-describedby={`${id}-whatsapp-motivo`}
-              className="pointer-events-none rounded-none"
+              className="pointer-events-none"
               disabled
               size="sm"
               type="button"
@@ -116,7 +113,6 @@ export function EnvioDoLink({ obtido, telefone, primeiroNome }) {
         </ControleTravado>
         <Button
           aria-expanded={comQr}
-          className="rounded-none"
           onClick={() => setComQr((atual) => !atual)}
           size="sm"
           type="button"
@@ -142,13 +138,7 @@ export function EnvioDoLink({ obtido, telefone, primeiroNome }) {
               value={url}
             />
           </div>
-          <Button
-            className="rounded-none"
-            onClick={baixarQr}
-            size="sm"
-            type="button"
-            variant="ghost"
-          >
+          <Button onClick={baixarQr} size="sm" type="button" variant="ghost">
             <Download aria-hidden="true" />
             Baixar QR Code
           </Button>

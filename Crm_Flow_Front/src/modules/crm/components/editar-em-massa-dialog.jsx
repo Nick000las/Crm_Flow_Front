@@ -1,3 +1,4 @@
+import { Form } from '@/components/ui/form';
 import { useMemo, useState } from 'react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
@@ -64,7 +65,10 @@ function Alteracao({ id, rotulo, ativa, onAtivar, erro, desabilitado, children }
 function Resultado({ resposta, falhas }) {
   return (
     <div className="grid gap-3">
-      <p className="border border-border px-3 py-2 font-mono text-xs tabular-nums" role="status">
+      <p
+        className="rounded-lg border border-border bg-surface px-3 py-2 text-xs tabular-nums"
+        role="status"
+      >
         {resumoDoResultado(resposta)}
       </p>
       {falhas.length > 0 && (
@@ -171,7 +175,7 @@ function FormMassa({ leads, campos, usuarios, identificador, onResultado, onFech
   const campoTags = tags && podeEditarCampo(tags) ? tags : null;
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       <div className="border border-border">
         {selecao('status')}
         {selecao('fonteLead')}
@@ -253,13 +257,13 @@ function FormMassa({ leads, campos, usuarios, identificador, onResultado, onFech
         <DialogClose render={<Button disabled={ocupado} type="button" variant="outline" />}>
           Cancelar
         </DialogClose>
-        <Button aria-busy={ocupado} disabled={ocupado} type="submit">
+        <Button aria-busy={ocupado} disabled={ocupado} type="submit" loading={ocupado}>
           {ocupado
             ? 'Aplicando…'
             : `Aplicar a ${leads.length} ${leads.length === 1 ? 'lead' : 'leads'}`}
         </Button>
       </DialogFooter>
-    </form>
+    </Form>
   );
 }
 
@@ -284,7 +288,7 @@ export function EditarEmMassaDialog({ open, onOpenChange, ...form }) {
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="rounded-none sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Editar em massa</DialogTitle>
           <DialogDescription>
@@ -293,7 +297,7 @@ export function EditarEmMassaDialog({ open, onOpenChange, ...form }) {
             como está.
           </DialogDescription>
         </DialogHeader>
-        {open && <FormMassa {...form} onFechar={() => onOpenChange(false)} />}
+        <FormMassa {...form} onFechar={() => onOpenChange(false)} />
       </DialogContent>
     </Dialog>
   );

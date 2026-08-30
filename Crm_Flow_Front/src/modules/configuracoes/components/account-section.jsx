@@ -23,7 +23,7 @@ export function AccountSection({ nome, email, role }) {
         </div>
         <div className="flex items-center justify-between gap-6">
           <span className="text-muted-foreground">Perfil</span>
-          <span className="font-mono text-xs font-medium text-foreground">{role}</span>
+          <span className="text-xs font-medium text-foreground">{role}</span>
         </div>
       </CardContent>
     </Card>

@@ -1,3 +1,5 @@
+import { LoadingState } from '@/components/loading-state';
+import { Form } from '@/components/ui/form';
 import { useState } from 'react';
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
@@ -24,11 +26,9 @@ const PREFIXO_ERRO = 'status.';
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">
-        Carregando status…
-      </span>
+      <LoadingState label="Carregando status…" />
       {Array.from({ length: 5 }, (_, indice) => (
-        <Skeleton className="h-12 rounded-none" key={indice} />
+        <Skeleton className="h-12" key={indice} />
       ))}
     </div>
   );
@@ -67,7 +67,7 @@ function LinhaStatus({ status, valor, erro, desabilitado, onChange }) {
               aria-describedby={erro ? idErro : undefined}
               aria-invalid={Boolean(erro)}
               aria-label={`Dias sem interação até ${status.label} esfriar`}
-              className="h-8 w-20 rounded-none font-mono tabular-nums"
+              className="h-8 w-20 tabular-nums"
               disabled={desabilitado || !valor.ligado}
               id={idDias}
               inputMode="numeric"
@@ -127,7 +127,7 @@ function FormInatividade({ lista, podeEditar, onSalvo }) {
   }
 
   return (
-    <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+    <Form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       <ul aria-label="Dias sem interação por status" className="border border-border">
         {lista.map((status) => (
           <LinhaStatus
@@ -154,8 +154,10 @@ function FormInatividade({ lista, podeEditar, onSalvo }) {
             aria-busy={salvar.isPending}
             disabled={!mudancas || salvar.isPending}
             type="submit"
+            loading={salvar.isPending}
+            loadingText="Salvando…"
           >
-            {salvar.isPending ? 'Salvando…' : 'Salvar'}
+            {'Salvar'}
           </Button>
           <Button
             disabled={!mudancas || salvar.isPending}
@@ -171,7 +173,7 @@ function FormInatividade({ lista, podeEditar, onSalvo }) {
           </Button>
         </div>
       )}
-    </form>
+    </Form>
   );
 }
 
@@ -209,7 +211,12 @@ export function SecaoInatividade() {
         {!podeEditar && <p>Só DONO e MASTER alteram os dias.</p>}
       </div>
 
-      <p className={aviso ? 'border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
+      <p
+        className={
+          aviso ? 'rounded-lg border border-border bg-surface px-3 py-2 text-sm' : 'sr-only'
+        }
+        role="status"
+      >
         {aviso}
       </p>
 
