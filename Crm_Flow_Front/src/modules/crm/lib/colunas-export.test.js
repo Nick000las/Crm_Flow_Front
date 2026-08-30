@@ -25,7 +25,12 @@ test('começa com as visíveis da tabela, na ordem dela, e o resto desmarcado', 
 test('mover troca vizinhos e não passa das bordas', () => {
   const itens = itensIniciais(campos, ['nome', 'email']);
 
-  assert.deepEqual(moverItem(itens, 1, -1).map((item) => item.chave).slice(0, 2), ['email', 'nome']);
+  assert.deepEqual(
+    moverItem(itens, 1, -1)
+      .map((item) => item.chave)
+      .slice(0, 2),
+    ['email', 'nome'],
+  );
   assert.equal(moverItem(itens, 0, -1), itens);
 });
 

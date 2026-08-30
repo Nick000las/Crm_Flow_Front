@@ -1,13 +1,7 @@
 import { useState } from 'react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { getFieldError, isAbortError, toApiError } from '@/services/api';
@@ -15,10 +9,7 @@ import { getFieldError, isAbortError, toApiError } from '@/services/api';
 const SUBMIT_ERROR_ID = 'tenant-identity-error';
 const FUSOS_LIST_ID = 'tenant-edit-fusos';
 
-/**
- * Sugestões do campo de fuso: os nomes IANA que o próprio navegador conhece.
- * O back valida de novo pelo `Intl` do Node e grava a forma canônica.
- */
+/** Sugestões IANA do navegador; o backend valida e normaliza o fuso. */
 const FUSOS_IANA =
   typeof Intl.supportedValuesOf === 'function' ? Intl.supportedValuesOf('timeZone') : [];
 
@@ -26,10 +17,8 @@ const FUSOS_IANA =
  * `PUT /admin/tenants/:id` — todos os campos são opcionais no backend, então o
  * formulário manda só o que foi preenchido.
  *
- * `fusoHorario` é nome IANA (`America/Sao_Paulo`); o back valida e normaliza.
- *
  * `temaJson` fica de fora: o tema por tenant está declarado como etapa futura
- * no CLAUDE.md, e um textarea de JSON cru aqui seria uma porta de entrada para
+ * em .agents/references/design-context.md, e um textarea de JSON cru aqui seria uma porta de entrada para
  * dado inválido antes de a feature existir.
  */
 export function TenantIdentitySection({ tenant, adminApi, onSaved }) {
@@ -83,9 +72,7 @@ export function TenantIdentitySection({ tenant, adminApi, onSaved }) {
     <Card>
       <CardHeader>
         <CardTitle>Identidade</CardTitle>
-        <CardDescription>
-          Dados de exibição e de residência dos dados deste tenant.
-        </CardDescription>
+        <CardDescription>Dados de exibição e de residência dos dados deste tenant.</CardDescription>
       </CardHeader>
 
       <CardContent>
@@ -140,9 +127,7 @@ export function TenantIdentitySection({ tenant, adminApi, onSaved }) {
             />
           </div>
 
-          {/* Base dos jobs agendados no horário do cliente (ex.: avisos
-              diários às 8h). A `key` remonta o campo depois de salvar para
-              mostrar a forma que o back gravou (america/manaus → America/Manaus). */}
+          {/* A key mostra o fuso canônico devolvido pelo backend após salvar. */}
           <Campo
             className="font-mono"
             defaultValue={tenant.fusoHorario ?? ''}
@@ -165,7 +150,7 @@ export function TenantIdentitySection({ tenant, adminApi, onSaved }) {
           <ApiErrorAlert error={submitError} id={SUBMIT_ERROR_ID} />
 
           <div className="flex items-center gap-3">
-            <Button type="submit" disabled={isSubmitting} aria-busy={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} loading={isSubmitting}>
               {isSubmitting ? 'Salvando...' : 'Salvar alterações'}
             </Button>
             {salvo && (
@@ -182,9 +167,7 @@ export function TenantIdentitySection({ tenant, adminApi, onSaved }) {
 
 /** Descarta as chaves que o formulário deixou em branco. */
 function somenteCamposPreenchidos(valores) {
-  return Object.fromEntries(
-    Object.entries(valores).filter(([, valor]) => valor !== ''),
-  );
+  return Object.fromEntries(Object.entries(valores).filter(([, valor]) => valor !== ''));
 }
 
 function Campo({ erro, id, label, className, ...props }) {

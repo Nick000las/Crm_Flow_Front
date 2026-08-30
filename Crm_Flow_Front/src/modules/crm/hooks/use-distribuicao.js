@@ -1,7 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { temFeature } from '@/lib/acesso';
-import { criarGrupo, editarGrupo, excluirGrupo, obterDistribuicao, salvarDistribuicao } from '../api/distribuicao.api';
+import {
+  criarGrupo,
+  editarGrupo,
+  excluirGrupo,
+  obterDistribuicao,
+  salvarDistribuicao,
+} from '../api/distribuicao.api';
 import { CRM_FEATURES } from '../constants';
 import { crmKeys } from '../query-keys';
 

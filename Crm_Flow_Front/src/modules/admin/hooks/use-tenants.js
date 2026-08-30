@@ -18,6 +18,7 @@ export function useTenants(adminApi) {
     tenants: null,
     carregando: true,
     erro: null,
+    revision: -1,
   });
   const [revalidacao, setRevalidacao] = useState(0);
 
@@ -30,6 +31,7 @@ export function useTenants(adminApi) {
         if (!controller.signal.aborted) {
           setState({
             tenants: normalizarLista(resposta),
+            revision: revalidacao,
             carregando: false,
             erro: null,
           });
@@ -37,11 +39,12 @@ export function useTenants(adminApi) {
       })
       .catch((error) => {
         if (!controller.signal.aborted && !isAbortError(error)) {
-          setState({
-            tenants: null,
+          setState((current) => ({
+            ...current,
+            revision: revalidacao,
             carregando: false,
             erro: toApiError(error),
-          });
+          }));
         }
       });
 
@@ -52,7 +55,7 @@ export function useTenants(adminApi) {
     setRevalidacao((atual) => atual + 1);
   }, []);
 
-  return { ...state, recarregar };
+  return { ...state, atualizando: !state.carregando && state.revision !== revalidacao, recarregar };
 }
 
 /**

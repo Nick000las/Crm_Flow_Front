@@ -27,21 +27,26 @@ function FormAnonimizar({ lead, onAnonimizado }) {
 
   function handleSubmit(event) {
     event.preventDefault();
-    if (!confere || anonimizar.isPending) return;
-    anonimizar.mutate(lead.id, { onSuccess: (resultado) => onAnonimizado(resumoDaAnonimizacao(resultado)) });
+    if (!confere || anonimizar.isPending) {
+      return;
+    }
+    anonimizar.mutate(lead.id, {
+      onSuccess: (resultado) => onAnonimizado(resumoDaAnonimizacao(resultado)),
+    });
   }
 
   return (
     <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       <div className="grid gap-2 text-sm">
         <p>
-          <span className="font-medium">Sai de vez:</span> nome (vira "Lead anonimizado"), e-mail, telefone,
-          empresa, cargo, CPF, CNPJ, endereço, CEP, os campos personalizados que identificam a pessoa e as notas das
-          atividades.
+          <span className="font-medium">Sai de vez:</span> nome (vira "Lead anonimizado"), e-mail,
+          telefone, empresa, cargo, CPF, CNPJ, endereço, CEP, os campos personalizados que
+          identificam a pessoa e as notas das atividades.
         </p>
         <p>
-          <span className="font-medium">Fica, para as estatísticas:</span> status, estágio, valor, origem, score,
-          datas, responsável, cidade/UF, tags e o histórico (sem os valores pessoais).
+          <span className="font-medium">Fica, para as estatísticas:</span> status, estágio, valor,
+          origem, score, datas, responsável, cidade/UF, tags e o histórico (sem os valores
+          pessoais).
         </p>
         <p>Os leads que foram mesclados neste também são anonimizados.</p>
       </div>
@@ -58,7 +63,9 @@ function FormAnonimizar({ lead, onAnonimizado }) {
           id={CONFIRMACAO_ID}
           onChange={(event) => {
             setDigitado(event.target.value);
-            if (anonimizar.error) anonimizar.reset();
+            if (anonimizar.error) {
+              anonimizar.reset();
+            }
           }}
           value={digitado}
         />
@@ -67,13 +74,24 @@ function FormAnonimizar({ lead, onAnonimizado }) {
         </p>
       </div>
 
-      <ApiErrorAlert error={anonimizar.error} id="anonimizar-erro" title="Não foi possível anonimizar" />
+      <ApiErrorAlert
+        error={anonimizar.error}
+        id="anonimizar-erro"
+        title="Não foi possível anonimizar"
+      />
 
       <DialogFooter>
-        <DialogClose render={<Button disabled={anonimizar.isPending} type="button" variant="outline" />}>
+        <DialogClose
+          render={<Button disabled={anonimizar.isPending} type="button" variant="outline" />}
+        >
           Cancelar
         </DialogClose>
-        <Button aria-busy={anonimizar.isPending} disabled={!confere || anonimizar.isPending} type="submit" variant="destructive">
+        <Button
+          aria-busy={anonimizar.isPending}
+          disabled={!confere || anonimizar.isPending}
+          type="submit"
+          variant="destructive"
+        >
           {anonimizar.isPending ? 'Anonimizando…' : 'Anonimizar de vez'}
         </Button>
       </DialogFooter>
@@ -98,7 +116,9 @@ export function AnonimizarLeadDialog({ lead, onOpenChange, onAnonimizado }) {
       <DialogContent className="rounded-none sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Anonimizar lead</DialogTitle>
-          <DialogDescription>Pedido do titular dos dados (LGPD). Esta ação não pode ser desfeita.</DialogDescription>
+          <DialogDescription>
+            Pedido do titular dos dados (LGPD). Esta ação não pode ser desfeita.
+          </DialogDescription>
         </DialogHeader>
         {lead && (
           <FormAnonimizar

@@ -31,8 +31,12 @@ export function ExcluirLeadDialog({ lead, open, onOpenChange, onExcluido, comLix
   const excluir = useExcluirLead();
 
   function handleOpenChange(proximo) {
-    if (excluir.isPending) return;
-    if (!proximo) excluir.reset();
+    if (excluir.isPending) {
+      return;
+    }
+    if (!proximo) {
+      excluir.reset();
+    }
     onOpenChange(proximo);
   }
 

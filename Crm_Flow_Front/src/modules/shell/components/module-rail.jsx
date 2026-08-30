@@ -1,10 +1,8 @@
 import { LogOut } from 'lucide-react';
+import { useState } from 'react';
+import { Spinner } from '@/components/ui/spinner';
 import { Link, useLocation } from 'react-router-dom';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAuth } from '@/hooks/useAuth';
 import { UTILITY_ITEMS } from '@/lib/modules-registry';
 import { cn } from '@/lib/utils';
@@ -12,8 +10,7 @@ import { SinoNotificacoes } from '@/modules/notificacoes/components/sino-notific
 
 const ITEM_BASE =
   'relative grid size-9 place-items-center rounded-md outline-none transition-colors duration-200 focus-visible:ring-3 focus-visible:ring-ring/50';
-const ITEM_INACTIVE =
-  'text-background/55 hover:bg-background/10 hover:text-background';
+const ITEM_INACTIVE = 'text-background/55 hover:bg-background/10 hover:text-background';
 // Único ponto de cor de destaque do Rail.
 const ITEM_ACTIVE = 'bg-primary/15 text-primary';
 
@@ -31,10 +28,7 @@ function RailLink({ item, isActive }) {
             className={cn(ITEM_BASE, isActive ? ITEM_ACTIVE : ITEM_INACTIVE)}
           >
             {isActive && (
-              <span
-                className="absolute inset-y-1 -left-2 w-0.5 bg-primary"
-                aria-hidden="true"
-              />
+              <span className="absolute inset-y-1 -left-2 w-0.5 bg-primary" aria-hidden="true" />
             )}
             <Icon className="size-4.5" aria-hidden="true" />
           </Link>
@@ -48,7 +42,17 @@ function RailLink({ item, isActive }) {
 /** @param {{ modules: import('@/lib/modules-registry').ModuleEntry[] }} props */
 export function ModuleRail({ modules }) {
   const { logout } = useAuth();
+  const [loggingOut, setLoggingOut] = useState(false);
   const { pathname } = useLocation();
+
+  async function handleLogout() {
+    setLoggingOut(true);
+    try {
+      await logout();
+    } finally {
+      setLoggingOut(false);
+    }
+  }
 
   const isItemActive = (item) => pathname.startsWith(item.path);
 
@@ -70,11 +74,17 @@ export function ModuleRail({ modules }) {
 
         <Tooltip>
           <TooltipTrigger
-            aria-label="Sair"
+            aria-label={loggingOut ? 'Saindo…' : 'Sair'}
+            disabled={loggingOut}
+            aria-busy={loggingOut}
             className={cn(ITEM_BASE, ITEM_INACTIVE)}
-            onClick={() => logout()}
+            onClick={handleLogout}
           >
-            <LogOut className="size-4.5" aria-hidden="true" />
+            {loggingOut ? (
+              <Spinner className="size-4.5" />
+            ) : (
+              <LogOut className="size-4.5" aria-hidden="true" />
+            )}
           </TooltipTrigger>
           <TooltipContent side="right">Sair</TooltipContent>
         </Tooltip>

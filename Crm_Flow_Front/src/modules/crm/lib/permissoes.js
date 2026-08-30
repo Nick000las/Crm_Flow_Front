@@ -21,7 +21,9 @@ export function valoresDasPermissoes(config) {
   return Object.fromEntries(
     config.papeis.map((papel) => [
       papel,
-      Object.fromEntries(config.campos.map((campo) => [campo.id, campo.acessos[papel] ?? ACESSOS_CAMPO.EDITAR])),
+      Object.fromEntries(
+        config.campos.map((campo) => [campo.id, campo.acessos[papel] ?? ACESSOS_CAMPO.EDITAR]),
+      ),
     ]),
   );
 }
@@ -44,7 +46,8 @@ export function permissoesParaEnvio(valores) {
 /** @param {ValoresPermissoes} valores @param {ConfigPermissoes} config */
 export function permissoesMudaram(valores, config) {
   return (
-    JSON.stringify(permissoesParaEnvio(valores)) !== JSON.stringify(permissoesParaEnvio(valoresDasPermissoes(config)))
+    JSON.stringify(permissoesParaEnvio(valores)) !==
+    JSON.stringify(permissoesParaEnvio(valoresDasPermissoes(config)))
   );
 }
 
@@ -59,10 +62,14 @@ export function permissoesMudaram(valores, config) {
 export function validarPermissoes(valores, config) {
   const erros = {};
   const contatos = config.campos.filter((campo) => CHAVES_CONTATO.includes(campo.chave));
-  if (contatos.length < CHAVES_CONTATO.length) return erros;
+  if (contatos.length < CHAVES_CONTATO.length) {
+    return erros;
+  }
 
   for (const [papel, acessos] of Object.entries(valores)) {
-    if (contatos.every((campo) => acessos[campo.id] !== ACESSOS_CAMPO.EDITAR)) erros[papel] = MENSAGENS_PERMISSOES.CONTATO;
+    if (contatos.every((campo) => acessos[campo.id] !== ACESSOS_CAMPO.EDITAR)) {
+      erros[papel] = MENSAGENS_PERMISSOES.CONTATO;
+    }
   }
   return erros;
 }
@@ -83,9 +90,13 @@ export function errosDasPermissoes(fields, papeis) {
   for (const [caminho, mensagens] of Object.entries(fields ?? {})) {
     const mensagem = Array.isArray(mensagens) ? mensagens[0] : String(mensagens);
     const [papel, campoId, ...resto] = caminho.split('.');
-    if (!papeis.includes(papel) || resto.length > 0) outros.push(mensagem);
-    else if (campoId) porCampo[campoId] = { ...porCampo[campoId], [papel]: mensagem };
-    else porPapel[papel] = mensagem;
+    if (!papeis.includes(papel) || resto.length > 0) {
+      outros.push(mensagem);
+    } else if (campoId) {
+      porCampo[campoId] = { ...porCampo[campoId], [papel]: mensagem };
+    } else {
+      porPapel[papel] = mensagem;
+    }
   }
 
   return { porCampo, porPapel, outros };

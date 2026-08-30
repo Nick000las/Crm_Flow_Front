@@ -26,7 +26,12 @@ const CHAVES_UNIDAS = new Set(['tags']);
 /** Dados do lead fora de `/fields`, pela chave da API (a mesma de `escolhas`). */
 const CAMPOS_DO_LEAD = Object.freeze([
   { chave: 'valor', label: 'Valor', tipo: TIPOS_CAMPO.MONETARIO, coluna: 'valor' },
-  { chave: 'usuarioResponsavelId', label: 'Responsável', tipo: 'usuario', coluna: 'usuario_responsavel_id' },
+  {
+    chave: 'usuarioResponsavelId',
+    label: 'Responsável',
+    tipo: 'usuario',
+    coluna: 'usuario_responsavel_id',
+  },
 ]);
 
 /**
@@ -46,7 +51,13 @@ export function linhasDaMesclagem(campos, a, b, nomePorId) {
       const textoA = textoDoValor(campo, lerValorDoCampo(a, campo), nomePorId);
       const textoB = textoDoValor(campo, lerValorDoCampo(b, campo), nomePorId);
 
-      return { chave: campo.chave, label: campo.label, textoA, textoB, escolhivel: Boolean(textoA && textoB) };
+      return {
+        chave: campo.chave,
+        label: campo.label,
+        textoA,
+        textoB,
+        escolhivel: Boolean(textoA && textoB),
+      };
     })
     .filter((linha) => linha.textoA !== linha.textoB);
 }
@@ -76,9 +87,13 @@ export function escolhasParaEnvio(escolhas, principal) {
  * @returns {Lado}
  */
 export function ladoQueFica(linha, escolha, principal) {
-  if (linha.escolhivel) return escolha ?? principal;
+  if (linha.escolhivel) {
+    return escolha ?? principal;
+  }
 
   const textoDoPrincipal = principal === LADO.A ? linha.textoA : linha.textoB;
-  if (textoDoPrincipal) return principal;
+  if (textoDoPrincipal) {
+    return principal;
+  }
   return principal === LADO.A ? LADO.B : LADO.A;
 }

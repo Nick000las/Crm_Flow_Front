@@ -1,6 +1,12 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
-import { acaoDeArquivo, atualizarLead, criarLead, editarEmMassa, excluirLead } from '../api/leads.api';
+import {
+  acaoDeArquivo,
+  atualizarLead,
+  criarLead,
+  editarEmMassa,
+  excluirLead,
+} from '../api/leads.api';
 import { crmKeys } from '../query-keys';
 
 /**

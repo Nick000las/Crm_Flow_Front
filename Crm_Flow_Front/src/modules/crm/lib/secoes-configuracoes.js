@@ -39,7 +39,10 @@ export const SECOES_CONFIGURACOES = Object.freeze([
   secao('inatividade', 'Inatividade', CRM_FEATURES.INATIVIDADE, { pronta: true, roles: null }),
   secao('pontuacao', 'Pontuação', CRM_FEATURES.SCORE, { pronta: true, roles: null }),
   // Leitura para todos; alterar, só gestão (decidido na tela, como Duplicidade).
-  secao('enriquecimento', 'Enriquecimento por CNPJ', CRM_FEATURES.CNPJ, { pronta: true, roles: null }),
+  secao('enriquecimento', 'Enriquecimento por CNPJ', CRM_FEATURES.CNPJ, {
+    pronta: true,
+    roles: null,
+  }),
   secao('privacidade', 'Privacidade (LGPD)', CRM_FEATURES.LGPD, { pronta: true, roles: null }),
 ]);
 

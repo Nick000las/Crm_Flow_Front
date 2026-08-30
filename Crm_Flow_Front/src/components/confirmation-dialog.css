@@ -1,0 +1,54 @@
+.confirmation-dialog {
+  margin: auto;
+  width: min(28rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: 0 20px 60px #0003;
+}
+.confirmation-dialog::backdrop {
+  background: #0007;
+}
+.confirmation-dialog-content {
+  padding: 1.5rem;
+}
+.confirmation-dialog-icon {
+  display: inline-flex;
+  padding: 0.65rem;
+  margin-bottom: 1rem;
+  border-radius: 50%;
+  background: color-mix(in oklch, var(--destructive) 12%, transparent);
+  color: var(--destructive);
+}
+.confirmation-dialog h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.confirmation-dialog p {
+  margin-top: 0.65rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--muted-foreground);
+  overflow-wrap: anywhere;
+}
+.confirmation-dialog p.confirmation-dialog-error {
+  color: var(--destructive);
+}
+.confirmation-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  padding: 1rem 1.5rem;
+  background: var(--muted);
+  border-top: 1px solid var(--border);
+}
+@media (max-width: 400px) {
+  .confirmation-dialog-footer > button {
+    flex: 1;
+  }
+}

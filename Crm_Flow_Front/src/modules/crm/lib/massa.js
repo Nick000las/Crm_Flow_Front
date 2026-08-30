@@ -59,21 +59,30 @@ export function alteracoesDoForm(form) {
 
   for (const chave of ['status', 'fonteLead']) {
     const { ativa, valor } = form[chave];
-    if (!ativa) continue;
-    if (valor) alteracoes[chave] = valor;
-    else erros[chave] = MENSAGENS_MASSA.SEM_VALOR;
+    if (!ativa) {
+      continue;
+    }
+    if (valor) {
+      alteracoes[chave] = valor;
+    } else {
+      erros[chave] = MENSAGENS_MASSA.SEM_VALOR;
+    }
   }
 
   if (form.responsavel.ativa) {
     const { valor } = form.responsavel;
-    if (!valor) erros.responsavel = MENSAGENS_MASSA.SEM_VALOR;
-    else alteracoes.usuarioResponsavelId = valor === RESPONSAVEL_NENHUM ? null : valor;
+    if (!valor) {
+      erros.responsavel = MENSAGENS_MASSA.SEM_VALOR;
+    } else {
+      alteracoes.usuarioResponsavelId = valor === RESPONSAVEL_NENHUM ? null : valor;
+    }
   }
 
   if (form.tags.ativa) {
     const { adicionar, remover } = form.tags;
-    if (adicionar.length === 0 && remover.length === 0) erros.tags = MENSAGENS_MASSA.SEM_TAGS;
-    else {
+    if (adicionar.length === 0 && remover.length === 0) {
+      erros.tags = MENSAGENS_MASSA.SEM_TAGS;
+    } else {
       alteracoes.tags = {
         ...(adicionar.length > 0 && { adicionar }),
         ...(remover.length > 0 && { remover }),
@@ -81,8 +90,12 @@ export function alteracoesDoForm(form) {
     }
   }
 
-  if (Object.keys(erros).length > 0) return { erros };
-  if (Object.keys(alteracoes).length === 0) return { erros: { geral: MENSAGENS_MASSA.NENHUMA } };
+  if (Object.keys(erros).length > 0) {
+    return { erros };
+  }
+  if (Object.keys(alteracoes).length === 0) {
+    return { erros: { geral: MENSAGENS_MASSA.NENHUMA } };
+  }
 
   return { alteracoes };
 }
@@ -131,8 +144,12 @@ export function falhasDoResultado(resultados, tituloPorId, rotuloPorChave) {
 
 function mensagemDoErro(erro, rotuloPorChave) {
   const [campo, mensagens] =
-    Object.entries(erro?.fields ?? {}).find(([, lista]) => Array.isArray(lista) && lista.length > 0) ?? [];
+    Object.entries(erro?.fields ?? {}).find(
+      ([, lista]) => Array.isArray(lista) && lista.length > 0,
+    ) ?? [];
 
-  if (campo) return `${rotuloPorChave.get(campo) ?? campo}: ${mensagens[0]}`;
+  if (campo) {
+    return `${rotuloPorChave.get(campo) ?? campo}: ${mensagens[0]}`;
+  }
   return erro?.message || 'Não foi possível alterar este lead.';
 }

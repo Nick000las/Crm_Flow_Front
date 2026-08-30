@@ -19,12 +19,51 @@ import {
 } from './layout.js';
 
 // M11: o CNPJ nativo vem com o tipo `cnpj` (gravado sem máscara).
-const cnpj = { ref: 'f-cnpj', chave: 'cnpj', label: 'CNPJ', tipo: 'cnpj', camada: 2, coluna: 'cnpj' };
-const empresa = { ref: 'f-emp', chave: 'empresa', label: 'Empresa', tipo: 'texto', camada: 2, coluna: 'empresa' };
-const cidade = { ref: 'f-cid', chave: 'cidade', label: 'Cidade', tipo: 'texto', camada: 2, coluna: 'cidade' };
-const valor = { ref: 'lead.valor', chave: 'valor', label: 'Valor', tipo: 'monetario', coluna: 'valor' };
-const responsavel = { ref: 'lead.responsavel', chave: 'usuarioResponsavelId', label: 'Responsável', tipo: 'usuario', coluna: 'usuario_responsavel_id' };
-const criadoEm = { ref: 'lead.criadoEm', chave: 'createdAt', label: 'Criado em', tipo: 'data', coluna: 'created_at' };
+const cnpj = {
+  ref: 'f-cnpj',
+  chave: 'cnpj',
+  label: 'CNPJ',
+  tipo: 'cnpj',
+  camada: 2,
+  coluna: 'cnpj',
+};
+const empresa = {
+  ref: 'f-emp',
+  chave: 'empresa',
+  label: 'Empresa',
+  tipo: 'texto',
+  camada: 2,
+  coluna: 'empresa',
+};
+const cidade = {
+  ref: 'f-cid',
+  chave: 'cidade',
+  label: 'Cidade',
+  tipo: 'texto',
+  camada: 2,
+  coluna: 'cidade',
+};
+const valor = {
+  ref: 'lead.valor',
+  chave: 'valor',
+  label: 'Valor',
+  tipo: 'monetario',
+  coluna: 'valor',
+};
+const responsavel = {
+  ref: 'lead.responsavel',
+  chave: 'usuarioResponsavelId',
+  label: 'Responsável',
+  tipo: 'usuario',
+  coluna: 'usuario_responsavel_id',
+};
+const criadoEm = {
+  ref: 'lead.criadoEm',
+  chave: 'createdAt',
+  label: 'Criado em',
+  tipo: 'data',
+  coluna: 'created_at',
+};
 
 const lead = {
   id: 'l1',
@@ -58,7 +97,12 @@ describe('título e subtítulo', () => {
 
 describe('colunas', () => {
   test('referências fixas viram as colunas que a tabela já tem', () => {
-    assert.deepEqual(idsDasColunas([empresa, valor, responsavel, criadoEm]), ['empresa', 'valor', 'responsavel', 'criadoEm']);
+    assert.deepEqual(idsDasColunas([empresa, valor, responsavel, criadoEm]), [
+      'empresa',
+      'valor',
+      'responsavel',
+      'criadoEm',
+    ]);
     assert.equal(colunaDoItem(criadoEm).tipo, 'instante');
     assert.equal(colunaDoItem(empresa).campo, empresa);
   });
@@ -73,7 +117,9 @@ describe('editor', () => {
   });
 
   test('opções do editor: campos pelo id, mais as fixas', () => {
-    const opcoes = opcoesDoEditor([{ id: 'f-emp', chave: 'empresa', label: 'Empresa', tipo: 'texto', camada: 2 }]);
+    const opcoes = opcoesDoEditor([
+      { id: 'f-emp', chave: 'empresa', label: 'Empresa', tipo: 'texto', camada: 2 },
+    ]);
 
     assert.equal(opcoes[0].ref, 'f-emp');
     assert.ok(opcoes.some((opcao) => opcao.ref === 'lead.valor'));
@@ -101,7 +147,13 @@ describe('editor', () => {
   });
 
   test('override manda só as partes que mudaram', () => {
-    const base = { identificador: 'n', subtitulo: ['a'], destaques: [], secoes: [], colunas: ['a', 'b'] };
+    const base = {
+      identificador: 'n',
+      subtitulo: ['a'],
+      destaques: [],
+      secoes: [],
+      colunas: ['a', 'b'],
+    };
 
     assert.deepEqual(parcialDoMeu(base, { ...base, colunas: ['b', 'a'] }), { colunas: ['b', 'a'] });
     assert.deepEqual(parcialDoMeu(base, base), {});
@@ -111,17 +163,35 @@ describe('editor', () => {
     const base = { identificador: 'n', subtitulo: [], destaques: [], secoes: [], colunas: ['a'] };
 
     assert.deepEqual(validarLayout(base), {});
-    assert.equal(validarLayout({ ...base, subtitulo: ['a', 'b', 'c'] }).subtitulo, MENSAGENS_LAYOUT.SUBTITULO);
+    assert.equal(
+      validarLayout({ ...base, subtitulo: ['a', 'b', 'c'] }).subtitulo,
+      MENSAGENS_LAYOUT.SUBTITULO,
+    );
     assert.equal(validarLayout({ ...base, colunas: [] }).colunas, MENSAGENS_LAYOUT.COLUNAS);
     assert.equal(
-      validarLayout({ ...base, secoes: [{ nome: 'A', campos: ['x'] }, { nome: ' a ', campos: [] }] }).secoes,
+      validarLayout({
+        ...base,
+        secoes: [
+          { nome: 'A', campos: ['x'] },
+          { nome: ' a ', campos: [] },
+        ],
+      }).secoes,
       MENSAGENS_LAYOUT.SECAO_REPETIDA,
     );
     assert.equal(
-      validarLayout({ ...base, secoes: [{ nome: 'A', campos: ['x'] }, { nome: 'B', campos: ['x'] }] }).secoes,
+      validarLayout({
+        ...base,
+        secoes: [
+          { nome: 'A', campos: ['x'] },
+          { nome: 'B', campos: ['x'] },
+        ],
+      }).secoes,
       MENSAGENS_LAYOUT.CAMPO_EM_DUAS_SECOES,
     );
-    assert.equal(validarLayout({ ...base, secoes: [{ nome: '', campos: [] }] }).secoes, MENSAGENS_LAYOUT.NOME_SECAO);
+    assert.equal(
+      validarLayout({ ...base, secoes: [{ nome: '', campos: [] }] }).secoes,
+      MENSAGENS_LAYOUT.NOME_SECAO,
+    );
   });
 });
 

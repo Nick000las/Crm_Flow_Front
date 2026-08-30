@@ -18,7 +18,14 @@ import { ExportarDialog } from '../components/exportar-dialog';
 import { LeadsToolbar } from '../components/leads-toolbar';
 import { LeadsConteudo } from '../components/leads-conteudo';
 import { MesclarDialog } from '../components/mesclagem/mesclar-dialog';
-import { AVISOS_LEAD, BULK, CONTEXTO, CRM_FEATURES, PAPEIS_GESTAO, SITUACOES_LEAD } from '../constants';
+import {
+  AVISOS_LEAD,
+  BULK,
+  CONTEXTO,
+  CRM_FEATURES,
+  PAPEIS_GESTAO,
+  SITUACOES_LEAD,
+} from '../constants';
 import { useAcoesDeArquivo } from '../hooks/use-acoes-de-arquivo';
 import { useCampos } from '../hooks/use-campos';
 import { useColunasDaLista } from '../hooks/use-colunas-da-lista';
@@ -81,7 +88,13 @@ export default function LeadsPage() {
   const podeAnonimizar = gestao && temFeature(user, CRM_FEATURES.LGPD);
   // Edição em massa: qualquer papel com `crm.massa`, fora da lixeira (lá o back dá 404).
   const emMassa = temFeature(user, CRM_FEATURES.MASSA) && !naLixeira;
-  const chaveDaConsulta = JSON.stringify([estado.busca, estado.filtro, situacao, estado.pagina, estado.tamanho]);
+  const chaveDaConsulta = JSON.stringify([
+    estado.busca,
+    estado.filtro,
+    situacao,
+    estado.pagina,
+    estado.tamanho,
+  ]);
   const selecao = useSelecaoLeads(chaveDaConsulta, emMassa ? BULK.MAX_IDS : MAXIMO_MESCLAR);
   const [aMesclar, setAMesclar] = useState([]);
   const [editandoEmMassa, setEditandoEmMassa] = useState(false);
@@ -93,7 +106,10 @@ export default function LeadsPage() {
   // ainda precisa do rótulo (o back o recusa com 400, destacado no chip).
   const campos = camposQuery.data ?? CAMPOS_VAZIOS;
   const camposDoFiltro = useMemo(() => camposDoContexto(campos, CONTEXTO.FILTRO), [campos]);
-  const { identificador, colunas, ids, visiveis, alternar } = useColunasDaLista(campos, user?.tenantId);
+  const { identificador, colunas, ids, visiveis, alternar } = useColunasDaLista(
+    campos,
+    user?.tenantId,
+  );
 
   const erro = camposQuery.error ?? leadsQuery.error;
   const pagina = leadsQuery.data;
@@ -120,18 +136,29 @@ export default function LeadsPage() {
   /** Ao fechar o dialog (por qualquer caminho): só as falhas seguem marcadas. */
   function fecharEdicaoEmMassa() {
     setEditandoEmMassa(false);
-    if (!resultadoMassa) return;
+    if (!resultadoMassa) {
+      return;
+    }
 
-    const falhas = resultadoMassa.resultados.filter((resultado) => !resultado.ok).map((resultado) => resultado.id);
-    if (falhas.length > 0) selecao.manter(falhas);
-    else selecao.limpar();
+    const falhas = resultadoMassa.resultados
+      .filter((resultado) => !resultado.ok)
+      .map((resultado) => resultado.id);
+    if (falhas.length > 0) {
+      selecao.manter(falhas);
+    } else {
+      selecao.limpar();
+    }
     setAvisoMassa({ chave: chaveDaConsulta, texto: avisoDoResultado(resultadoMassa) });
     setResultadoMassa(null);
   }
 
   const botaoNovo = (comId) => (
     // Só o do cabeçalho leva o id: é ele que recebe o foco de volta.
-    <Link className={buttonVariants()} id={comId ? ID_BOTAO_NOVO_LEAD : undefined} to={destinos.novo}>
+    <Link
+      className={buttonVariants()}
+      id={comId ? ID_BOTAO_NOVO_LEAD : undefined}
+      to={destinos.novo}
+    >
       <Plus aria-hidden="true" />
       Novo lead
     </Link>
@@ -171,7 +198,10 @@ export default function LeadsPage() {
         onRemover={(chip) => atualizar({ filtro: chip.remover(), pagina: 1 })}
       />
 
-      <p className={aviso ? 'mb-4 border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
+      <p
+        className={aviso ? 'mb-4 border border-border px-3 py-2 text-sm' : 'sr-only'}
+        role="status"
+      >
         {aviso}
       </p>
       <ApiErrorAlert
@@ -186,7 +216,9 @@ export default function LeadsPage() {
           onEditarEmMassa={emMassa ? () => setEditandoEmMassa(true) : undefined}
           onLimpar={selecao.limpar}
           bloqueioMesclar={
-            selecao.leads.some((lead) => lead.anonimizado_em) ? 'Lead anonimizado não pode ser mesclado.' : null
+            selecao.leads.some((lead) => lead.anonimizado_em)
+              ? 'Lead anonimizado não pode ser mesclado.'
+              : null
           }
           onMesclar={podeMesclar ? () => setAMesclar(selecao.leads) : undefined}
           total={selecao.leads.length}
@@ -227,7 +259,11 @@ export default function LeadsPage() {
 
   return (
     <>
-      <PageHeader actions={acoesDoCabecalho} title="Leads" description="Contatos e oportunidades do CRM." />
+      <PageHeader
+        actions={acoesDoCabecalho}
+        title="Leads"
+        description="Contatos e oportunidades do CRM."
+      />
       {comArquivo ? (
         <AbasSituacao
           onChange={(proxima) => {
@@ -279,7 +315,9 @@ export default function LeadsPage() {
       <ExcluirLeadDialog
         comLixeira={comArquivo}
         lead={leadAExcluir}
-        onExcluido={() => voltarParaLista(comArquivo ? AVISOS_LEAD.NA_LIXEIRA : AVISOS_LEAD.EXCLUIDO)}
+        onExcluido={() =>
+          voltarParaLista(comArquivo ? AVISOS_LEAD.NA_LIXEIRA : AVISOS_LEAD.EXCLUIDO)
+        }
         onOpenChange={(aberto) => !aberto && setLeadAExcluir(null)}
         open={Boolean(leadAExcluir)}
       />

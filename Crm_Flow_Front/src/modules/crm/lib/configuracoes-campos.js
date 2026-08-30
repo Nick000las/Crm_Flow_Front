@@ -33,17 +33,26 @@ export function bloqueios(campo) {
   const { capacidades, obrigatorio, visibilidade } = campo;
 
   const motivoDoContexto = (contexto) => {
-    if (!capacidades.canHide) return MOTIVOS.ESSENCIAL;
-    if (contexto === CONTEXTO.CRIACAO && obrigatorio) return MOTIVOS.OBRIGATORIO_NA_CRIACAO;
+    if (!capacidades.canHide) {
+      return MOTIVOS.ESSENCIAL;
+    }
+    if (contexto === CONTEXTO.CRIACAO && obrigatorio) {
+      return MOTIVOS.OBRIGATORIO_NA_CRIACAO;
+    }
     return null;
   };
 
   let motivoObrigatorio = null;
-  if (!capacidades.canMakeOptional) motivoObrigatorio = MOTIVOS.OBRIGATORIEDADE_FIXA;
-  else if (!obrigatorio && !visibilidade[CONTEXTO.CRIACAO]) motivoObrigatorio = MOTIVOS.LIGUE_CRIACAO;
+  if (!capacidades.canMakeOptional) {
+    motivoObrigatorio = MOTIVOS.OBRIGATORIEDADE_FIXA;
+  } else if (!obrigatorio && !visibilidade[CONTEXTO.CRIACAO]) {
+    motivoObrigatorio = MOTIVOS.LIGUE_CRIACAO;
+  }
 
   return {
-    visibilidade: Object.fromEntries(CONTEXTOS.map((contexto) => [contexto, motivoDoContexto(contexto)])),
+    visibilidade: Object.fromEntries(
+      CONTEXTOS.map((contexto) => [contexto, motivoDoContexto(contexto)]),
+    ),
     obrigatorio: motivoObrigatorio,
     renomear: capacidades.canRename ? null : MOTIVOS.NAO_RENOMEIA,
   };
@@ -64,8 +73,12 @@ export function parcialDeVisibilidade(contexto, ligado) {
  */
 export function parcialDoNome(campo, texto) {
   const label = texto.trim();
-  if (label === campo.label) return null;
-  if (campo.labelPadrao && label === campo.labelPadrao) return { label: null };
+  if (label === campo.label) {
+    return null;
+  }
+  if (campo.labelPadrao && label === campo.labelPadrao) {
+    return { label: null };
+  }
 
   return { label };
 }

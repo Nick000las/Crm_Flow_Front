@@ -18,8 +18,11 @@ export function useSelecaoLeads(chaveDaConsulta, maximo) {
   const definir = (proximos) => setSelecao({ chave: chaveDaConsulta, leads: proximos });
 
   function alternar(lead) {
-    if (ids.has(lead.id)) definir(leads.filter((atual) => atual.id !== lead.id));
-    else if (leads.length < maximo) definir([...leads, lead]);
+    if (ids.has(lead.id)) {
+      definir(leads.filter((atual) => atual.id !== lead.id));
+    } else if (leads.length < maximo) {
+      definir([...leads, lead]);
+    }
   }
 
   /** Cabeçalho: com todos da página marcados desmarca; senão, completa até o máximo. */

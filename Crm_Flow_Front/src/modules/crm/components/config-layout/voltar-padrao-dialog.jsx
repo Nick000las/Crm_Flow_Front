@@ -20,8 +20,12 @@ export function VoltarPadraoDialog({ open, onOpenChange, onRestaurado }) {
   const remover = useRemoverMeu();
 
   function handleOpenChange(proximo) {
-    if (remover.isPending) return;
-    if (!proximo) remover.reset();
+    if (remover.isPending) {
+      return;
+    }
+    if (!proximo) {
+      remover.reset();
+    }
     onOpenChange(proximo);
   }
 
@@ -40,16 +44,24 @@ export function VoltarPadraoDialog({ open, onOpenChange, onRestaurado }) {
         <AlertDialogHeader>
           <AlertDialogTitle>Voltar ao padrão da empresa?</AlertDialogTitle>
           <AlertDialogDescription>
-            Seu layout próprio é descartado, e a tabela e a ficha passam a seguir o padrão definido pela
-            empresa.
+            Seu layout próprio é descartado, e a tabela e a ficha passam a seguir o padrão definido
+            pela empresa.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
-        <ApiErrorAlert error={remover.error} id="voltar-padrao-erro" title="Não foi possível voltar ao padrão" />
+        <ApiErrorAlert
+          error={remover.error}
+          id="voltar-padrao-erro"
+          title="Não foi possível voltar ao padrão"
+        />
 
         <AlertDialogFooter>
           <AlertDialogCancel disabled={remover.isPending}>Cancelar</AlertDialogCancel>
-          <AlertDialogAction aria-busy={remover.isPending} disabled={remover.isPending} onClick={confirmar}>
+          <AlertDialogAction
+            aria-busy={remover.isPending}
+            disabled={remover.isPending}
+            onClick={confirmar}
+          >
             {remover.isPending ? 'Restaurando…' : 'Voltar ao padrão'}
           </AlertDialogAction>
         </AlertDialogFooter>

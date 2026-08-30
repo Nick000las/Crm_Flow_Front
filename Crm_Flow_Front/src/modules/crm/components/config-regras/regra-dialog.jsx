@@ -13,14 +13,26 @@ import {
 } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getFieldError } from '@/services/api';
-import { CATEGORIAS_STATUS, ROTULOS_CATEGORIA, ROTULOS_TIPO_REGRA, TIPOS_REGRA } from '../../constants';
+import {
+  CATEGORIAS_STATUS,
+  ROTULOS_CATEGORIA,
+  ROTULOS_TIPO_REGRA,
+  TIPOS_REGRA,
+} from '../../constants';
 import { useCriarRegra, useEditarRegra } from '../../hooks/use-regras';
 import { payloadDaRegra, validarRegra, valoresDaRegra } from '../../lib/regras';
 import { CampoForm } from '../campo-form';
 import { CondicaoDeCampo } from '../condicao-de-campo';
 import { SelectSimples } from '../select-simples';
 
-const CAMPOS_DO_SERVIDOR = ['campoId', 'condicao', 'condicao.campoId', 'condicao.operador', 'condicao.valor', 'efeito'];
+const CAMPOS_DO_SERVIDOR = [
+  'campoId',
+  'condicao',
+  'condicao.campoId',
+  'condicao.operador',
+  'condicao.valor',
+  'efeito',
+];
 const CATEGORIAS = Object.values(CATEGORIAS_STATUS);
 
 /** Grupo de checkboxes `{ valor, rotulo }` que edita uma lista de valores. */
@@ -35,7 +47,11 @@ function Marcaveis({ id, itens, marcados, onChange }) {
               checked={marcados.includes(item.valor)}
               id={itemId}
               onCheckedChange={(marcado) =>
-                onChange(marcado ? [...marcados, item.valor] : marcados.filter((atual) => atual !== item.valor))
+                onChange(
+                  marcado
+                    ? [...marcados, item.valor]
+                    : marcados.filter((atual) => atual !== item.valor),
+                )
               }
             />
             {item.rotulo}
@@ -128,18 +144,25 @@ function FormRegra({ regra, campos, onSalvo }) {
 
   const comId = campos.filter((campo) => campo.id);
   const doStatus = comId.find((campo) => campo.chave === 'status');
-  const statusDoTenant = (doStatus?.opcoesLista ?? []).map((opcao) => ({ valor: opcao.key, rotulo: opcao.label }));
+  const statusDoTenant = (doStatus?.opcoesLista ?? []).map((opcao) => ({
+    valor: opcao.key,
+    rotulo: opcao.label,
+  }));
   const opcoesAlvo = comId
     .filter((campo) => valores.kind !== TIPOS_REGRA.POR_STATUS || campo !== doStatus)
     .map((campo) => ({ valor: campo.id, rotulo: campo.label }));
 
-  const erroDe = (campo) => errosCliente[campo] ?? (mutacao.error ? getFieldError(mutacao.error, campo) : null);
-  const erroSemCampo = mutacao.error && !CAMPOS_DO_SERVIDOR.some((campo) => getFieldError(mutacao.error, campo));
+  const erroDe = (campo) =>
+    errosCliente[campo] ?? (mutacao.error ? getFieldError(mutacao.error, campo) : null);
+  const erroSemCampo =
+    mutacao.error && !CAMPOS_DO_SERVIDOR.some((campo) => getFieldError(mutacao.error, campo));
 
   function alterar(parcial) {
     setValores((atuais) => ({ ...atuais, ...parcial }));
     setErrosCliente({});
-    if (mutacao.error) mutacao.reset();
+    if (mutacao.error) {
+      mutacao.reset();
+    }
   }
 
   function handleSubmit(event) {
@@ -155,8 +178,14 @@ function FormRegra({ regra, campos, onSalvo }) {
       onSalvo(null);
       return;
     }
-    if (editando) editar.mutate({ id: regra.id, parcial: corpo }, { onSuccess: () => onSalvo('Regra atualizada.') });
-    else criar.mutate(corpo, { onSuccess: () => onSalvo('Regra criada.') });
+    if (editando) {
+      editar.mutate(
+        { id: regra.id, parcial: corpo },
+        { onSuccess: () => onSalvo('Regra atualizada.') },
+      );
+    } else {
+      criar.mutate(corpo, { onSuccess: () => onSalvo('Regra criada.') });
+    }
   }
 
   const corpo = (
@@ -213,10 +242,18 @@ function FormRegra({ regra, campos, onSalvo }) {
         </Tabs>
       )}
 
-      {erroSemCampo && <ApiErrorAlert error={mutacao.error} id="regra-erro" title="Não foi possível salvar a regra" />}
+      {erroSemCampo && (
+        <ApiErrorAlert
+          error={mutacao.error}
+          id="regra-erro"
+          title="Não foi possível salvar a regra"
+        />
+      )}
 
       <DialogFooter>
-        <DialogClose render={<Button disabled={mutacao.isPending} type="button" variant="outline" />}>
+        <DialogClose
+          render={<Button disabled={mutacao.isPending} type="button" variant="outline" />}
+        >
           Cancelar
         </DialogClose>
         <Button aria-busy={mutacao.isPending} disabled={mutacao.isPending} type="submit">
@@ -246,7 +283,9 @@ export function RegraDialog({ open, onOpenChange, regra, campos, onSalvo }) {
         <DialogHeader>
           <DialogTitle>{regra ? 'Editar regra' : 'Nova regra'}</DialogTitle>
           <DialogDescription>
-            {regra ? ROTULOS_TIPO_REGRA[regra.kind] : 'Quando um campo fica obrigatório ou aparece no formulário do lead.'}
+            {regra
+              ? ROTULOS_TIPO_REGRA[regra.kind]
+              : 'Quando um campo fica obrigatório ou aparece no formulário do lead.'}
           </DialogDescription>
         </DialogHeader>
         {open && (

@@ -12,7 +12,15 @@ const TRANSICAO = Object.freeze({ duration: 200, easing: 'ease' });
  * @param {boolean} desabilitado enquanto uma reordenação está salvando
  */
 export function useLinhaOrdenavel(id, desabilitado) {
-  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
     id,
     disabled: desabilitado,
     transition: TRANSICAO,

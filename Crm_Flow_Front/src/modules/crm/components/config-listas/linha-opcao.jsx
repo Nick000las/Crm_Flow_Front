@@ -28,7 +28,16 @@ import { useLinhaOrdenavel } from '../ordenavel/use-linha-ordenavel';
  *   onExcluir: (opcao: import('../../lib/listas').OpcaoConfigurada) => void,
  * }} props
  */
-export function LinhaOpcao({ tipo, opcao, indice, total, ordemOcupada, onMover, onEditar, onExcluir }) {
+export function LinhaOpcao({
+  tipo,
+  opcao,
+  indice,
+  total,
+  ordemOcupada,
+  onMover,
+  onEditar,
+  onExcluir,
+}) {
   const atualizar = useAtualizarOpcao();
   const { linha, puxador } = useLinhaOrdenavel(opcao.id, ordemOcupada);
   const ativo = atualizar.isPending ? atualizar.variables.parcial.ativo : opcao.ativo;
@@ -43,7 +52,9 @@ export function LinhaOpcao({ tipo, opcao, indice, total, ordemOcupada, onMover, 
 
       <TableCell className="min-w-48">
         <OpcaoBadge opcao={{ ...opcao, ativo }} />
-        <span className="mt-0.5 block font-mono text-[11px] text-muted-foreground">{opcao.key}</span>
+        <span className="mt-0.5 block font-mono text-[11px] text-muted-foreground">
+          {opcao.key}
+        </span>
         {atualizar.error && (
           <p className="mt-1 text-xs text-destructive" role="alert">
             {toApiError(atualizar.error).message}
@@ -65,13 +76,25 @@ export function LinhaOpcao({ tipo, opcao, indice, total, ordemOcupada, onMover, 
           checked={ativo}
           disabled={atualizar.isPending}
           id={`${idBase}-ativa`}
-          onCheckedChange={(proximo) => atualizar.mutate({ tipo, id: opcao.id, parcial: { ativo: proximo } })}
+          onCheckedChange={(proximo) =>
+            atualizar.mutate({ tipo, id: opcao.id, parcial: { ativo: proximo } })
+          }
         />
       </TableCell>
 
       <TableCell className="text-right whitespace-nowrap">
-        <BotoesOrdem desabilitado={ordemOcupada} indice={indice} onMover={onMover} rotulo={opcao.label} total={total} />
-        <BotaoIcone icone={Pencil} onClick={() => onEditar(opcao)} rotulo={`Editar ${opcao.label}`} />
+        <BotoesOrdem
+          desabilitado={ordemOcupada}
+          indice={indice}
+          onMover={onMover}
+          rotulo={opcao.label}
+          total={total}
+        />
+        <BotaoIcone
+          icone={Pencil}
+          onClick={() => onEditar(opcao)}
+          rotulo={`Editar ${opcao.label}`}
+        />
         <ControleTravado motivo={motivoExcluir} motivoId={`${idBase}-excluir-motivo`}>
           <BotaoIcone
             aria-describedby={motivoExcluir ? `${idBase}-excluir-motivo` : undefined}

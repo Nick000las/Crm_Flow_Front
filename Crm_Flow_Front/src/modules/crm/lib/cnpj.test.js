@@ -19,11 +19,39 @@ const campos = [
 ];
 
 const sugestao = [
-  { campoReceita: 'razaoSocial', chave: 'empresa', label: 'Empresa', tipo: 'texto', camada: 2, valor: 'ACME LTDA' },
+  {
+    campoReceita: 'razaoSocial',
+    chave: 'empresa',
+    label: 'Empresa',
+    tipo: 'texto',
+    camada: 2,
+    valor: 'ACME LTDA',
+  },
   { campoReceita: 'cep', chave: 'cep', label: 'CEP', tipo: 'cep', camada: 2, valor: '01310100' },
-  { campoReceita: 'endereco', chave: 'sede', label: 'Sede', tipo: 'endereco', camada: 3, valor: { cidade: 'São Paulo', uf: 'SP' } },
-  { campoReceita: 'municipio', chave: 'cidade', label: 'Cidade', tipo: 'texto', camada: 2, valor: 'São Paulo' },
-  { campoReceita: 'dataAbertura', chave: 'abertura', label: 'Abertura', tipo: 'data', camada: 3, valor: '2001-05-10' },
+  {
+    campoReceita: 'endereco',
+    chave: 'sede',
+    label: 'Sede',
+    tipo: 'endereco',
+    camada: 3,
+    valor: { cidade: 'São Paulo', uf: 'SP' },
+  },
+  {
+    campoReceita: 'municipio',
+    chave: 'cidade',
+    label: 'Cidade',
+    tipo: 'texto',
+    camada: 2,
+    valor: 'São Paulo',
+  },
+  {
+    campoReceita: 'dataAbertura',
+    chave: 'abertura',
+    label: 'Abertura',
+    tipo: 'data',
+    camada: 3,
+    valor: '2001-05-10',
+  },
 ];
 
 test('cnpjCompleto ignora a máscara e aceita o alfanumérico', () => {
@@ -50,18 +78,26 @@ test('marca o vazio e o igual; com outro valor, pede para substituir; fora do fo
 });
 
 test('campo só de ver (permissão) aparece, mas não se aplica', () => {
-  const soVer = campos.map((campo) => (campo.chave === 'empresa' ? { ...campo, acesso: 'view' } : campo));
+  const soVer = campos.map((campo) =>
+    campo.chave === 'empresa' ? { ...campo, acesso: 'view' } : campo,
+  );
   const [empresa] = itensDaSugestao(sugestao, soVer, { empresa: '' });
 
   assert.equal(empresa.disponivel, false);
   assert.equal(empresa.marcadaPorPadrao, false);
   assert.equal(empresa.motivo, 'Sem permissão para editar');
-  assert.deepEqual(aplicarSugestoes({ empresa: '' }, [empresa], new Set([empresa.id])), { empresa: '' });
+  assert.deepEqual(aplicarSugestoes({ empresa: '' }, [empresa], new Set([empresa.id])), {
+    empresa: '',
+  });
 });
 
 test('aplicar põe só os marcados, no formato do controle (Camada 3 inclusa)', () => {
   const itens = itensDaSugestao(sugestao, campos, { empresa: 'Outra', cep: '' });
-  const valores = aplicarSugestoes({ empresa: 'Outra', cep: '' }, itens, new Set(['cep', 'custom.sede', 'cidade']));
+  const valores = aplicarSugestoes(
+    { empresa: 'Outra', cep: '' },
+    itens,
+    new Set(['cep', 'custom.sede', 'cidade']),
+  );
 
   assert.equal(valores.empresa, 'Outra');
   assert.equal(valores.cep, '01310-100');
@@ -76,15 +112,28 @@ test('configuração: compatíveis por tipo, envio sem dado vazio, mudou sem dep
     { id: 'f3', label: 'Sede', tipo: 'endereco' },
   ];
   assert.deepEqual(
-    camposCompativeis({ tipos: ['endereco', 'texto', 'texto_longo'] }, configurados).map((campo) => campo.id),
+    camposCompativeis({ tipos: ['endereco', 'texto', 'texto_longo'] }, configurados).map(
+      (campo) => campo.id,
+    ),
     ['f1', 'f3'],
   );
 
-  const config = { ativo: true, modo: 'manual', sobrescrever: false, mapeamento: { razaoSocial: 'f1', cep: 'f2' } };
+  const config = {
+    ativo: true,
+    modo: 'manual',
+    sobrescrever: false,
+    mapeamento: { razaoSocial: 'f1', cep: 'f2' },
+  };
   const valores = valoresDaConfig(config);
   assert.equal(configMudou(valores, config), false);
-  assert.equal(configMudou({ ...valores, mapeamento: { cep: 'f2', razaoSocial: 'f1' } }, config), false);
-  assert.deepEqual(configParaEnvio({ ...valores, mapeamento: { razaoSocial: '', cep: 'f2' } }).mapeamento, { cep: 'f2' });
+  assert.equal(
+    configMudou({ ...valores, mapeamento: { cep: 'f2', razaoSocial: 'f1' } }, config),
+    false,
+  );
+  assert.deepEqual(
+    configParaEnvio({ ...valores, mapeamento: { razaoSocial: '', cep: 'f2' } }).mapeamento,
+    { cep: 'f2' },
+  );
   assert.equal(configMudou({ ...valores, modo: 'automatico' }, config), true);
 });
 
@@ -114,7 +163,11 @@ test('dados só para leitura: ordem e rótulo do back, formatados, endereço num
   assert.deepEqual(dadosParaLeitura(dadosReceita, camposReceita), [
     { chave: 'razaoSocial', label: 'Razão social', texto: 'ACME LTDA' },
     { chave: 'situacao', label: 'Situação cadastral', texto: 'ATIVA' },
-    { chave: 'endereco', label: 'Endereço completo', texto: 'AV PAULISTA, 1000, SAO PAULO/SP, 01311-902' },
+    {
+      chave: 'endereco',
+      label: 'Endereço completo',
+      texto: 'AV PAULISTA, 1000, SAO PAULO/SP, 01311-902',
+    },
     { chave: 'telefone', label: 'Telefone', texto: '(11) 3214-5678' },
     { chave: 'dataAbertura', label: 'Data de abertura', texto: '03/10/2013' },
   ]);
@@ -122,9 +175,11 @@ test('dados só para leitura: ordem e rótulo do back, formatados, endereço num
 });
 
 test('o que já é sugestão sai da leitura (endereço inteiro, se sugerido)', () => {
-  const chaves = dadosParaLeitura(dadosReceita, camposReceita, new Set(['razaoSocial', 'endereco'])).map(
-    (dado) => dado.chave,
-  );
+  const chaves = dadosParaLeitura(
+    dadosReceita,
+    camposReceita,
+    new Set(['razaoSocial', 'endereco']),
+  ).map((dado) => dado.chave);
 
   assert.deepEqual(chaves, ['situacao', 'telefone', 'dataAbertura']);
 });

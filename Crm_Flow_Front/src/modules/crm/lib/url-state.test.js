@@ -75,11 +75,14 @@ test('a view grava busca e situação só quando não são o padrão', () => {
   const filtro = { filtros: [{ chave: 'email', operador: 'vazio' }] };
 
   assert.deepEqual(visaoDoEstado({ ...ESTADO_LISTA_PADRAO, filtro }), filtro);
-  assert.deepEqual(visaoDoEstado({ ...ESTADO_LISTA_PADRAO, filtro, busca: 'ana', situacao: 'arquivados' }), {
-    ...filtro,
-    busca: 'ana',
-    situacao: 'arquivados',
-  });
+  assert.deepEqual(
+    visaoDoEstado({ ...ESTADO_LISTA_PADRAO, filtro, busca: 'ana', situacao: 'arquivados' }),
+    {
+      ...filtro,
+      busca: 'ana',
+      situacao: 'arquivados',
+    },
+  );
 });
 
 test('estadoDaVisao lê a view salva e volta para a 1ª página', () => {
@@ -91,5 +94,10 @@ test('estadoDaVisao lê a view salva e volta para a 1ª página', () => {
     situacao: 'arquivados',
     pagina: 1,
   });
-  assert.deepEqual(estadoDaVisao(null), { busca: '', filtro: ESTADO_LISTA_PADRAO.filtro, situacao: 'ativos', pagina: 1 });
+  assert.deepEqual(estadoDaVisao(null), {
+    busca: '',
+    filtro: ESTADO_LISTA_PADRAO.filtro,
+    situacao: 'ativos',
+    pagina: 1,
+  });
 });

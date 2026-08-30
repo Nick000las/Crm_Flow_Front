@@ -41,10 +41,15 @@ const htmlId = (idCampo) => `${PREFIXO_ID}${idCampo.replaceAll('.', '-')}`;
  */
 function ParecidosAoVivo({ candidatos }) {
   return (
-    <div className={candidatos.length > 0 ? 'border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
+    <div
+      className={candidatos.length > 0 ? 'border border-border px-3 py-2 text-sm' : 'sr-only'}
+      role="status"
+    >
       {candidatos.length > 0 && (
         <>
-          <p className="font-medium">Parecido com {candidatos.length === 1 ? 'um lead' : 'leads'} que já existe:</p>
+          <p className="font-medium">
+            Parecido com {candidatos.length === 1 ? 'um lead' : 'leads'} que já existe:
+          </p>
           <ul className="mt-1 grid gap-0.5">
             {candidatos.map((candidato) => (
               <li key={candidato.id}>
@@ -145,8 +150,11 @@ export function LeadForm({
 
   function checarDuplicados() {
     const consulta = consultaDeDuplicados(campos, valores, leadId);
-    if (consulta) checar.mutate(consulta);
-    else checar.reset();
+    if (consulta) {
+      checar.mutate(consulta);
+    } else {
+      checar.reset();
+    }
   }
 
   function alterar(id, valor) {
@@ -158,7 +166,9 @@ export function LeadForm({
   function mostrarErros(porCampo) {
     setErros(porCampo);
     const primeiro = Object.keys(porCampo)[0];
-    if (primeiro) document.getElementById(htmlId(primeiro))?.focus();
+    if (primeiro) {
+      document.getElementById(htmlId(primeiro))?.focus();
+    }
   }
 
   async function handleSubmit(event) {
@@ -179,7 +189,9 @@ export function LeadForm({
       await onSalvar(valores, opcoes);
       setDuplicidade(null);
     } catch (error) {
-      if (isAbortError(error)) return;
+      if (isAbortError(error)) {
+        return;
+      }
 
       const apiError = toApiError(error);
       if (ehErroDeDuplicidade(apiError)) {
@@ -190,7 +202,9 @@ export function LeadForm({
       const { porCampo, gerais } = errosDoServidor(apiError.fields, campos);
       mostrarErros(porCampo);
       // Sem campo onde mostrar (ou com mensagens gerais), o alerta do topo explica.
-      if (gerais.length > 0 || Object.keys(porCampo).length === 0) setErroGeral(apiError);
+      if (gerais.length > 0 || Object.keys(porCampo).length === 0) {
+        setErroGeral(apiError);
+      }
     }
   }
 
@@ -209,7 +223,9 @@ export function LeadForm({
     );
 
     // Lupa da Receita (`crm.cnpj`) logo abaixo de cada campo de CNPJ que o usuário edita.
-    if (campo.tipo !== TIPOS_CAMPO.CNPJ || !podeEditarCampo(campo)) return controle;
+    if (campo.tipo !== TIPOS_CAMPO.CNPJ || !podeEditarCampo(campo)) {
+      return controle;
+    }
 
     return (
       <div className="grid gap-2" key={id}>

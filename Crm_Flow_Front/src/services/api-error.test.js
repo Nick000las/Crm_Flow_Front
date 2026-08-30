@@ -5,7 +5,11 @@ import { ApiError, createApiErrorFromResponse, isAccessError } from './api-error
 function resposta403(code) {
   return {
     statusCode: 403,
-    error: { code, message: 'Feature crm.listas not enabled', details: { featureKey: 'crm.listas' } },
+    error: {
+      code,
+      message: 'Feature crm.listas not enabled',
+      details: { featureKey: 'crm.listas' },
+    },
   };
 }
 
@@ -30,8 +34,14 @@ test('os demais códigos mantêm a mensagem do back', () => {
 });
 
 test('isAccessError reconhece só os 403 de contratação/rollout', () => {
-  assert.equal(isAccessError(createApiErrorFromResponse(resposta403('FEATURE_NOT_ENABLED'), 403)), true);
-  assert.equal(isAccessError(createApiErrorFromResponse(resposta403('MODULE_NOT_ENABLED'), 403)), true);
+  assert.equal(
+    isAccessError(createApiErrorFromResponse(resposta403('FEATURE_NOT_ENABLED'), 403)),
+    true,
+  );
+  assert.equal(
+    isAccessError(createApiErrorFromResponse(resposta403('MODULE_NOT_ENABLED'), 403)),
+    true,
+  );
   assert.equal(isAccessError(new ApiError('x', { code: 'FORBIDDEN' })), false);
   assert.equal(isAccessError(null), false);
 });

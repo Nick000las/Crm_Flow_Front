@@ -11,7 +11,8 @@ import {
 import { salvarCsv } from '@/lib/download';
 import { relatorioCsv } from '../lib/importacao';
 
-const HEAD_CLASS = 'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
+const HEAD_CLASS =
+  'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
 // A tela mostra as primeiras; o CSV leva todas.
 const MAX_LINHAS_NA_TELA = 100;
 
@@ -26,7 +27,9 @@ const MAX_LINHAS_NA_TELA = 100;
  * }} props
  */
 export function ImportacaoErros({ erros, nomeRelatorio, titulo }) {
-  if (erros.length === 0) return null;
+  if (erros.length === 0) {
+    return null;
+  }
 
   const visiveis = erros.slice(0, MAX_LINHAS_NA_TELA);
 
@@ -34,9 +37,14 @@ export function ImportacaoErros({ erros, nomeRelatorio, titulo }) {
     <section className="grid gap-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-medium">
-          {titulo} <span className="font-mono text-muted-foreground tabular-nums">({erros.length})</span>
+          {titulo}{' '}
+          <span className="font-mono text-muted-foreground tabular-nums">({erros.length})</span>
         </h2>
-        <Button onClick={() => salvarCsv(relatorioCsv(erros), nomeRelatorio)} size="sm" variant="outline">
+        <Button
+          onClick={() => salvarCsv(relatorioCsv(erros), nomeRelatorio)}
+          size="sm"
+          variant="outline"
+        >
           <Download aria-hidden="true" />
           Baixar relatório (CSV)
         </Button>
@@ -46,9 +54,15 @@ export function ImportacaoErros({ erros, nomeRelatorio, titulo }) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className={HEAD_CLASS} scope="col">Linha</TableHead>
-              <TableHead className={HEAD_CLASS} scope="col">Coluna</TableHead>
-              <TableHead className={HEAD_CLASS} scope="col">Motivo</TableHead>
+              <TableHead className={HEAD_CLASS} scope="col">
+                Linha
+              </TableHead>
+              <TableHead className={HEAD_CLASS} scope="col">
+                Coluna
+              </TableHead>
+              <TableHead className={HEAD_CLASS} scope="col">
+                Motivo
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

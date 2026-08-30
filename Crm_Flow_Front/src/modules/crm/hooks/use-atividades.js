@@ -1,6 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
-import { criarAtividade, editarAtividade, excluirAtividade, listarAtividades } from '../api/atividades.api';
+import {
+  criarAtividade,
+  editarAtividade,
+  excluirAtividade,
+  listarAtividades,
+} from '../api/atividades.api';
 import { crmKeys } from '../query-keys';
 
 /** @param {string} leadId */
@@ -23,9 +28,10 @@ function useInvalidar(leadId) {
 
   return (mexeNoLead) =>
     Promise.all(
-      [crmKeys.atividades(leadId), ...(mexeNoLead ? [crmKeys.lead(leadId), crmKeys.leads()] : [])].map(
-        (queryKey) => queryClient.invalidateQueries({ queryKey }),
-      ),
+      [
+        crmKeys.atividades(leadId),
+        ...(mexeNoLead ? [crmKeys.lead(leadId), crmKeys.leads()] : []),
+      ].map((queryKey) => queryClient.invalidateQueries({ queryKey })),
     );
 }
 

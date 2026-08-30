@@ -8,7 +8,9 @@
  * @returns {T}
  */
 export function semChave(objeto, chave) {
-  if (!(chave in objeto)) return objeto;
+  if (!(chave in objeto)) {
+    return objeto;
+  }
 
   const copia = { ...objeto };
   delete copia[chave];

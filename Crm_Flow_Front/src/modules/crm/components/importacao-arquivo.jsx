@@ -25,12 +25,16 @@ export function ImportacaoArquivo({ onLido }) {
   const preview = usePreviewImportacao();
 
   function receber(arquivo) {
-    if (!arquivo) return;
+    if (!arquivo) {
+      return;
+    }
     preview.reset();
 
     const motivo = validarArquivo(arquivo);
     setErroLocal(motivo);
-    if (!motivo) preview.mutate(arquivo, { onSuccess: (dados) => onLido(arquivo, dados) });
+    if (!motivo) {
+      preview.mutate(arquivo, { onSuccess: (dados) => onLido(arquivo, dados) });
+    }
   }
 
   return (
@@ -81,7 +85,11 @@ export function ImportacaoArquivo({ onLido }) {
           {erroLocal}
         </p>
       )}
-      <ApiErrorAlert error={preview.error} id="importacao-arquivo-erro" title="Não foi possível ler a planilha" />
+      <ApiErrorAlert
+        error={preview.error}
+        id="importacao-arquivo-erro"
+        title="Não foi possível ler a planilha"
+      />
     </div>
   );
 }

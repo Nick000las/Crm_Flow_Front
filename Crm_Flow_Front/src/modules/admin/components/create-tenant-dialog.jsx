@@ -27,9 +27,12 @@ export function CreateTenantDialog({ open, onOpenChange, adminApi, onCreated }) 
   const [submitError, setSubmitError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [modulosSelecionados, setModulosSelecionados] = useState([]);
-  const { modulos, erro: erroModulos } = useContractableModules();
+  const { modulos, carregando: loadingModules, erro: erroModulos } = useContractableModules();
 
   function handleOpenChange(nextOpen) {
+    if (isSubmitting) {
+      return;
+    }
     if (!nextOpen) {
       setSubmitError(null);
       setModulosSelecionados([]);
@@ -41,9 +44,7 @@ export function CreateTenantDialog({ open, onOpenChange, adminApi, onCreated }) 
   function alternarModulo(moduleKey, marcado) {
     setSubmitError(null);
     setModulosSelecionados((atual) =>
-      marcado
-        ? [...atual, moduleKey]
-        : atual.filter((chave) => chave !== moduleKey),
+      marcado ? [...atual, moduleKey] : atual.filter((chave) => chave !== moduleKey),
     );
   }
 
@@ -67,7 +68,8 @@ export function CreateTenantDialog({ open, onOpenChange, adminApi, onCreated }) 
       });
 
       await onCreated();
-      handleOpenChange(false);
+      onOpenChange(false);
+      setModulosSelecionados([]);
     } catch (error) {
       if (!isAbortError(error)) {
         setSubmitError(toApiError(error));
@@ -79,7 +81,7 @@ export function CreateTenantDialog({ open, onOpenChange, adminApi, onCreated }) 
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg" showCloseButton={!isSubmitting}>
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Novo tenant</DialogTitle>
@@ -143,6 +145,7 @@ export function CreateTenantDialog({ open, onOpenChange, adminApi, onCreated }) 
               </legend>
 
               <ModulesCheckboxGroup
+                loading={loadingModules}
                 disabled={isSubmitting}
                 erro={erroModulos}
                 idPrefix="novo-modulo"
@@ -163,7 +166,7 @@ export function CreateTenantDialog({ open, onOpenChange, adminApi, onCreated }) 
                 </Button>
               }
             />
-            <Button type="submit" disabled={isSubmitting} aria-busy={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} loading={isSubmitting}>
               {isSubmitting ? 'Criando...' : 'Criar tenant'}
             </Button>
           </DialogFooter>

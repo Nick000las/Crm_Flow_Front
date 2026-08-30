@@ -31,7 +31,9 @@ export function EditorSecoes({ secoes, opcoes, automatica, erro, onChange }) {
 
   function mover(de, para) {
     const proximas = moverPara(secoes, de, para);
-    if (proximas !== secoes) onChange(proximas);
+    if (proximas !== secoes) {
+      onChange(proximas);
+    }
   }
 
   return (
@@ -49,7 +51,9 @@ export function EditorSecoes({ secoes, opcoes, automatica, erro, onChange }) {
       </p>
 
       {secoes.map((secao, indice) => {
-        const usadosEmOutras = new Set(secoes.flatMap((outra, atual) => (atual === indice ? [] : outra.campos)));
+        const usadosEmOutras = new Set(
+          secoes.flatMap((outra, atual) => (atual === indice ? [] : outra.campos)),
+        );
         const rotulo = secao.nome.trim() || `Seção ${indice + 1}`;
 
         return (
@@ -63,7 +67,13 @@ export function EditorSecoes({ secoes, opcoes, automatica, erro, onChange }) {
                 placeholder="Nome da seção"
                 value={secao.nome}
               />
-              <BotoesOrdem desabilitado={false} indice={indice} onMover={mover} rotulo={rotulo} total={secoes.length} />
+              <BotoesOrdem
+                desabilitado={false}
+                indice={indice}
+                onMover={mover}
+                rotulo={rotulo}
+                total={secoes.length}
+              />
               <BotaoIcone
                 icone={Trash2}
                 onClick={() => onChange(secoes.filter((_, atual) => atual !== indice))}
@@ -82,7 +92,12 @@ export function EditorSecoes({ secoes, opcoes, automatica, erro, onChange }) {
       })}
 
       <div>
-        <Button disabled={cheio} onClick={() => onChange([...secoes, { ...NOVA_SECAO }])} type="button" variant="outline">
+        <Button
+          disabled={cheio}
+          onClick={() => onChange([...secoes, { ...NOVA_SECAO }])}
+          type="button"
+          variant="outline"
+        >
           <Plus aria-hidden="true" />
           Nova seção
         </Button>
@@ -96,8 +111,8 @@ export function EditorSecoes({ secoes, opcoes, automatica, erro, onChange }) {
 
       {automatica && automatica.campos.length > 0 && (
         <p className="border border-dashed border-border px-3 py-2 text-xs text-muted-foreground">
-          <span className="font-medium text-foreground">{automatica.nome}</span> (automática, no fim):{' '}
-          {automatica.campos.map((campo) => campo.label).join(', ')}. Atualiza ao salvar.
+          <span className="font-medium text-foreground">{automatica.nome}</span> (automática, no
+          fim): {automatica.campos.map((campo) => campo.label).join(', ')}. Atualiza ao salvar.
         </p>
       )}
     </section>

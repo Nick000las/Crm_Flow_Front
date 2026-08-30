@@ -23,8 +23,12 @@ export function ExcluirAtividadeDialog({ leadId, atividade, onOpenChange, onExcl
   const excluir = useExcluirAtividade(leadId);
 
   function handleOpenChange(proximo) {
-    if (excluir.isPending) return;
-    if (!proximo) excluir.reset();
+    if (excluir.isPending) {
+      return;
+    }
+    if (!proximo) {
+      excluir.reset();
+    }
     onOpenChange(proximo);
   }
 
@@ -43,11 +47,16 @@ export function ExcluirAtividadeDialog({ leadId, atividade, onOpenChange, onExcl
         <AlertDialogHeader>
           <AlertDialogTitle>Remover atividade</AlertDialogTitle>
           <AlertDialogDescription>
-            {atividade ? `"${atividade.titulo}" será removida. ` : ''}Esta ação não pode ser desfeita.
+            {atividade ? `"${atividade.titulo}" será removida. ` : ''}Esta ação não pode ser
+            desfeita.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
-        <ApiErrorAlert error={excluir.error} id="excluir-atividade-erro" title="Não foi possível remover" />
+        <ApiErrorAlert
+          error={excluir.error}
+          id="excluir-atividade-erro"
+          title="Não foi possível remover"
+        />
 
         <AlertDialogFooter>
           <AlertDialogCancel disabled={excluir.isPending}>Cancelar</AlertDialogCancel>

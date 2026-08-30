@@ -29,7 +29,8 @@ const VAZIO_DA_SITUACAO = Object.freeze({
   [SITUACOES_LEAD.ARQUIVADOS]: {
     icon: Archive,
     title: 'Nenhum lead arquivado',
-    description: 'Leads arquivados saem da lista principal e continuam aqui, prontos para desarquivar.',
+    description:
+      'Leads arquivados saem da lista principal e continuam aqui, prontos para desarquivar.',
   },
   [SITUACOES_LEAD.LIXEIRA]: {
     icon: Trash2,

@@ -6,7 +6,9 @@
 
 function formComArquivo(arquivo, campos = {}) {
   const form = new FormData();
-  for (const [nome, valor] of Object.entries(campos)) form.append(nome, valor);
+  for (const [nome, valor] of Object.entries(campos)) {
+    form.append(nome, valor);
+  }
   // Arquivo por último: o back lê o multipart em qualquer ordem, mas assim os
   // campos de texto chegam antes do corpo grande.
   form.append('arquivo', arquivo);
@@ -31,7 +33,10 @@ export function previsualizarImportacao(authApi, arquivo) {
  *   o back dá 400 em `mapeamento` sem ela
  * @returns {Promise<{ jobId: string | null, totalLinhas: number, linhasValidas: number, erros: { linha: number, coluna?: string, motivo: string }[] }>}
  */
-export function validarImportacao(authApi, { arquivo, mapeamento, estrategiaDuplicata, baseLegalLote }) {
+export function validarImportacao(
+  authApi,
+  { arquivo, mapeamento, estrategiaDuplicata, baseLegalLote },
+) {
   return authApi.upload(
     '/crm/import/validate',
     formComArquivo(arquivo, {

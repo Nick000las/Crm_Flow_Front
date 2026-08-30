@@ -1,8 +1,10 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import { defineConfig, globalIgnores } from 'eslint/config'
+import js from '@eslint/js';
+import prettier from 'eslint-config-prettier';
+import shared from './eslint.rules.js';
+import globals from 'globals';
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactRefresh from 'eslint-plugin-react-refresh';
+import { defineConfig, globalIgnores } from 'eslint/config';
 
 export default defineConfig([
   globalIgnores(['dist']),
@@ -18,9 +20,22 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
     rules: {
-      'react-refresh/only-export-components': [
+      'react-refresh/only-export-components': ['error', { allowConstantExport: true }],
+      'no-restricted-globals': [
         'error',
-        { allowConstantExport: true },
+        { name: 'confirm', message: 'Use ConfirmationDialog para confirmações.' },
+        { name: 'alert', message: 'Use feedback na interface ou um modal personalizado.' },
+        { name: 'prompt', message: 'Use um formulário ou modal personalizado.' },
+      ],
+      'no-restricted-properties': [
+        'error',
+        ...['window', 'globalThis'].flatMap((object) =>
+          ['confirm', 'alert', 'prompt'].map((property) => ({
+            object,
+            property,
+            message: 'Use os componentes de feedback e confirmação do projeto.',
+          })),
+        ),
       ],
     },
   },
@@ -30,4 +45,6 @@ export default defineConfig([
       'react-refresh/only-export-components': 'off',
     },
   },
-])
+  prettier,
+  shared,
+]);

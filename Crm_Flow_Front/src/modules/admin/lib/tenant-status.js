@@ -26,7 +26,9 @@ export const TENANT_STATUS_OPTIONS = Object.keys(STATUS_LABELS);
  * @param {string} status
  */
 export function getTenantStatusLabel(status) {
-  if (!status) return '—';
+  if (!status) {
+    return '—';
+  }
 
   return STATUS_LABELS[status] ?? status;
 }
@@ -40,9 +42,15 @@ export function getTenantStatusLabel(status) {
  * @param {string} status
  */
 export function getTenantStatusTone(status) {
-  if (status === 'active') return 'text-primary';
-  if (status === 'past_due') return 'text-destructive';
-  if (status === 'cancelado') return 'text-muted-foreground';
+  if (status === 'active') {
+    return 'text-primary';
+  }
+  if (status === 'past_due') {
+    return 'text-destructive';
+  }
+  if (status === 'cancelado') {
+    return 'text-muted-foreground';
+  }
 
   return 'text-foreground';
 }

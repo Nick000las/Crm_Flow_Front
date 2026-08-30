@@ -57,12 +57,17 @@ const opcoesLimpas = (opcoes) => opcoes.map((opcao) => opcao.trim()).filter(Bool
 export function validarDefinicao(valores) {
   const erros = {};
 
-  if (!valores.label.trim()) erros.label = MENSAGENS_CAMPOS.LABEL;
+  if (!valores.label.trim()) {
+    erros.label = MENSAGENS_CAMPOS.LABEL;
+  }
 
   if (usaOpcoes(valores.tipo)) {
     const opcoes = opcoesLimpas(valores.opcoes);
-    if (opcoes.length === 0) erros.opcoes = MENSAGENS_CAMPOS.OPCOES;
-    else if (new Set(opcoes).size !== opcoes.length) erros.opcoes = MENSAGENS_CAMPOS.OPCAO_REPETIDA;
+    if (opcoes.length === 0) {
+      erros.opcoes = MENSAGENS_CAMPOS.OPCOES;
+    } else if (new Set(opcoes).size !== opcoes.length) {
+      erros.opcoes = MENSAGENS_CAMPOS.OPCAO_REPETIDA;
+    }
   }
 
   return erros;

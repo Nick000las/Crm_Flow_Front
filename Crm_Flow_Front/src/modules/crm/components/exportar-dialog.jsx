@@ -38,7 +38,11 @@ function ListaDeColunas({ itens, onAlternar, onMover }) {
 
           return (
             <li className="flex items-center gap-2 px-2 py-1.5" key={item.chave}>
-              <Checkbox checked={item.marcada} id={id} onCheckedChange={() => onAlternar(item.chave)} />
+              <Checkbox
+                checked={item.marcada}
+                id={id}
+                onCheckedChange={() => onAlternar(item.chave)}
+              />
               <label className="flex-1 text-sm" htmlFor={id}>
                 {item.label}
               </label>
@@ -88,7 +92,10 @@ function FormExportar({ campos, idsVisiveis, busca, filtro, situacao, comMassa, 
       ? { ...(busca && { busca }), ...paraCorpoDeBusca(filtro), ...(comSituacao && { situacao }) }
       : undefined;
     // Sem `crm.massa` o formato não vai: o back só gera .xlsx (csv daria 403).
-    exportar.mutate({ colunas, filtro: filtroDoPedido, ...(comMassa && { formato }) }, { onSuccess: onExportado });
+    exportar.mutate(
+      { colunas, filtro: filtroDoPedido, ...(comMassa && { formato }) },
+      { onSuccess: onExportado },
+    );
   }
 
   return (
@@ -96,7 +103,12 @@ function FormExportar({ campos, idsVisiveis, busca, filtro, situacao, comMassa, 
       {comMassa && (
         <div className="grid gap-1.5">
           <Label htmlFor="exportar-formato">Formato</Label>
-          <SelectSimples id="exportar-formato" onChange={(valor) => valor && setFormato(valor)} opcoes={OPCOES_FORMATO} value={formato} />
+          <SelectSimples
+            id="exportar-formato"
+            onChange={(valor) => valor && setFormato(valor)}
+            opcoes={OPCOES_FORMATO}
+            value={formato}
+          />
         </div>
       )}
 
@@ -109,7 +121,9 @@ function FormExportar({ campos, idsVisiveis, busca, filtro, situacao, comMassa, 
       <label className="flex items-center gap-2 text-sm" htmlFor="exportar-usar-filtros">
         <Switch checked={usarFiltros} id="exportar-usar-filtros" onCheckedChange={setUsarFiltros} />
         Usar a busca e os filtros atuais
-        <span className="font-mono text-xs text-muted-foreground tabular-nums">({totalFiltros})</span>
+        <span className="font-mono text-xs text-muted-foreground tabular-nums">
+          ({totalFiltros})
+        </span>
       </label>
       <p className="-mt-2 text-xs text-muted-foreground">
         Até {EXPORTACAO.MAX_LINHAS.toLocaleString('pt-BR')} leads por planilha.
@@ -118,10 +132,16 @@ function FormExportar({ campos, idsVisiveis, busca, filtro, situacao, comMassa, 
       <ApiErrorAlert error={exportar.error} id="exportar-erro" title="Não foi possível exportar" />
 
       <DialogFooter>
-        <DialogClose render={<Button disabled={exportar.isPending} type="button" variant="outline" />}>
+        <DialogClose
+          render={<Button disabled={exportar.isPending} type="button" variant="outline" />}
+        >
           Cancelar
         </DialogClose>
-        <Button aria-busy={exportar.isPending} disabled={colunas.length === 0 || exportar.isPending} onClick={handleExportar}>
+        <Button
+          aria-busy={exportar.isPending}
+          disabled={colunas.length === 0 || exportar.isPending}
+          onClick={handleExportar}
+        >
           {exportar.isPending ? 'Gerando arquivo…' : `Exportar .${formato}`}
         </Button>
       </DialogFooter>

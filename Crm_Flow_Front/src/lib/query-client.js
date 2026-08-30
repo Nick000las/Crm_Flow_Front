@@ -1,8 +1,8 @@
-import { QueryClient } from '@tanstack/react-query'
-import { ApiError } from '../services/api-error.js'
+import { QueryClient } from '@tanstack/react-query';
+import { ApiError } from '../services/api-error.js';
 
-const STALE_TIME_MS = 30_000
-const MAX_RETRIES = 2
+const STALE_TIME_MS = 30_000;
+const MAX_RETRIES = 2;
 
 /**
  * Erro 4xx (validação, permissão, não encontrado) não melhora ao repetir.
@@ -12,11 +12,14 @@ const MAX_RETRIES = 2
  * @param {unknown} error
  */
 export function shouldRetry(failureCount, error) {
+  if (error instanceof ApiError && error.code === 'CRM_SCHEMA_INCOMPATIBLE') {
+    return false;
+  }
   if (error instanceof ApiError && error.status !== null && error.status < 500) {
-    return false
+    return false;
   }
 
-  return failureCount < MAX_RETRIES
+  return failureCount < MAX_RETRIES;
 }
 
 export function createQueryClient() {
@@ -24,5 +27,8 @@ export function createQueryClient() {
     defaultOptions: {
       queries: { retry: shouldRetry, staleTime: STALE_TIME_MS },
     },
-  })
+  });
 }
+
+/** Instância compartilhada pelo bootstrap e pela limpeza da sessão tenant. */
+export const queryClient = createQueryClient();

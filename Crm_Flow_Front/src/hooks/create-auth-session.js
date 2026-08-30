@@ -1,4 +1,5 @@
-import api, { ApiError } from '@/services/api';
+import api, { ApiError } from '../services/api.js';
+import { restoreSession } from '../services/session.js';
 import {
   createContext,
   createElement,
@@ -22,6 +23,7 @@ import {
  * @property {(path: string, options?: object) => Promise<any>} delete
  * @property {(path: string, formData: FormData, options?: object) => Promise<any>} upload
  * @property {(path: string, json?: unknown, options?: object) => Promise<{ blob: Blob, filename: string | null }>} download
+ * @property {() => Promise<string | null>} refreshAccessToken
  */
 
 /**
@@ -39,6 +41,8 @@ import {
  *   nome: string,
  *   resolverUsuario?: (accessToken: string, respostaLogin: unknown) => Promise<unknown>,
  *   persistente?: boolean,
+ *   sessionScope?: 'tenant' | 'admin',
+ *   onSessionChange?: () => void,
  * }} options `nome` compõe as mensagens de erro e o displayName do contexto.
  *   `persistente`: o refresh token mora num cookie httpOnly gravado pelo back
  *   (o JS nunca o vê); ao montar, a sessão tenta se restaurar por ele, então
@@ -48,6 +52,8 @@ export function createAuthSession({
   nome,
   resolverUsuario = resolverUsuarioPadrao,
   persistente = false,
+  sessionScope = 'tenant',
+  onSessionChange = () => {},
 }) {
   const Context = createContext(null);
   Context.displayName = `${nome}Context`;
@@ -59,12 +65,14 @@ export function createAuthSession({
     const [mfaEnabled, setMfaEnabled] = useState(false);
 
     // Nenhum token é escrito pelo JS — nada de localStorage/sessionStorage.
-    // O access token vive só em memória. Sessão `persistente` (tenant) tem o
+    // O access token vive só em memória. Cada sessão persistente tem seu próprio
     // refresh token num cookie httpOnly do back e começa carregando: só sabe
-    // se há sessão depois de tentar restaurá-la. A não persistente (master)
-    // não tem o que restaurar — um F5 desloga, de propósito.
+    // se há sessão depois de consultar /me. Tenant e admin usam cookies distintos.
     const [loading, setLoading] = useState(persistente);
-    const restauracaoIniciadaRef = useRef(false);
+    const [sessionError, setSessionError] = useState(null);
+    const [restorationAttempt, setRestorationAttempt] = useState(0);
+    const restauracaoIniciadaRef = useRef(-1);
+    const sessionRevision = useRef(0);
 
     // Espelhos síncronos dos tokens: `withAuthRetry` roda dentro de closures
     // assíncronas e precisa do valor mais recente, não do capturado na
@@ -82,34 +90,59 @@ export function createAuthSession({
     }, [refreshToken]);
 
     const forceLogout = useCallback(() => {
+      sessionRevision.current += 1;
+      onSessionChange();
       accessTokenRef.current = null;
       refreshTokenRef.current = null;
       setAccessToken(null);
       setRefreshToken(null);
       setUser(null);
       setMfaEnabled(false);
+      setSessionError(null);
+    }, []);
+
+    const retrySession = useCallback(() => {
+      sessionRevision.current += 1;
+      setSessionError(null);
+      setLoading(true);
+      setRestorationAttempt((attempt) => attempt + 1);
     }, []);
 
     const authApi = useMemo(() => {
       async function doRefresh() {
+        const revision = sessionRevision.current;
         try {
           // Sem refresh em memória (sessão persistente), o corpo vai vazio e
           // o back usa o cookie httpOnly.
           const response = await api.post('/auth/refresh', {
+            scope: sessionScope,
             refreshToken: refreshTokenRef.current ?? undefined,
           });
           const nextAccessToken = response?.accessToken ?? null;
 
+          if (revision !== sessionRevision.current) {
+            return null;
+          }
+
           if (!nextAccessToken) {
-            throw new Error('Resposta de refresh sem accessToken.');
+            throw new ApiError('Resposta de refresh sem accessToken.', {
+              status: 401,
+              code: 'AUTH_TOKEN_INVALID',
+            });
           }
 
           accessTokenRef.current = nextAccessToken;
           setAccessToken(nextAccessToken);
 
           return nextAccessToken;
-        } catch {
-          forceLogout();
+        } catch (error) {
+          if (
+            revision === sessionRevision.current &&
+            error instanceof ApiError &&
+            (error.status === 401 || error.status === 403)
+          ) {
+            forceLogout();
+          }
           return null;
         }
       }
@@ -131,16 +164,46 @@ export function createAuthSession({
       }
 
       async function withAuthRetry(invoke) {
+        const revision = sessionRevision.current;
+        const originalToken = accessTokenRef.current;
+        function assertCurrentSession() {
+          if (revision !== sessionRevision.current) {
+            throw new DOMException('A sessão foi alterada.', 'AbortError');
+          }
+        }
+        async function invokeForSession(token) {
+          assertCurrentSession();
+          const response = await invoke(token);
+          assertCurrentSession();
+          return response;
+        }
         try {
-          return await invoke(accessTokenRef.current);
+          return await invokeForSession(originalToken);
         } catch (error) {
+          assertCurrentSession();
           const podeRenovar = persistente || Boolean(refreshTokenRef.current);
 
           if (error instanceof ApiError && error.status === 401 && podeRenovar) {
-            const nextAccessToken = await refreshAccessToken();
+            const nextAccessToken =
+              accessTokenRef.current && accessTokenRef.current !== originalToken
+                ? accessTokenRef.current
+                : await refreshAccessToken();
 
             // Exatamente uma retentativa: um segundo 401 propaga como erro.
-            if (nextAccessToken) return invoke(nextAccessToken);
+            if (nextAccessToken) {
+              try {
+                return await invokeForSession(nextAccessToken);
+              } catch (retryError) {
+                if (
+                  revision === sessionRevision.current &&
+                  retryError instanceof ApiError &&
+                  retryError.status === 401
+                ) {
+                  forceLogout();
+                }
+                throw retryError;
+              }
+            }
           }
 
           throw error;
@@ -148,49 +211,43 @@ export function createAuthSession({
       }
 
       return {
+        refreshAccessToken,
         get: (path, options = {}) =>
-          withAuthRetry((token) =>
-            api.get(path, { ...options, accessToken: token }),
-          ),
+          withAuthRetry((token) => api.get(path, { ...options, accessToken: token })),
         post: (path, json, options = {}) =>
-          withAuthRetry((token) =>
-            api.post(path, json, { ...options, accessToken: token }),
-          ),
+          withAuthRetry((token) => api.post(path, json, { ...options, accessToken: token })),
         put: (path, json, options = {}) =>
-          withAuthRetry((token) =>
-            api.put(path, json, { ...options, accessToken: token }),
-          ),
+          withAuthRetry((token) => api.put(path, json, { ...options, accessToken: token })),
         patch: (path, json, options = {}) =>
-          withAuthRetry((token) =>
-            api.patch(path, json, { ...options, accessToken: token }),
-          ),
+          withAuthRetry((token) => api.patch(path, json, { ...options, accessToken: token })),
         delete: (path, options = {}) =>
-          withAuthRetry((token) =>
-            api.delete(path, { ...options, accessToken: token }),
-          ),
+          withAuthRetry((token) => api.delete(path, { ...options, accessToken: token })),
         /** Multipart (ex.: planilha de import). Ver `api.upload`. */
         upload: (path, formData, options = {}) =>
-          withAuthRetry((token) =>
-            api.upload(path, formData, { ...options, accessToken: token }),
-          ),
+          withAuthRetry((token) => api.upload(path, formData, { ...options, accessToken: token })),
         /** Resposta binária (ex.: export). Retorna `{ blob, filename }`. */
         download: (path, json, options = {}) =>
-          withAuthRetry((token) =>
-            api.download(path, json, { ...options, accessToken: token }),
-          ),
+          withAuthRetry((token) => api.download(path, json, { ...options, accessToken: token })),
       };
     }, [forceLogout]);
 
     /**
      * @param {unknown} authData resposta final do login (com os tokens)
-     * @param {{ mfaVerified?: boolean }} [options] se a sessão passou pelo
-     *   desafio de MFA — única fonte confiável do estado de MFA hoje, já que
-     *   `/auth/me` não devolve `mfaAtivo`.
+     * @param {{ mfaVerified?: boolean }} [options] fallback para respostas
+     *   antigas sem `mfaAtivo`; a consulta atual de `/me` tem prioridade.
      */
     const login = useCallback(
       async (authData, { mfaVerified = false } = {}) => {
+        const revision = ++sessionRevision.current;
         const nextAccessToken = getResponseAccessToken(authData);
         const nextRefreshToken = getResponseRefreshToken(authData);
+        if (typeof nextAccessToken !== 'string' || !nextAccessToken) {
+          throw new ApiError('Resposta de login inválida.', {
+            status: 401,
+            code: 'AUTH_TOKEN_INVALID',
+          });
+        }
+        onSessionChange();
 
         accessTokenRef.current = nextAccessToken;
         refreshTokenRef.current = nextRefreshToken;
@@ -201,16 +258,30 @@ export function createAuthSession({
 
         try {
           nextUser = await resolverUsuario(nextAccessToken, authData);
+          if (!nextUser || typeof nextUser !== 'object') {
+            throw new ApiError('Usuário da sessão inválido.', {
+              status: 401,
+              code: 'AUTH_TOKEN_INVALID',
+            });
+          }
         } catch (error) {
           // A sessão só passa a existir se o usuário for aceito. Descartar os
           // tokens aqui é o que impede uma conta sem permissão de ficar
           // "logada" e só apanhar 403 na primeira tela que abrir.
-          forceLogout();
+          if (revision === sessionRevision.current) {
+            forceLogout();
+          }
           throw error;
         }
 
+        if (revision !== sessionRevision.current) {
+          throw new DOMException('A sessão foi alterada.', 'AbortError');
+        }
+
         setUser(nextUser);
-        setMfaEnabled(mfaVerified);
+        setSessionError(null);
+        setMfaEnabled(nextUser?.mfaAtivo ?? mfaVerified);
+        setLoading(false);
 
         return nextUser;
       },
@@ -220,40 +291,57 @@ export function createAuthSession({
     useEffect(() => {
       // Ref e não estado: o StrictMode monta o efeito duas vezes em dev, e a
       // restauração deve rodar uma só.
-      if (!persistente || restauracaoIniciadaRef.current) return;
-      restauracaoIniciadaRef.current = true;
+      if (!persistente || restauracaoIniciadaRef.current === restorationAttempt) {
+        return;
+      }
+      restauracaoIniciadaRef.current = restorationAttempt;
 
       async function restaurarSessao() {
+        const revision = sessionRevision.current;
         try {
-          const response = await api.post('/auth/refresh', {});
-          const restaurado = response?.accessToken;
-          if (!restaurado) return;
-
-          accessTokenRef.current = restaurado;
-          setAccessToken(restaurado);
-          setUser(await resolverUsuario(restaurado, null));
-        } catch {
-          // 401 aqui é o caso comum (nunca logou, cookie vencido): segue
-          // deslogado, sem erro na tela.
-          forceLogout();
+          const response = await restoreSession(sessionScope);
+          if (revision !== sessionRevision.current) {
+            return;
+          }
+          if (!response) {
+            forceLogout();
+            return;
+          }
+          onSessionChange();
+          accessTokenRef.current = response.accessToken;
+          setAccessToken(response.accessToken);
+          setUser(response.user);
+          setMfaEnabled(Boolean(response.user.mfaAtivo));
+        } catch (error) {
+          if (revision === sessionRevision.current) {
+            if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
+              forceLogout();
+            } else {
+              setSessionError(error);
+            }
+          }
         } finally {
-          setLoading(false);
+          if (restauracaoIniciadaRef.current === restorationAttempt) {
+            setLoading(false);
+          }
         }
       }
 
       restaurarSessao();
-    }, [forceLogout]);
+    }, [forceLogout, restorationAttempt]);
 
     const logout = useCallback(async () => {
+      // Invalida restaurações e refreshes ainda pendentes antes do HTTP.
+      sessionRevision.current += 1;
       try {
-        await api.post('/auth/logout', undefined, { accessToken });
+        await authApi.post('/auth/logout', { scope: sessionScope });
       } catch {
         // A sessão é encerrada localmente de qualquer forma: os tokens são
         // stateless e só existem neste processo.
       } finally {
         forceLogout();
       }
-    }, [accessToken, forceLogout]);
+    }, [authApi, forceLogout]);
 
     const value = useMemo(
       () => ({
@@ -263,11 +351,13 @@ export function createAuthSession({
         login,
         logout,
         loading,
+        sessionError,
+        retrySession,
         mfaEnabled,
         syncMfaEnabled: setMfaEnabled,
         isAuthenticated: Boolean(user),
       }),
-      [user, accessToken, authApi, login, logout, loading, mfaEnabled],
+      [user, accessToken, authApi, login, logout, loading, sessionError, retrySession, mfaEnabled],
     );
 
     // `authApi` fecha sobre os refs de token, mas só os lê dentro de callbacks
@@ -297,7 +387,9 @@ export function createAuthSession({
 async function resolverUsuarioPadrao(accessToken, respostaLogin) {
   const usuario = getResponseUser(respostaLogin);
 
-  if (usuario) return usuario;
+  if (usuario) {
+    return usuario;
+  }
 
   const response = await api.get('/auth/me', { accessToken });
 
@@ -305,19 +397,25 @@ async function resolverUsuarioPadrao(accessToken, respostaLogin) {
 }
 
 export function getResponseUser(response) {
-  if (!response || typeof response !== 'object') return null;
+  if (!response || typeof response !== 'object') {
+    return null;
+  }
 
   return response.user ?? response.session?.user ?? null;
 }
 
 export function getResponseAccessToken(response) {
-  if (!response || typeof response !== 'object') return null;
+  if (!response || typeof response !== 'object') {
+    return null;
+  }
 
   return response.accessToken ?? response.tokens?.accessToken ?? null;
 }
 
 export function getResponseRefreshToken(response) {
-  if (!response || typeof response !== 'object') return null;
+  if (!response || typeof response !== 'object') {
+    return null;
+  }
 
   return response.refreshToken ?? response.tokens?.refreshToken ?? null;
 }

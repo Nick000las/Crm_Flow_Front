@@ -40,7 +40,9 @@ export function ViewsMenu({ visaoAtual, onAplicar }) {
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger className={cn(buttonVariants({ variant: 'outline' }), 'h-9 rounded-none')}>
+        <DropdownMenuTrigger
+          className={cn(buttonVariants({ variant: 'outline' }), 'h-9 rounded-none')}
+        >
           <Bookmark aria-hidden="true" />
           Views
         </DropdownMenuTrigger>
@@ -79,7 +81,11 @@ export function ViewsMenu({ visaoAtual, onAplicar }) {
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent className={MENU_CLASS}>
                 {doUsuario.map((view) => (
-                  <DropdownMenuItem key={view.id} onClick={() => setViewAExcluir(view)} variant="destructive">
+                  <DropdownMenuItem
+                    key={view.id}
+                    onClick={() => setViewAExcluir(view)}
+                    variant="destructive"
+                  >
                     {view.nome}
                   </DropdownMenuItem>
                 ))}
@@ -90,7 +96,10 @@ export function ViewsMenu({ visaoAtual, onAplicar }) {
       </DropdownMenu>
 
       <SalvarViewDialog filtros={visaoAtual} onOpenChange={setSalvando} open={salvando} />
-      <ExcluirViewDialog onOpenChange={(aberto) => !aberto && setViewAExcluir(null)} view={viewAExcluir} />
+      <ExcluirViewDialog
+        onOpenChange={(aberto) => !aberto && setViewAExcluir(null)}
+        view={viewAExcluir}
+      />
     </>
   );
 }

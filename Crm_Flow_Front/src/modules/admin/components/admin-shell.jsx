@@ -1,3 +1,5 @@
+import { PageTransition } from '@/components/page-transition';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAdminAuth } from '@/hooks/use-admin-auth';
@@ -13,6 +15,15 @@ import { useAdminAuth } from '@/hooks/use-admin-auth';
  */
 export function AdminShell({ children }) {
   const { user, logout } = useAdminAuth();
+  const [loggingOut, setLoggingOut] = useState(false);
+  async function handleLogout() {
+    setLoggingOut(true);
+    try {
+      await logout();
+    } finally {
+      setLoggingOut(false);
+    }
+  }
 
   return (
     <div className="flex min-h-svh flex-col">
@@ -43,7 +54,9 @@ export function AdminShell({ children }) {
             className="h-7 text-background hover:bg-background/10 hover:text-background focus-visible:ring-background/70"
             size="sm"
             variant="ghost"
-            onClick={logout}
+            onClick={handleLogout}
+            loading={loggingOut}
+            loadingText="Saindo…"
           >
             Sair
           </Button>
@@ -51,7 +64,7 @@ export function AdminShell({ children }) {
       </header>
 
       <main className="flex-1">
-        <div className="mx-auto max-w-6xl px-6 py-8 sm:px-8">{children}</div>
+        <PageTransition className="mx-auto max-w-6xl px-6 py-8 sm:px-8">{children}</PageTransition>
       </main>
     </div>
   );

@@ -42,7 +42,8 @@
  * }} EventoLead
  */
 
-const doLead = (id, ...partes) => ['/crm/leads', ...[id, ...partes].map(encodeURIComponent)].join('/');
+const doLead = (id, ...partes) =>
+  ['/crm/leads', ...[id, ...partes].map(encodeURIComponent)].join('/');
 
 /**
  * Abertas primeiro (a agendada mais próxima antes), depois as concluídas,
@@ -103,7 +104,9 @@ export function excluirAtividade(authApi, leadId, atividadeId) {
  */
 export function listarHistorico(authApi, leadId, { pagina, tamanho, categorias = [] }, options) {
   const query = new URLSearchParams({ pagina: String(pagina), tamanho: String(tamanho) });
-  if (categorias.length > 0) query.set('categorias', categorias.join(','));
+  if (categorias.length > 0) {
+    query.set('categorias', categorias.join(','));
+  }
   return authApi.get(`${doLead(leadId, 'historico')}?${query}`, options);
 }
 

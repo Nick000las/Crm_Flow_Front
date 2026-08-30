@@ -48,6 +48,9 @@ test('textoDaPurga', () => {
 });
 
 test('avisoDaRestauracao diz para onde o lead voltou', () => {
-  assert.equal(avisoDaRestauracao({ archived_at: '2026-10-01T00:00:00Z' }), AVISOS_LEAD.RESTAURADO_ARQUIVADO);
+  assert.equal(
+    avisoDaRestauracao({ archived_at: '2026-10-01T00:00:00Z' }),
+    AVISOS_LEAD.RESTAURADO_ARQUIVADO,
+  );
   assert.equal(avisoDaRestauracao({ archived_at: null }), AVISOS_LEAD.RESTAURADO);
 });

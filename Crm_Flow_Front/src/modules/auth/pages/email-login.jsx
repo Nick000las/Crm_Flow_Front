@@ -66,10 +66,7 @@ export default function EmailLogin() {
     <main className="grid min-h-svh place-items-center bg-muted/40 px-4 py-10">
       <Card className="relative w-full max-w-md gap-0 py-0">
         <CardHeader className="gap-0 px-6 pb-0 pt-8 sm:px-8">
-          <div
-            className="mb-8 flex items-center gap-2.5 font-semibold"
-            aria-label="Flow CRM"
-          >
+          <div className="mb-8 flex items-center gap-2.5 font-semibold" aria-label="Flow CRM">
             <span
               className="grid size-9 place-items-center rounded-md bg-primary text-sm font-bold text-primary-foreground"
               aria-hidden="true"
@@ -79,15 +76,10 @@ export default function EmailLogin() {
             <span>Flow CRM</span>
           </div>
 
-          <CardTitle
-            id="login-title"
-            className="text-2xl font-semibold tracking-tight sm:text-3xl"
-          >
+          <CardTitle id="login-title" className="text-2xl font-semibold tracking-tight sm:text-3xl">
             {content.title}
           </CardTitle>
-          <CardDescription className="mt-2 leading-relaxed">
-            {content.description}
-          </CardDescription>
+          <CardDescription className="mt-2 leading-relaxed">{content.description}</CardDescription>
         </CardHeader>
 
         {step === LOGIN_STEP.EMAIL && (
@@ -121,7 +113,7 @@ export default function EmailLogin() {
                 className="h-10 w-full"
                 type="submit"
                 disabled={isSubmitting}
-                aria-busy={isSubmitting}
+                loading={isSubmitting}
               >
                 {isSubmitting ? 'Enviando...' : 'Continuar'}
               </Button>
@@ -129,32 +121,20 @@ export default function EmailLogin() {
           </CardContent>
         )}
 
-        {step === LOGIN_STEP.PASSWORD && (
-          <Password email={email} onSuccess={handleLoginResponse} />
-        )}
+        {step === LOGIN_STEP.PASSWORD && <Password email={email} onSuccess={handleLoginResponse} />}
 
-        {step === LOGIN_STEP.MFA_CODE && (
-          <MfaCode onSuccess={handleLoginResponse} />
-        )}
+        {step === LOGIN_STEP.MFA_CODE && <MfaCode onSuccess={handleLoginResponse} />}
 
         {step === LOGIN_STEP.VERIFICATION_CODE && (
-          <VerificationCode
-            email={email}
-            onSuccess={handleLoginResponse}
-          />
+          <VerificationCode email={email} onSuccess={handleLoginResponse} />
         )}
 
-        {step === LOGIN_STEP.CREATE_PASSWORD && (
-          <CreatePassword onSuccess={handleLoginResponse} />
-        )}
+        {step === LOGIN_STEP.CREATE_PASSWORD && <CreatePassword onSuccess={handleLoginResponse} />}
 
         {step === LOGIN_STEP.SUCCESS && (
           <CardContent className="px-6 py-10 sm:px-8">
             <div className="grid justify-items-center gap-3 text-center">
-              <CheckCircle2
-                className="size-12 text-primary"
-                aria-hidden="true"
-              />
+              <CheckCircle2 className="size-12 text-primary" aria-hidden="true" />
               <p className="font-medium">Login realizado com sucesso.</p>
             </div>
           </CardContent>

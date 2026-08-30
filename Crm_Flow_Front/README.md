@@ -26,8 +26,8 @@ Acesse `http://localhost:5173`. A rota inicial redireciona para o login.
 
 ## Configuração
 
-| Variável | Padrão | Descrição |
-| --- | --- | --- |
+| Variável       | Padrão                  | Descrição                                       |
+| -------------- | ----------------------- | ----------------------------------------------- |
 | `VITE_API_URL` | `http://localhost:3000` | URL pública do backend acessível pelo navegador |
 
 Somente variáveis públicas podem usar o prefixo `VITE_`. Segredos JWT e dados
@@ -51,11 +51,11 @@ Em telas autenticadas, use sempre o `authApi` da sessão (`useAuth()`), nunca
 (refresh single-flight) e repete a chamada.
 
 ```js
-const { authApi } = useAuth()
+const { authApi } = useAuth();
 
-const pagina = await authApi.post('/crm/leads/search', { paginacao: { pagina: 1, tamanho: 50 } })
-const preview = await authApi.upload('/crm/import/preview', formData)
-const { blob, filename } = await authApi.download('/crm/export', { colunas: ['nome'] })
+const pagina = await authApi.post('/crm/leads/search', { paginacao: { pagina: 1, tamanho: 50 } });
+const preview = await authApi.upload('/crm/import/preview', formData);
+const { blob, filename } = await authApi.download('/crm/export', { colunas: ['nome'] });
 ```
 
 Erros do backend preservam `status`, `code`, `message`, `fields`, `details` e
@@ -66,12 +66,17 @@ silenciosos. O cliente HTTP não dispara toast, evitando feedback duplicado.
 
 ## Sessão
 
-- **Tenant:** o access token vive só em memória; o refresh token fica num
-  cookie httpOnly gravado pelo back (`refresh_token`, path `/auth`). Ao abrir
-  a página, a sessão se restaura por ele — um F5 não desloga. Front e back
-  precisam estar no mesmo site (`localhost` com `localhost`, não com
-  `127.0.0.1`) para o cookie ir junto.
-- **Admin (MASTER):** tudo em memória, de propósito — um F5 desloga.
+- Access tokens vivem em memória. Refresh tokens ficam em cookies httpOnly
+  separados: `refresh_token` para tenant e `admin_refresh_token` para MASTER,
+  ambos com path `/`.
+- Ao abrir ou recarregar a página, o frontend consulta `GET /auth/session` (tenant) ou
+  `GET /auth/session?scope=admin` (admin). A resposta traz `{ accessToken, user }`, com
+  MFA, módulos e flags atuais. As rotas aguardam a restauração antes de redirecionar.
+- Sem login, o bootstrap retorna sessão nula sem disparar refresh.
+  Cookies antigos com path `/auth` são migrados na restauração. Logout apaga o
+  cookie da área correspondente, preservando a outra sessão.
+- Front e back precisam estar no mesmo site (`localhost` com `localhost`, não
+  com `127.0.0.1`) para os cookies `SameSite=Lax` acompanharem as chamadas.
 
 ## Dados
 

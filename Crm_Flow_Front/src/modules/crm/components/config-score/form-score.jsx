@@ -37,7 +37,16 @@ function errosDoServidor(fields, chavesDasRegras, chavesDasFaixas) {
 }
 
 /** Uma regra do rascunho: nome, condições, pontos com sinal, liga/desliga e ações. */
-function LinhaRegra({ regra, descricao, erro, podeEditar, ocupado, onAlternar, onEditar, onRemover }) {
+function LinhaRegra({
+  regra,
+  descricao,
+  erro,
+  podeEditar,
+  ocupado,
+  onAlternar,
+  onEditar,
+  onRemover,
+}) {
   const nome = regra.nome || 'Regra sem nome';
   const idAtiva = `score-${regra.chaveLocal}-ativa`;
   const idErro = `score-${regra.chaveLocal}-erro`;
@@ -47,7 +56,9 @@ function LinhaRegra({ regra, descricao, erro, podeEditar, ocupado, onAlternar, o
       aria-describedby={erro ? idErro : undefined}
       className="flex flex-wrap items-center gap-3 border-b border-border px-3 py-2 last:border-b-0"
     >
-      <span className="w-14 text-right font-mono text-sm tabular-nums">{textoDosPontos(regra.pontos)}</span>
+      <span className="w-14 text-right font-mono text-sm tabular-nums">
+        {textoDosPontos(regra.pontos)}
+      </span>
       <div className="grid min-w-0 flex-1 gap-0.5">
         <p className="text-sm font-medium">{nome}</p>
         <p className="text-sm text-muted-foreground">{descricao}</p>
@@ -59,15 +70,30 @@ function LinhaRegra({ regra, descricao, erro, podeEditar, ocupado, onAlternar, o
       </div>
 
       <label className="flex items-center gap-2 text-sm" htmlFor={idAtiva}>
-        <Switch checked={regra.ativo} disabled={!podeEditar || ocupado} id={idAtiva} onCheckedChange={onAlternar} />
+        <Switch
+          checked={regra.ativo}
+          disabled={!podeEditar || ocupado}
+          id={idAtiva}
+          onCheckedChange={onAlternar}
+        />
         {regra.ativo ? 'Ligada' : 'Desligada'}
         <span className="sr-only">: {nome}</span>
       </label>
 
       {podeEditar && (
         <div className="flex">
-          <BotaoIcone disabled={ocupado} icone={Pencil} onClick={onEditar} rotulo={`Editar ${nome}`} />
-          <BotaoIcone disabled={ocupado} icone={Trash2} onClick={onRemover} rotulo={`Remover ${nome}`} />
+          <BotaoIcone
+            disabled={ocupado}
+            icone={Pencil}
+            onClick={onEditar}
+            rotulo={`Editar ${nome}`}
+          />
+          <BotaoIcone
+            disabled={ocupado}
+            icone={Trash2}
+            onClick={onRemover}
+            rotulo={`Remover ${nome}`}
+          />
         </div>
       )}
     </li>
@@ -99,18 +125,24 @@ export function FormScore({ config, campos, nomePorId, podeEditar, ocupado, salv
   const mudou = scoreMudou(valores, config, campos);
   const travado = ocupado || !podeEditar;
   const comErro =
-    erros.geral.length > 0 || Object.keys(erros.regras).length > 0 || Object.keys(erros.faixas).length > 0;
+    erros.geral.length > 0 ||
+    Object.keys(erros.regras).length > 0 ||
+    Object.keys(erros.faixas).length > 0;
 
   function alterar(parcial) {
     setValores((atuais) => ({ ...atuais, ...parcial }));
-    if (salvar.error) salvar.reset();
+    if (salvar.error) {
+      salvar.reset();
+    }
   }
 
   function confirmarRegra(confirmada) {
     const existe = valores.regras.some((regra) => regra.chaveLocal === confirmada.chaveLocal);
     alterar({
       regras: existe
-        ? valores.regras.map((regra) => (regra.chaveLocal === confirmada.chaveLocal ? confirmada : regra))
+        ? valores.regras.map((regra) =>
+            regra.chaveLocal === confirmada.chaveLocal ? confirmada : regra,
+          )
         : [...valores.regras, confirmada],
     });
     setErros((atuais) => ({ ...atuais, regras: semChave(atuais.regras, confirmada.chaveLocal) }));
@@ -122,7 +154,11 @@ export function FormScore({ config, campos, nomePorId, podeEditar, ocupado, salv
   }
 
   function alterarFaixa(chaveLocal, parcial) {
-    alterar({ faixas: valores.faixas.map((faixa) => (faixa.chaveLocal === chaveLocal ? { ...faixa, ...parcial } : faixa)) });
+    alterar({
+      faixas: valores.faixas.map((faixa) =>
+        faixa.chaveLocal === chaveLocal ? { ...faixa, ...parcial } : faixa,
+      ),
+    });
     setErros((atuais) => ({ ...atuais, faixas: semChave(atuais.faixas, chaveLocal), geral: [] }));
   }
 
@@ -144,7 +180,8 @@ export function FormScore({ config, campos, nomePorId, podeEditar, ocupado, salv
     const chavesDasFaixas = valores.faixas.map((faixa) => faixa.chaveLocal);
     salvar.mutate(resultado.corpo, {
       onSuccess: () => onSalvo('Pontuação salva e leads recalculados.'),
-      onError: (erro) => setErros(errosDoServidor(toApiError(erro).fields, chavesDasRegras, chavesDasFaixas)),
+      onError: (erro) =>
+        setErros(errosDoServidor(toApiError(erro).fields, chavesDasRegras, chavesDasFaixas)),
     });
   }
 
@@ -157,7 +194,9 @@ export function FormScore({ config, campos, nomePorId, podeEditar, ocupado, salv
   const botaoNovaRegra = podeEditar && (
     <Button
       disabled={travado || valores.regras.length >= SCORE.MAX_REGRAS}
-      onClick={() => setEmEdicao({ regra: novaRegraScore(`nova-regra-${++novos.current}`), nova: true })}
+      onClick={() =>
+        setEmEdicao({ regra: novaRegraScore(`nova-regra-${++novos.current}`), nova: true })
+      }
       size="sm"
       type="button"
       variant="outline"
@@ -203,7 +242,11 @@ export function FormScore({ config, campos, nomePorId, podeEditar, ocupado, salv
                     key={regra.chaveLocal}
                     ocupado={travado}
                     onAlternar={(ativo) =>
-                      alterar({ regras: valores.regras.map((atual) => (atual === regra ? { ...atual, ativo } : atual)) })
+                      alterar({
+                        regras: valores.regras.map((atual) =>
+                          atual === regra ? { ...atual, ativo } : atual,
+                        ),
+                      })
                     }
                     onEditar={() => setEmEdicao({ regra, nova: false })}
                     onRemover={() => removerRegra(regra.chaveLocal)}
@@ -230,7 +273,9 @@ export function FormScore({ config, campos, nomePorId, podeEditar, ocupado, salv
             erros={erros.faixas}
             faixas={valores.faixas}
             ocupado={ocupado}
-            onAdicionar={() => alterar({ faixas: [...valores.faixas, novaFaixa(`nova-faixa-${++novos.current}`)] })}
+            onAdicionar={() =>
+              alterar({ faixas: [...valores.faixas, novaFaixa(`nova-faixa-${++novos.current}`)] })
+            }
             onAlterar={alterarFaixa}
             onRemover={removerFaixa}
             podeEditar={podeEditar}
@@ -238,7 +283,10 @@ export function FormScore({ config, campos, nomePorId, podeEditar, ocupado, salv
         </section>
 
         {erros.geral.length > 0 && (
-          <ul className="grid gap-1 border border-destructive px-3 py-2 text-sm text-destructive" role="alert">
+          <ul
+            className="grid gap-1 border border-destructive px-3 py-2 text-sm text-destructive"
+            role="alert"
+          >
             {erros.geral.map((mensagem) => (
               <li key={mensagem}>{mensagem}</li>
             ))}
@@ -254,11 +302,18 @@ export function FormScore({ config, campos, nomePorId, podeEditar, ocupado, salv
               <Button aria-busy={salvar.isPending} disabled={!mudou || travado} type="submit">
                 {salvar.isPending ? 'Salvando e recalculando…' : 'Salvar'}
               </Button>
-              <Button disabled={!mudou || travado} onClick={descartar} type="button" variant="outline">
+              <Button
+                disabled={!mudou || travado}
+                onClick={descartar}
+                type="button"
+                variant="outline"
+              >
                 Descartar
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground">Salvar recalcula a pontuação de todos os leads.</p>
+            <p className="text-xs text-muted-foreground">
+              Salvar recalcula a pontuação de todos os leads.
+            </p>
           </div>
         )}
       </form>

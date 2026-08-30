@@ -23,8 +23,12 @@ export function ExcluirRegraDialog({ regra, descricao, onOpenChange, onExcluida 
   const excluir = useExcluirRegra();
 
   function handleOpenChange(proximo) {
-    if (excluir.isPending) return;
-    if (!proximo) excluir.reset();
+    if (excluir.isPending) {
+      return;
+    }
+    if (!proximo) {
+      excluir.reset();
+    }
     onOpenChange(proximo);
   }
 
@@ -43,11 +47,16 @@ export function ExcluirRegraDialog({ regra, descricao, onOpenChange, onExcluida 
         <AlertDialogHeader>
           <AlertDialogTitle>Excluir regra</AlertDialogTitle>
           <AlertDialogDescription>
-            {regra ? `${regra.alvo.label}: ${descricao}. ` : ''}O formulário do lead deixa de aplicá-la.
+            {regra ? `${regra.alvo.label}: ${descricao}. ` : ''}O formulário do lead deixa de
+            aplicá-la.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
-        <ApiErrorAlert error={excluir.error} id="excluir-regra-erro" title="Não foi possível excluir" />
+        <ApiErrorAlert
+          error={excluir.error}
+          id="excluir-regra-erro"
+          title="Não foi possível excluir"
+        />
 
         <AlertDialogFooter>
           <AlertDialogCancel disabled={excluir.isPending}>Cancelar</AlertDialogCancel>

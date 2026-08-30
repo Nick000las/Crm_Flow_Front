@@ -15,7 +15,11 @@ const COLUNA_RESPONSAVEL = Object.freeze({
   tipo: TIPO_COLUNA.RESPONSAVEL,
 });
 
-const COLUNA_CRIADO_EM = Object.freeze({ id: 'criadoEm', label: 'Criado em', tipo: TIPO_COLUNA.INSTANTE });
+const COLUNA_CRIADO_EM = Object.freeze({
+  id: 'criadoEm',
+  label: 'Criado em',
+  tipo: TIPO_COLUNA.INSTANTE,
+});
 
 export const COLUNAS_PADRAO = Object.freeze(['nome', 'email', 'telefone', 'status', 'responsavel']);
 
@@ -36,7 +40,9 @@ export const COLUNAS_PADRAO = Object.freeze(['nome', 'email', 'telefone', 'statu
  * @param {import('../types.js').Campo} campo
  */
 export function lerValorDoCampo(lead, campo) {
-  if (campo.camada === CAMADA.CAMADA_3) return lead.custom_fields?.[campo.chave];
+  if (campo.camada === CAMADA.CAMADA_3) {
+    return lead.custom_fields?.[campo.chave];
+  }
 
   return lead[campo.coluna];
 }
@@ -64,9 +70,15 @@ export function montarColunas(campos) {
  * @param {Coluna} coluna
  */
 export function lerValorDaColuna(lead, coluna) {
-  if (coluna.tipo === TIPO_COLUNA.MOEDA) return lead.valor;
-  if (coluna.tipo === TIPO_COLUNA.RESPONSAVEL) return lead.usuario_responsavel_id;
-  if (coluna.tipo === TIPO_COLUNA.INSTANTE) return lead.created_at;
+  if (coluna.tipo === TIPO_COLUNA.MOEDA) {
+    return lead.valor;
+  }
+  if (coluna.tipo === TIPO_COLUNA.RESPONSAVEL) {
+    return lead.usuario_responsavel_id;
+  }
+  if (coluna.tipo === TIPO_COLUNA.INSTANTE) {
+    return lead.created_at;
+  }
 
   return lerValorDoCampo(lead, coluna.campo);
 }

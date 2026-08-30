@@ -15,7 +15,9 @@ import { cn } from '@/lib/utils';
  * }} props
  */
 export function ChipsFiltro({ chips, chavesComErro, onRemover, onLimpar }) {
-  if (chips.length === 0) return null;
+  if (chips.length === 0) {
+    return null;
+  }
 
   return (
     <div className="mb-4 flex flex-wrap items-center gap-1.5">

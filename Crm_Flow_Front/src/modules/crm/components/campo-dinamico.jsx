@@ -2,7 +2,12 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
-import { MENSAGEM_CALCULADO, MENSAGEM_SEM_PERMISSAO, MENSAGEM_SOMENTE_LEITURA, TIPOS_CAMPO } from '../constants';
+import {
+  MENSAGEM_CALCULADO,
+  MENSAGEM_SEM_PERMISSAO,
+  MENSAGEM_SOMENTE_LEITURA,
+  TIPOS_CAMPO,
+} from '../constants';
 import { AJUDA_POR_CHAVE, podeEditarCampo } from '../lib/form-lead';
 import { opcoesDoSeletor, rotuloOpcao, sugestoesDoCampo } from '../lib/opcoes';
 import { CampoForm } from './campo-form';
@@ -91,7 +96,14 @@ function CampoOpcoesMultiplas({ campo, value, onChange, controle }) {
 
 /** Tags: entrada livre por nome, com as tags ativas do tenant como sugestão. */
 function CampoTags({ campo, value, onChange, controle }) {
-  return <TagsInput {...controle} onChange={onChange} sugestoes={sugestoesDoCampo(campo)} value={value} />;
+  return (
+    <TagsInput
+      {...controle}
+      onChange={onChange}
+      sugestoes={sugestoesDoCampo(campo)}
+      value={value}
+    />
+  );
 }
 
 const CONTROLE_POR_TIPO = Object.freeze({
@@ -131,8 +143,12 @@ function escolherControle(campo) {
 
 /** Por que o campo não se edita (`null` = editável). */
 function motivoTravado(campo) {
-  if (campo.calculado) return MENSAGEM_CALCULADO;
-  if (campo.somenteLeitura) return MENSAGEM_SOMENTE_LEITURA;
+  if (campo.calculado) {
+    return MENSAGEM_CALCULADO;
+  }
+  if (campo.somenteLeitura) {
+    return MENSAGEM_SOMENTE_LEITURA;
+  }
   return podeEditarCampo(campo) ? null : MENSAGEM_SEM_PERMISSAO;
 }
 

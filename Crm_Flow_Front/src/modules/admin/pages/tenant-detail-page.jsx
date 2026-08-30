@@ -1,16 +1,11 @@
+import { LoadingState } from '@/components/loading-state';
 import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAdminAuth } from '@/hooks/use-admin-auth';
 import { DeleteTenantDialog } from '../components/delete-tenant-dialog';
 import { TenantFeaturesSection } from '../components/tenant-features-section';
@@ -25,11 +20,11 @@ export default function TenantDetailPage() {
   const { tenantId } = useParams();
   const navigate = useNavigate();
   const { authApi } = useAdminAuth();
-  const { tenant, carregando, erro, recarregar } = useTenant(authApi, tenantId);
+  const { tenant, carregando, atualizando, erro, recarregar } = useTenant(authApi, tenantId);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   const voltar = (
-    <Button render={<Link to="/admin/tenants" />} size="sm" variant="outline">
+    <Button nativeButton={false} render={<Link to="/admin/tenants" />} size="sm" variant="outline">
       <ArrowLeft aria-hidden="true" />
       Todos os tenants
     </Button>
@@ -39,12 +34,12 @@ export default function TenantDetailPage() {
     return (
       <>
         <PageHeader actions={voltar} title="Tenant" />
-        <p className="text-sm text-muted-foreground">Carregando...</p>
+        <LoadingState label="Carregando dados do tenant…" />
       </>
     );
   }
 
-  if (erro) {
+  if (erro && !tenant) {
     return (
       <>
         <PageHeader actions={voltar} title="Tenant" />
@@ -55,40 +50,21 @@ export default function TenantDetailPage() {
 
   return (
     <>
-      <PageHeader
-        actions={voltar}
-        description={tenant.subdomain}
-        title={tenant.nome}
-      />
+      <PageHeader actions={voltar} description={tenant.subdomain} title={tenant.nome} />
 
-      <div className="grid gap-6">
+      <div className="grid gap-6" aria-busy={atualizando}>
+        {erro && <ApiErrorAlert error={erro} id={TENANT_ERROR_ID} />}
+        {atualizando && <LoadingState inline label="Atualizando dados do tenant…" />}
         {/* Sem `key` de remontagem: depois de um salvamento bem-sucedido o
             estado local de cada seção já é igual ao que foi gravado — é o que
             faz os botões voltarem a ficar desabilitados. Remontar aqui só
             apagaria a confirmação de "salvo" no instante em que ela aparece. */}
-        <TenantIdentitySection
-          adminApi={authApi}
-          onSaved={recarregar}
-          tenant={tenant}
-        />
+        <TenantIdentitySection adminApi={authApi} onSaved={recarregar} tenant={tenant} />
 
-        <TenantStatusSection
-          adminApi={authApi}
-          onSaved={recarregar}
-          tenant={tenant}
-        />
+        <TenantStatusSection adminApi={authApi} onSaved={recarregar} tenant={tenant} />
 
-        <TenantModulesSection
-          adminApi={authApi}
-          onSaved={recarregar}
-          tenant={tenant}
-        />
-
-        <TenantFeaturesSection
-          adminApi={authApi}
-          onSaved={recarregar}
-          tenant={tenant}
-        />
+        <TenantModulesSection adminApi={authApi} onSaved={recarregar} tenant={tenant} />
+        <TenantFeaturesSection adminApi={authApi} onSaved={recarregar} tenant={tenant} />
 
         <Card className="border-destructive/30">
           <CardHeader>

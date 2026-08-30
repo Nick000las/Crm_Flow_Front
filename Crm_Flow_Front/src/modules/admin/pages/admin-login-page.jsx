@@ -97,9 +97,7 @@ export default function AdminLoginPage() {
           <CardTitle className="text-2xl font-semibold tracking-tight sm:text-3xl">
             {content.title}
           </CardTitle>
-          <CardDescription className="mt-2 leading-relaxed">
-            {content.description}
-          </CardDescription>
+          <CardDescription className="mt-2 leading-relaxed">{content.description}</CardDescription>
         </CardHeader>
 
         {step === LOGIN_STEP.EMAIL && (
@@ -133,7 +131,7 @@ export default function AdminLoginPage() {
                 className="h-10 w-full"
                 type="submit"
                 disabled={isSubmitting}
-                aria-busy={isSubmitting}
+                loading={isSubmitting}
               >
                 {isSubmitting ? 'Enviando...' : 'Continuar'}
               </Button>
@@ -142,11 +140,11 @@ export default function AdminLoginPage() {
         )}
 
         {step === LOGIN_STEP.PASSWORD && (
-          <Password email={email} onSuccess={handleLoginResponse} />
+          <Password sessionScope="admin" email={email} onSuccess={handleLoginResponse} />
         )}
 
         {step === LOGIN_STEP.MFA_CODE && (
-          <MfaCode onSuccess={handleLoginResponse} />
+          <MfaCode sessionScope="admin" onSuccess={handleLoginResponse} />
         )}
 
         {step === LOGIN_STEP.VERIFICATION_CODE && (
@@ -154,7 +152,7 @@ export default function AdminLoginPage() {
         )}
 
         {step === LOGIN_STEP.CREATE_PASSWORD && (
-          <CreatePassword onSuccess={handleLoginResponse} />
+          <CreatePassword sessionScope="admin" onSuccess={handleLoginResponse} />
         )}
 
         {step === LOGIN_STEP.SUCCESS && (

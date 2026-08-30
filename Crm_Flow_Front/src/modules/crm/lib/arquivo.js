@@ -39,7 +39,9 @@ export function estaArquivado(lead) {
  */
 export function diasAtePurga(purgaEm, agora = new Date()) {
   const instante = purgaEm ? Date.parse(purgaEm) : Number.NaN;
-  if (Number.isNaN(instante)) return null;
+  if (Number.isNaN(instante)) {
+    return null;
+  }
 
   return Math.max(0, Math.ceil((instante - agora.getTime()) / MS_POR_DIA));
 }
@@ -47,8 +49,12 @@ export function diasAtePurga(purgaEm, agora = new Date()) {
 /** "Exclui em 12 dias" — a coluna da lixeira. Vazio sem data. */
 export function textoDaPurga(purgaEm, agora) {
   const dias = diasAtePurga(purgaEm, agora);
-  if (dias === null) return '';
-  if (dias === 0) return 'Exclui hoje';
+  if (dias === null) {
+    return '';
+  }
+  if (dias === 0) {
+    return 'Exclui hoje';
+  }
 
   return `Exclui em ${dias} ${dias === 1 ? 'dia' : 'dias'}`;
 }

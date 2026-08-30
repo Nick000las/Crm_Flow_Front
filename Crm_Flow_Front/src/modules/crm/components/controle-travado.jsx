@@ -11,12 +11,16 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
  * @param {{ motivo: string | null, motivoId: string, children: import('react').ReactNode }} props
  */
 export function ControleTravado({ motivo, motivoId, children }) {
-  if (!motivo) return children;
+  if (!motivo) {
+    return children;
+  }
 
   return (
     <>
       <Tooltip>
-        <TooltipTrigger render={<span className="inline-flex cursor-not-allowed" />}>{children}</TooltipTrigger>
+        <TooltipTrigger render={<span className="inline-flex cursor-not-allowed" />}>
+          {children}
+        </TooltipTrigger>
         <TooltipContent>{motivo}</TooltipContent>
       </Tooltip>
       <span className="sr-only" id={motivoId}>

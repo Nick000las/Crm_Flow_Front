@@ -23,7 +23,8 @@ function FormRenomear({ campo, onSalvo }) {
   const [label, setLabel] = useState(campo.label);
   const [erroCliente, setErroCliente] = useState(null);
   const atualizar = useAtualizarCampoConfigurado();
-  const erroDoNome = erroCliente ?? (atualizar.error ? getFieldError(atualizar.error, 'label') : null);
+  const erroDoNome =
+    erroCliente ?? (atualizar.error ? getFieldError(atualizar.error, 'label') : null);
   const renomeado = Boolean(campo.labelPadrao) && campo.label !== campo.labelPadrao;
 
   function enviar(parcial) {
@@ -54,7 +55,9 @@ function FormRenomear({ campo, onSalvo }) {
             onChange={(event) => {
               setLabel(event.target.value);
               setErroCliente(null);
-              if (atualizar.error) atualizar.reset();
+              if (atualizar.error) {
+                atualizar.reset();
+              }
             }}
             value={label}
           />
@@ -62,8 +65,8 @@ function FormRenomear({ campo, onSalvo }) {
       </CampoForm>
 
       <p className="-mt-2 text-xs text-muted-foreground">
-        Chave <span className="font-mono text-foreground select-all">{campo.chave}</span> — a API e as
-        planilhas continuam usando a chave.
+        Chave <span className="font-mono text-foreground select-all">{campo.chave}</span> — a API e
+        as planilhas continuam usando a chave.
         {campo.labelPadrao && (
           <>
             {' '}
@@ -73,7 +76,11 @@ function FormRenomear({ campo, onSalvo }) {
       </p>
 
       {atualizar.error && !getFieldError(atualizar.error, 'label') && (
-        <ApiErrorAlert error={atualizar.error} id="renomear-campo-erro" title="Não foi possível renomear" />
+        <ApiErrorAlert
+          error={atualizar.error}
+          id="renomear-campo-erro"
+          title="Não foi possível renomear"
+        />
       )}
 
       <DialogFooter>
@@ -88,7 +95,9 @@ function FormRenomear({ campo, onSalvo }) {
             Restaurar nome padrão
           </Button>
         )}
-        <DialogClose render={<Button disabled={atualizar.isPending} type="button" variant="outline" />}>
+        <DialogClose
+          render={<Button disabled={atualizar.isPending} type="button" variant="outline" />}
+        >
           Cancelar
         </DialogClose>
         <Button aria-busy={atualizar.isPending} disabled={atualizar.isPending} type="submit">
@@ -114,7 +123,9 @@ export function RenomearCampoDialog({ campo, onOpenChange, onSalvo }) {
       <DialogContent className="rounded-none sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Renomear campo</DialogTitle>
-          <DialogDescription>O novo nome aparece no formulário, na ficha, nos filtros e na tabela.</DialogDescription>
+          <DialogDescription>
+            O novo nome aparece no formulário, na ficha, nos filtros e na tabela.
+          </DialogDescription>
         </DialogHeader>
         {campo && (
           <FormRenomear

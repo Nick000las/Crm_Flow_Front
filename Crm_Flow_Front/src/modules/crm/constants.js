@@ -48,7 +48,11 @@ export const ROTULOS_LISTA = Object.freeze({
 });
 
 /** Só em status (obrigatória lá, proibida no resto). Relatórios e regras usam a categoria, não o nome. */
-export const CATEGORIAS_STATUS = Object.freeze({ ABERTO: 'aberto', GANHO: 'ganho', PERDIDO: 'perdido' });
+export const CATEGORIAS_STATUS = Object.freeze({
+  ABERTO: 'aberto',
+  GANHO: 'ganho',
+  PERDIDO: 'perdido',
+});
 
 export const ROTULOS_CATEGORIA = Object.freeze({
   [CATEGORIAS_STATUS.ABERTO]: 'Aberto',
@@ -63,12 +67,27 @@ export const ROTULOS_CATEGORIA = Object.freeze({
  */
 export const REFERENCIAS_FIXAS = Object.freeze({
   'lead.valor': { chave: 'valor', label: 'Valor', tipo: 'monetario', coluna: 'valor' },
-  'lead.responsavel': { chave: 'usuarioResponsavelId', label: 'Responsável', tipo: 'usuario', coluna: 'usuario_responsavel_id' },
-  'lead.estagio': { chave: 'funilEstagio', label: 'Estágio do funil', tipo: 'texto', coluna: 'estagio_nome' },
+  'lead.responsavel': {
+    chave: 'usuarioResponsavelId',
+    label: 'Responsável',
+    tipo: 'usuario',
+    coluna: 'usuario_responsavel_id',
+  },
+  'lead.estagio': {
+    chave: 'funilEstagio',
+    label: 'Estágio do funil',
+    tipo: 'texto',
+    coluna: 'estagio_nome',
+  },
   'lead.criadoEm': { chave: 'createdAt', label: 'Criado em', tipo: 'data', coluna: 'created_at' },
 });
 
-export const LIMITES_LAYOUT = Object.freeze({ SUBTITULO: 2, DESTAQUES: 4, SECOES: 12, NOME_SECAO: 60 });
+export const LIMITES_LAYOUT = Object.freeze({
+  SUBTITULO: 2,
+  DESTAQUES: 4,
+  SECOES: 12,
+  NOME_SECAO: 60,
+});
 
 /** Campos do sistema que podem ser identificador; personalizado pode, se for texto. */
 export const CHAVES_IDENTIFICADOR = Object.freeze(['nome', 'empresa', 'cnpj', 'cpf', 'email']);
@@ -113,7 +132,15 @@ export const TIPOS_CAMPO = Object.freeze({
 });
 
 /** Partes do tipo `endereco`, na ordem do back (`PARTES_ENDERECO`). */
-export const PARTES_ENDERECO = Object.freeze(['cep', 'logradouro', 'numero', 'complemento', 'bairro', 'cidade', 'uf']);
+export const PARTES_ENDERECO = Object.freeze([
+  'cep',
+  'logradouro',
+  'numero',
+  'complemento',
+  'bairro',
+  'cidade',
+  'uf',
+]);
 
 export const ROTULOS_PARTE_ENDERECO = Object.freeze({
   cep: 'CEP',
@@ -127,10 +154,7 @@ export const ROTULOS_PARTE_ENDERECO = Object.freeze({
 
 export const LIMITE_TEXTO_LONGO = 10_000;
 
-export const TIPOS_COM_OPCOES = Object.freeze([
-  TIPOS_CAMPO.SELECAO,
-  TIPOS_CAMPO.SELECAO_MULTIPLA,
-]);
+export const TIPOS_COM_OPCOES = Object.freeze([TIPOS_CAMPO.SELECAO, TIPOS_CAMPO.SELECAO_MULTIPLA]);
 
 /** Operadores aceitos em `filtros[].operador` de `POST /crm/leads/search`. */
 export const OPERADORES_POR_TIPO = Object.freeze({
@@ -222,7 +246,12 @@ export const ROTULOS_ACESSO = Object.freeze({ edit: 'Editar', view: 'Só ver', h
 export const MENSAGEM_SEM_PERMISSAO = 'Sem permissão para editar';
 
 /** Pontuação de leads (`crm.score`): espelho dos limites do back. */
-export const SCORE = Object.freeze({ MAX_REGRAS: 100, MAX_CONDICOES: 10, MAX_FAIXAS: 10, PONTOS_MAX: 1000 });
+export const SCORE = Object.freeze({
+  MAX_REGRAS: 100,
+  MAX_CONDICOES: 10,
+  MAX_FAIXAS: 10,
+  PONTOS_MAX: 1000,
+});
 
 /** O campo nativo calculado pela pontuação. */
 export const CHAVE_SCORE = 'leadScore';

@@ -21,8 +21,12 @@ export function RestaurarOrdemDialog({ open, onOpenChange, onRestaurado }) {
   const restaurar = useRestaurarOrdemPadrao();
 
   function handleOpenChange(proximo) {
-    if (restaurar.isPending) return;
-    if (!proximo) restaurar.reset();
+    if (restaurar.isPending) {
+      return;
+    }
+    if (!proximo) {
+      restaurar.reset();
+    }
     onOpenChange(proximo);
   }
 
@@ -41,16 +45,24 @@ export function RestaurarOrdemDialog({ open, onOpenChange, onRestaurado }) {
         <AlertDialogHeader>
           <AlertDialogTitle>Voltar à ordem padrão?</AlertDialogTitle>
           <AlertDialogDescription>
-            Os campos do sistema voltam à ordem original e os personalizados ficam no fim, por data de
-            criação. Nomes, telas e obrigatoriedade continuam como estão.
+            Os campos do sistema voltam à ordem original e os personalizados ficam no fim, por data
+            de criação. Nomes, telas e obrigatoriedade continuam como estão.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
-        <ApiErrorAlert error={restaurar.error} id="restaurar-ordem-erro" title="Não foi possível restaurar" />
+        <ApiErrorAlert
+          error={restaurar.error}
+          id="restaurar-ordem-erro"
+          title="Não foi possível restaurar"
+        />
 
         <AlertDialogFooter>
           <AlertDialogCancel disabled={restaurar.isPending}>Cancelar</AlertDialogCancel>
-          <AlertDialogAction aria-busy={restaurar.isPending} disabled={restaurar.isPending} onClick={confirmar}>
+          <AlertDialogAction
+            aria-busy={restaurar.isPending}
+            disabled={restaurar.isPending}
+            onClick={confirmar}
+          >
             {restaurar.isPending ? 'Restaurando…' : 'Voltar ao padrão'}
           </AlertDialogAction>
         </AlertDialogFooter>

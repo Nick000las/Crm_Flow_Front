@@ -24,7 +24,9 @@ const PREFIXO_ERRO = 'status.';
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">Carregando status…</span>
+      <span className="sr-only" role="status">
+        Carregando status…
+      </span>
       {Array.from({ length: 5 }, (_, indice) => (
         <Skeleton className="h-12 rounded-none" key={indice} />
       ))}
@@ -104,17 +106,22 @@ function FormInatividade({ lista, podeEditar, onSalvo }) {
   const erros = tentou ? errosLocais(valores) : {};
   // Erro do back sem campo (rede, permissão) vai para o alerta; o de campo, para a linha.
   const temErroDeCampo =
-    salvar.error && Object.keys(salvar.error.fields ?? {}).some((campo) => campo.startsWith(PREFIXO_ERRO));
+    salvar.error &&
+    Object.keys(salvar.error.fields ?? {}).some((campo) => campo.startsWith(PREFIXO_ERRO));
 
   function alterar(key, valor) {
     setValores((atuais) => ({ ...atuais, [key]: valor }));
-    if (salvar.error) salvar.reset();
+    if (salvar.error) {
+      salvar.reset();
+    }
   }
 
   function handleSubmit(event) {
     event.preventDefault();
     setTentou(true);
-    if (!mudancas || Object.keys(errosLocais(valores)).length > 0) return;
+    if (!mudancas || Object.keys(errosLocais(valores)).length > 0) {
+      return;
+    }
 
     salvar.mutate(mudancas, { onSuccess: () => onSalvo('Dias de inatividade salvos.') });
   }
@@ -125,7 +132,10 @@ function FormInatividade({ lista, podeEditar, onSalvo }) {
         {lista.map((status) => (
           <LinhaStatus
             desabilitado={!podeEditar || salvar.isPending}
-            erro={erros[status.key] ?? (salvar.error ? getFieldError(salvar.error, `${PREFIXO_ERRO}${status.key}`) : null)}
+            erro={
+              erros[status.key] ??
+              (salvar.error ? getFieldError(salvar.error, `${PREFIXO_ERRO}${status.key}`) : null)
+            }
             key={status.key}
             onChange={(valor) => alterar(status.key, valor)}
             status={status}
@@ -140,7 +150,11 @@ function FormInatividade({ lista, podeEditar, onSalvo }) {
 
       {podeEditar && (
         <div className="flex flex-wrap gap-2 border-t border-border pt-4">
-          <Button aria-busy={salvar.isPending} disabled={!mudancas || salvar.isPending} type="submit">
+          <Button
+            aria-busy={salvar.isPending}
+            disabled={!mudancas || salvar.isPending}
+            type="submit"
+          >
             {salvar.isPending ? 'Salvando…' : 'Salvar'}
           </Button>
           <Button
@@ -172,9 +186,15 @@ export function SecaoInatividade() {
   const inatividadeQuery = useInatividade();
   const [aviso, setAviso] = useState(null);
 
-  if (isAccessError(inatividadeQuery.error)) return <AcessoIndisponivel error={inatividadeQuery.error} />;
-  if (inatividadeQuery.error) return <ApiErrorAlert error={inatividadeQuery.error} id="inatividade-carregar-erro" />;
-  if (inatividadeQuery.isPending) return <Carregando />;
+  if (isAccessError(inatividadeQuery.error)) {
+    return <AcessoIndisponivel error={inatividadeQuery.error} />;
+  }
+  if (inatividadeQuery.error) {
+    return <ApiErrorAlert error={inatividadeQuery.error} id="inatividade-carregar-erro" />;
+  }
+  if (inatividadeQuery.isPending) {
+    return <Carregando />;
+  }
 
   const lista = inatividadeQuery.data;
 
@@ -182,9 +202,9 @@ export function SecaoInatividade() {
     <div className="grid gap-4">
       <div className="grid max-w-2xl gap-1 text-sm text-muted-foreground">
         <p>
-          Um lead <strong>esfria</strong> quando fica esses dias sem nenhuma interação enquanto está no status. Ele
-          ganha o selo &ldquo;Esfriando&rdquo;, entra na view Esfriando e o responsável recebe um resumo diário no
-          sino.
+          Um lead <strong>esfria</strong> quando fica esses dias sem nenhuma interação enquanto está
+          no status. Ele ganha o selo &ldquo;Esfriando&rdquo;, entra na view Esfriando e o
+          responsável recebe um resumo diário no sino.
         </p>
         {!podeEditar && <p>Só DONO e MASTER alteram os dias.</p>}
       </div>
@@ -193,7 +213,12 @@ export function SecaoInatividade() {
         {aviso}
       </p>
 
-      <FormInatividade key={JSON.stringify(lista)} lista={lista} onSalvo={setAviso} podeEditar={podeEditar} />
+      <FormInatividade
+        key={JSON.stringify(lista)}
+        lista={lista}
+        onSalvo={setAviso}
+        podeEditar={podeEditar}
+      />
     </div>
   );
 }

@@ -115,14 +115,25 @@ function ValorUsuario({ operador, value, onChange, controle }) {
  * }} props
  */
 export function ValorDoFiltro({ campo, operador, value, onChange, rotulo, controle }) {
-  if (operadorSemValor(operador)) return null;
+  if (operadorSemValor(operador)) {
+    return null;
+  }
 
-  const props = { campo, value, onChange, controle: { ...controle, 'aria-label': `Valor de ${rotulo}` } };
+  const props = {
+    campo,
+    value,
+    onChange,
+    controle: { ...controle, 'aria-label': `Valor de ${rotulo}` },
+  };
   const opcoes = opcoesDoFiltro(campo);
 
-  if (operador === OPERADOR.ENTRE) return <Faixa {...props} rotulo={rotulo} />;
+  if (operador === OPERADOR.ENTRE) {
+    return <Faixa {...props} rotulo={rotulo} />;
+  }
 
-  if (campo.tipo === TIPOS_CAMPO.USUARIO) return <ValorUsuario {...props} operador={operador} />;
+  if (campo.tipo === TIPOS_CAMPO.USUARIO) {
+    return <ValorUsuario {...props} operador={operador} />;
+  }
 
   if (operador === OPERADOR.E_UM_DOS) {
     return opcoes.length > 0 ? (
@@ -133,7 +144,14 @@ export function ValorDoFiltro({ campo, operador, value, onChange, rotulo, contro
   }
 
   if (campo.tipo === TIPOS_CAMPO.BOOLEANO) {
-    return <SelectSimples {...props.controle} onChange={onChange} opcoes={OPCOES_BOOLEANO} value={value} />;
+    return (
+      <SelectSimples
+        {...props.controle}
+        onChange={onChange}
+        opcoes={OPCOES_BOOLEANO}
+        value={value}
+      />
+    );
   }
 
   if (opcoes.length > 0) {

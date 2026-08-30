@@ -163,7 +163,9 @@ function MescladoEm({ lead }) {
  * link, para o nome acessível do link continuar sendo só o título.
  */
 function ComSelo({ lead, children }) {
-  if (!lead.esfriando_desde && !lead.anonimizado_em) return children;
+  if (!lead.esfriando_desde && !lead.anonimizado_em) {
+    return children;
+  }
 
   return (
     <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -262,7 +264,9 @@ export function LeadsTable({
               <TableRow
                 className={lixeira ? undefined : 'cursor-pointer hover:bg-muted/40'}
                 key={lead.id}
-                onClick={lixeira ? undefined : (event) => !cliqueEmControle(event) && onAbrir(lead.id)}
+                onClick={
+                  lixeira ? undefined : (event) => !cliqueEmControle(event) && onAbrir(lead.id)
+                }
               >
                 {selecao && (
                   <TableCell className="py-1" data-selecao>
@@ -298,7 +302,7 @@ export function LeadsTable({
                       valor={lerValorDaColuna(lead, coluna)}
                     />
                   );
-  
+
                   return (
                     <TableCell className={comLink ? 'font-medium' : undefined} key={coluna.id}>
                       {comLink ? (
@@ -327,7 +331,11 @@ export function LeadsTable({
                       />
                       {/* O lead da lixeira não abre: a linha é o único caminho para anonimizar. */}
                       {onAnonimizar && !lead.anonimizado_em && (
-                        <BotaoIcone icone={ShieldOff} onClick={() => onAnonimizar(lead)} rotulo={`Anonimizar ${titulo}`} />
+                        <BotaoIcone
+                          icone={ShieldOff}
+                          onClick={() => onAnonimizar(lead)}
+                          rotulo={`Anonimizar ${titulo}`}
+                        />
                       )}
                     </span>
                   ) : (

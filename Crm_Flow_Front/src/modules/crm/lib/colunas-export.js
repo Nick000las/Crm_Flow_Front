@@ -28,12 +28,17 @@ const COLUNAS_EXTRAS = Object.freeze([
  */
 export function itensIniciais(campos, idsVisiveis, { comMassa = false } = {}) {
   const extras = comMassa ? COLUNAS_EXTRAS : [];
-  const exportaveis = [...campos, CAMPO_VALOR, ...extras].map(({ chave, label }) => ({ chave, label }));
+  const exportaveis = [...campos, CAMPO_VALOR, ...extras].map(({ chave, label }) => ({
+    chave,
+    label,
+  }));
   const porChave = new Map(exportaveis.map((item) => [item.chave, item]));
   const chaveDaColuna = new Map(extras.map((extra) => [extra.idNaTabela, extra.chave]));
 
   // Colunas da tabela que não exportam (ex.: Responsável sem a flag) somem aqui.
-  const visiveis = idsVisiveis.map((id) => chaveDaColuna.get(id) ?? id).filter((chave) => porChave.has(chave));
+  const visiveis = idsVisiveis
+    .map((id) => chaveDaColuna.get(id) ?? id)
+    .filter((chave) => porChave.has(chave));
   const restantes = exportaveis.filter((item) => !visiveis.includes(item.chave));
 
   return [
@@ -49,7 +54,9 @@ export function itensIniciais(campos, idsVisiveis, { comMassa = false } = {}) {
  */
 export function moverItem(itens, indice, direcao) {
   const destino = indice + direcao;
-  if (destino < 0 || destino >= itens.length) return itens;
+  if (destino < 0 || destino >= itens.length) {
+    return itens;
+  }
 
   const proximos = [...itens];
   [proximos[indice], proximos[destino]] = [proximos[destino], proximos[indice]];

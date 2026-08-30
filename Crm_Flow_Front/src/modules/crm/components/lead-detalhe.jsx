@@ -10,7 +10,11 @@ const GRUPOS = Object.freeze([
 ]);
 
 const COLUNA_VALOR = { id: 'valor', label: 'Valor', tipo: TIPO_COLUNA.MOEDA };
-const COLUNA_RESPONSAVEL = { id: 'responsavel', label: 'Responsável', tipo: TIPO_COLUNA.RESPONSAVEL };
+const COLUNA_RESPONSAVEL = {
+  id: 'responsavel',
+  label: 'Responsável',
+  tipo: TIPO_COLUNA.RESPONSAVEL,
+};
 const COLUNAS_NEGOCIO = Object.freeze([COLUNA_VALOR, COLUNA_RESPONSAVEL]);
 
 function Item({ label, children }) {
@@ -42,7 +46,12 @@ function SecoesDoLayout({ lead, secoes, nomePorId }) {
 
         return (
           <Item key={item.ref} label={item.label}>
-            <CelulaLead completo coluna={coluna} nomePorId={nomePorId} valor={lerValorDaColuna(lead, coluna)} />
+            <CelulaLead
+              completo
+              coluna={coluna}
+              nomePorId={nomePorId}
+              valor={lerValorDaColuna(lead, coluna)}
+            />
           </Item>
         );
       })}
@@ -54,7 +63,9 @@ function SecoesDoLayout({ lead, secoes, nomePorId }) {
 function GruposPorCamada({ lead, campos, nomePorId }) {
   return GRUPOS.map(({ camada, titulo }) => {
     const doGrupo = campos.filter((campo) => campo.camada === camada);
-    if (doGrupo.length === 0) return null;
+    if (doGrupo.length === 0) {
+      return null;
+    }
 
     return (
       <Grupo key={camada} titulo={titulo}>
@@ -104,7 +115,11 @@ export function LeadDetalhe({ lead, campos, layout, nomePorId }) {
         <Grupo titulo="Negócio">
           {negocio.map((coluna) => (
             <Item key={coluna.id} label={coluna.label}>
-              <CelulaLead coluna={coluna} nomePorId={nomePorId} valor={lerValorDaColuna(lead, coluna)} />
+              <CelulaLead
+                coluna={coluna}
+                nomePorId={nomePorId}
+                valor={lerValorDaColuna(lead, coluna)}
+              />
             </Item>
           ))}
         </Grupo>

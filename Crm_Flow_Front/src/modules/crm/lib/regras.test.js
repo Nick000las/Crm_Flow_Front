@@ -16,7 +16,9 @@ import {
 
 // Cópia de `Back/src/modules/nucleo/crm/testing/regras.casos.json`: front e
 // back rodam os mesmos casos (checklist do M8). Mudou lá, copie de novo.
-const { casos } = JSON.parse(readFileSync(new URL('./regras.casos.json', import.meta.url), 'utf-8'));
+const { casos } = JSON.parse(
+  readFileSync(new URL('./regras.casos.json', import.meta.url), 'utf-8'),
+);
 
 describe('casos compartilhados com o back (regras.casos.json)', () => {
   for (const caso of casos) {
@@ -50,7 +52,14 @@ const ORIGEM = {
   opcoes: ['evento'],
   opcoesLista: [{ key: 'evento', label: 'Evento', color: null, category: null, ativo: true }],
 };
-const EMPRESA = { id: 'f-empresa', chave: 'empresa', label: 'Empresa', tipo: 'texto', camada: 2, coluna: 'empresa' };
+const EMPRESA = {
+  id: 'f-empresa',
+  chave: 'empresa',
+  label: 'Empresa',
+  tipo: 'texto',
+  camada: 2,
+  coluna: 'empresa',
+};
 const PORTE = { id: 'f-porte', chave: 'porte', label: 'Porte', tipo: 'numero', camada: 3 };
 const TAGS = {
   id: 'f-tags',
@@ -72,7 +81,12 @@ test('categoriaDoStatus pela opcoesLista do Status', () => {
 });
 
 test('leadParaAvaliar: o atual coberto pelo form, no formato da API', () => {
-  const atual = { status: 'novo', fonte_lead: 'evento', empresa: 'ACME', custom_fields: { porte: 10 } };
+  const atual = {
+    status: 'novo',
+    fonte_lead: 'evento',
+    empresa: 'ACME',
+    custom_fields: { porte: 10 },
+  };
   // O form (contexto de criação/ficha) só tem Status, Porte e Tags.
   const lead = leadParaAvaliar(CAMPOS, atual, [STATUS, PORTE, TAGS], {
     status: 'perdido',
@@ -98,7 +112,13 @@ const POR_STATUS = {
   kind: 'required_from_status',
   ativo: true,
   sistema: true,
-  alvo: { id: 'f-motivo', chave: 'motivoPerda', label: 'Motivo da perda', tipo: 'selecao', camada: 2 },
+  alvo: {
+    id: 'f-motivo',
+    chave: 'motivoPerda',
+    label: 'Motivo da perda',
+    tipo: 'selecao',
+    camada: 2,
+  },
   condicao: { status: ['proposta'], categorias: ['perdido'] },
   efeito: { obrigatorio: true },
 };
@@ -117,8 +137,14 @@ const CONDICIONAL = {
 };
 
 test('descreverRegra', () => {
-  assert.equal(descreverRegra(POR_STATUS, CAMPOS), 'Obrigatório quando o status é Proposta ou um status perdido');
-  assert.equal(descreverRegra(CONDICIONAL, CAMPOS), 'Obrigatório e só aparece quando Origem é Evento');
+  assert.equal(
+    descreverRegra(POR_STATUS, CAMPOS),
+    'Obrigatório quando o status é Proposta ou um status perdido',
+  );
+  assert.equal(
+    descreverRegra(CONDICIONAL, CAMPOS),
+    'Obrigatório e só aparece quando Origem é Evento',
+  );
   assert.equal(
     descreverRegra({ ...CONDICIONAL, efeito: { visivel: true } }, CAMPOS),
     'Só aparece quando Origem é Evento',
@@ -128,12 +154,18 @@ test('descreverRegra', () => {
 test('form da regra por status: validar e montar', () => {
   const nova = valoresDaRegra(null, CAMPOS);
 
-  assert.deepEqual(validarRegra(nova, CAMPOS), { campoId: MENSAGENS_REGRA.CAMPO, condicao: MENSAGENS_REGRA.STATUS });
-  assert.deepEqual(payloadDaRegra({ ...nova, campoId: 'f-empresa', categorias: ['perdido'] }, CAMPOS), {
-    kind: 'required_from_status',
-    campoId: 'f-empresa',
-    condicao: { categorias: ['perdido'] },
+  assert.deepEqual(validarRegra(nova, CAMPOS), {
+    campoId: MENSAGENS_REGRA.CAMPO,
+    condicao: MENSAGENS_REGRA.STATUS,
   });
+  assert.deepEqual(
+    payloadDaRegra({ ...nova, campoId: 'f-empresa', categorias: ['perdido'] }, CAMPOS),
+    {
+      kind: 'required_from_status',
+      campoId: 'f-empresa',
+      condicao: { categorias: ['perdido'] },
+    },
+  );
 });
 
 test('form da regra condicional: valor no formato do filtro e efeito obrigatório', () => {
@@ -146,10 +178,13 @@ test('form da regra condicional: valor no formato do filtro e efeito obrigatóri
   };
 
   assert.deepEqual(validarRegra(valores, CAMPOS), { efeito: MENSAGENS_REGRA.EFEITO });
-  assert.deepEqual(validarRegra({ ...valores, condicao: { ...valores.condicao, campoId: 'f-empresa' } }, CAMPOS), {
-    'condicao.campoId': MENSAGENS_REGRA.MESMO_CAMPO,
-    efeito: MENSAGENS_REGRA.EFEITO,
-  });
+  assert.deepEqual(
+    validarRegra({ ...valores, condicao: { ...valores.condicao, campoId: 'f-empresa' } }, CAMPOS),
+    {
+      'condicao.campoId': MENSAGENS_REGRA.MESMO_CAMPO,
+      efeito: MENSAGENS_REGRA.EFEITO,
+    },
+  );
   assert.deepEqual(payloadDaRegra({ ...valores, visivel: true }, CAMPOS), {
     kind: 'conditional',
     campoId: 'f-empresa',
@@ -178,10 +213,16 @@ test('avaliarNoForm usa o status do form para a categoria', () => {
 });
 
 test('camposComRegras esconde os ocultos e marca os obrigatórios', () => {
-  const campos = camposComRegras([STATUS, EMPRESA, PORTE], { obrigatorios: ['porte'], ocultos: ['empresa'] });
+  const campos = camposComRegras([STATUS, EMPRESA, PORTE], {
+    obrigatorios: ['porte'],
+    ocultos: ['empresa'],
+  });
 
-  assert.deepEqual(campos.map((campo) => [campo.chave, Boolean(campo.obrigatorio)]), [
-    ['status', false],
-    ['porte', true],
-  ]);
+  assert.deepEqual(
+    campos.map((campo) => [campo.chave, Boolean(campo.obrigatorio)]),
+    [
+      ['status', false],
+      ['porte', true],
+    ],
+  );
 });

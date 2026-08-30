@@ -16,7 +16,9 @@ import { podeVer } from '@/lib/acesso';
 export function RequireRole({ roles, feature, fallback, children }) {
   const { user } = useAuth();
 
-  if (!podeVer({ roles, feature }, user)) return <Navigate to={fallback} replace />;
+  if (!podeVer({ roles, feature }, user)) {
+    return <Navigate to={fallback} replace />;
+  }
 
   return children;
 }

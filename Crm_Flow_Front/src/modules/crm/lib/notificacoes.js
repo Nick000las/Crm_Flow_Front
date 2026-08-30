@@ -14,8 +14,12 @@ const ROTA_LEADS_DO_BACK = '/crm/leads';
  * @returns {string | null}
  */
 export function destinoCrm(dados) {
-  if (dados?.rota !== ROTA_LEADS_DO_BACK) return null;
-  if (typeof dados.leadId === 'string' && dados.leadId) return ROTAS_CRM.lead(dados.leadId);
+  if (dados?.rota !== ROTA_LEADS_DO_BACK) {
+    return null;
+  }
+  if (typeof dados.leadId === 'string' && dados.leadId) {
+    return ROTAS_CRM.lead(dados.leadId);
+  }
 
   const filtros = dados.filtro && typeof dados.filtro === 'object' ? dados.filtro : null;
   const busca = escreverEstadoLista(new URLSearchParams(), estadoDaVisao(filtros)).toString();

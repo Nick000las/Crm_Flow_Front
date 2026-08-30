@@ -56,7 +56,9 @@ export function DuplicadosDialog({ erro, salvando, onFechar, onSalvarMesmoAssim,
               >
                 <div className="grid min-w-0 text-sm">
                   <span className="truncate font-medium">{candidato.nome}</span>
-                  <span className="text-xs text-muted-foreground">{descreverCandidato(candidato)}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {descreverCandidato(candidato)}
+                  </span>
                 </div>
                 <Button
                   aria-label={`Abrir ${candidato.nome}`}

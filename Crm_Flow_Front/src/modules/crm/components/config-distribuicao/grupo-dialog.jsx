@@ -37,7 +37,9 @@ function FormGrupo({ grupo, usuarios, onSalvo }) {
 
   function limparErros() {
     setErroNome(null);
-    if (mutacao.error) mutacao.reset();
+    if (mutacao.error) {
+      mutacao.reset();
+    }
   }
 
   function alternar(id, marcado) {
@@ -52,8 +54,11 @@ function FormGrupo({ grupo, usuarios, onSalvo }) {
       return;
     }
     const corpo = { nome: nome.trim(), membros };
-    if (editando) editar.mutate({ id: grupo.id, grupo: corpo }, { onSuccess: onSalvo });
-    else criar.mutate(corpo, { onSuccess: onSalvo });
+    if (editando) {
+      editar.mutate({ id: grupo.id, grupo: corpo }, { onSuccess: onSalvo });
+    } else {
+      criar.mutate(corpo, { onSuccess: onSalvo });
+    }
   }
 
   return (
@@ -99,13 +104,22 @@ function FormGrupo({ grupo, usuarios, onSalvo }) {
         }
       </CampoForm>
       <p className="-mt-2 text-xs text-muted-foreground">
-        Os leads do grupo vão para os membros ativos em rodízio. Sem membro ativo, a regra é pulada e vale a próxima.
+        Os leads do grupo vão para os membros ativos em rodízio. Sem membro ativo, a regra é pulada
+        e vale a próxima.
       </p>
 
-      {erroSemCampo && <ApiErrorAlert error={mutacao.error} id="grupo-erro" title="Não foi possível salvar o grupo" />}
+      {erroSemCampo && (
+        <ApiErrorAlert
+          error={mutacao.error}
+          id="grupo-erro"
+          title="Não foi possível salvar o grupo"
+        />
+      )}
 
       <DialogFooter>
-        <DialogClose render={<Button disabled={mutacao.isPending} type="button" variant="outline" />}>
+        <DialogClose
+          render={<Button disabled={mutacao.isPending} type="button" variant="outline" />}
+        >
           Cancelar
         </DialogClose>
         <Button aria-busy={mutacao.isPending} disabled={mutacao.isPending} type="submit">
@@ -134,7 +148,9 @@ export function GrupoDialog({ open, onOpenChange, grupo, usuarios, onSalvo }) {
       <DialogContent className="rounded-none sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{grupo ? 'Editar grupo' : 'Novo grupo'}</DialogTitle>
-          <DialogDescription>Um grupo pode ser o destino de uma regra de distribuição.</DialogDescription>
+          <DialogDescription>
+            Um grupo pode ser o destino de uma regra de distribuição.
+          </DialogDescription>
         </DialogHeader>
         {open && (
           <FormGrupo

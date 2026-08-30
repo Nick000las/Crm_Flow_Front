@@ -1,11 +1,5 @@
 import { UserRound } from 'lucide-react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export function AccountSection({ nome, email, role }) {
   return (
@@ -29,9 +23,7 @@ export function AccountSection({ nome, email, role }) {
         </div>
         <div className="flex items-center justify-between gap-6">
           <span className="text-muted-foreground">Perfil</span>
-          <span className="font-mono text-xs font-medium text-foreground">
-            {role}
-          </span>
+          <span className="font-mono text-xs font-medium text-foreground">{role}</span>
         </div>
       </CardContent>
     </Card>

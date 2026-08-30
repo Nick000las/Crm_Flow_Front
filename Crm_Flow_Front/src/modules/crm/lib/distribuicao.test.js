@@ -28,7 +28,14 @@ const ORIGEM = {
     { key: 'evento', label: 'Evento', color: null, category: null, ativo: true },
   ],
 };
-const EMPRESA = { id: 'f-empresa', chave: 'empresa', label: 'Empresa', tipo: 'texto', camada: 2, coluna: 'empresa' };
+const EMPRESA = {
+  id: 'f-empresa',
+  chave: 'empresa',
+  label: 'Empresa',
+  tipo: 'texto',
+  camada: 2,
+  coluna: 'empresa',
+};
 const CAMPOS = [ORIGEM, EMPRESA];
 
 const CONFIG = {
@@ -43,7 +50,13 @@ const CONFIG = {
       condicoes: [{ campoId: 'f-origem', operador: 'igual', valor: 'site' }],
       destino: { tipo: 'grupo', id: 'g-sp' },
     },
-    { id: 'r-resto', nome: 'Resto', ativo: false, condicoes: [], destino: { tipo: 'usuario', id: 'u-ana' } },
+    {
+      id: 'r-resto',
+      nome: 'Resto',
+      ativo: false,
+      condicoes: [],
+      destino: { tipo: 'usuario', id: 'u-ana' },
+    },
   ],
   grupos: [{ id: 'g-sp', nome: 'Vendas SP', membros: ['u-ana'] }],
 };
@@ -63,7 +76,13 @@ test('ida e volta: o PUT leva a config inteira, na ordem, com o id das regras ex
         condicoes: [{ campoId: 'f-origem', operador: 'igual', valor: 'site' }],
         destino: { tipo: 'grupo', id: 'g-sp' },
       },
-      { id: 'r-resto', nome: 'Resto', ativo: false, condicoes: [], destino: { tipo: 'usuario', id: 'u-ana' } },
+      {
+        id: 'r-resto',
+        nome: 'Resto',
+        ativo: false,
+        condicoes: [],
+        destino: { tipo: 'usuario', id: 'u-ana' },
+      },
     ],
   });
   assert.equal(distribuicaoMudou(valores, CONFIG, CAMPOS), false);
@@ -75,7 +94,12 @@ test('regra nova vai sem id; reordenar e remover mudam o corpo', () => {
   const proximos = { ...valores, regras: [nova, valores.regras[0]] };
   const { corpo } = /** @type {any} */ (distribuicaoParaEnvio(proximos, CAMPOS));
 
-  assert.deepEqual(corpo.regras[0], { nome: 'Empresas', ativo: true, condicoes: [], destino: { tipo: 'usuario', id: 'u-bia' } });
+  assert.deepEqual(corpo.regras[0], {
+    nome: 'Empresas',
+    ativo: true,
+    condicoes: [],
+    destino: { tipo: 'usuario', id: 'u-bia' },
+  });
   assert.deepEqual(
     corpo.regras.map((regra) => regra.id),
     [undefined, 'r-site'],
@@ -99,20 +123,32 @@ test('validação: nome, destino, condição incompleta e limite de condições'
   assert.equal(erros.destino, MENSAGENS_DISTRIBUICAO.DESTINO);
   assert.ok(erros['condicoes.0']);
 
-  const muitas = Array.from({ length: 11 }, () => ({ campoId: 'f-empresa', operador: 'nao_vazio', valor: null }));
+  const muitas = Array.from({ length: 11 }, () => ({
+    campoId: 'f-empresa',
+    operador: 'nao_vazio',
+    valor: null,
+  }));
   assert.equal(
-    validarRegraDistribuicao({ ...regra, nome: 'X', destino: 'usuario:u', condicoes: muitas }, CAMPOS).condicoes,
+    validarRegraDistribuicao(
+      { ...regra, nome: 'X', destino: 'usuario:u', condicoes: muitas },
+      CAMPOS,
+    ).condicoes,
     MENSAGENS_DISTRIBUICAO.MAX_CONDICOES,
   );
 
-  const resultado = /** @type {any} */ (distribuicaoParaEnvio({ ativo: true, fallback: 'rodizio_geral', regras: [regra] }, CAMPOS));
+  const resultado = /** @type {any} */ (
+    distribuicaoParaEnvio({ ativo: true, fallback: 'rodizio_geral', regras: [regra] }, CAMPOS)
+  );
   assert.deepEqual(Object.keys(resultado.erros), ['nova-1']);
 });
 
 test('limite de 50 regras', () => {
   const regras = Array.from({ length: 50 }, (_, indice) => novaRegra(`n-${indice}`));
   assert.equal(podeAdicionarRegra({ ativo: true, fallback: 'rodizio_geral', regras }), false);
-  assert.equal(podeAdicionarRegra({ ativo: true, fallback: 'rodizio_geral', regras: regras.slice(1) }), true);
+  assert.equal(
+    podeAdicionarRegra({ ativo: true, fallback: 'rodizio_geral', regras: regras.slice(1) }),
+    true,
+  );
 });
 
 test('400 do PUT: o índice enviado acha a regra mesmo depois de reordenar', () => {

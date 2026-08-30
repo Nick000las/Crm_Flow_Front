@@ -3,6 +3,7 @@
 Este documento é só o plano; nenhum código foi escrito. Ele parte do estado real dos dois repositórios em 2026-10-14. Do lado do back, o contrato está em [`Back/docs/crm/plano-campos-hibridos.md`](../../../Back/docs/crm/plano-campos-hibridos.md) (histórico; o plano vigente é [`Back/docs/crm/plano-configuracoes.md`](../../../Back/docs/crm/plano-configuracoes.md)).
 
 **Decisões já tomadas:**
+
 - **Estágio na criação:** passa a ser opcional no back. O lead nasce sem estágio, e o front não mostra estágio até o Kanban existir.
 - **Dados:** TanStack Query.
 - **Ajustes no back:** os que a interface precisa entram antes, como fase 0.
@@ -12,18 +13,21 @@ Este documento é só o plano; nenhum código foi escrito. Ele parte do estado r
 ## 0. Estado atual do front
 
 **Stack real:**
+
 - **Base:** React 19 + Vite 8, em **JavaScript** (não TypeScript).
 - **Rotas:** `react-router-dom` 7 com `useRoutes`, em [src/routes/](../src/routes/).
 - **Estilo:** Tailwind 4, shadcn estilo `base-nova` sobre `@base-ui/react` e ícones `lucide-react`.
 - **Fonte:** Geist Variable.
 
 O [CLAUDE.md](../CLAUDE.md) ainda descreve App Router, TypeScript e Server Components, e está **desatualizado** (ver seção 10). A direção estética dele continua valendo:
+
 - quase monocromático, com accent laranja (`--primary`) só no item ativo e na ação primária;
 - borda de 1px, raio mínimo e sem sombra difusa;
 - fonte mono para dado numérico;
 - motion de 200 a 250 ms.
 
 **O que pode ser reaproveitado:**
+
 - **Sessão:** `useAuth()` ([create-auth-session.js](../src/hooks/create-auth-session.js)) expõe `authApi` (get/post/put/patch/delete), com refresh single-flight e uma retentativa em 401. Os tokens ficam só em memória. O `user` traz `{ tenantId, userId, role }`.
 - **Cliente HTTP:** [services/api.js](../src/services/api.js) desembrulha o envelope `{ statusCode, data }`. Os erros viram `ApiError` com `code`, `fields` e `requestId`. Os helpers `getFieldError` e `toApiError` e o componente `ApiErrorAlert` já existem.
 - **Navegação:** a fonte única é [lib/modules-registry.js](../src/lib/modules-registry.js), lida pelo Rail e pela Sidebar. Hoje o CRM tem uma página só ("Leads").
@@ -32,6 +36,7 @@ O [CLAUDE.md](../CLAUDE.md) ainda descreve App Router, TypeScript e Server Compo
 - **Padrões de referência:** a área admin, com tabela, dialog com formulário e erro de campo vindo do Zod do servidor ([create-tenant-dialog.jsx](../src/modules/admin/components/create-tenant-dialog.jsx)).
 
 **O que falta ou está desatualizado:**
+
 - **Placeholder:** [crm-page.jsx](../src/modules/crm/pages/crm-page.jsx) ainda é só um placeholder.
 - **`use-leads.js`:** espera um **array**, mas `GET /crm/leads` agora devolve `{ itens, total, pagina, tamanho }`. Também usa `accessToken` cru em vez de `authApi`, então não renova o token.
 - **Upload e download:** o cliente HTTP só envia JSON e só lê JSON ou texto. Upload multipart (import) e download binário (export) não são suportados.
@@ -46,13 +51,13 @@ O [CLAUDE.md](../CLAUDE.md) ainda descreve App Router, TypeScript e Server Compo
 
 Todas as mudanças são pequenas e seguem os padrões do módulo CRM: Zod na borda, service, adapter e teste.
 
-| # | Mudança | Por quê |
-|---|---|---|
-| 0.1 | `funilEstagioId` **opcional** em `POST /crm/leads` (o schema deixa de exigir; o repository já aceita `null`) | Não há estágios, então hoje ninguém consegue criar lead pela tela |
-| 0.2 | `GET /crm/usuarios`: usuários **ativos** do tenant, `{ id, nome }`, ordenados por nome. Liberado a todos os papéis. Reaproveita `adapters/usuarios.repository.js` | Select de responsável e exibir o nome do responsável em vez do UUID |
-| 0.3 | `/auth/me` passa a devolver `modulosAtivos: string[]` (de `tenant_modules` com `disabled_at IS NULL`) | O Rail esconde módulo não contratado; o back já bloqueia com 403 `MODULE_NOT_ENABLED` |
-| 0.4 | `GET /crm/leads/fields` inclui `coluna` (snake_case) nos itens das Camadas 1 e 2 (de `CAMADA_1_CAMPOS`/`CAMADA_2_CAMPOS`) | A leitura do lead volta em snake_case (`fonte_lead`), e o form, o filtro e o payload usam a `chave` camelCase (`fonteLead`). Sem isso, o front teria que converter por convenção |
-| 0.5 | Documentar no plano do back que `valor`, `probabilidade_fechamento` e `lead_score` (NUMERIC) chegam como **string** no JSON | O front precisa converter para número ao exibir e editar |
+| #   | Mudança                                                                                                                                                           | Por quê                                                                                                                                                                          |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.1 | `funilEstagioId` **opcional** em `POST /crm/leads` (o schema deixa de exigir; o repository já aceita `null`)                                                      | Não há estágios, então hoje ninguém consegue criar lead pela tela                                                                                                                |
+| 0.2 | `GET /crm/usuarios`: usuários **ativos** do tenant, `{ id, nome }`, ordenados por nome. Liberado a todos os papéis. Reaproveita `adapters/usuarios.repository.js` | Select de responsável e exibir o nome do responsável em vez do UUID                                                                                                              |
+| 0.3 | `/auth/me` passa a devolver `modulosAtivos: string[]` (de `tenant_modules` com `disabled_at IS NULL`)                                                             | O Rail esconde módulo não contratado; o back já bloqueia com 403 `MODULE_NOT_ENABLED`                                                                                            |
+| 0.4 | `GET /crm/leads/fields` inclui `coluna` (snake_case) nos itens das Camadas 1 e 2 (de `CAMADA_1_CAMPOS`/`CAMADA_2_CAMPOS`)                                         | A leitura do lead volta em snake_case (`fonte_lead`), e o form, o filtro e o payload usam a `chave` camelCase (`fonteLead`). Sem isso, o front teria que converter por convenção |
+| 0.5 | Documentar no plano do back que `valor`, `probabilidade_fechamento` e `lead_score` (NUMERIC) chegam como **string** no JSON                                       | O front precisa converter para número ao exibir e editar                                                                                                                         |
 
 Em 0.3, o front passa a buscar sempre `/auth/me` depois do login, em vez de confiar no usuário que vem na resposta do login: um `resolverUsuario` próprio na sessão do tenant.
 
@@ -61,42 +66,46 @@ Em 0.3, o front passa a buscar sempre `/auth/me` depois do login, em vez de conf
 ## 2. Fase 1: fundação no front
 
 ### 2.1 Dependências
+
 - **Dados:** `@tanstack/react-query`. A devtools só em dev, opcional.
 - **Fonte mono:** `@fontsource-variable/geist-mono`. Declarar `--font-mono` no `@theme` de [index.css](../src/index.css).
 - **Componentes shadcn a adicionar** via `pnpm dlx shadcn add`, todos no estilo `base-nova` já configurado:
 
-  | Componente | Uso |
-  |---|---|
-  | `sheet` | Detalhe e edição de lead |
-  | `dropdown-menu` | Ações da linha, views |
-  | `popover` | Construtor de filtro |
-  | `tabs` | Página de campos |
-  | `textarea` | Campos de texto longo |
-  | `skeleton` | Carregamento da tabela |
-  | `separator` | Divisões visuais |
-  | `alert-dialog` | Confirmar exclusão |
+  | Componente      | Uso                      |
+  | --------------- | ------------------------ |
+  | `sheet`         | Detalhe e edição de lead |
+  | `dropdown-menu` | Ações da linha, views    |
+  | `popover`       | Construtor de filtro     |
+  | `tabs`          | Página de campos         |
+  | `textarea`      | Campos de texto longo    |
+  | `skeleton`      | Carregamento da tabela   |
+  | `separator`     | Divisões visuais         |
+  | `alert-dialog`  | Confirmar exclusão       |
 
   A data usa `<input type="date">` nativo estilizado; não entra date-picker novo agora.
 
 ### 2.2 Query client e cliente HTTP
+
 - **`QueryClientProvider` em [main.jsx](../src/main.jsx):** um `QueryClient` com `retry` desligado para 4xx (`ApiError.status < 500`), porque erro de validação ou permissão não se repete, e `staleTime` curto (30 s).
 - **[services/api.js](../src/services/api.js):** aceitar `body: FormData` sem forçar `Content-Type`, para o navegador montar o boundary. Novo modo `responseType: 'blob'`, que devolve `{ blob, filename }` lendo o `Content-Disposition`.
 - **`authApi` em [create-auth-session.js](../src/hooks/create-auth-session.js):** ganha `upload(path, formData)` e `download(path, json)`, com o mesmo `withAuthRetry`. Isso evita que cada tela faça `fetch` cru e perca o refresh de token.
 
 ### 2.3 Navegação por módulo e papel
+
 - **Registry:** em [modules-registry.js](../src/lib/modules-registry.js), cada módulo ganha `moduleKey` (a chave do back, `crm`) e cada página ganha `roles?` opcional.
 - **Páginas do CRM:**
 
-  | Página | Rota | Papéis |
-  |---|---|---|
-  | Leads | `/crm` | todos |
+  | Página   | Rota            | Papéis          |
+  | -------- | --------------- | --------------- |
+  | Leads    | `/crm`          | todos           |
   | Importar | `/crm/importar` | `DONO`/`MASTER` |
-  | Campos | `/crm/campos` | `DONO`/`MASTER` |
+  | Campos   | `/crm/campos`   | `DONO`/`MASTER` |
 
 - **Rail e Sidebar:** filtram por `user.modulosAtivos` (0.3) e por `user.role`, nunca com regra no JSX. Uma função `podeVer(entry, user)` no próprio registry.
-- **Rotas:** em [app.routes.jsx](../src/routes/(app)/app.routes.jsx), um wrapper `<RequireRole roles>` redireciona para `/crm` quando o papel não permite. É só UX: o back valida de verdade com 403.
+- **Rotas:** em [app.routes.jsx](<../src/routes/(app)/app.routes.jsx>), um wrapper `<RequireRole roles>` redireciona para `/crm` quando o papel não permite. É só UX: o back valida de verdade com 403.
 
 ### 2.4 Camada de dados do CRM (`src/modules/crm/`)
+
 ```
 modules/crm/
 ├── api/            # funções finas sobre authApi (uma por rota), sem React
@@ -107,6 +116,7 @@ modules/crm/
 ├── constants.js    # espelho do back: OPERADORES_POR_TIPO, ESTRATEGIAS_DUPLICATA, PAPEIS_GESTAO, limites
 └── types.js        # JSDoc: Lead, Campo, Filtro, ImportJob, FilterView
 ```
+
 - **Query keys:** `['crm','campos']`, `['crm','leads',{filtro,pagina,tamanho}]`, `['crm','lead',id]`, `['crm','views']`, `['crm','usuarios']`, `['crm','definicoes']`, `['crm','visibilidade']` e `['crm','import',jobId]`.
 - **Invalidação:**
   - salvar ou excluir lead invalida `leads` e `lead`;
@@ -126,6 +136,7 @@ modules/crm/
 │   Nome | E-mail | Telefone | Status | Responsável | colunas extras escolhidas…
 ├ Paginação: ‹ 1 2 3 … › · tamanho [50 ▾]                            (mono)
 ```
+
 - **Fonte da busca:** `POST /crm/leads/search`. A tabela usa essa rota, e não `GET /crm/leads`, porque filtro e paginação são o mesmo endpoint.
 - **Estado na URL:** busca, filtros, página e tamanho ficam em `useSearchParams`, com o filtro em JSON compacto e codificado. Assim um link compartilhado reabre a mesma visão, e voltar no navegador funciona.
 - **Busca textual:** debounce de 300 ms.
@@ -157,16 +168,17 @@ Fica em um **Sheet lateral**, aberto pela própria lista, para não perder o con
 
 **Renderizador por `tipo`** (`components/campo-dinamico.jsx`):
 
-| tipo | Controle |
-|---|---|
-| `texto` | `Input` (`email`/`telefone` com `type` e `inputMode` adequados) |
-| `numero` | `Input inputMode="decimal"` mono; aceita vírgula e converte para número |
-| `data` | `<input type="date">`; envia `AAAA-MM-DD` (ISO) |
-| `booleano` | `Switch` |
-| `selecao` | `Select` com as `opcoes` |
+| tipo               | Controle                                                                                                    |
+| ------------------ | ----------------------------------------------------------------------------------------------------------- |
+| `texto`            | `Input` (`email`/`telefone` com `type` e `inputMode` adequados)                                             |
+| `numero`           | `Input inputMode="decimal"` mono; aceita vírgula e converte para número                                     |
+| `data`             | `<input type="date">`; envia `AAAA-MM-DD` (ISO)                                                             |
+| `booleano`         | `Switch`                                                                                                    |
+| `selecao`          | `Select` com as `opcoes`                                                                                    |
 | `selecao_multipla` | lista de `Checkbox`; sem `opcoes` (caso de `tags`), vira um input de tags livres (Enter adiciona, ✕ remove) |
 
 **Payload** (`lib/payload.js`, função pura e testada):
+
 - Camadas 1 e 2 vão no nível raiz, pela `chave` camelCase; a Camada 3 vai em `customFields`.
 - **Criação:** só envia o que foi preenchido.
 - **Edição:** gera um **diff** contra o lead carregado.
@@ -179,6 +191,7 @@ Fica em um **Sheet lateral**, aberto pela própria lista, para não perder o con
   - o telefone formatado `(11) 99999-0000` é aceito como está.
 
 **Validação:**
+
 - **No cliente, só para UX:**
   - obrigatório marcado com `*`;
   - aviso "Informe e-mail ou telefone" quando os dois estão vazios.
@@ -186,6 +199,7 @@ Fica em um **Sheet lateral**, aberto pela própria lista, para não perder o con
   - Os erros específicos da edição aparecem inline no campo: "O lead precisa manter e-mail ou telefone" e "é obrigatório e não pode ser limpo".
 
 **Detalhe (modo leitura):**
+
 - os campos aparecem agrupados em "Contato" (Camada 1), "Dados adicionais" (Camada 2) e "Campos personalizados" (Camada 3), com `label` e valor formatado;
 - o botão Editar troca para o form no mesmo Sheet;
 - metadados em mono e discretos: ID e responsável.
@@ -195,6 +209,7 @@ Fica em um **Sheet lateral**, aberto pela própria lista, para não perder o con
 ## 5. Fase 4: filtros e views salvas
 
 **Construtor de filtro** (Popover "Filtros"):
+
 - **Cada linha:** `[Campo ▾] [Operador ▾] [Valor]`.
   - O campo vem de `/fields`.
   - Os operadores são filtrados por `OPERADORES_POR_TIPO[tipo]`.
@@ -205,13 +220,13 @@ Fica em um **Sheet lateral**, aberto pela própria lista, para não perder o con
 - **Filtros fixos:** criado de/até, valor mín/máx e responsável (`usuarioResponsavelId`, de 0.2).
 - **Rótulos dos operadores:**
 
-  | Operador | Rótulo |
-  |---|---|
-  | `igual` | é |
-  | `contem` | contém |
-  | `entre` | entre |
-  | `e_um_dos` | é um de |
-  | `vazio` | está vazio |
+  | Operador    | Rótulo          |
+  | ----------- | --------------- |
+  | `igual`     | é               |
+  | `contem`    | contém          |
+  | `entre`     | entre           |
+  | `e_um_dos`  | é um de         |
+  | `vazio`     | está vazio      |
   | `nao_vazio` | está preenchido |
 
 - **Aplicação:** o filtro só é aplicado no botão "Aplicar", e não a cada tecla, porque cada aplicação é uma busca.
@@ -219,6 +234,7 @@ Fica em um **Sheet lateral**, aberto pela própria lista, para não perder o con
 - **Erro do back:** um 400 de filtro com `fields['filtros.<chave>']`, como campo desligado depois de uma view salva, destaca a linha correspondente e o chip.
 
 **Views salvas** (dropdown "Views"):
+
 - lista `GET /crm/filter-views`;
 - aplicar uma view substitui o filtro da URL;
 - "Salvar visão atual…" abre um dialog com o nome, e 409 aparece inline no campo;
@@ -232,12 +248,14 @@ Fica em um **Sheet lateral**, aberto pela própria lista, para não perder o con
 `/crm/campos`, com `Tabs`:
 
 **Aba "Campos do sistema" (Camada 2)**
+
 - Fonte: `GET /crm/field-visibility`, que sempre traz as 15 colunas.
 - Tabela: Campo (rótulo vindo de `/fields` ou de um mapa local), Visível (Switch), Obrigatório (Switch, desabilitado se não estiver visível) e Ordem.
 - Salvar envia `PUT /crm/field-visibility` com **só as linhas alteradas**.
 - Texto de ajuda: desligar um campo não apaga os dados já preenchidos (filosofia do back).
 
 **Aba "Campos personalizados" (Camada 3)**
+
 - **Lista:** `GET /crm/field-definitions`.
 - **Criar e editar:** dialog com Rótulo, Tipo, Opções (só para seleção; editor de lista com adicionar e remover) e Obrigatório.
 - **Chave:** é gerada pelo back e mostrada em mono como somente leitura depois de criada.
@@ -272,6 +290,7 @@ Fica em um **Sheet lateral**, aberto pela própria lista, para não perder o con
    - **Retomada:** o `jobId` fica na URL (`?job=`) para retomar o acompanhamento depois de recarregar a página.
 
 **Exportar** (dialog aberto da página de Leads):
+
 - checklist de colunas a partir de `/fields` + `valor`/`funilEstagio`, com reordenação ↑/↓;
 - o padrão é igual às colunas visíveis da tabela;
 - opção "Usar os filtros atuais", ligada por padrão;
@@ -327,20 +346,21 @@ Fica em um **Sheet lateral**, aberto pela própria lista, para não perder o con
 
 ## 10. Ordem de entrega
 
-| Etapa | Conteúdo | Depende de |
-|---|---|---|
-| 0 | Ajustes no back (0.1–0.5) | — |
-| 1 | Fundação: dependências, query client, upload e download no cliente, registry com papel e módulo, `RequireRole`, `modules/crm/api` e `hooks` | 0 |
-| 2 | Lista de leads com busca, paginação, colunas e estados | 1 |
-| 3 | Sheet de detalhe e form dinâmico (criar, editar, excluir) | 2 |
-| 4 | Construtor de filtro e views salvas | 2 |
-| 5 | Página Campos (Camadas 2 e 3) | 1 |
-| 6 | Import (wizard e polling) e Export | 2 |
-| 7 | Atualizar o [CLAUDE.md](../CLAUDE.md) para a stack real e o [README](../README.md) (cliente com upload e download, TanStack Query) | — |
+| Etapa | Conteúdo                                                                                                                                    | Depende de |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| 0     | Ajustes no back (0.1–0.5)                                                                                                                   | —          |
+| 1     | Fundação: dependências, query client, upload e download no cliente, registry com papel e módulo, `RequireRole`, `modules/crm/api` e `hooks` | 0          |
+| 2     | Lista de leads com busca, paginação, colunas e estados                                                                                      | 1          |
+| 3     | Sheet de detalhe e form dinâmico (criar, editar, excluir)                                                                                   | 2          |
+| 4     | Construtor de filtro e views salvas                                                                                                         | 2          |
+| 5     | Página Campos (Camadas 2 e 3)                                                                                                               | 1          |
+| 6     | Import (wizard e polling) e Export                                                                                                          | 2          |
+| 7     | Atualizar o [CLAUDE.md](../CLAUDE.md) para a stack real e o [README](../README.md) (cliente com upload e download, TanStack Query)          | —          |
 
 As etapas 3, 4 e 5 podem andar em paralelo depois da 2.
 
 **Fora do escopo agora:**
+
 - Kanban e estágios do funil (aguardam a integração com `modulo_kanban_universal`);
 - tema Camaleão por tenant;
 - dark mode (os tokens `.dark` existem, mas não há alternador);

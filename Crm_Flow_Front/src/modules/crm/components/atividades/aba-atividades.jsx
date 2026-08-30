@@ -17,7 +17,9 @@ import { ItemAtividade } from './item-atividade';
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">Carregando atividades…</span>
+      <span className="sr-only" role="status">
+        Carregando atividades…
+      </span>
       {Array.from({ length: 3 }, (_, indice) => (
         <Skeleton className="h-14 rounded-none" key={indice} />
       ))}
@@ -28,7 +30,9 @@ function Carregando() {
 function Grupo({ titulo, children }) {
   return (
     <section className="grid gap-1">
-      <h3 className="font-mono text-[11px] tracking-wide text-muted-foreground uppercase">{titulo}</h3>
+      <h3 className="font-mono text-[11px] tracking-wide text-muted-foreground uppercase">
+        {titulo}
+      </h3>
       <ul>{children}</ul>
     </section>
   );
@@ -51,9 +55,15 @@ export function AbaAtividades({ leadId }) {
 
   const tipos = listasQuery.data?.[TIPOS_LISTA.TIPO_ATIVIDADE];
 
-  if (isAccessError(atividadesQuery.error)) return <AcessoIndisponivel error={atividadesQuery.error} />;
-  if (atividadesQuery.error) return <ApiErrorAlert error={atividadesQuery.error} id="atividades-erro" />;
-  if (atividadesQuery.isPending) return <Carregando />;
+  if (isAccessError(atividadesQuery.error)) {
+    return <AcessoIndisponivel error={atividadesQuery.error} />;
+  }
+  if (atividadesQuery.error) {
+    return <ApiErrorAlert error={atividadesQuery.error} id="atividades-erro" />;
+  }
+  if (atividadesQuery.isPending) {
+    return <Carregando />;
+  }
 
   const { abertas, concluidas } = separarAtividades(atividadesQuery.data);
 
@@ -95,7 +105,11 @@ export function AbaAtividades({ leadId }) {
       <p className={aviso ? 'border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
         {aviso}
       </p>
-      <ApiErrorAlert error={alternar.error} id="atividade-alternar-erro" title="Não foi possível mudar a atividade" />
+      <ApiErrorAlert
+        error={alternar.error}
+        id="atividade-alternar-erro"
+        title="Não foi possível mudar a atividade"
+      />
 
       {abertas.length === 0 && concluidas.length === 0 ? (
         <ModulePlaceholder

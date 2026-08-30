@@ -11,23 +11,19 @@ const PASSWORD_ERROR_ID = 'create-password-error';
 const PASSWORD_CONFIRMATION_ERROR_ID = 'password-confirmation-error';
 const SUBMIT_ERROR_ID = 'create-password-submit-error';
 
-export function CreatePassword({ onSuccess }) {
+export function CreatePassword({ onSuccess, sessionScope = 'tenant' }) {
   const [submitError, setSubmitError] = useState(null);
   const [confirmationError, setConfirmationError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const passwordError = submitError
-    ? getFieldError(submitError, 'senha')
-    : null;
+  const passwordError = submitError ? getFieldError(submitError, 'senha') : null;
 
   async function handleSubmit(event) {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
     const password = String(formData.get('password') ?? '');
-    const passwordConfirmation = String(
-      formData.get('passwordConfirmation') ?? '',
-    );
+    const passwordConfirmation = String(formData.get('passwordConfirmation') ?? '');
 
     setSubmitError(null);
     setConfirmationError(null);
@@ -42,6 +38,7 @@ export function CreatePassword({ onSuccess }) {
     try {
       const response = await api.post('/auth/activation/password', {
         senha: password,
+        scope: sessionScope,
       });
 
       await onSuccess?.(response);
@@ -107,19 +104,14 @@ export function CreatePassword({ onSuccess }) {
             type={showPassword ? 'text' : 'password'}
             placeholder="Digite a senha novamente"
             autoComplete="new-password"
-            aria-describedby={
-              confirmationError ? PASSWORD_CONFIRMATION_ERROR_ID : undefined
-            }
+            aria-describedby={confirmationError ? PASSWORD_CONFIRMATION_ERROR_ID : undefined}
             aria-invalid={Boolean(confirmationError)}
             disabled={isSubmitting}
             onChange={clearErrors}
             required
           />
           {confirmationError && (
-            <p
-              className="text-sm text-destructive"
-              id={PASSWORD_CONFIRMATION_ERROR_ID}
-            >
+            <p className="text-sm text-destructive" id={PASSWORD_CONFIRMATION_ERROR_ID}>
               {confirmationError}
             </p>
           )}
@@ -131,7 +123,7 @@ export function CreatePassword({ onSuccess }) {
           className="h-10 w-full"
           type="submit"
           disabled={isSubmitting}
-          aria-busy={isSubmitting}
+          loading={isSubmitting}
         >
           {isSubmitting ? 'Salvando...' : 'Criar senha'}
         </Button>

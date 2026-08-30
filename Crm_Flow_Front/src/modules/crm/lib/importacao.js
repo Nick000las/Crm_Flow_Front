@@ -25,11 +25,15 @@ const PORCENTAGEM = 100;
  * @returns {string | null} motivo da recusa
  */
 export function validarArquivo(arquivo) {
-  if (!arquivo.name.toLowerCase().endsWith(EXTENSAO)) return 'Envie uma planilha .xlsx';
+  if (!arquivo.name.toLowerCase().endsWith(EXTENSAO)) {
+    return 'Envie uma planilha .xlsx';
+  }
   if (arquivo.size > IMPORTACAO.TAMANHO_MAXIMO_ARQUIVO_BYTES) {
     return `O arquivo passa de ${IMPORTACAO.TAMANHO_MAXIMO_ARQUIVO_BYTES / BYTES_POR_MB} MB`;
   }
-  if (arquivo.size === 0) return 'O arquivo está vazio';
+  if (arquivo.size === 0) {
+    return 'O arquivo está vazio';
+  }
 
   return null;
 }
@@ -65,7 +69,9 @@ export function autoMapear(colunas, campos) {
           !usados.has(candidato.chave) &&
           (normalizar(candidato.label) === alvo || normalizar(candidato.chave) === alvo),
       );
-      if (campo) usados.add(campo.chave);
+      if (campo) {
+        usados.add(campo.chave);
+      }
       return [coluna, campo?.chave ?? ''];
     }),
   );
@@ -88,9 +94,13 @@ export function problemasDoMapeamento(mapeamento, campos) {
   const destinos = Object.values(mapeamento).filter(Boolean);
   const problemas = [];
 
-  if (destinos.length === 0) problemas.push('Mapeie ao menos uma coluna');
+  if (destinos.length === 0) {
+    problemas.push('Mapeie ao menos uma coluna');
+  }
 
-  const repetidos = [...new Set(destinos.filter((chave, indice) => destinos.indexOf(chave) !== indice))];
+  const repetidos = [
+    ...new Set(destinos.filter((chave, indice) => destinos.indexOf(chave) !== indice)),
+  ];
   for (const chave of repetidos) {
     const label = campos.find((campo) => campo.chave === chave)?.label ?? chave;
     problemas.push(`"${label}" foi escolhido para mais de uma coluna`);
@@ -118,7 +128,9 @@ const escaparCsv = (valor) => `"${String(valor ?? '').replaceAll('"', '""')}"`;
 /** @param {ErroDeLinha[]} erros */
 export function relatorioCsv(erros) {
   const cabecalho = ['Linha', 'Coluna', 'Motivo'].map(escaparCsv).join(SEPARADOR_CSV);
-  const linhas = erros.map((erro) => [erro.linha, erro.coluna, erro.motivo].map(escaparCsv).join(SEPARADOR_CSV));
+  const linhas = erros.map((erro) =>
+    [erro.linha, erro.coluna, erro.motivo].map(escaparCsv).join(SEPARADOR_CSV),
+  );
 
   return [cabecalho, ...linhas].join('\r\n');
 }
@@ -133,7 +145,9 @@ export function emProcessamento(status) {
  */
 export function percentualConcluido(job) {
   const total = job.total_linhas ?? 0;
-  if (total === 0) return 0;
+  if (total === 0) {
+    return 0;
+  }
 
   return Math.min(PORCENTAGEM, Math.round(((job.linhas_processadas ?? 0) / total) * PORCENTAGEM));
 }
@@ -187,17 +201,27 @@ export function wizardReducer(estado, acao) {
         mapeamento: autoMapear(acao.preview.colunas, acao.preview.campos),
       };
     case 'mapear':
-      return { ...estado, mapeamento: { ...estado.mapeamento, [acao.coluna]: acao.chave }, validacao: null };
+      return {
+        ...estado,
+        mapeamento: { ...estado.mapeamento, [acao.coluna]: acao.chave },
+        validacao: null,
+      };
     case 'estrategia':
       return { ...estado, estrategia: acao.estrategia, validacao: null };
     case 'baseLegalLote':
       return { ...estado, baseLegalLote: acao.baseLegalLote, validacao: null };
     case 'validado':
-      return estado.passo === PASSO.MAPEAR ? { ...estado, passo: PASSO.REVISAR, validacao: acao.validacao } : estado;
+      return estado.passo === PASSO.MAPEAR
+        ? { ...estado, passo: PASSO.REVISAR, validacao: acao.validacao }
+        : estado;
     case 'confirmado':
-      return estado.validacao?.jobId ? { ...estado, passo: PASSO.PROCESSAR, jobId: estado.validacao.jobId } : estado;
+      return estado.validacao?.jobId
+        ? { ...estado, passo: PASSO.PROCESSAR, jobId: estado.validacao.jobId }
+        : estado;
     case 'voltar':
-      return estado.passo === PASSO.REVISAR ? { ...estado, passo: PASSO.MAPEAR, validacao: null } : estado;
+      return estado.passo === PASSO.REVISAR
+        ? { ...estado, passo: PASSO.MAPEAR, validacao: null }
+        : estado;
     case 'reiniciar':
       return estadoInicial();
     default:

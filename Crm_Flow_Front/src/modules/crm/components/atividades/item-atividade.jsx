@@ -13,7 +13,9 @@ function Quando({ atividade }) {
   if (estaConcluida(atividade)) {
     return <span className={DADO}>Concluída em {formatarInstante(atividade.concluidaEm)}</span>;
   }
-  if (!atividade.agendadaPara) return <span>Sem data</span>;
+  if (!atividade.agendadaPara) {
+    return <span>Sem data</span>;
+  }
 
   const atrasada = estaAtrasada(atividade);
   return (
@@ -56,11 +58,18 @@ export function ItemAtividade({ atividade, tipos, ocupado, onAlternar, onEditar,
       <div className="grid min-w-0 flex-1 gap-1">
         <div className="flex flex-wrap items-center gap-2">
           <OpcaoBadge opcao={opcaoDoTipo(tipos, atividade.tipo)} />
-          <p className={cn('min-w-0 break-words text-sm font-medium', concluida && 'text-muted-foreground line-through')}>
+          <p
+            className={cn(
+              'min-w-0 break-words text-sm font-medium',
+              concluida && 'text-muted-foreground line-through',
+            )}
+          >
             {atividade.titulo}
           </p>
         </div>
-        {atividade.notas && <p className="text-sm break-words whitespace-pre-line">{atividade.notas}</p>}
+        {atividade.notas && (
+          <p className="text-sm break-words whitespace-pre-line">{atividade.notas}</p>
+        )}
         <p className="flex flex-wrap gap-x-2 text-xs text-muted-foreground">
           <Quando atividade={atividade} />
           <span>· {atividade.autor?.nome ?? 'Sistema'}</span>

@@ -8,7 +8,14 @@ import { Button } from '@/components/ui/button';
  */
 export function BotaoIcone({ rotulo, icone: Icone, ...props }) {
   return (
-    <Button aria-label={rotulo} className="rounded-none" size="icon-sm" title={rotulo} variant="ghost" {...props}>
+    <Button
+      aria-label={rotulo}
+      className="rounded-none"
+      size="icon-sm"
+      title={rotulo}
+      variant="ghost"
+      {...props}
+    >
       <Icone aria-hidden="true" />
     </Button>
   );

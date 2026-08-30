@@ -16,7 +16,9 @@ import { GruposDistribuicao } from './grupos-distribuicao';
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">Carregando distribuição…</span>
+      <span className="sr-only" role="status">
+        Carregando distribuição…
+      </span>
       {Array.from({ length: 4 }, (_, indice) => (
         <Skeleton className="h-14 rounded-none" key={indice} />
       ))}
@@ -52,9 +54,15 @@ export function SecaoDistribuicao() {
   const [aviso, setAviso] = useState(null);
   const erro = distribuicaoQuery.error ?? camposQuery.error;
 
-  if (isAccessError(erro)) return <AcessoIndisponivel error={erro} />;
-  if (erro) return <ApiErrorAlert error={erro} id="distribuicao-carregar-erro" />;
-  if (distribuicaoQuery.isPending || camposQuery.isPending) return <Carregando />;
+  if (isAccessError(erro)) {
+    return <AcessoIndisponivel error={erro} />;
+  }
+  if (erro) {
+    return <ApiErrorAlert error={erro} id="distribuicao-carregar-erro" />;
+  }
+  if (distribuicaoQuery.isPending || camposQuery.isPending) {
+    return <Carregando />;
+  }
 
   const config = distribuicaoQuery.data;
   // As condições usam os campos com id (os de `/fields`, como nas regras de campo).
@@ -64,7 +72,8 @@ export function SecaoDistribuicao() {
     <div className="grid gap-4">
       <div className="grid max-w-2xl gap-1 text-sm text-muted-foreground">
         <p>
-          Escolhe o responsável de cada lead novo (no cadastro e no import) quando ninguém foi escolhido à mão.
+          Escolhe o responsável de cada lead novo (no cadastro e no import) quando ninguém foi
+          escolhido à mão.
         </p>
         {!config.configurado && <p>A empresa ainda usa a configuração padrão (desligada).</p>}
         {!podeEditar && <p>Só DONO e MASTER alteram a distribuição.</p>}

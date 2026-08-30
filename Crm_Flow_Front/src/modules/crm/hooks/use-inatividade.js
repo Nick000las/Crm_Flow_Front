@@ -29,7 +29,9 @@ export function useSalvarInatividade() {
     onSuccess: (lista) => {
       queryClient.setQueryData(crmKeys.inatividade(), lista);
       return Promise.all(
-        [crmKeys.leads(), crmKeys.leadsAbertos()].map((queryKey) => queryClient.invalidateQueries({ queryKey })),
+        [crmKeys.leads(), crmKeys.leadsAbertos()].map((queryKey) =>
+          queryClient.invalidateQueries({ queryKey }),
+        ),
       );
     },
   });

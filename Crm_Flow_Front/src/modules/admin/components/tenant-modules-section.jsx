@@ -1,14 +1,9 @@
+import { ConfirmationDialog } from '@/components/confirmation-dialog';
 import { useState } from 'react';
 import { X } from 'lucide-react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { isAbortError, toApiError } from '@/services/api';
 import { useContractableModules } from '../hooks/use-contractable-modules';
 import { ModulesCheckboxGroup } from './modules-checkbox-group';
@@ -23,14 +18,13 @@ const SUBMIT_ERROR_ID = 'tenant-modules-error';
  * uma tem seu próprio controle em vez de uma virar atalho da outra.
  */
 export function TenantModulesSection({ tenant, adminApi, onSaved }) {
-  const contratados = Array.isArray(tenant.modulosContratados)
-    ? tenant.modulosContratados
-    : [];
+  const contratados = Array.isArray(tenant.modulosContratados) ? tenant.modulosContratados : [];
   const [selecionados, setSelecionados] = useState(contratados);
   const [submitError, setSubmitError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [removendo, setRemovendo] = useState(null);
-  const { modulos, erro: erroModulos } = useContractableModules();
+  const [pendingRemoval, setPendingRemoval] = useState(null);
+  const { modulos, carregando: loadingModules, erro: erroModulos } = useContractableModules();
 
   const inalterado =
     selecionados.length === contratados.length &&
@@ -39,27 +33,33 @@ export function TenantModulesSection({ tenant, adminApi, onSaved }) {
   function alternarModulo(moduleKey, marcado) {
     setSubmitError(null);
     setSelecionados((atual) =>
-      marcado
-        ? [...atual, moduleKey]
-        : atual.filter((chave) => chave !== moduleKey),
+      marcado ? [...atual, moduleKey] : atual.filter((chave) => chave !== moduleKey),
     );
   }
 
-  async function handleSubmit(event) {
+  function handleSubmit(event) {
     event.preventDefault();
+    const removed = contratados.filter((key) => !selecionados.includes(key));
+    if (removed.length) {
+      setSubmitError(null);
+      setPendingRemoval({ kind: 'selection', removed, selected: [...selecionados] });
+      return;
+    }
+    salvarModulos([...selecionados]);
+  }
 
+  async function salvarModulos(modules) {
     setSubmitError(null);
     setIsSubmitting(true);
-
     try {
-      await adminApi.put(`/admin/tenants/${tenant.id}/modules`, {
-        modulosContratados: selecionados,
-      });
+      await adminApi.put(`/admin/tenants/${tenant.id}/modules`, { modulosContratados: modules });
+      setPendingRemoval(null);
       await onSaved();
     } catch (error) {
       if (!isAbortError(error)) {
         setSubmitError(toApiError(error));
       }
+      return false;
     } finally {
       setIsSubmitting(false);
     }
@@ -72,11 +72,13 @@ export function TenantModulesSection({ tenant, adminApi, onSaved }) {
     try {
       await adminApi.delete(`/admin/tenants/${tenant.id}/modules/${moduleKey}`);
       setSelecionados((atual) => atual.filter((chave) => chave !== moduleKey));
+      setPendingRemoval(null);
       await onSaved();
     } catch (error) {
       if (!isAbortError(error)) {
         setSubmitError(toApiError(error));
       }
+      return false;
     } finally {
       setRemovendo(null);
     }
@@ -86,9 +88,7 @@ export function TenantModulesSection({ tenant, adminApi, onSaved }) {
     <Card>
       <CardHeader>
         <CardTitle>Módulos</CardTitle>
-        <CardDescription>
-          Define o que este tenant enxerga na plataforma.
-        </CardDescription>
+        <CardDescription>Define o que este tenant enxerga na plataforma.</CardDescription>
       </CardHeader>
 
       <CardContent className="grid gap-6">
@@ -98,9 +98,7 @@ export function TenantModulesSection({ tenant, adminApi, onSaved }) {
           </p>
 
           {contratados.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Nenhum módulo contratado.
-            </p>
+            <p className="text-sm text-muted-foreground">Nenhum módulo contratado.</p>
           ) : (
             <ul className="flex flex-wrap gap-2">
               {contratados.map((moduleKey) => (
@@ -112,11 +110,15 @@ export function TenantModulesSection({ tenant, adminApi, onSaved }) {
                   <Button
                     aria-label={`Remover módulo ${moduleKey}`}
                     className="size-5"
-                    disabled={Boolean(removendo)}
-                    onClick={() => removerModulo(moduleKey)}
+                    disabled={isSubmitting || Boolean(removendo)}
+                    loading={removendo === moduleKey}
+                    onClick={() => {
+                      setSubmitError(null);
+                      setPendingRemoval({ kind: 'single', moduleKey });
+                    }}
                     size="icon-xs"
                     type="button"
-                    variant="ghost"
+                    variant="destructive"
                   >
                     <X aria-hidden="true" />
                   </Button>
@@ -133,7 +135,8 @@ export function TenantModulesSection({ tenant, adminApi, onSaved }) {
             </legend>
 
             <ModulesCheckboxGroup
-              disabled={isSubmitting}
+              loading={loadingModules}
+              disabled={isSubmitting || Boolean(removendo)}
               erro={erroModulos}
               idPrefix={`tenant-modulo-${tenant.id}`}
               modulos={modulos}
@@ -146,8 +149,8 @@ export function TenantModulesSection({ tenant, adminApi, onSaved }) {
 
           <div>
             <Button
-              aria-busy={isSubmitting}
-              disabled={isSubmitting || inalterado}
+              loading={isSubmitting}
+              disabled={isSubmitting || Boolean(removendo) || inalterado || loadingModules}
               type="submit"
             >
               {isSubmitting ? 'Salvando...' : 'Salvar módulos'}
@@ -155,6 +158,26 @@ export function TenantModulesSection({ tenant, adminApi, onSaved }) {
           </div>
         </form>
       </CardContent>
+      {pendingRemoval && (
+        <ConfirmationDialog
+          title="Remover acesso a módulos?"
+          description={
+            pendingRemoval.kind === 'single'
+              ? `O acesso ao módulo “${pendingRemoval.moduleKey}” será desativado para esta empresa.`
+              : `Os usuários deixarão de acessar os módulos: ${pendingRemoval.removed.join(', ')}.`
+          }
+          confirmLabel="Remover acesso"
+          pendingLabel="Removendo acesso…"
+          busy={isSubmitting || Boolean(removendo)}
+          error={submitError?.message}
+          onConfirm={() =>
+            pendingRemoval.kind === 'single'
+              ? removerModulo(pendingRemoval.moduleKey)
+              : salvarModulos(pendingRemoval.selected)
+          }
+          onClose={() => setPendingRemoval(null)}
+        />
+      )}
     </Card>
   );
 }

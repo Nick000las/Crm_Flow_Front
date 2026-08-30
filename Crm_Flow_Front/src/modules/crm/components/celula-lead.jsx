@@ -50,7 +50,13 @@ function Opcoes({ valores, campo }) {
         <OpcaoBadge key={valor} opcao={opcaoDoCampo(campo, valor)} />
       ))}
       {restantes > 0 && (
-        <span className={`${DADO} text-muted-foreground`} title={valores.slice(MAX_BADGES).map((valor) => opcaoDoCampo(campo, valor).label).join(', ')}>
+        <span
+          className={`${DADO} text-muted-foreground`}
+          title={valores
+            .slice(MAX_BADGES)
+            .map((valor) => opcaoDoCampo(campo, valor).label)
+            .join(', ')}
+        >
           +{restantes}
         </span>
       )}
@@ -60,7 +66,9 @@ function Opcoes({ valores, campo }) {
 
 function Responsavel({ id, nomePorId }) {
   const nome = nomePorId.get(id);
-  if (nome) return nome;
+  if (nome) {
+    return nome;
+  }
 
   // Sem `/crm/usuarios` (ou usuário removido), o ID curto ainda identifica.
   return (
@@ -73,7 +81,9 @@ function Responsavel({ id, nomePorId }) {
 /** Só http/https vira link; o resto aparece como texto (nunca num `href`). */
 function Url({ valor }) {
   const href = urlSegura(valor);
-  if (!href) return String(valor);
+  if (!href) {
+    return String(valor);
+  }
 
   return (
     <a className={`${LINK} break-all`} href={href} rel="noopener noreferrer" target="_blank">
@@ -97,12 +107,18 @@ function Url({ valor }) {
  * }} props
  */
 export function CelulaLead({ coluna, valor, nomePorId, completo = false, semLink = false }) {
-  if (valor === null || valor === undefined || valor === '') return <Vazio />;
+  if (valor === null || valor === undefined || valor === '') {
+    return <Vazio />;
+  }
   // Lead score: selo da faixa (`crm.score`; sem a flag, só o número).
-  if (coluna.id === CHAVE_SCORE) return <SeloScore valor={valor} />;
+  if (coluna.id === CHAVE_SCORE) {
+    return <SeloScore valor={valor} />;
+  }
 
   const mascara = MASCARA_POR_TIPO[coluna.tipo];
-  if (mascara) return <span className={DADO}>{mascara(valor)}</span>;
+  if (mascara) {
+    return <span className={DADO}>{mascara(valor)}</span>;
+  }
 
   switch (coluna.tipo) {
     case TIPO_COLUNA.MOEDA:
@@ -128,8 +144,12 @@ export function CelulaLead({ coluna, valor, nomePorId, completo = false, semLink
       return <span className={DADO}>{formatarIntervalo(valor) ?? '—'}</span>;
     case TIPOS_CAMPO.ENDERECO: {
       const texto = formatarEndereco(valor);
-      if (!texto) return <Vazio />;
-      return completo ? texto : (
+      if (!texto) {
+        return <Vazio />;
+      }
+      return completo ? (
+        texto
+      ) : (
         <span className="line-clamp-1" title={texto}>
           {texto}
         </span>

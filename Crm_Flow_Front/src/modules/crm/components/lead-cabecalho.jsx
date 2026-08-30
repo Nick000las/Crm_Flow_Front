@@ -1,4 +1,12 @@
-import { Archive, ArchiveRestore, MoreHorizontal, Pencil, ShieldOff, Shuffle, Trash2 } from 'lucide-react';
+import {
+  Archive,
+  ArchiveRestore,
+  MoreHorizontal,
+  Pencil,
+  ShieldOff,
+  Shuffle,
+  Trash2,
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
@@ -25,7 +33,9 @@ const DESCRICAO = Object.freeze({
 
 /** Chips de destaque: rótulo pequeno + valor, no mesmo formato da tabela. */
 function Destaques({ lead, itens, nomePorId }) {
-  if (itens.length === 0) return null;
+  if (itens.length === 0) {
+    return null;
+  }
 
   return (
     <dl className="flex flex-wrap gap-2 pt-1">
@@ -34,9 +44,15 @@ function Destaques({ lead, itens, nomePorId }) {
 
         return (
           <div className="grid gap-0.5 border border-border px-2 py-1" key={item.ref}>
-            <dt className="font-mono text-[10px] tracking-wide text-muted-foreground uppercase">{item.label}</dt>
+            <dt className="font-mono text-[10px] tracking-wide text-muted-foreground uppercase">
+              {item.label}
+            </dt>
             <dd className="text-sm">
-              <CelulaLead coluna={coluna} nomePorId={nomePorId} valor={lerValorDaColuna(lead, coluna)} />
+              <CelulaLead
+                coluna={coluna}
+                nomePorId={nomePorId}
+                valor={lerValorDaColuna(lead, coluna)}
+              />
             </dd>
           </div>
         );
@@ -49,7 +65,9 @@ const MOTIVO_ANONIMIZADO = 'Lead anonimizado não pode ser editado';
 
 /** Menu "⋯" do lead: Excluir (com `crm.arquivo`) e Anonimizar (LGPD, gestão). */
 function MaisAcoes({ comExcluir, onExcluir, onAnonimizar }) {
-  if (!comExcluir && !onAnonimizar) return null;
+  if (!comExcluir && !onAnonimizar) {
+    return null;
+  }
 
   return (
     <DropdownMenu>
@@ -163,7 +181,8 @@ export function LeadCabecalho({
   onAnonimizar,
 }) {
   const titulo = criando ? 'Novo lead' : lead ? tituloDoLead(lead, layout?.identificador) : 'Lead';
-  const subtitulo = lead && layout && !criando ? subtituloDoLead(lead, layout.subtitulo, nomePorId) : '';
+  const subtitulo =
+    lead && layout && !criando ? subtituloDoLead(lead, layout.subtitulo, nomePorId) : '';
   const modo = criando ? DESCRICAO.CRIANDO : editando ? DESCRICAO.EDITANDO : DESCRICAO.VENDO;
   const arquivado = Boolean(arquivo) && !criando && estaArquivado(lead);
 
@@ -189,7 +208,8 @@ export function LeadCabecalho({
       {!criando && lead?.atribuido_por_regra_nome && (
         <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Shuffle aria-hidden="true" className="size-3.5" />
-          Atribuído pela regra <span className="font-medium text-foreground">{lead.atribuido_por_regra_nome}</span>
+          Atribuído pela regra{' '}
+          <span className="font-medium text-foreground">{lead.atribuido_por_regra_nome}</span>
         </p>
       )}
 

@@ -17,7 +17,9 @@ const CHIP_CLASS =
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">Carregando histórico…</span>
+      <span className="sr-only" role="status">
+        Carregando histórico…
+      </span>
       {Array.from({ length: 4 }, (_, indice) => (
         <Skeleton className="h-10 rounded-none" key={indice} />
       ))}
@@ -31,7 +33,9 @@ function Chip({ ativo, onClick, children }) {
       aria-pressed={ativo}
       className={cn(
         CHIP_CLASS,
-        ativo ? 'border-foreground bg-muted font-medium' : 'border-border text-muted-foreground hover:text-foreground',
+        ativo
+          ? 'border-foreground bg-muted font-medium'
+          : 'border-border text-muted-foreground hover:text-foreground',
       )}
       onClick={onClick}
       type="button"
@@ -48,8 +52,11 @@ function Chip({ ativo, onClick, children }) {
 function FiltroCategorias({ categorias, selecionadas, onChange }) {
   function alternar(chave) {
     const proximas = new Set(selecionadas);
-    if (proximas.has(chave)) proximas.delete(chave);
-    else proximas.add(chave);
+    if (proximas.has(chave)) {
+      proximas.delete(chave);
+    } else {
+      proximas.add(chave);
+    }
     onChange(proximas);
   }
 
@@ -59,7 +66,11 @@ function FiltroCategorias({ categorias, selecionadas, onChange }) {
         Todas
       </Chip>
       {categorias.map((categoria) => (
-        <Chip ativo={selecionadas.has(categoria.key)} key={categoria.key} onClick={() => alternar(categoria.key)}>
+        <Chip
+          ativo={selecionadas.has(categoria.key)}
+          key={categoria.key}
+          onClick={() => alternar(categoria.key)}
+        >
           {categoria.label}
         </Chip>
       ))}
@@ -69,7 +80,11 @@ function FiltroCategorias({ categorias, selecionadas, onChange }) {
 
 /** Um lado do diff; vazio vira "vazio" em cinza. */
 function Lado({ texto }) {
-  return texto === null ? <span className="text-muted-foreground">vazio</span> : <span>{texto}</span>;
+  return texto === null ? (
+    <span className="text-muted-foreground">vazio</span>
+  ) : (
+    <span>{texto}</span>
+  );
 }
 
 /**
@@ -96,8 +111,8 @@ function Evento({ evento, nomePorId }) {
         <ul className="grid gap-0.5 text-sm">
           {itens.map((item, indice) => (
             <li className="break-words" key={`${item.chave}-${indice}`}>
-              <span className="text-muted-foreground">{item.label}:</span> <Lado texto={item.antes} />{' '}
-              <span aria-hidden="true">→</span>
+              <span className="text-muted-foreground">{item.label}:</span>{' '}
+              <Lado texto={item.antes} /> <span aria-hidden="true">→</span>
               <span className="sr-only">para</span> <Lado texto={item.depois} />
             </li>
           ))}
@@ -119,14 +134,24 @@ export function AbaHistorico({ leadId, nomePorId }) {
   const categoriasQuery = useCategoriasHistorico();
   const categorias = categoriasQuery.data ?? [];
   // Na ordem do back: a mesma seleção dá sempre a mesma key.
-  const filtro = categorias.filter((categoria) => selecionadas.has(categoria.key)).map((categoria) => categoria.key);
+  const filtro = categorias
+    .filter((categoria) => selecionadas.has(categoria.key))
+    .map((categoria) => categoria.key);
   const historico = useHistorico(leadId, filtro);
 
-  if (isAccessError(historico.error)) return <AcessoIndisponivel error={historico.error} />;
-  if (historico.isPending) return <Carregando />;
+  if (isAccessError(historico.error)) {
+    return <AcessoIndisponivel error={historico.error} />;
+  }
+  if (historico.isPending) {
+    return <Carregando />;
+  }
 
   const chips = categorias.length > 0 && (
-    <FiltroCategorias categorias={categorias} onChange={setSelecionadas} selecionadas={selecionadas} />
+    <FiltroCategorias
+      categorias={categorias}
+      onChange={setSelecionadas}
+      selecionadas={selecionadas}
+    />
   );
 
   if (historico.isError && !historico.data) {
@@ -178,7 +203,10 @@ export function AbaHistorico({ leadId, nomePorId }) {
       )}
 
       {/* Erro ao carregar a próxima página: o que já veio continua na tela. */}
-      <ApiErrorAlert error={historico.isFetchNextPageError ? historico.error : null} id="historico-mais-erro" />
+      <ApiErrorAlert
+        error={historico.isFetchNextPageError ? historico.error : null}
+        id="historico-mais-erro"
+      />
 
       {historico.hasNextPage && !carregandoFiltro && (
         <div>

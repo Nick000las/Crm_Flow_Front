@@ -54,7 +54,11 @@ export function LeadsToolbar({
         onAplicar={(filtros) => atualizar(estadoDaVisao(filtros))}
         visaoAtual={visaoDoEstado(estado)}
       />
-      <SeletorColunas colunas={colunas} onAlternar={onAlternarColuna} selecionadas={colunasSelecionadas} />
+      <SeletorColunas
+        colunas={colunas}
+        onAlternar={onAlternarColuna}
+        selecionadas={colunasSelecionadas}
+      />
       {total !== undefined && (
         <p className="ml-auto font-mono text-xs text-muted-foreground tabular-nums">
           {totalFormatter.format(total)} {total === 1 ? 'lead' : 'leads'}

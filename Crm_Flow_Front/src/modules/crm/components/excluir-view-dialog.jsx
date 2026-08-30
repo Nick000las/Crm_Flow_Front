@@ -21,8 +21,12 @@ export function ExcluirViewDialog({ view, onOpenChange }) {
   const excluir = useExcluirView();
 
   function handleOpenChange(proximo) {
-    if (excluir.isPending) return;
-    if (!proximo) excluir.reset();
+    if (excluir.isPending) {
+      return;
+    }
+    if (!proximo) {
+      excluir.reset();
+    }
     onOpenChange(proximo);
   }
 
@@ -36,7 +40,11 @@ export function ExcluirViewDialog({ view, onOpenChange }) {
           </AlertDialogDescription>
         </AlertDialogHeader>
 
-        <ApiErrorAlert error={excluir.error} id="excluir-view-erro" title="Não foi possível excluir" />
+        <ApiErrorAlert
+          error={excluir.error}
+          id="excluir-view-erro"
+          title="Não foi possível excluir"
+        />
 
         <AlertDialogFooter>
           <AlertDialogCancel disabled={excluir.isPending}>Cancelar</AlertDialogCancel>

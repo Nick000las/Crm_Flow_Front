@@ -10,13 +10,11 @@ import api, { getFieldError, isAbortError, toApiError } from '@/services/api';
 const PASSWORD_ERROR_ID = 'password-error';
 const SUBMIT_ERROR_ID = 'password-submit-error';
 
-export function Password({ email, onSuccess }) {
+export function Password({ email, onSuccess, sessionScope = 'tenant' }) {
   const [submitError, setSubmitError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const passwordError = submitError
-    ? getFieldError(submitError, 'senha')
-    : null;
+  const passwordError = submitError ? getFieldError(submitError, 'senha') : null;
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -31,6 +29,7 @@ export function Password({ email, onSuccess }) {
       const response = await api.post('/auth/login/password', {
         email,
         senha: password,
+        scope: sessionScope,
       });
 
       await onSuccess?.(response);
@@ -88,7 +87,7 @@ export function Password({ email, onSuccess }) {
           className="h-10 w-full"
           type="submit"
           disabled={isSubmitting}
-          aria-busy={isSubmitting}
+          loading={isSubmitting}
         >
           {isSubmitting ? 'Entrando...' : 'Entrar'}
         </Button>

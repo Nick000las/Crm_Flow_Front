@@ -20,8 +20,14 @@ import { MENSAGENS_REGRA, valorDaCondicao } from './regras.js';
  */
 export function condicaoParaForm({ campoId, operador, valor }, campos) {
   const campo = campos.find((atual) => atual.id === campoId);
-  if (!campo) return { campoId, operador, valor: valor ?? null };
-  return { campoId, operador, valor: linhaDoItem({ chave: campo.chave, operador, valor }, campo).valor };
+  if (!campo) {
+    return { campoId, operador, valor: valor ?? null };
+  }
+  return {
+    campoId,
+    operador,
+    valor: linhaDoItem({ chave: campo.chave, operador, valor }, campo).valor,
+  };
 }
 
 /**
@@ -33,7 +39,11 @@ export function condicaoParaForm({ campoId, operador, valor }, campos) {
  */
 export function condicaoParaEnvio(condicao, campos) {
   const { valor } = /** @type {{ valor: unknown }} */ (valorDaCondicao(condicao, campos));
-  return { campoId: condicao.campoId, operador: condicao.operador, ...(valor !== undefined && { valor }) };
+  return {
+    campoId: condicao.campoId,
+    operador: condicao.operador,
+    ...(valor !== undefined && { valor }),
+  };
 }
 
 /**
@@ -47,11 +57,15 @@ export function condicaoParaEnvio(condicao, campos) {
  */
 export function validarCondicoes(condicoes, campos, maximo) {
   const erros = {};
-  if (condicoes.length > maximo) erros.condicoes = `Use no máximo ${maximo} condições`;
+  if (condicoes.length > maximo) {
+    erros.condicoes = `Use no máximo ${maximo} condições`;
+  }
 
   condicoes.forEach((condicao, indice) => {
     const resultado = valorDaCondicao(condicao, campos);
-    if ('erro' in resultado) erros[`condicoes.${indice}`] = resultado.erro;
+    if ('erro' in resultado) {
+      erros[`condicoes.${indice}`] = resultado.erro;
+    }
   });
 
   return erros;
@@ -66,14 +80,20 @@ export function validarCondicoes(condicoes, campos, maximo) {
  * @param {Map<string, string>} [nomePorId]
  */
 export function descreverCondicoes(regra, campos, nomePorId) {
-  if (regra.condicoes.length === 0) return 'Todos os leads';
+  if (regra.condicoes.length === 0) {
+    return 'Todos os leads';
+  }
 
   return regra.condicoes
     .map(({ campoId, operador, valor }) => {
       const campo = campos.find((atual) => atual.id === campoId);
-      if (!campo) return MENSAGENS_REGRA.CAMPO_CONDICAO;
+      if (!campo) {
+        return MENSAGENS_REGRA.CAMPO_CONDICAO;
+      }
       const resultado = itemDaLinha({ chave: campo.chave, operador, valor }, campo);
-      return 'erro' in resultado ? `${campo.label} (incompleta)` : descreverItem(resultado.item, campo, nomePorId);
+      return 'erro' in resultado
+        ? `${campo.label} (incompleta)`
+        : descreverItem(resultado.item, campo, nomePorId);
     })
     .join(' e ');
 }

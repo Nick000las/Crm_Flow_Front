@@ -18,11 +18,21 @@ import { ValorDoFiltro } from './valor-do-filtro';
  *   rotuloCampo?: string,
  * }} props `campos`: só os que podem entrar na condição
  */
-export function CondicaoDeCampo({ idBase, condicao, campos, onChange, erros = {}, rotuloCampo = 'Quando o campo' }) {
+export function CondicaoDeCampo({
+  idBase,
+  condicao,
+  campos,
+  onChange,
+  erros = {},
+  rotuloCampo = 'Quando o campo',
+}) {
   const campo = campos.find((atual) => atual.id === condicao.campoId);
   const opcoesCampo = campos.map((atual) => ({ valor: atual.id, rotulo: atual.label }));
   const opcoesOperador = campo
-    ? operadoresDoCampo(campo).map((operador) => ({ valor: operador, rotulo: ROTULOS_OPERADOR[operador] }))
+    ? operadoresDoCampo(campo).map((operador) => ({
+        valor: operador,
+        rotulo: ROTULOS_OPERADOR[operador],
+      }))
     : [];
 
   return (

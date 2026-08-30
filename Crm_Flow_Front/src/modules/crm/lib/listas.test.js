@@ -28,7 +28,11 @@ describe('form da opção', () => {
   test('status começa em "aberto"; as outras listas, sem categoria', () => {
     assert.deepEqual(valoresDaOpcao('status'), { label: '', color: '', category: 'aberto' });
     assert.equal(valoresDaOpcao('tag').category, '');
-    assert.deepEqual(valoresDaOpcao('status', opcao()), { label: 'Novo', color: '#2563eb', category: 'aberto' });
+    assert.deepEqual(valoresDaOpcao('status', opcao()), {
+      label: 'Novo',
+      color: '#2563eb',
+      category: 'aberto',
+    });
   });
 
   test('validação: nome, cor #RRGGBB e categoria só em status', () => {
@@ -43,41 +47,67 @@ describe('form da opção', () => {
 
 describe('corpo do POST e do PUT', () => {
   test('criar manda nome, cor se houver e categoria só em status', () => {
-    assert.deepEqual(payloadDaOpcao('fonte_lead', { label: ' Feira ', color: '', category: '' }), { label: 'Feira' });
-    assert.deepEqual(payloadDaOpcao('status', { label: 'Proposta', color: '#aabbcc', category: 'aberto' }), {
-      label: 'Proposta',
-      color: '#aabbcc',
-      category: 'aberto',
+    assert.deepEqual(payloadDaOpcao('fonte_lead', { label: ' Feira ', color: '', category: '' }), {
+      label: 'Feira',
     });
+    assert.deepEqual(
+      payloadDaOpcao('status', { label: 'Proposta', color: '#aabbcc', category: 'aberto' }),
+      {
+        label: 'Proposta',
+        color: '#aabbcc',
+        category: 'aberto',
+      },
+    );
   });
 
   test('editar manda só o que mudou; cor apagada vira null', () => {
     const original = opcao();
 
     assert.equal(payloadDaOpcao('status', valoresDaOpcao('status', original), original), null);
-    assert.equal(payloadDaOpcao('status', { label: 'Novo', color: '#2563EB', category: 'aberto' }, original), null);
-    assert.deepEqual(payloadDaOpcao('status', { label: 'Novo', color: '', category: 'aberto' }, original), {
-      color: null,
-    });
-    assert.deepEqual(payloadDaOpcao('status', { label: 'Entrada', color: '#2563eb', category: 'ganho' }, original), {
-      label: 'Entrada',
-      category: 'ganho',
-    });
+    assert.equal(
+      payloadDaOpcao('status', { label: 'Novo', color: '#2563EB', category: 'aberto' }, original),
+      null,
+    );
+    assert.deepEqual(
+      payloadDaOpcao('status', { label: 'Novo', color: '', category: 'aberto' }, original),
+      {
+        color: null,
+      },
+    );
+    assert.deepEqual(
+      payloadDaOpcao('status', { label: 'Entrada', color: '#2563eb', category: 'ganho' }, original),
+      {
+        label: 'Entrada',
+        category: 'ganho',
+      },
+    );
   });
 });
 
 test('excluir opção em uso fica bloqueado, com o motivo', () => {
   assert.equal(motivoNaoExclui(opcao()), null);
-  assert.equal(motivoNaoExclui(opcao({ usos: 1 })), 'Em uso por 1 lead. Desative em vez de excluir.');
+  assert.equal(
+    motivoNaoExclui(opcao({ usos: 1 })),
+    'Em uso por 1 lead. Desative em vez de excluir.',
+  );
   assert.match(motivoNaoExclui(opcao({ usos: 1200 })), /^Em uso por 1\.200 leads/);
 });
 
 test('o cache das listas muda só no tipo tocado', () => {
   const listas = { status: [opcao({ id: 'a' }), opcao({ id: 'b' })], tag: [] };
 
-  assert.equal(substituirOpcao(listas, 'status', opcao({ id: 'b', label: 'X' })).status[1].label, 'X');
+  assert.equal(
+    substituirOpcao(listas, 'status', opcao({ id: 'b', label: 'X' })).status[1].label,
+    'X',
+  );
   assert.equal(adicionarOpcao(listas, 'tag', opcao({ id: 't' })).tag.length, 1);
-  assert.deepEqual(removerOpcao(listas, 'status', 'a').status.map((item) => item.id), ['b']);
-  assert.deepEqual(reordenarLista(listas, 'status', ['b', 'a']).status.map((item) => item.id), ['b', 'a']);
+  assert.deepEqual(
+    removerOpcao(listas, 'status', 'a').status.map((item) => item.id),
+    ['b'],
+  );
+  assert.deepEqual(
+    reordenarLista(listas, 'status', ['b', 'a']).status.map((item) => item.id),
+    ['b', 'a'],
+  );
   assert.equal(reordenarLista(listas, 'status', ['b', 'a']).tag, listas.tag);
 });

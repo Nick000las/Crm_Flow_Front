@@ -1,3 +1,4 @@
+import { LoadingState } from '@/components/loading-state';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -13,27 +14,23 @@ import { Label } from '@/components/ui/label';
  */
 export function ModulesCheckboxGroup({
   modulos,
+  loading = false,
   selecionados,
   onToggle,
   disabled,
   erro,
   idPrefix,
 }) {
+  if (loading) {
+    return <LoadingState label="Carregando módulos disponíveis…" />;
+  }
+
   if (erro) {
-    return (
-      <ApiErrorAlert
-        error={erro}
-        title="Não foi possível carregar os módulos"
-      />
-    );
+    return <ApiErrorAlert error={erro} title="Não foi possível carregar os módulos" />;
   }
 
   if (modulos.length === 0) {
-    return (
-      <p className="text-sm text-muted-foreground">
-        Nenhum módulo disponível no backend.
-      </p>
-    );
+    return <p className="text-sm text-muted-foreground">Nenhum módulo disponível no backend.</p>;
   }
 
   return (

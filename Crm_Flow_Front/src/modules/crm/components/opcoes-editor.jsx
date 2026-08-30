@@ -14,7 +14,8 @@ import { Input } from '@/components/ui/input';
  * }} props
  */
 export function OpcoesEditor({ opcoes, onChange, erro, erroId }) {
-  const alterar = (indice, texto) => onChange(opcoes.map((opcao, atual) => (atual === indice ? texto : opcao)));
+  const alterar = (indice, texto) =>
+    onChange(opcoes.map((opcao, atual) => (atual === indice ? texto : opcao)));
   const remover = (indice) => {
     const restantes = opcoes.filter((_, atual) => atual !== indice);
     onChange(restantes.length > 0 ? restantes : ['']);
@@ -24,7 +25,9 @@ export function OpcoesEditor({ opcoes, onChange, erro, erroId }) {
     <fieldset className="grid gap-2" aria-describedby={erro ? erroId : undefined}>
       <legend className="mb-1.5 text-sm font-medium">
         Opções
-        <span className="text-destructive" aria-hidden="true">*</span>
+        <span className="text-destructive" aria-hidden="true">
+          *
+        </span>
         <span className="sr-only">(obrigatório)</span>
       </legend>
 
@@ -44,7 +47,9 @@ export function OpcoesEditor({ opcoes, onChange, erro, erroId }) {
                 // Enter na última opção já abre a próxima.
                 if (event.key === 'Enter') {
                   event.preventDefault();
-                  if (indice === opcoes.length - 1 && opcao.trim()) onChange([...opcoes, '']);
+                  if (indice === opcoes.length - 1 && opcao.trim()) {
+                    onChange([...opcoes, '']);
+                  }
                 }
               }}
               value={opcao}

@@ -23,7 +23,9 @@ export function CampoOptOut({ id, value, onChange, desde, erro }) {
     <div className="grid gap-1.5">
       <label className="flex items-center gap-2 text-sm" htmlFor={id}>
         <Checkbox
-          aria-describedby={[data && ajudaId, erro && erroId].filter(Boolean).join(' ') || undefined}
+          aria-describedby={
+            [data && ajudaId, erro && erroId].filter(Boolean).join(' ') || undefined
+          }
           aria-invalid={erro ? true : undefined}
           checked={value}
           id={id}

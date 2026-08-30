@@ -69,7 +69,10 @@ describe('mapeamento', () => {
 describe('relatório e progresso', () => {
   test('CSV com ; e aspas escapadas', () => {
     assert.equal(
-      relatorioCsv([{ linha: 3, coluna: 'E-mail', motivo: 'Inválido "x"' }, { linha: 4, motivo: 'Sem nome' }]),
+      relatorioCsv([
+        { linha: 3, coluna: 'E-mail', motivo: 'Inválido "x"' },
+        { linha: 4, motivo: 'Sem nome' },
+      ]),
       '"Linha";"Coluna";"Motivo"\r\n"3";"E-mail";"Inválido ""x"""\r\n"4";"";"Sem nome"',
     );
   });
@@ -106,16 +109,25 @@ describe('wizardReducer', () => {
 
     assert.equal(wizardReducer(semJob, { tipo: 'confirmado' }).passo, PASSO.REVISAR);
     assert.deepEqual(
-      [wizardReducer(comJob, { tipo: 'confirmado' }).passo, wizardReducer(comJob, { tipo: 'confirmado' }).jobId],
+      [
+        wizardReducer(comJob, { tipo: 'confirmado' }).passo,
+        wizardReducer(comJob, { tipo: 'confirmado' }).jobId,
+      ],
       [PASSO.PROCESSAR, 'j1'],
     );
   });
 
   test('ação fora do passo é ignorada', () => {
-    assert.equal(wizardReducer(estadoInicial(), { tipo: 'validado', validacao: {} }).passo, PASSO.ARQUIVO);
+    assert.equal(
+      wizardReducer(estadoInicial(), { tipo: 'validado', validacao: {} }).passo,
+      PASSO.ARQUIVO,
+    );
   });
 
   test('job na URL retoma direto em Processar', () => {
-    assert.deepEqual([estadoInicial('j9').passo, estadoInicial('j9').jobId], [PASSO.PROCESSAR, 'j9']);
+    assert.deepEqual(
+      [estadoInicial('j9').passo, estadoInicial('j9').jobId],
+      [PASSO.PROCESSAR, 'j9'],
+    );
   });
 });

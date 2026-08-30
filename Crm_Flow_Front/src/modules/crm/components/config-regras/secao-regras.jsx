@@ -20,7 +20,9 @@ const CAMPOS_VAZIOS = [];
 function Carregando() {
   return (
     <div className="grid gap-2" aria-busy="true">
-      <span className="sr-only" role="status">Carregando regras…</span>
+      <span className="sr-only" role="status">
+        Carregando regras…
+      </span>
       {Array.from({ length: 4 }, (_, indice) => (
         <Skeleton className="h-14 rounded-none" key={indice} />
       ))}
@@ -61,8 +63,16 @@ function LinhaRegra({ regra, descricao, alternando, onAlternar, onEditar, onExcl
       {/* A regra do sistema só liga e desliga (o back dá 409 no resto). */}
       {!regra.sistema && (
         <div className="flex">
-          <BotaoIcone icone={Pencil} onClick={onEditar} rotulo={`Editar regra de ${regra.alvo.label}`} />
-          <BotaoIcone icone={Trash2} onClick={onExcluir} rotulo={`Excluir regra de ${regra.alvo.label}`} />
+          <BotaoIcone
+            icone={Pencil}
+            onClick={onEditar}
+            rotulo={`Editar regra de ${regra.alvo.label}`}
+          />
+          <BotaoIcone
+            icone={Trash2}
+            onClick={onExcluir}
+            rotulo={`Excluir regra de ${regra.alvo.label}`}
+          />
         </div>
       )}
     </li>
@@ -83,9 +93,15 @@ export function SecaoRegras() {
   const [aviso, setAviso] = useState(null);
 
   const erro = regrasQuery.error ?? camposQuery.error;
-  if (isAccessError(erro)) return <AcessoIndisponivel error={erro} />;
-  if (erro) return <ApiErrorAlert error={erro} id="config-regras-carregar-erro" />;
-  if (regrasQuery.isPending || camposQuery.isPending) return <Carregando />;
+  if (isAccessError(erro)) {
+    return <AcessoIndisponivel error={erro} />;
+  }
+  if (erro) {
+    return <ApiErrorAlert error={erro} id="config-regras-carregar-erro" />;
+  }
+  if (regrasQuery.isPending || camposQuery.isPending) {
+    return <Carregando />;
+  }
 
   const regras = regrasQuery.data;
   const campos = camposQuery.data ?? CAMPOS_VAZIOS;
@@ -115,8 +131,8 @@ export function SecaoRegras() {
     <div className="grid gap-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <p className="max-w-2xl text-sm text-muted-foreground">
-          Valem no formulário do lead, na edição e no import. Campo obrigatório por regra ganha asterisco; campo
-          que só aparece com a condição fica escondido até ela valer.
+          Valem no formulário do lead, na edição e no import. Campo obrigatório por regra ganha
+          asterisco; campo que só aparece com a condição fica escondido até ela valer.
         </p>
         {regras.length > 0 && botaoNova}
       </div>
@@ -124,7 +140,11 @@ export function SecaoRegras() {
       <p className={aviso ? 'border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
         {aviso}
       </p>
-      <ApiErrorAlert error={alternar.error} id="config-regras-alternar-erro" title="Não foi possível mudar a regra" />
+      <ApiErrorAlert
+        error={alternar.error}
+        id="config-regras-alternar-erro"
+        title="Não foi possível mudar a regra"
+      />
 
       {regras.length === 0 ? (
         <ModulePlaceholder

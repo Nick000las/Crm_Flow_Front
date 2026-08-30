@@ -47,7 +47,12 @@ function FormRegraDistribuicao({ regra, campos, opcoesDestino, errosDoServidor, 
 
   return (
     <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
-      <CampoForm erro={erroDe('nome')} id="distribuicao-regra-nome" label="Nome da regra" obrigatorio>
+      <CampoForm
+        erro={erroDe('nome')}
+        id="distribuicao-regra-nome"
+        label="Nome da regra"
+        obrigatorio
+      >
         {(controle) => (
           <Input
             {...controle}
@@ -69,7 +74,12 @@ function FormRegraDistribuicao({ regra, campos, opcoesDestino, errosDoServidor, 
         onChange={(condicoes) => alterar({ condicoes })}
       />
 
-      <CampoForm erro={erroDe('destino')} id="distribuicao-regra-destino" label="Vai para" obrigatorio>
+      <CampoForm
+        erro={erroDe('destino')}
+        id="distribuicao-regra-destino"
+        label="Vai para"
+        obrigatorio
+      >
         {(controle) => (
           <SelectSimples
             {...controle}
@@ -82,7 +92,11 @@ function FormRegraDistribuicao({ regra, campos, opcoesDestino, errosDoServidor, 
       </CampoForm>
 
       <label className="flex items-center gap-2 text-sm" htmlFor="distribuicao-regra-ativa">
-        <Switch checked={valores.ativo} id="distribuicao-regra-ativa" onCheckedChange={(ativo) => alterar({ ativo })} />
+        <Switch
+          checked={valores.ativo}
+          id="distribuicao-regra-ativa"
+          onCheckedChange={(ativo) => alterar({ ativo })}
+        />
         Regra ligada
       </label>
 

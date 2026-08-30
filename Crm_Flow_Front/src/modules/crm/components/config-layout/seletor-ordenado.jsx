@@ -16,13 +16,24 @@ function ItemEscolhido({ itemRef, rotulo, indice, total, onMover, onRemover }) {
   return (
     <li
       {...linha}
-      className={cn('flex items-center gap-1 border-b border-border py-1 pr-1 pl-0.5 last:border-b-0', linha.className)}
+      className={cn(
+        'flex items-center gap-1 border-b border-border py-1 pr-1 pl-0.5 last:border-b-0',
+        linha.className,
+      )}
     >
       <PuxadorOrdem {...puxador} rotulo={rotulo} />
-      <span className={cn('flex-1 text-sm', rotulo === INDISPONIVEL && 'text-muted-foreground italic')}>
+      <span
+        className={cn('flex-1 text-sm', rotulo === INDISPONIVEL && 'text-muted-foreground italic')}
+      >
         {rotulo}
       </span>
-      <BotoesOrdem desabilitado={false} indice={indice} onMover={onMover} rotulo={rotulo} total={total} />
+      <BotoesOrdem
+        desabilitado={false}
+        indice={indice}
+        onMover={onMover}
+        rotulo={rotulo}
+        total={total}
+      />
       <BotaoIcone icone={X} onClick={onRemover} rotulo={`Remover ${rotulo}`} />
     </li>
   );
@@ -57,7 +68,9 @@ export function SeletorOrdenado({ id, legenda, ajuda, valor, opcoes, max, erro, 
 
   function mover(de, para) {
     const proximos = moverPara(valor, de, para);
-    if (proximos !== valor) onChange(proximos);
+    if (proximos !== valor) {
+      onChange(proximos);
+    }
   }
 
   return (

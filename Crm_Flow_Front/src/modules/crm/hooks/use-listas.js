@@ -1,6 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
-import { atualizarOpcao, criarOpcao, excluirOpcao, listarListas, reordenarOpcoes } from '../api/listas.api';
+import {
+  atualizarOpcao,
+  criarOpcao,
+  excluirOpcao,
+  listarListas,
+  reordenarOpcoes,
+} from '../api/listas.api';
 import { adicionarOpcao, removerOpcao, reordenarLista, substituirOpcao } from '../lib/listas';
 import { crmKeys } from '../query-keys';
 
@@ -21,7 +27,9 @@ export function useListas() {
  */
 function invalidarConsumidores(queryClient) {
   return Promise.all(
-    [crmKeys.campos(), crmKeys.leads()].map((queryKey) => queryClient.invalidateQueries({ queryKey })),
+    [crmKeys.campos(), crmKeys.leads()].map((queryKey) =>
+      queryClient.invalidateQueries({ queryKey }),
+    ),
   );
 }
 
@@ -32,7 +40,9 @@ function useMutacaoDeLista(mutationFn, aplicar) {
   return useMutation({
     mutationFn,
     onSuccess: (resposta, variaveis) => {
-      queryClient.setQueryData(CHAVE, (listas) => (listas ? aplicar(listas, resposta, variaveis) : listas));
+      queryClient.setQueryData(CHAVE, (listas) =>
+        listas ? aplicar(listas, resposta, variaveis) : listas,
+      );
       return invalidarConsumidores(queryClient);
     },
   });
@@ -73,7 +83,9 @@ export function useReordenarOpcoes() {
     onMutate: async ({ tipo, ids }) => {
       await queryClient.cancelQueries({ queryKey: CHAVE });
       const anterior = queryClient.getQueryData(CHAVE);
-      queryClient.setQueryData(CHAVE, (listas) => (listas ? reordenarLista(listas, tipo, ids) : listas));
+      queryClient.setQueryData(CHAVE, (listas) =>
+        listas ? reordenarLista(listas, tipo, ids) : listas,
+      );
       return { anterior };
     },
     onError: (_erro, _variaveis, contexto) => queryClient.setQueryData(CHAVE, contexto?.anterior),

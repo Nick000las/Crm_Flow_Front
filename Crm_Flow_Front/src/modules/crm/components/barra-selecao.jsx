@@ -16,8 +16,16 @@ const PARA_MESCLAR = 2;
  *   bloqueioMesclar?: string | null,
  * }} props ação omitida = botão oculto; `bloqueioMesclar` = por que não mescla (ex.: lead anonimizado)
  */
-export function BarraSelecao({ total, onLimpar, onEditarEmMassa, onMesclar, bloqueioMesclar = null }) {
-  if (total === 0) return null;
+export function BarraSelecao({
+  total,
+  onLimpar,
+  onEditarEmMassa,
+  onMesclar,
+  bloqueioMesclar = null,
+}) {
+  if (total === 0) {
+    return null;
+  }
 
   // Sem massa, a seleção existe só para mesclar: a dica de quantos faltam vale.
   const dicaMesclar = onMesclar && !onEditarEmMassa && total < PARA_MESCLAR;
@@ -28,7 +36,9 @@ export function BarraSelecao({ total, onLimpar, onEditarEmMassa, onMesclar, bloq
         {total} {total === 1 ? 'selecionado' : 'selecionados'}
       </span>
       {dicaMesclar && <span className="text-muted-foreground">Marque mais um para mesclar.</span>}
-      {onMesclar && bloqueioMesclar && <span className="text-muted-foreground">{bloqueioMesclar}</span>}
+      {onMesclar && bloqueioMesclar && (
+        <span className="text-muted-foreground">{bloqueioMesclar}</span>
+      )}
       <div className="ml-auto flex flex-wrap gap-2">
         {onEditarEmMassa && (
           <Button onClick={onEditarEmMassa} size="sm">
@@ -41,7 +51,10 @@ export function BarraSelecao({ total, onLimpar, onEditarEmMassa, onMesclar, bloq
             disabled={total !== PARA_MESCLAR || Boolean(bloqueioMesclar)}
             onClick={onMesclar}
             size="sm"
-            title={bloqueioMesclar ?? (total !== PARA_MESCLAR ? 'Mesclar exige exatamente 2 leads' : undefined)}
+            title={
+              bloqueioMesclar ??
+              (total !== PARA_MESCLAR ? 'Mesclar exige exatamente 2 leads' : undefined)
+            }
             variant={onEditarEmMassa ? 'outline' : 'default'}
           >
             <Combine aria-hidden="true" />

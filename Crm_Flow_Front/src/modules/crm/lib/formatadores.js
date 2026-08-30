@@ -16,7 +16,9 @@ const moedaFormatter = new Intl.NumberFormat('pt-BR', {
  * @returns {number | null}
  */
 export function paraNumero(valor) {
-  if (valor === null || valor === undefined || valor === '') return null;
+  if (valor === null || valor === undefined || valor === '') {
+    return null;
+  }
 
   const numero = typeof valor === 'number' ? valor : Number(valor);
 
@@ -32,10 +34,14 @@ export function paraNumero(valor) {
  * @returns {string | null} `dd/MM/aaaa`
  */
 export function formatarData(valor) {
-  if (typeof valor !== 'string') return null;
+  if (typeof valor !== 'string') {
+    return null;
+  }
 
   const partes = DATA_ISO.exec(valor);
-  if (!partes) return null;
+  if (!partes) {
+    return null;
+  }
 
   const [, ano, mes, dia] = partes;
 
@@ -68,15 +74,21 @@ const PROTOCOLOS_SEGUROS = Object.freeze(['http:', 'https:']);
  * @param {unknown} valor
  */
 export function mascararTelefone(valor) {
-  const digitos = String(valor ?? '').replace(/\D/g, '').slice(0, TELEFONE_CELULAR);
-  if (digitos.length <= DDD) return digitos;
+  const digitos = String(valor ?? '')
+    .replace(/\D/g, '')
+    .slice(0, TELEFONE_CELULAR);
+  if (digitos.length <= DDD) {
+    return digitos;
+  }
 
   const ddd = digitos.slice(0, DDD);
   const numero = digitos.slice(DDD);
   // Com 11 dígitos o prefixo tem 5; até lá, 4 (fixo).
   const tamanhoPrefixo = digitos.length === TELEFONE_CELULAR ? 5 : 4;
 
-  if (numero.length <= tamanhoPrefixo) return `(${ddd}) ${numero}`;
+  if (numero.length <= tamanhoPrefixo) {
+    return `(${ddd}) ${numero}`;
+  }
 
   return `(${ddd}) ${numero.slice(0, tamanhoPrefixo)}-${numero.slice(tamanhoPrefixo)}`;
 }
@@ -89,7 +101,9 @@ export function mascararTelefone(valor) {
  * @returns {string | null}
  */
 export function formatarTelefone(valor) {
-  if (valor === null || valor === undefined || valor === '') return null;
+  if (valor === null || valor === undefined || valor === '') {
+    return null;
+  }
 
   const texto = String(valor);
   const digitos = texto.replace(/\D/g, '');
@@ -105,7 +119,9 @@ export function formatarTelefone(valor) {
  * @returns {string | null} a URL normalizada, ou `null`
  */
 export function urlSegura(valor) {
-  if (typeof valor !== 'string' || valor.trim() === '') return null;
+  if (typeof valor !== 'string' || valor.trim() === '') {
+    return null;
+  }
 
   try {
     const url = new URL(valor.trim());
@@ -130,7 +146,9 @@ const PONTUACAO_DOCUMENTO = /[.\-/\s]/g;
  * como veio.
  */
 function moldar(valor, tamanho, regex, molde, aceitos = /^\d+$/) {
-  if (valor === null || valor === undefined || valor === '') return null;
+  if (valor === null || valor === undefined || valor === '') {
+    return null;
+  }
 
   const texto = String(valor);
   const limpo = texto.replace(PONTUACAO_DOCUMENTO, '').toUpperCase();
@@ -142,7 +160,13 @@ const CNPJ_ACEITO = /^[0-9A-Z]+$/;
 
 /** `12345678000190` → `12.345.678/0001-90`; `12ABC34501DE35` → `12.ABC.345/01DE-35`. */
 export function formatarCnpj(valor) {
-  return moldar(valor, DIGITOS_CNPJ, /^(.{2})(.{3})(.{3})(.{4})(.{2})$/, '$1.$2.$3/$4-$5', CNPJ_ACEITO);
+  return moldar(
+    valor,
+    DIGITOS_CNPJ,
+    /^(.{2})(.{3})(.{3})(.{4})(.{2})$/,
+    '$1.$2.$3/$4-$5',
+    CNPJ_ACEITO,
+  );
 }
 
 /** `12345678909` → `123.456.789-09`. */
@@ -169,7 +193,9 @@ function mascarar(limpo, separadores) {
 
 /** `123456789` → `123.456.789`, até `123.456.789-09`. */
 export function mascararCpf(valor) {
-  const digitos = String(valor ?? '').replace(/\D/g, '').slice(0, DIGITOS_CPF);
+  const digitos = String(valor ?? '')
+    .replace(/\D/g, '')
+    .slice(0, DIGITOS_CPF);
   return mascarar(digitos, { 3: '.', 6: '.', 9: '-' });
 }
 
@@ -183,7 +209,9 @@ export function mascararCnpj(valor) {
 }
 
 export function mascararCep(valor) {
-  const digitos = String(valor ?? '').replace(/\D/g, '').slice(0, DIGITOS_CEP);
+  const digitos = String(valor ?? '')
+    .replace(/\D/g, '')
+    .slice(0, DIGITOS_CEP);
   return mascarar(digitos, { 5: '-' });
 }
 
@@ -201,12 +229,18 @@ export function documentoSemMascara(valor) {
  * @param {{ de?: string, ate?: string } | null | undefined} valor
  */
 export function formatarIntervalo(valor) {
-  if (!valor || typeof valor !== 'object') return null;
+  if (!valor || typeof valor !== 'object') {
+    return null;
+  }
 
   const de = formatarData(valor.de);
   const ate = formatarData(valor.ate);
-  if (de && ate) return `${de} a ${ate}`;
-  if (de) return `a partir de ${de}`;
+  if (de && ate) {
+    return `${de} a ${ate}`;
+  }
+  if (de) {
+    return `a partir de ${de}`;
+  }
   return ate ? `até ${ate}` : null;
 }
 
@@ -217,12 +251,20 @@ export function formatarIntervalo(valor) {
  * @param {Record<string, string> | null | undefined} valor
  */
 export function formatarEndereco(valor) {
-  if (!valor || typeof valor !== 'object') return null;
+  if (!valor || typeof valor !== 'object') {
+    return null;
+  }
 
   const parte = (nome) => (typeof valor[nome] === 'string' ? valor[nome].trim() : '');
-  const rua = [parte('logradouro'), parte('numero'), parte('complemento')].filter(Boolean).join(', ');
+  const rua = [parte('logradouro'), parte('numero'), parte('complemento')]
+    .filter(Boolean)
+    .join(', ');
   const local = [parte('cidade'), parte('uf')].filter(Boolean).join('/');
-  const blocos = [[rua, parte('bairro')].filter(Boolean).join(' - '), local, formatarCep(parte('cep')) ?? ''];
+  const blocos = [
+    [rua, parte('bairro')].filter(Boolean).join(' - '),
+    local,
+    formatarCep(parte('cep')) ?? '',
+  ];
 
   return blocos.filter(Boolean).join(', ') || null;
 }
@@ -235,7 +277,9 @@ export function formatarEndereco(valor) {
  * @returns {string | null} `dd/MM/aaaa`
  */
 export function formatarInstante(valor) {
-  if (typeof valor !== 'string' || valor === '') return null;
+  if (typeof valor !== 'string' || valor === '') {
+    return null;
+  }
 
   const data = new Date(valor);
   return Number.isNaN(data.getTime()) ? null : instanteFormatter.format(data);

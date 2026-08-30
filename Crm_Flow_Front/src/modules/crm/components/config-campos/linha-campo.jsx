@@ -64,7 +64,9 @@ export function LinhaCampo({ campo, indice, total, ordemOcupada, onMover, onEdit
         <span className="font-medium">{campo.label}</span>
         <span className="block font-mono text-[11px] text-muted-foreground">
           {campo.chave}
-          {campo.labelPadrao && campo.label !== campo.labelPadrao && ` · padrão: ${campo.labelPadrao}`}
+          {campo.labelPadrao &&
+            campo.label !== campo.labelPadrao &&
+            ` · padrão: ${campo.labelPadrao}`}
         </span>
         {atualizar.error && (
           <p className="mt-1 text-xs text-destructive" id={erroId} role="alert">
@@ -116,10 +118,16 @@ export function LinhaCampo({ campo, indice, total, ordemOcupada, onMover, onEdit
           disabled={Boolean(travas.renomear)}
           icone={Pencil}
           onClick={() => onEditar(campo)}
-          rotulo={travas.renomear ?? (personalizado ? `Editar ${campo.label}` : `Renomear ${campo.label}`)}
+          rotulo={
+            travas.renomear ?? (personalizado ? `Editar ${campo.label}` : `Renomear ${campo.label}`)
+          }
         />
         {personalizado && (
-          <BotaoIcone icone={Trash2} onClick={() => onExcluir(campo)} rotulo={`Excluir ${campo.label}`} />
+          <BotaoIcone
+            icone={Trash2}
+            onClick={() => onExcluir(campo)}
+            rotulo={`Excluir ${campo.label}`}
+          />
         )}
       </TableCell>
     </TableRow>

@@ -6,10 +6,20 @@ const CAMPOS = [
   { chave: 'nome', label: 'Nome', tipo: 'texto', camada: 1, coluna: 'nome' },
   { chave: 'email', label: 'E-mail', tipo: 'email', camada: 1, coluna: 'email' },
   { chave: 'cidade', label: 'Cidade', tipo: 'texto', camada: 2, coluna: 'cidade' },
-  { chave: 'tags', label: 'Tags', tipo: 'selecao_multipla', camada: 1, coluna: 'tags', opcoesLista: [] },
+  {
+    chave: 'tags',
+    label: 'Tags',
+    tipo: 'selecao_multipla',
+    camada: 1,
+    coluna: 'tags',
+    opcoesLista: [],
+  },
   { chave: 'setor', label: 'Setor', tipo: 'texto', camada: 3 },
 ];
-const NOMES = new Map([['u1', 'Ana'], ['u2', 'Bia']]);
+const NOMES = new Map([
+  ['u1', 'Ana'],
+  ['u2', 'Bia'],
+]);
 
 const A = {
   id: 'a',
@@ -54,7 +64,9 @@ test('linhasDaMesclagem mostra só o que difere, sem tags', () => {
 });
 
 test('escolhasParaEnvio manda só o lado secundário', () => {
-  assert.deepEqual(escolhasParaEnvio({ nome: LADO.B, usuarioResponsavelId: LADO.A }, LADO.A), { nome: 'secundario' });
+  assert.deepEqual(escolhasParaEnvio({ nome: LADO.B, usuarioResponsavelId: LADO.A }, LADO.A), {
+    nome: 'secundario',
+  });
   assert.deepEqual(escolhasParaEnvio({ nome: LADO.B }, LADO.B), undefined);
   assert.equal(escolhasParaEnvio({}, LADO.A), undefined);
 });

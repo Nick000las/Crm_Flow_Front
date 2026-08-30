@@ -38,7 +38,9 @@ const DESTINO_POR_MODULO = Object.freeze({ crm: destinoCrm });
  */
 export function destinoDaNotificacao({ modulo, dados }) {
   const doModulo = DESTINO_POR_MODULO[modulo]?.(dados);
-  if (doModulo) return doModulo;
+  if (doModulo) {
+    return doModulo;
+  }
 
   const rota = dados?.rota;
   return typeof rota === 'string' && rota.startsWith('/') && !rota.startsWith('//') ? rota : null;
@@ -46,14 +48,18 @@ export function destinoDaNotificacao({ modulo, dados }) {
 
 /** "3", "9+" ou vazio (sem não lidas, o contador some). */
 export function textoDoContador(naoLidas) {
-  if (!Number.isInteger(naoLidas) || naoLidas <= 0) return '';
+  if (!Number.isInteger(naoLidas) || naoLidas <= 0) {
+    return '';
+  }
 
   return naoLidas > MAX_CONTADOR ? `${MAX_CONTADOR}+` : String(naoLidas);
 }
 
 /** Nome acessível do botão do sino. */
 export function rotuloDoSino(naoLidas) {
-  if (!Number.isInteger(naoLidas) || naoLidas <= 0) return 'Notificações';
+  if (!Number.isInteger(naoLidas) || naoLidas <= 0) {
+    return 'Notificações';
+  }
 
   return `Notificações, ${naoLidas} ${naoLidas === 1 ? 'não lida' : 'não lidas'}`;
 }

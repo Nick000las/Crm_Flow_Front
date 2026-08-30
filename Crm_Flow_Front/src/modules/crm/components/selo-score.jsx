@@ -17,7 +17,9 @@ export function SeloScore({ valor }) {
   const faixa = faixaDoScore(useFaixasScore(), valor);
   const numero = formatarNumero(valor) ?? String(valor);
 
-  if (!faixa) return <span className="font-mono tabular-nums">{numero}</span>;
+  if (!faixa) {
+    return <span className="font-mono tabular-nums">{numero}</span>;
+  }
 
   return (
     <Badge
@@ -26,7 +28,10 @@ export function SeloScore({ valor }) {
     >
       <span
         aria-hidden="true"
-        className={cn('size-1.5 shrink-0', marcadorPrecisaContorno(faixa.cor) && 'outline outline-1 outline-foreground/40')}
+        className={cn(
+          'size-1.5 shrink-0',
+          marcadorPrecisaContorno(faixa.cor) && 'outline outline-1 outline-foreground/40',
+        )}
         style={{ backgroundColor: faixa.cor }}
       />
       {faixa.rotulo}

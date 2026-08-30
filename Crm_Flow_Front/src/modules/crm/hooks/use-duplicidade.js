@@ -48,8 +48,8 @@ export function useMesclarLeads() {
       queryClient.setQueryData(crmKeys.lead(principalId), principal);
       queryClient.removeQueries({ queryKey: crmKeys.lead(secundarioId) });
       return Promise.all(
-        [crmKeys.leads(), crmKeys.historico(principalId), crmKeys.atividades(principalId)].map((queryKey) =>
-          queryClient.invalidateQueries({ queryKey }),
+        [crmKeys.leads(), crmKeys.historico(principalId), crmKeys.atividades(principalId)].map(
+          (queryKey) => queryClient.invalidateQueries({ queryKey }),
         ),
       );
     },

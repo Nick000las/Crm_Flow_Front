@@ -11,7 +11,10 @@ export function ImportacaoPassos({ atual }) {
   const indiceAtual = PASSOS.findIndex((passo) => passo.id === atual);
 
   return (
-    <ol aria-label="Etapas da importação" className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+    <ol
+      aria-label="Etapas da importação"
+      className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm"
+    >
       {PASSOS.map((passo, indice) => {
         const ativo = indice === indiceAtual;
         const feito = indice < indiceAtual;

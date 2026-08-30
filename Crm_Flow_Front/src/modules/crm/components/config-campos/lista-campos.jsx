@@ -5,7 +5,8 @@ import { moverPara } from '../../lib/ordem';
 import { ListaOrdenavel } from '../ordenavel/lista-ordenavel';
 import { LinhaCampo } from './linha-campo';
 
-const HEAD_CLASS = 'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
+const HEAD_CLASS =
+  'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
 
 /**
  * Matriz de campos com ordem por arrastar (`ListaOrdenavel`) e ↑/↓.
@@ -24,7 +25,9 @@ export function ListaCampos({ campos, ordemOcupada, onReordenar, onEditar, onExc
 
   function mover(de, para) {
     const proximos = moverPara(ids, de, para);
-    if (proximos !== ids) onReordenar(proximos);
+    if (proximos !== ids) {
+      onReordenar(proximos);
+    }
   }
 
   return (
@@ -58,16 +61,16 @@ export function ListaCampos({ campos, ordemOcupada, onReordenar, onEditar, onExc
 
           <TableBody>
             {campos.map((campo, indice) => (
-                <LinhaCampo
-                  campo={campo}
-                  indice={indice}
-                  key={campo.id}
-                  onEditar={onEditar}
-                  onExcluir={onExcluir}
-                  onMover={mover}
-                  ordemOcupada={ordemOcupada}
-                  total={campos.length}
-                />
+              <LinhaCampo
+                campo={campo}
+                indice={indice}
+                key={campo.id}
+                onEditar={onEditar}
+                onExcluir={onExcluir}
+                onMover={mover}
+                ordemOcupada={ordemOcupada}
+                total={campos.length}
+              />
             ))}
           </TableBody>
         </Table>
