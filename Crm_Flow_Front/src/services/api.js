@@ -4,6 +4,7 @@ import {
   createApiErrorFromResponse,
   createNetworkError,
 } from './api-error.js'
+import { parseFilename } from './content-disposition.js'
 
 export {
   ApiError,
@@ -39,19 +40,29 @@ async function readResponse(response) {
 /**
  * Cliente HTTP compartilhado para chamadas ao backend.
  *
+ * Corpo: `json` é serializado e ganha `Content-Type`; `body: FormData` segue
+ * sem `Content-Type`, para o navegador montar o boundary do multipart.
+ * Resposta: com `responseType: 'blob'` o retorno é `{ blob, filename }` em vez
+ * do JSON desembrulhado; erros continuam chegando como `ApiError`.
+ *
  * @param {string} path
- * @param {RequestInit & { accessToken?: string, json?: unknown }} [options]
+ * @param {RequestInit & {
+ *   accessToken?: string,
+ *   json?: unknown,
+ *   responseType?: 'json' | 'blob',
+ * }} [options]
  */
 export async function apiRequest(path, options = {}) {
   const {
     accessToken,
     json,
+    responseType = 'json',
     headers: customHeaders,
     ...requestOptions
   } = options
   const headers = new Headers(customHeaders)
 
-  headers.set('Accept', 'application/json')
+  headers.set('Accept', responseType === 'blob' ? '*/*' : 'application/json')
 
   if (accessToken) {
     headers.set('Authorization', `Bearer ${accessToken}`)
@@ -83,6 +94,14 @@ export async function apiRequest(path, options = {}) {
       headers,
       body,
     })
+
+    if (response.ok && responseType === 'blob') {
+      return {
+        blob: await response.blob(),
+        filename: parseFilename(response.headers.get('Content-Disposition')),
+      }
+    }
+
     data = await readResponse(response)
   } catch (error) {
     throw createNetworkError(error)
@@ -120,6 +139,21 @@ export const api = {
 
   delete(path, options = {}) {
     return apiRequest(path, { ...options, method: 'DELETE' })
+  },
+
+  /** Envia multipart; o navegador define o `Content-Type` com o boundary. */
+  upload(path, formData, options = {}) {
+    return apiRequest(path, { ...options, method: 'POST', body: formData })
+  },
+
+  /** POST com resposta binária. Retorna `{ blob, filename }`. */
+  download(path, json, options = {}) {
+    return apiRequest(path, {
+      ...options,
+      method: 'POST',
+      json,
+      responseType: 'blob',
+    })
   },
 }
 

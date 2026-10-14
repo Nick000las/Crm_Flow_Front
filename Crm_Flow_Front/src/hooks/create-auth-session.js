@@ -149,6 +149,16 @@ export function createAuthSession({
           withAuthRetry((token) =>
             api.delete(path, { ...options, accessToken: token }),
           ),
+        /** Multipart (ex.: planilha de import). Ver `api.upload`. */
+        upload: (path, formData, options = {}) =>
+          withAuthRetry((token) =>
+            api.upload(path, formData, { ...options, accessToken: token }),
+          ),
+        /** Resposta binária (ex.: export). Retorna `{ blob, filename }`. */
+        download: (path, json, options = {}) =>
+          withAuthRetry((token) =>
+            api.download(path, json, { ...options, accessToken: token }),
+          ),
       };
     }, [forceLogout]);
 
