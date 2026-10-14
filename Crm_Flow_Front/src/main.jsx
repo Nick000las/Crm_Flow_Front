@@ -5,6 +5,10 @@ import App from './app.jsx';
 import { AuthProvider } from './hooks/useAuth.js';
 import { AdminAuthProvider } from './hooks/use-admin-auth.js';
 import { BrowserRouter } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { createQueryClient } from './lib/query-client.js';
+
+const queryClient = createQueryClient();
 
 // Os dois providers ficam na raiz, lado a lado. A sessão master não pode ser
 // montada só dentro da subárvore `/admin`: sair para qualquer outra rota
@@ -12,12 +16,14 @@ import { BrowserRouter } from 'react-router-dom';
 // dois estados independentes que apenas coexistem — nenhum token atravessa.
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
-        <AdminAuthProvider>
-          <App />
-        </AdminAuthProvider>
-      </AuthProvider>
-    </BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AuthProvider>
+          <AdminAuthProvider>
+            <App />
+          </AdminAuthProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
   </StrictMode>
 );
