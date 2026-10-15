@@ -40,18 +40,22 @@ destinado apenas ao desenvolvimento.
 As chamadas são centralizadas em `src/services/api.js`. O cliente:
 
 - monta URLs a partir de `VITE_API_URL`;
-- envia e recebe JSON;
+- envia JSON (`json`) ou multipart (`upload`, com `FormData` — o navegador monta o boundary);
+- lê JSON, ou binário com `responseType: 'blob'` (`download`, que devolve `{ blob, filename }`
+  a partir do `Content-Disposition`);
 - desempacota respostas de sucesso no formato `{ statusCode, data }`;
-- transforma falhas HTTP, de rede e de serialização em `ApiError`;
-- aceita `accessToken` para rotas protegidas.
+- transforma falhas HTTP, de rede e de serialização em `ApiError`.
 
-Os métodos retornam diretamente o corpo da resposta já convertido de JSON:
+Em telas autenticadas, use sempre o `authApi` da sessão (`useAuth()`), nunca
+`api` com token cru: ele injeta o access token e, num 401, renova uma vez
+(refresh single-flight) e repete a chamada.
 
 ```js
-import { api } from '@/services/api'
+const { authApi } = useAuth()
 
-const leads = await api.get('/crm/leads', { accessToken })
-const newLead = await api.post('/crm/leads', lead, { accessToken })
+const pagina = await authApi.post('/crm/leads/search', { paginacao: { pagina: 1, tamanho: 50 } })
+const preview = await authApi.upload('/crm/import/preview', formData)
+const { blob, filename } = await authApi.download('/crm/export', { colunas: ['nome'] })
 ```
 
 Erros do backend preservam `status`, `code`, `message`, `fields`, `details` e
@@ -60,13 +64,46 @@ o componente acessível `ApiErrorAlert`. Formulários mostram erros inline,
 carregamentos de página mantêm um estado persistente e cancelamentos são
 silenciosos. O cliente HTTP não dispara toast, evitando feedback duplicado.
 
-Rotas como `/crm/leads` exigem um access token JWT válido. A autenticação começa
-em `POST /auth/login`.
+## Sessão
+
+- **Tenant:** o access token vive só em memória; o refresh token fica num
+  cookie httpOnly gravado pelo back (`refresh_token`, path `/auth`). Ao abrir
+  a página, a sessão se restaura por ele — um F5 não desloga. Front e back
+  precisam estar no mesmo site (`localhost` com `localhost`, não com
+  `127.0.0.1`) para o cookie ir junto.
+- **Admin (MASTER):** tudo em memória, de propósito — um F5 desloga.
+
+## Dados
+
+Leitura e escrita passam por TanStack Query (`QueryClientProvider` em
+`main.jsx`, configuração em `src/lib/query-client.js`): sem retentativa em 4xx
+e `staleTime` de 30 s. Em cada módulo:
+
+```
+modules/<modulo>/
+├── api/         # uma função fina por rota, sobre authApi — sem React
+├── hooks/       # useQuery/useMutation; query keys em query-keys.js
+├── lib/         # regras puras (payload, diff, filtros, formatação), testadas com node --test
+├── components/  # apresentação
+└── pages/       # composição
+```
+
+## Usuários de teste
+
+Ainda não há tela de convite de usuários. No repositório do backend:
+
+```bash
+pnpm create:tenant -- --nome="Empresa Teste" --subdomain=empresa-teste --owner-nome="Dono Teste" --owner-email=voce+dono@exemplo.com --modulos=crm
+pnpm create:user -- --tenant=empresa-teste --email=voce+operador@exemplo.com --nome="Operador Teste" --role=OPERADOR
+```
+
+Os usuários nascem sem senha: no primeiro login chega um código por e-mail
+para criá-la. O MASTER (`pnpm create:master`) não vê módulos de cliente.
 
 ## Qualidade
 
 ```bash
-pnpm test
+pnpm test   # node --test: arquivos *.test.js ao lado das funções puras
 pnpm lint
 pnpm build
 ```
