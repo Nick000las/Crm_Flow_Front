@@ -11,6 +11,20 @@ import {
 } from 'react';
 
 /**
+ * Cliente autenticado exposto pela sessão: mesmos métodos de `api`, com o
+ * token injetado e uma retentativa após refresh em 401.
+ *
+ * @typedef {Object} AuthApi
+ * @property {(path: string, options?: object) => Promise<any>} get
+ * @property {(path: string, json?: unknown, options?: object) => Promise<any>} post
+ * @property {(path: string, json?: unknown, options?: object) => Promise<any>} put
+ * @property {(path: string, json?: unknown, options?: object) => Promise<any>} patch
+ * @property {(path: string, options?: object) => Promise<any>} delete
+ * @property {(path: string, formData: FormData, options?: object) => Promise<any>} upload
+ * @property {(path: string, json?: unknown, options?: object) => Promise<{ blob: Blob, filename: string | null }>} download
+ */
+
+/**
  * Fábrica de sessões autenticadas.
  *
  * Existe uma instância por área do produto — a do tenant e a master — e elas
@@ -24,11 +38,16 @@ import {
  * @param {{
  *   nome: string,
  *   resolverUsuario?: (accessToken: string, respostaLogin: unknown) => Promise<unknown>,
+ *   persistente?: boolean,
  * }} options `nome` compõe as mensagens de erro e o displayName do contexto.
+ *   `persistente`: o refresh token mora num cookie httpOnly gravado pelo back
+ *   (o JS nunca o vê); ao montar, a sessão tenta se restaurar por ele, então
+ *   um F5 não desloga.
  */
 export function createAuthSession({
   nome,
   resolverUsuario = resolverUsuarioPadrao,
+  persistente = false,
 }) {
   const Context = createContext(null);
   Context.displayName = `${nome}Context`;
@@ -39,13 +58,13 @@ export function createAuthSession({
     const [refreshToken, setRefreshToken] = useState(null);
     const [mfaEnabled, setMfaEnabled] = useState(false);
 
-    // Os tokens vivem apenas em memória — nada de localStorage/sessionStorage
-    // nem cookie escrito pelo JS. Um F5 desloga, e isso é decisão consciente.
-    // Como não há sessão persistida para restaurar (e `/auth/me` exige
-    // Authorization: Bearer, o backend não lê cookie), não existe carregamento
-    // inicial a esperar: `loading` já nasce resolvido. O campo continua no
-    // contexto porque as rotas dependem dele como portão de renderização.
-    const [loading] = useState(false);
+    // Nenhum token é escrito pelo JS — nada de localStorage/sessionStorage.
+    // O access token vive só em memória. Sessão `persistente` (tenant) tem o
+    // refresh token num cookie httpOnly do back e começa carregando: só sabe
+    // se há sessão depois de tentar restaurá-la. A não persistente (master)
+    // não tem o que restaurar — um F5 desloga, de propósito.
+    const [loading, setLoading] = useState(persistente);
+    const restauracaoIniciadaRef = useRef(false);
 
     // Espelhos síncronos dos tokens: `withAuthRetry` roda dentro de closures
     // assíncronas e precisa do valor mais recente, não do capturado na
@@ -74,8 +93,10 @@ export function createAuthSession({
     const authApi = useMemo(() => {
       async function doRefresh() {
         try {
+          // Sem refresh em memória (sessão persistente), o corpo vai vazio e
+          // o back usa o cookie httpOnly.
           const response = await api.post('/auth/refresh', {
-            refreshToken: refreshTokenRef.current,
+            refreshToken: refreshTokenRef.current ?? undefined,
           });
           const nextAccessToken = response?.accessToken ?? null;
 
@@ -113,11 +134,9 @@ export function createAuthSession({
         try {
           return await invoke(accessTokenRef.current);
         } catch (error) {
-          if (
-            error instanceof ApiError &&
-            error.status === 401 &&
-            refreshTokenRef.current
-          ) {
+          const podeRenovar = persistente || Boolean(refreshTokenRef.current);
+
+          if (error instanceof ApiError && error.status === 401 && podeRenovar) {
             const nextAccessToken = await refreshAccessToken();
 
             // Exatamente uma retentativa: um segundo 401 propaga como erro.
@@ -197,6 +216,33 @@ export function createAuthSession({
       },
       [forceLogout],
     );
+
+    useEffect(() => {
+      // Ref e não estado: o StrictMode monta o efeito duas vezes em dev, e a
+      // restauração deve rodar uma só.
+      if (!persistente || restauracaoIniciadaRef.current) return;
+      restauracaoIniciadaRef.current = true;
+
+      async function restaurarSessao() {
+        try {
+          const response = await api.post('/auth/refresh', {});
+          const restaurado = response?.accessToken;
+          if (!restaurado) return;
+
+          accessTokenRef.current = restaurado;
+          setAccessToken(restaurado);
+          setUser(await resolverUsuario(restaurado, null));
+        } catch {
+          // 401 aqui é o caso comum (nunca logou, cookie vencido): segue
+          // deslogado, sem erro na tela.
+          forceLogout();
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      restaurarSessao();
+    }, [forceLogout]);
 
     const logout = useCallback(async () => {
       try {

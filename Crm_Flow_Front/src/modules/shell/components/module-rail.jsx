@@ -6,7 +6,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useAuth } from '@/hooks/useAuth';
-import { MODULES, UTILITY_ITEMS } from '@/lib/modules-registry';
+import { UTILITY_ITEMS } from '@/lib/modules-registry';
 import { cn } from '@/lib/utils';
 
 const ITEM_BASE =
@@ -44,7 +44,8 @@ function RailLink({ item, isActive }) {
   );
 }
 
-export function ModuleRail() {
+/** @param {{ modules: import('@/lib/modules-registry').ModuleEntry[] }} props */
+export function ModuleRail({ modules }) {
   const { logout } = useAuth();
   const { pathname } = useLocation();
 
@@ -55,7 +56,7 @@ export function ModuleRail() {
       className="flex w-14 shrink-0 flex-col items-center gap-1 bg-foreground py-3"
       aria-label="Módulos"
     >
-      {MODULES.map((entry) => (
+      {modules.map((entry) => (
         <RailLink key={entry.key} item={entry} isActive={isItemActive(entry)} />
       ))}
 

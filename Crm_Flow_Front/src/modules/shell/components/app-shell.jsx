@@ -1,18 +1,23 @@
 import { useLocation } from 'react-router-dom';
+import { useMemo } from 'react';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { findActiveModule } from '@/lib/modules-registry';
+import { useAuth } from '@/hooks/useAuth';
+import { findActiveModule, modulosVisiveis } from '@/lib/modules-registry';
 import { ModuleRail } from './module-rail';
 import { PageSidebar } from './page-sidebar';
 
 export function AppShell({ children }) {
   const { pathname } = useLocation();
-  // Único lugar que resolve o módulo ativo — Rail e Sidebar só consomem.
-  const activeModule = findActiveModule(pathname);
+  const { user } = useAuth();
+  // Único lugar que resolve a navegação visível e o módulo ativo — Rail e
+  // Sidebar só consomem.
+  const modules = useMemo(() => modulosVisiveis(user), [user]);
+  const activeModule = findActiveModule(pathname, modules);
 
   return (
     <TooltipProvider>
       <div className="flex h-svh w-full overflow-hidden bg-background text-foreground">
-        <ModuleRail />
+        <ModuleRail modules={modules} />
 
         {activeModule && (
           <PageSidebar module={activeModule} className="hidden md:flex" />
