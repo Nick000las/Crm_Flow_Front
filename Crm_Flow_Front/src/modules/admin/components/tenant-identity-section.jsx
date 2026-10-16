@@ -13,10 +13,20 @@ import { Label } from '@/components/ui/label';
 import { getFieldError, isAbortError, toApiError } from '@/services/api';
 
 const SUBMIT_ERROR_ID = 'tenant-identity-error';
+const FUSOS_LIST_ID = 'tenant-edit-fusos';
+
+/**
+ * Sugestões do campo de fuso: os nomes IANA que o próprio navegador conhece.
+ * O back valida de novo pelo `Intl` do Node e grava a forma canônica.
+ */
+const FUSOS_IANA =
+  typeof Intl.supportedValuesOf === 'function' ? Intl.supportedValuesOf('timeZone') : [];
 
 /**
  * `PUT /admin/tenants/:id` — todos os campos são opcionais no backend, então o
  * formulário manda só o que foi preenchido.
+ *
+ * `fusoHorario` é nome IANA (`America/Sao_Paulo`); o back valida e normaliza.
  *
  * `temaJson` fica de fora: o tema por tenant está declarado como etapa futura
  * no CLAUDE.md, e um textarea de JSON cru aqui seria uma porta de entrada para
@@ -47,6 +57,7 @@ export function TenantIdentitySection({ tenant, adminApi, onSaved }) {
       dominioCustomizado: String(formData.get('dominioCustomizado') ?? '').trim(),
       dataRegion: String(formData.get('dataRegion') ?? '').trim(),
       retencaoConversaMeses: retencao === '' ? '' : Number(retencao),
+      fusoHorario: String(formData.get('fusoHorario') ?? '').trim(),
     });
 
     try {
@@ -128,6 +139,28 @@ export function TenantIdentitySection({ tenant, adminApi, onSaved }) {
               type="number"
             />
           </div>
+
+          {/* Base dos jobs agendados no horário do cliente (ex.: avisos
+              diários às 8h). A `key` remonta o campo depois de salvar para
+              mostrar a forma que o back gravou (america/manaus → America/Manaus). */}
+          <Campo
+            className="font-mono"
+            defaultValue={tenant.fusoHorario ?? ''}
+            key={tenant.fusoHorario ?? ''}
+            disabled={isSubmitting}
+            erro={getFieldError(submitError, 'fusoHorario')}
+            id="tenant-edit-fuso"
+            label="Fuso horário"
+            list={FUSOS_LIST_ID}
+            name="fusoHorario"
+            onChange={limpar}
+            placeholder="America/Sao_Paulo"
+          />
+          <datalist id={FUSOS_LIST_ID}>
+            {FUSOS_IANA.map((fuso) => (
+              <option key={fuso} value={fuso} />
+            ))}
+          </datalist>
 
           <ApiErrorAlert error={submitError} id={SUBMIT_ERROR_ID} />
 

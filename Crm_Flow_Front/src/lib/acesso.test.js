@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { podeVer } from './acesso.js';
+import { podeVer, temFeature } from './acesso.js';
 
 const dono = { role: 'DONO', modulosAtivos: ['crm'] };
 const operador = { role: 'OPERADOR', modulosAtivos: ['crm'] };
@@ -35,4 +35,35 @@ test('módulo e papel precisam passar juntos', () => {
   assert.equal(podeVer(entry, dono), true);
   assert.equal(podeVer(entry, { ...dono, modulosAtivos: [] }), false);
   assert.equal(podeVer(entry, operador), false);
+});
+
+test('temFeature: só a flag ligada na sessão', () => {
+  const user = { ...dono, featuresAtivas: ['crm.listas'] };
+
+  assert.equal(temFeature(user, 'crm.listas'), true);
+  assert.equal(temFeature(user, 'crm.layout'), false);
+});
+
+test('temFeature: sem featuresAtivas na sessão, a flag conta como desligada', () => {
+  assert.equal(temFeature(dono, 'crm.listas'), false);
+  assert.equal(temFeature(null, 'crm.listas'), false);
+});
+
+test('item de menu atrás de flag some com a flag desligada', () => {
+  const item = { moduleKey: 'crm', feature: 'crm.layout', roles: ['DONO'] };
+
+  assert.equal(podeVer(item, { ...dono, featuresAtivas: ['crm.layout'] }), true);
+  assert.equal(podeVer(item, { ...dono, featuresAtivas: [] }), false);
+  assert.equal(podeVer(item, dono), false);
+  assert.equal(
+    podeVer(item, { ...operador, featuresAtivas: ['crm.layout'] }),
+    false,
+  );
+});
+
+test('feature em lista exige todas as flags ligadas', () => {
+  const item = { feature: ['crm.layout', 'crm.listas'] };
+
+  assert.equal(podeVer(item, { ...dono, featuresAtivas: ['crm.layout', 'crm.listas'] }), true);
+  assert.equal(podeVer(item, { ...dono, featuresAtivas: ['crm.layout'] }), false);
 });

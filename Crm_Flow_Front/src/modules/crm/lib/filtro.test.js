@@ -10,9 +10,11 @@ import {
   filtroDoRascunho,
   lerFiltro,
   novaLinha,
+  operadoresDoCampo,
   paraCorpoDeBusca,
   rascunhoDoFiltro,
   serializarFiltro,
+  tipoBase,
   trocarCampo,
   trocarOperador,
 } from './filtro.js';
@@ -225,5 +227,35 @@ describe('chips', () => {
       [...chavesComErro({ 'filtros.renda': ['x'], nome: ['y'] })],
       ['renda'],
     );
+  });
+});
+
+describe('tipos do M2', () => {
+  const ticket = { chave: 'ticket', label: 'Ticket', tipo: 'monetario', camada: 3 };
+  const notas = { chave: 'notas', label: 'Notas', tipo: 'texto_longo', camada: 3 };
+
+  test('tipoBase agrupa os tipos novos na família de input', () => {
+    assert.equal(tipoBase('monetario'), 'numero');
+    assert.equal(tipoBase('telefone'), 'texto');
+    assert.equal(tipoBase('url'), 'texto');
+    assert.equal(tipoBase('data'), 'data');
+  });
+
+  test('operadores vêm do tipo real', () => {
+    assert.deepEqual(operadoresDoCampo(notas), ['contem', 'vazio', 'nao_vazio']);
+    assert.deepEqual(operadoresDoCampo(ticket), ['igual', 'entre', 'vazio', 'nao_vazio']);
+  });
+
+  test('monetário é lido como número e descrito em BRL', () => {
+    const { filtro } = filtroDoRascunho(
+      {
+        linhas: [{ id: 'a', chave: 'ticket', operador: 'entre', valor: { de: '1.500,50', ate: '' } }],
+        fixos: { usuarioResponsavelId: '', valorMin: '', valorMax: '', criadoDe: '', criadoAte: '' },
+      },
+      [ticket],
+    );
+
+    assert.deepEqual(filtro.filtros, [{ chave: 'ticket', operador: 'entre', valor: { de: 1500.5 } }]);
+    assert.match(descreverItem(filtro.filtros[0], ticket), /^Ticket a partir de R\$\s1\.500,50$/);
   });
 });

@@ -1,6 +1,7 @@
 import { CAMADA, TIPOS_CAMPO } from '../constants.js';
 import { lerValorDoCampo } from './colunas.js';
-import { paraNumero } from './formatadores.js';
+import { formatarTelefone, paraNumero } from './formatadores.js';
+import { ehListaLivre, rotuloOpcao } from './opcoes.js';
 
 /**
  * Ponte entre três formas do mesmo dado:
@@ -24,12 +25,16 @@ export const CHAVE_RESPONSAVEL = 'usuarioResponsavelId';
 const PREFIXO_CUSTOM = 'custom.';
 const DATA_ISO = /^\d{4}-\d{2}-\d{2}/;
 const MILHAR_COM_PONTO = /^-?\d{1,3}(\.\d{3})+$/;
+const CENTAVOS = 100;
+/** O back só aceita telefone BR com DDD: fixo (10) ou celular (11), sem DDI. */
+const DIGITOS_TELEFONE = Object.freeze([10, 11]);
 const CHAVES_CONTATO = Object.freeze(['email', 'telefone']);
 
 export const MENSAGENS = Object.freeze({
   OBRIGATORIO: 'Campo obrigatório',
   CONTATO: 'Informe e-mail ou telefone',
   NUMERO_INVALIDO: 'Informe um número válido',
+  TELEFONE_INVALIDO: 'Informe DDD e número (10 ou 11 dígitos)',
 });
 
 /**
@@ -65,10 +70,14 @@ export function lerNumeroDigitado(texto) {
 /** Valor do lead → valor que o controle do tipo edita. */
 function paraValorDeForm(tipo, valor) {
   switch (tipo) {
-    case TIPOS_CAMPO.NUMERO: {
+    case TIPOS_CAMPO.NUMERO:
+    case TIPOS_CAMPO.MONETARIO: {
       const numero = paraNumero(valor);
       return numero === null ? '' : String(numero).replace('.', ',');
     }
+    case TIPOS_CAMPO.TELEFONE:
+      // O back devolve só dígitos; o input mostra com máscara.
+      return formatarTelefone(valor) ?? '';
     case TIPOS_CAMPO.DATA:
       return typeof valor === 'string' && DATA_ISO.test(valor) ? valor.slice(0, 10) : '';
     case TIPOS_CAMPO.BOOLEANO:
@@ -83,7 +92,8 @@ function paraValorDeForm(tipo, valor) {
 }
 
 /**
- * Valor do form → valor do payload. Vazio vira `null`.
+ * Valor do form → valor do payload. Vazio vira `null`. Telefone, e-mail, URL
+ * e texto longo vão como texto aparado: o back normaliza (dígitos, minúsculas).
  *
  * @returns {unknown}
  */
@@ -91,6 +101,11 @@ export function paraValorDeApi(tipo, valor) {
   switch (tipo) {
     case TIPOS_CAMPO.NUMERO:
       return lerNumeroDigitado(valor ?? '');
+    case TIPOS_CAMPO.MONETARIO: {
+      // Reais com até 2 casas, como o back aceita.
+      const numero = lerNumeroDigitado(valor ?? '');
+      return numero === null || Number.isNaN(numero) ? numero : Math.round(numero * CENTAVOS) / CENTAVOS;
+    }
     case TIPOS_CAMPO.BOOLEANO:
       return typeof valor === 'boolean' ? valor : null;
     case TIPOS_CAMPO.SELECAO_MULTIPLA:
@@ -111,10 +126,13 @@ export function paraValorDeApi(tipo, valor) {
  */
 export function valoresIniciais(campos, lead) {
   const valores = Object.fromEntries(
-    campos.map((campo) => [
-      idNoForm(campo),
-      paraValorDeForm(campo.tipo, lead ? lerValorDoCampo(lead, campo) : null),
-    ]),
+    campos.map((campo) => {
+      const valor = paraValorDeForm(campo.tipo, lead ? lerValorDoCampo(lead, campo) : null);
+      // Tags voltam como keys; o form edita pelo nome, e o back casa o nome
+      // de volta com a key (ou cria a tag, se for texto novo).
+      const editavel = ehListaLivre(campo) ? valor.map((key) => rotuloOpcao(key, campo)) : valor;
+      return [idNoForm(campo), editavel];
+    }),
   );
 
   valores[CAMPO_VALOR.chave] = paraValorDeForm(CAMPO_VALOR.tipo, lead?.valor);
@@ -207,6 +225,9 @@ export function validarNoCliente(campos, valores) {
     const valor = paraValorDeApi(campo.tipo, valores[id]);
 
     if (Number.isNaN(valor)) erros[id] = MENSAGENS.NUMERO_INVALIDO;
+    else if (campo.tipo === TIPOS_CAMPO.TELEFONE && valor !== null && !telefoneValido(valor)) {
+      erros[id] = MENSAGENS.TELEFONE_INVALIDO;
+    }
     else if (campo.obrigatorio && valor === null) erros[id] = MENSAGENS.OBRIGATORIO;
   }
 
@@ -249,4 +270,9 @@ export function errosDoServidor(fields, campos) {
   }
 
   return { porCampo, gerais };
+}
+
+/** @param {string} texto */
+function telefoneValido(texto) {
+  return DIGITOS_TELEFONE.includes(texto.replace(/\D/g, '').length);
 }

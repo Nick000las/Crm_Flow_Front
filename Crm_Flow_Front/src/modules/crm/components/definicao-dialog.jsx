@@ -11,7 +11,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
 import { semChave } from '@/lib/objetos';
 import { getFieldError } from '@/services/api';
 import { ROTULOS_TIPO } from '../constants';
@@ -107,15 +106,6 @@ function FormDefinicao({ definicao, proximaOrdem, onSalvo }) {
         />
       )}
 
-      <label className="flex items-center gap-2 text-sm" htmlFor="definicao-obrigatorio">
-        <Switch
-          checked={valores.obrigatorio}
-          id="definicao-obrigatorio"
-          onCheckedChange={(obrigatorio) => alterar('obrigatorio', obrigatorio)}
-        />
-        Obrigatório ao criar lead
-      </label>
-
       {erroSemCampo && <ApiErrorAlert error={mutacao.error} id="definicao-erro" title="Não foi possível salvar" />}
 
       <DialogFooter>
@@ -139,7 +129,7 @@ function FormDefinicao({ definicao, proximaOrdem, onSalvo }) {
  *   definicao?: import('../lib/campos-config').Definicao | null,
  *   proximaOrdem: number,
  *   onSalvo: () => void,
- * }} props
+ * }} props Obrigatoriedade e telas ficam na matriz de Configurações › Campos.
  */
 export function DefinicaoDialog({ open, onOpenChange, definicao, proximaOrdem, onSalvo }) {
   return (

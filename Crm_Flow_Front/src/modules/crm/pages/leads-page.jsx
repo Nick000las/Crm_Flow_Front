@@ -1,17 +1,18 @@
 import { Download, Plus } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
+import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { PageHeader } from '@/components/page-header';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { podeVer } from '@/lib/acesso';
+import { isAccessError } from '@/services/api';
 import { ChipsFiltro } from '../components/chips-filtro';
 import { ExcluirLeadDialog } from '../components/excluir-lead-dialog';
 import { ExportarDialog } from '../components/exportar-dialog';
 import { LeadsToolbar } from '../components/leads-toolbar';
 import { LeadsConteudo } from '../components/leads-conteudo';
-import { CrmNaoContratado } from '../components/leads-vazio';
-import { AVISOS_LEAD, PAPEIS_GESTAO } from '../constants';
+import { AVISOS_LEAD, CONTEXTO, PAPEIS_GESTAO } from '../constants';
 import { useCampos } from '../hooks/use-campos';
 import { useColunasVisiveis } from '../hooks/use-colunas-visiveis';
 import { useEstadoLista } from '../hooks/use-estado-lista';
@@ -19,6 +20,7 @@ import { useLeadsSearch } from '../hooks/use-leads-search';
 import { useNavegacaoLeads } from '../hooks/use-navegacao-leads';
 import { useUsuarios } from '../hooks/use-usuarios';
 import { montarColunas } from '../lib/colunas';
+import { camposDoContexto } from '../lib/contextos';
 import { FILTRO_VAZIO, chavesComErro, chipsDoFiltro } from '../lib/filtro';
 import { ID_BOTAO_NOVO_LEAD } from '../rotas';
 
@@ -40,10 +42,14 @@ export default function LeadsPage() {
   const [exportando, setExportando] = useState(false);
   const gestao = podeVer({ roles: PAPEIS_GESTAO }, user);
 
-  const colunas = useMemo(() => montarColunas(camposQuery.data ?? CAMPOS_VAZIOS), [camposQuery.data]);
+  // Uma chamada para a lista toda; cada parte recebe os campos da sua tela.
+  // Chips e export usam todos: um filtro antigo por campo fora de "Filtros"
+  // ainda precisa do rótulo (o back o recusa com 400, destacado no chip).
+  const campos = camposQuery.data ?? CAMPOS_VAZIOS;
+  const camposDoFiltro = useMemo(() => camposDoContexto(campos, CONTEXTO.FILTRO), [campos]);
+  const colunas = useMemo(() => montarColunas(camposDoContexto(campos, CONTEXTO.TABELA)), [campos]);
   const { ids, visiveis, alternar } = useColunasVisiveis(user?.tenantId, colunas);
 
-  const campos = camposQuery.data ?? CAMPOS_VAZIOS;
   const erro = camposQuery.error ?? leadsQuery.error;
   const pagina = leadsQuery.data;
   // Um 400 de filtro (`filtros.<chave>`) destaca o chip e a linha do construtor.
@@ -76,11 +82,11 @@ export default function LeadsPage() {
     </>
   );
 
-  if (erro?.code === 'MODULE_NOT_ENABLED') {
+  if (isAccessError(erro)) {
     return (
       <>
         <PageHeader title="Leads" description="Contatos e oportunidades do CRM." />
-        <CrmNaoContratado />
+        <AcessoIndisponivel error={erro} />
       </>
     );
   }
@@ -91,7 +97,7 @@ export default function LeadsPage() {
 
       <LeadsToolbar
         atualizar={atualizar}
-        campos={campos}
+        campos={camposDoFiltro}
         chavesComErro={errosDeFiltro}
         colunas={colunas}
         colunasSelecionadas={ids}

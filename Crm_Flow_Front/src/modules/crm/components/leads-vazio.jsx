@@ -1,4 +1,4 @@
-import { Ban, SearchX, Users } from 'lucide-react';
+import { SearchX, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ModulePlaceholder } from '@/components/module-placeholder';
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -50,16 +50,5 @@ export function PaginaSemLeads({ onPrimeiraPagina }) {
         Ir para a primeira página
       </Button>
     </ModulePlaceholder>
-  );
-}
-
-/** Só aparece se a navegação falhar em esconder o módulo não contratado. */
-export function CrmNaoContratado() {
-  return (
-    <ModulePlaceholder
-      icon={Ban}
-      title="CRM não contratado"
-      description="Este módulo não está ativo para a sua empresa. Fale com o responsável pela conta."
-    />
   );
 }

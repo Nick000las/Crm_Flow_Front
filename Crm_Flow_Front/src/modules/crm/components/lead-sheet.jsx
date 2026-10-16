@@ -11,12 +11,13 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { AVISOS_LEAD } from '../constants';
+import { AVISOS_LEAD, CONTEXTO } from '../constants';
 import { useCampos } from '../hooks/use-campos';
 import { useLead } from '../hooks/use-lead';
 import { useAtualizarLead, useCriarLead } from '../hooks/use-lead-mutations';
 import { useNavegacaoLeads } from '../hooks/use-navegacao-leads';
 import { useUsuarios } from '../hooks/use-usuarios';
+import { camposDoContexto } from '../lib/contextos';
 import {
   montarPayloadCriacao,
   montarPayloadEdicao,
@@ -64,7 +65,12 @@ export function LeadSheet() {
   const criar = useCriarLead();
   const atualizar = useAtualizarLead(leadId);
 
-  const campos = camposQuery.data ?? CAMPOS_VAZIOS;
+  // Criar mostra os campos de "Criação"; ver e editar, os de "Ficha".
+  const contexto = criando ? CONTEXTO.CRIACAO : CONTEXTO.FICHA;
+  const campos = useMemo(
+    () => camposDoContexto(camposQuery.data ?? CAMPOS_VAZIOS, contexto),
+    [camposQuery.data, contexto],
+  );
   const lead = leadQuery.data;
   const iniciais = useMemo(() => valoresIniciais(campos, lead), [campos, lead]);
 

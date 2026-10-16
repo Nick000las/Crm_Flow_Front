@@ -53,6 +53,7 @@ export function LeadDetalhe({ lead, campos, nomePorId }) {
             {doGrupo.map((campo) => (
               <Item key={campo.chave} label={campo.label}>
                 <CelulaLead
+                  completo
                   coluna={{ id: campo.chave, label: campo.label, tipo: campo.tipo, campo }}
                   nomePorId={nomePorId}
                   valor={lerValorDoCampo(lead, campo)}

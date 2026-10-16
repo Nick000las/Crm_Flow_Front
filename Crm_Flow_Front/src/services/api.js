@@ -7,10 +7,12 @@ import {
 import { parseFilename } from './content-disposition.js'
 
 export {
+  ACCESS_ERROR_CODES,
   ApiError,
   CLIENT_ERROR_CODES,
   getFieldError,
   isAbortError,
+  isAccessError,
   toApiError,
 } from './api-error.js'
 

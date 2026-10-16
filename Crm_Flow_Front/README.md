@@ -88,6 +88,23 @@ modules/<modulo>/
 └── pages/       # composição
 ```
 
+## CRM: campos por tela
+
+`GET /crm/leads/fields` traz `visibilidade` em cada campo. Cada tela filtra a
+mesma resposta com `camposDoContexto(campos, CONTEXTO.X)`
+(`modules/crm/lib/contextos.js`): formulário de criação, ficha, colunas da
+tabela e construtor de filtro. Uma chamada e um cache para a lista inteira.
+
+A área **Configurações** do CRM (`/crm/configuracoes/:secao`) é de DONO/MASTER.
+A subseção Campos vale sempre; as próximas (Listas, Layout…) aparecem quando a
+flag delas é ligada para o tenant (no admin, seção "Feature flags").
+
+Status, origem, motivo de perda e tags são **listas do tenant** (Configurações ›
+Listas, flag `crm.listas`): rótulo, cor e opções ativas vêm de
+`/crm/leads/fields` (`opcoesLista`), nunca de constante no front.
+
+Documentação do back: `Back/docs/crm/` (plano vigente em `plano-configuracoes.md`).
+
 ## Usuários de teste
 
 Ainda não há tela de convite de usuários. No repositório do backend:

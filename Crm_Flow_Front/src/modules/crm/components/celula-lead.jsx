@@ -1,12 +1,19 @@
 import { TIPOS_CAMPO } from '../constants';
 import { TIPO_COLUNA } from '../lib/colunas';
-import { formatarData, formatarMoeda, formatarNumero } from '../lib/formatadores';
-import { rotuloOpcao } from '../lib/rotulos';
+import {
+  formatarData,
+  formatarMoeda,
+  formatarNumero,
+  formatarTelefone,
+  urlSegura,
+} from '../lib/formatadores';
+import { opcaoDoCampo } from '../lib/opcoes';
 import { OpcaoBadge } from './opcao-badge';
 
 const MAX_BADGES = 2;
 const TAMANHO_ID_CURTO = 8;
 const DADO = 'font-mono text-xs tabular-nums';
+const LINK = 'underline-offset-4 outline-none hover:underline focus-visible:underline';
 
 function Vazio() {
   return (
@@ -26,10 +33,10 @@ function Opcoes({ valores, campo }) {
   return (
     <span className="flex flex-wrap items-center gap-1">
       {visiveis.map((valor) => (
-        <OpcaoBadge key={valor} rotulo={rotuloOpcao(valor, campo)} valor={valor} />
+        <OpcaoBadge key={valor} opcao={opcaoDoCampo(campo, valor)} />
       ))}
       {restantes > 0 && (
-        <span className={`${DADO} text-muted-foreground`} title={valores.slice(MAX_BADGES).join(', ')}>
+        <span className={`${DADO} text-muted-foreground`} title={valores.slice(MAX_BADGES).map((valor) => opcaoDoCampo(campo, valor).label).join(', ')}>
           +{restantes}
         </span>
       )}
@@ -49,20 +56,38 @@ function Responsavel({ id, nomePorId }) {
   );
 }
 
+/** Só http/https vira link; o resto aparece como texto (nunca num `href`). */
+function Url({ valor }) {
+  const href = urlSegura(valor);
+  if (!href) return String(valor);
+
+  return (
+    <a className={`${LINK} break-all`} href={href} rel="noopener noreferrer" target="_blank">
+      {String(valor)}
+      <span className="sr-only"> (abre em nova aba)</span>
+    </a>
+  );
+}
+
 /**
- * Valor de uma célula, renderizado pelo tipo da coluna.
+ * Valor de uma célula, renderizado pelo tipo da coluna. `completo` (ficha)
+ * mostra o texto longo inteiro; na tabela ele fica em uma linha. `semLink`
+ * evita link dentro de link quando a célula já está no link do lead.
  *
  * @param {{
  *   coluna: import('../lib/colunas').Coluna,
  *   valor: unknown,
  *   nomePorId: Map<string, string>,
+ *   completo?: boolean,
+ *   semLink?: boolean,
  * }} props
  */
-export function CelulaLead({ coluna, valor, nomePorId }) {
+export function CelulaLead({ coluna, valor, nomePorId, completo = false, semLink = false }) {
   if (valor === null || valor === undefined || valor === '') return <Vazio />;
 
   switch (coluna.tipo) {
     case TIPO_COLUNA.MOEDA:
+    case TIPOS_CAMPO.MONETARIO:
       return <span className={DADO}>{formatarMoeda(valor) ?? '—'}</span>;
     case TIPO_COLUNA.RESPONSAVEL:
       return <Responsavel id={String(valor)} nomePorId={nomePorId} />;
@@ -72,8 +97,28 @@ export function CelulaLead({ coluna, valor, nomePorId }) {
       return <span className={DADO}>{formatarData(valor) ?? '—'}</span>;
     case TIPOS_CAMPO.BOOLEANO:
       return valor ? 'Sim' : 'Não';
+    case TIPOS_CAMPO.TELEFONE:
+      return <span className={DADO}>{formatarTelefone(valor)}</span>;
+    case TIPOS_CAMPO.EMAIL:
+      return semLink ? (
+        String(valor)
+      ) : (
+        <a className={`${LINK} break-all`} href={`mailto:${String(valor)}`}>
+          {String(valor)}
+        </a>
+      );
+    case TIPOS_CAMPO.URL:
+      return semLink ? String(valor) : <Url valor={valor} />;
+    case TIPOS_CAMPO.TEXTO_LONGO:
+      return completo ? (
+        <span className="whitespace-pre-wrap">{String(valor)}</span>
+      ) : (
+        <span className="line-clamp-1" title={String(valor)}>
+          {String(valor)}
+        </span>
+      );
     case TIPOS_CAMPO.SELECAO:
-      return <OpcaoBadge rotulo={rotuloOpcao(valor, coluna.campo)} valor={String(valor)} />;
+      return <OpcaoBadge opcao={opcaoDoCampo(coluna.campo, valor)} />;
     case TIPOS_CAMPO.SELECAO_MULTIPLA:
       return Array.isArray(valor) && valor.length > 0 ? (
         <Opcoes campo={coluna.campo} valores={valor} />

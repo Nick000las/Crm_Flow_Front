@@ -1,7 +1,7 @@
 import { BUSCA_LEADS, OPERADORES_POR_TIPO, TIPOS_CAMPO } from '../constants.js';
 import { lerNumeroDigitado } from './form-lead.js';
 import { formatarData, formatarMoeda, formatarNumero } from './formatadores.js';
-import { rotuloOpcao } from './rotulos.js';
+import { rotuloOpcao } from './opcoes.js';
 
 /**
  * Três formas do mesmo filtro:
@@ -158,6 +158,27 @@ function omitirIndefinidos(objeto) {
 // ---------------------------------------------------------------------------
 // Rascunho: linhas do construtor
 
+/**
+ * Família de input do tipo no construtor: monetário edita como número; texto
+ * longo, telefone, e-mail e URL, como texto. Os operadores continuam sendo os
+ * do tipo real (`OPERADORES_POR_TIPO`).
+ *
+ * @param {import('../types.js').TipoCampo} tipo
+ */
+export function tipoBase(tipo) {
+  return TIPO_BASE[tipo] ?? tipo;
+}
+
+const TIPO_BASE = Object.freeze({
+  [TIPOS_CAMPO.MONETARIO]: TIPOS_CAMPO.NUMERO,
+  [TIPOS_CAMPO.TEXTO_LONGO]: TIPOS_CAMPO.TEXTO,
+  [TIPOS_CAMPO.TELEFONE]: TIPOS_CAMPO.TEXTO,
+  [TIPOS_CAMPO.EMAIL]: TIPOS_CAMPO.TEXTO,
+  [TIPOS_CAMPO.URL]: TIPOS_CAMPO.TEXTO,
+});
+
+const ehNumerico = (campo) => Boolean(campo) && tipoBase(campo.tipo) === TIPOS_CAMPO.NUMERO;
+
 /** @param {import('../types.js').Campo} campo */
 export function operadoresDoCampo(campo) {
   return OPERADORES_POR_TIPO[campo.tipo] ?? [];
@@ -203,7 +224,7 @@ const numeroParaTexto = (valor) => (typeof valor === 'number' ? String(valor).re
 /** Item aplicado → linha editável. */
 function linhaDoItem(item, campo) {
   const base = { id: gerarIdLinha(), chave: item.chave, operador: item.operador };
-  const numerico = campo?.tipo === TIPOS_CAMPO.NUMERO;
+  const numerico = ehNumerico(campo);
 
   if (SEM_VALOR.has(item.operador)) return { ...base, valor: null };
   if (item.operador === OPERADOR.ENTRE) {
@@ -258,7 +279,7 @@ function lerLimite(texto, numerico) {
  */
 function itemDaLinha(linha, campo) {
   const { chave, operador, valor } = linha;
-  const numerico = campo.tipo === TIPOS_CAMPO.NUMERO;
+  const numerico = ehNumerico(campo);
 
   if (SEM_VALOR.has(operador)) return { item: { chave, operador } };
 
@@ -347,7 +368,8 @@ function descreverFaixa(de, ate, formatar) {
 }
 
 function formatadorDoCampo(campo) {
-  if (campo?.tipo === TIPOS_CAMPO.NUMERO) return (valor) => formatarNumero(valor) ?? String(valor);
+  if (campo?.tipo === TIPOS_CAMPO.MONETARIO) return (valor) => formatarMoeda(valor) ?? String(valor);
+  if (ehNumerico(campo)) return (valor) => formatarNumero(valor) ?? String(valor);
   if (campo?.tipo === TIPOS_CAMPO.DATA) return (valor) => formatarData(valor) ?? String(valor);
   if (campo?.tipo === TIPOS_CAMPO.BOOLEANO) return (valor) => (valor ? 'Sim' : 'Não');
   if (campo?.tipo === TIPOS_CAMPO.SELECAO || campo?.tipo === TIPOS_CAMPO.SELECAO_MULTIPLA) {

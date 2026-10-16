@@ -10,7 +10,7 @@ export const crmKeys = {
   lead: (id) => ['crm', 'lead', id],
   views: () => ['crm', 'views'],
   usuarios: () => ['crm', 'usuarios'],
-  definicoes: () => ['crm', 'definicoes'],
-  visibilidade: () => ['crm', 'visibilidade'],
+  camposConfigurados: () => ['crm', 'configuracoes', 'campos'],
+  listas: () => ['crm', 'configuracoes', 'listas'],
   importJob: (jobId) => ['crm', 'import', jobId],
 };
