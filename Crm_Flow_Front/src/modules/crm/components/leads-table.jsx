@@ -112,6 +112,8 @@ export function LeadsTable({
                   <CelulaLead
                     coluna={coluna}
                     nomePorId={nomePorId}
+                    // A 1ª coluna já é o link do lead: e-mail/URL nela viram texto.
+                    semLink={indice === 0}
                     valor={lerValorDaColuna(lead, coluna)}
                   />
                 );

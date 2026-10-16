@@ -22,7 +22,7 @@ src/routes/
 ├── (auth)/              # Login do tenant — sem shell, layout mínimo
 ├── (admin)/             # Área master — isolada, sessão própria (só memória)
 └── (app)/               # Autenticado, com shell completo (AppLayout → AppShell)
-    └── app.routes.jsx   # dashboard, crm (Leads · Importar · Campos), configuracoes
+    └── app.routes.jsx   # dashboard, crm (Leads · Importar · Configurações/:secao), configuracoes
 ```
 
 Código de feature mora em `src/modules/<modulo>/{api,hooks,lib,components,pages}`
@@ -31,7 +31,9 @@ Código de feature mora em `src/modules/<modulo>/{api,hooks,lib,components,pages
 ## Navegação — duas camadas
 - **Rail de módulos** (Nível 1): coluna estreita, fundo escuro fixo, ícone-only + tooltip, sem label textual. Item ativo com destaque de cor de accent do tenant — único lugar do Rail com essa cor.
 - **Sidebar de páginas** (Nível 2): coluna clara, lista de páginas do módulo ativo, agrupada por seção quando houver profundidade.
-- Fonte única de verdade da navegação: `src/lib/modules-registry.js` — Rail e Sidebar leem daqui, nunca hardcoded no JSX. Visibilidade por módulo contratado e papel passa por `podeVer` (`src/lib/acesso.js`), nunca por condição no JSX.
+- Fonte única de verdade da navegação: `src/lib/modules-registry.js` — Rail e Sidebar leem daqui, nunca hardcoded no JSX. Visibilidade por módulo contratado, papel e feature flag (`feature` na entrada; `temFeature` dentro de uma tela) passa por `podeVer` (`src/lib/acesso.js`), nunca por condição no JSX. Flag desligada ou ausente na sessão = interface de antes. 403 `MODULE_NOT_ENABLED`/`FEATURE_NOT_ENABLED` vira estado de página com `isAccessError` + `AcessoIndisponivel`.
+- **CRM › Configurações** (DONO/MASTER): subseções em `modules/crm/lib/secoes-configuracoes.js`. Campos vale sempre; as demais nascem atrás da flag própria (`crm.listas`…) e entram com `pronta: true` e uma tela em `TELA_DA_SECAO`. Campos usa só `/crm/configuracoes/campos*` (matriz, nome, ordem) e `/crm/field-definitions` (criar/editar/excluir personalizado). Cada tela consome os campos do seu contexto com `camposDoContexto` (`create_form`/`detail`/`table`/`filter`) sobre uma única `GET /crm/leads/fields`. Ordem por arrastar com `@dnd-kit` via `components/ordenavel/` (+ ↑/↓ como alternativa).
+- **Listas do tenant** (status, origem, motivo de perda, tags): opções e rótulos vêm de `/crm/leads/fields` (`opcoes` = keys ativas, `opcoesLista` = todas). Nunca rótulo fixo no front — passe por `lib/opcoes.js` (`opcaoDoCampo`, `opcoesDoSeletor`, `opcoesDoFiltro`). A cor da opção é um marcador no `OpcaoBadge`; o texto continua grafite (contraste em `src/lib/contraste.js`).
 - Área de conteúdo: cabeçalho (título + subtítulo curto) → cards/formulários → empty states com ícone + frase + CTA.
 
 ## Acessibilidade (não negociável)

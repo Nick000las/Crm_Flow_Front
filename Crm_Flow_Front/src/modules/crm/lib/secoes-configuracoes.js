@@ -1,0 +1,44 @@
+import { podeVer } from '../../../lib/acesso.js';
+import { CRM_FEATURES, PAPEIS_GESTAO } from '../constants.js';
+import { ROTAS_CRM } from '../rotas.js';
+
+/**
+ * Subseções da área Configurações do CRM (spec "Configurações e Features",
+ * tabela de subseções). É a navegação interna da área — a página "Configurações"
+ * em si mora no registry (`modules-registry.js`).
+ *
+ * Campos vale sempre (DONO/MASTER). As demais nascem atrás da flag própria
+ * (rollout); `pronta: false` = ainda sem tela no front: some mesmo com a flag
+ * ligada, para o MASTER não abrir uma subseção vazia ao ligar a flag cedo.
+ *
+ * @typedef {Object} SecaoConfiguracoes
+ * @property {string} key       segmento de `/crm/configuracoes/:secao`
+ * @property {string} label
+ * @property {string} [feature]  omitida = sem flag
+ * @property {readonly string[]} roles
+ * @property {boolean} pronta
+ */
+
+const secao = (key, label, feature, pronta = false) =>
+  Object.freeze({ key, label, ...(feature && { feature }), roles: PAPEIS_GESTAO, pronta });
+
+/** @type {readonly SecaoConfiguracoes[]} */
+export const SECOES_CONFIGURACOES = Object.freeze([
+  secao('layout', 'Layout do lead', CRM_FEATURES.LAYOUT),
+  secao('campos', 'Campos', null, true),
+  secao('listas', 'Listas', CRM_FEATURES.LISTAS, true),
+  secao('duplicidade', 'Duplicidade', CRM_FEATURES.DUPLICIDADE),
+  secao('distribuicao', 'Distribuição', CRM_FEATURES.DISTRIBUICAO),
+  secao('inatividade', 'Inatividade', CRM_FEATURES.INATIVIDADE),
+  secao('pontuacao', 'Pontuação', CRM_FEATURES.SCORE),
+  secao('enriquecimento', 'Enriquecimento', CRM_FEATURES.CNPJ),
+  secao('privacidade', 'Privacidade (LGPD)', CRM_FEATURES.LGPD),
+]);
+
+/** @param {Parameters<typeof podeVer>[1]} user */
+export function secoesVisiveis(user) {
+  return SECOES_CONFIGURACOES.filter((item) => item.pronta && podeVer(item, user));
+}
+
+/** @param {string} key */
+export const caminhoDaSecao = (key) => `${ROTAS_CRM.CONFIGURACOES}/${encodeURIComponent(key)}`;

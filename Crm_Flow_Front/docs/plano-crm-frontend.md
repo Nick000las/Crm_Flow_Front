@@ -1,6 +1,6 @@
 # Plano: interface do CRM (frontend)
 
-Este documento é só o plano; nenhum código foi escrito. Ele parte do estado real dos dois repositórios em 2026-10-14. Do lado do back, o contrato está em [`Back/docs/plano-crm-campos-hibridos.md`](../../../Back/docs/plano-crm-campos-hibridos.md).
+Este documento é só o plano; nenhum código foi escrito. Ele parte do estado real dos dois repositórios em 2026-10-14. Do lado do back, o contrato está em [`Back/docs/crm/plano-campos-hibridos.md`](../../../Back/docs/crm/plano-campos-hibridos.md) (histórico; o plano vigente é [`Back/docs/crm/plano-configuracoes.md`](../../../Back/docs/crm/plano-configuracoes.md)).
 
 **Decisões já tomadas:**
 - **Estágio na criação:** passa a ser opcional no back. O lead nasce sem estágio, e o front não mostra estágio até o Kanban existir.

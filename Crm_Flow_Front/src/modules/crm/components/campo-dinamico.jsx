@@ -3,30 +3,17 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import { TIPOS_CAMPO } from '../constants';
-import { rotuloOpcao } from '../lib/rotulos';
+import { opcoesDoSeletor, rotuloOpcao, sugestoesDoCampo } from '../lib/opcoes';
 import { CampoForm } from './campo-form';
+import {
+  CampoMonetario,
+  CampoTelefone,
+  CampoTexto,
+  CampoTextoLongo,
+  INPUT_CLASS,
+} from './campos-texto';
 import { SelectSimples } from './select-simples';
 import { TagsInput } from './tags-input';
-
-const INPUT_CLASS = 'h-9 rounded-none';
-
-/** `type`/`inputMode` por chave de texto conhecida. */
-const ATRIBUTOS_TEXTO = Object.freeze({
-  email: { type: 'email', inputMode: 'email', autoComplete: 'email' },
-  telefone: { type: 'tel', inputMode: 'tel', autoComplete: 'tel' },
-});
-
-function CampoTexto({ campo, value, onChange, controle }) {
-  return (
-    <Input
-      {...controle}
-      {...ATRIBUTOS_TEXTO[campo.chave]}
-      className={INPUT_CLASS}
-      onChange={(event) => onChange(event.target.value)}
-      value={value}
-    />
-  );
-}
 
 function CampoNumero({ value, onChange, controle }) {
   return (
@@ -57,7 +44,8 @@ function CampoBooleano({ value, onChange, controle }) {
 }
 
 function CampoSelecao({ campo, value, onChange, controle }) {
-  const opcoes = campo.opcoes.map((opcao) => ({ valor: opcao, rotulo: rotuloOpcao(opcao, campo) }));
+  // Ativas da lista do tenant, mais a inativa que o lead já tem (se tiver).
+  const opcoes = opcoesDoSeletor(campo, value);
 
   return (
     <SelectSimples
@@ -96,8 +84,9 @@ function CampoOpcoesMultiplas({ campo, value, onChange, controle }) {
   );
 }
 
-function CampoTags({ value, onChange, controle }) {
-  return <TagsInput {...controle} onChange={onChange} value={value} />;
+/** Tags: entrada livre por nome, com as tags ativas do tenant como sugestão. */
+function CampoTags({ campo, value, onChange, controle }) {
+  return <TagsInput {...controle} onChange={onChange} sugestoes={sugestoesDoCampo(campo)} value={value} />;
 }
 
 const CONTROLE_POR_TIPO = Object.freeze({
@@ -106,6 +95,10 @@ const CONTROLE_POR_TIPO = Object.freeze({
   [TIPOS_CAMPO.DATA]: CampoData,
   [TIPOS_CAMPO.BOOLEANO]: CampoBooleano,
   [TIPOS_CAMPO.SELECAO]: CampoSelecao,
+  [TIPOS_CAMPO.TEXTO_LONGO]: CampoTextoLongo,
+  [TIPOS_CAMPO.MONETARIO]: CampoMonetario,
+  [TIPOS_CAMPO.TELEFONE]: CampoTelefone,
+  // E-mail e URL: input de texto com `type` próprio (ver `campos-texto`).
 });
 
 function temOpcoes(campo) {

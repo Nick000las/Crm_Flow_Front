@@ -2,8 +2,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { TIPOS_CAMPO } from '../constants';
-import { OPERADOR, operadorSemValor } from '../lib/filtro';
-import { rotuloOpcao } from '../lib/rotulos';
+import { OPERADOR, operadorSemValor, tipoBase } from '../lib/filtro';
+import { opcoesDoFiltro } from '../lib/opcoes';
 import { SelectSimples } from './select-simples';
 import { TagsInput } from './tags-input';
 
@@ -13,14 +13,11 @@ const OPCOES_BOOLEANO = Object.freeze([
   { valor: 'false', rotulo: 'Não' },
 ]);
 
-function temOpcoes(campo) {
-  return Array.isArray(campo.opcoes) && campo.opcoes.length > 0;
-}
-
 /** Input de texto/número/data conforme o tipo do campo. */
 function InputDoTipo({ campo, value, onChange, ...controle }) {
-  const numerico = campo.tipo === TIPOS_CAMPO.NUMERO;
-  const data = campo.tipo === TIPOS_CAMPO.DATA;
+  const base = tipoBase(campo.tipo);
+  const numerico = base === TIPOS_CAMPO.NUMERO;
+  const data = base === TIPOS_CAMPO.DATA;
 
   return (
     <Input
@@ -60,7 +57,7 @@ function Faixa({ campo, value, onChange, rotulo, controle }) {
   );
 }
 
-function ListaDeOpcoes({ campo, value, onChange, controle }) {
+function ListaDeOpcoes({ opcoes, value, onChange, controle }) {
   return (
     <div
       aria-describedby={controle['aria-describedby']}
@@ -68,20 +65,20 @@ function ListaDeOpcoes({ campo, value, onChange, controle }) {
       className="grid max-h-40 gap-2 overflow-y-auto"
       role="group"
     >
-      {campo.opcoes.map((opcao) => {
-        const opcaoId = `${controle.id}-${opcao}`;
-        const marcada = value.includes(opcao);
+      {opcoes.map(({ valor, rotulo }) => {
+        const opcaoId = `${controle.id}-${valor}`;
+        const marcada = value.includes(valor);
 
         return (
-          <label className="flex items-center gap-2 text-sm" htmlFor={opcaoId} key={opcao}>
+          <label className="flex items-center gap-2 text-sm" htmlFor={opcaoId} key={valor}>
             <Checkbox
               checked={marcada}
               id={opcaoId}
               onCheckedChange={(proximo) =>
-                onChange(proximo ? [...value, opcao] : value.filter((atual) => atual !== opcao))
+                onChange(proximo ? [...value, valor] : value.filter((atual) => atual !== valor))
               }
             />
-            {rotuloOpcao(opcao, campo)}
+            {rotulo}
           </label>
         );
       })}
@@ -92,7 +89,8 @@ function ListaDeOpcoes({ campo, value, onChange, controle }) {
 /**
  * Valor de uma linha de filtro: o controle muda com o operador.
  * `entre` → de/até; `e_um_dos` → checkboxes (ou tags livres);
- * `vazio`/`nao_vazio` → nada.
+ * `vazio`/`nao_vazio` → nada. Campo de lista oferece todas as opções,
+ * inclusive inativas, e filtra pela key (tags inclusive).
  *
  * @param {{
  *   campo: import('../types').Campo,
@@ -107,12 +105,13 @@ export function ValorDoFiltro({ campo, operador, value, onChange, rotulo, contro
   if (operadorSemValor(operador)) return null;
 
   const props = { campo, value, onChange, controle: { ...controle, 'aria-label': `Valor de ${rotulo}` } };
+  const opcoes = opcoesDoFiltro(campo);
 
   if (operador === OPERADOR.ENTRE) return <Faixa {...props} rotulo={rotulo} />;
 
   if (operador === OPERADOR.E_UM_DOS) {
-    return temOpcoes(campo) ? (
-      <ListaDeOpcoes {...props} />
+    return opcoes.length > 0 ? (
+      <ListaDeOpcoes {...props} opcoes={opcoes} />
     ) : (
       <TagsInput {...props.controle} onChange={onChange} value={value} />
     );
@@ -122,8 +121,7 @@ export function ValorDoFiltro({ campo, operador, value, onChange, rotulo, contro
     return <SelectSimples {...props.controle} onChange={onChange} opcoes={OPCOES_BOOLEANO} value={value} />;
   }
 
-  if (temOpcoes(campo)) {
-    const opcoes = campo.opcoes.map((opcao) => ({ valor: opcao, rotulo: rotuloOpcao(opcao, campo) }));
+  if (opcoes.length > 0) {
     return <SelectSimples {...props.controle} onChange={onChange} opcoes={opcoes} value={value} />;
   }
 

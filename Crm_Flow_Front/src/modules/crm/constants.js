@@ -8,6 +8,69 @@ import { ROLES } from '../../lib/roles.js';
 /** Papéis que configuram o CRM (campos, visibilidade) e fazem import/export. */
 export const PAPEIS_GESTAO = Object.freeze([ROLES.DONO, ROLES.MASTER]);
 
+/**
+ * Feature flags do CRM (rollout gradual, não cobrança). Ligadas por tenant
+ * pelo MASTER; chegam em `/auth/me` → `featuresAtivas`. Desligada = a
+ * interface de antes. Use com `feature` no registry ou `temFeature`.
+ */
+export const CRM_FEATURES = Object.freeze({
+  LISTAS: 'crm.listas',
+  LAYOUT: 'crm.layout',
+  ARQUIVO: 'crm.arquivo',
+  ATIVIDADES: 'crm.atividades',
+  DUPLICIDADE: 'crm.duplicidade',
+  REGRAS: 'crm.regras',
+  INATIVIDADE: 'crm.inatividade',
+  MASSA: 'crm.massa',
+  CNPJ: 'crm.cnpj',
+  DISTRIBUICAO: 'crm.distribuicao',
+  PERMISSOES: 'crm.permissoes',
+  SCORE: 'crm.score',
+  LGPD: 'crm.lgpd',
+  TIMELINE: 'crm.timeline',
+});
+
+/** Listas do tenant (Configurações › Listas); `:tipo` das rotas e `campo.lista`. */
+export const TIPOS_LISTA = Object.freeze({
+  STATUS: 'status',
+  FONTE_LEAD: 'fonte_lead',
+  MOTIVO_PERDA: 'motivo_perda',
+  TIPO_ATIVIDADE: 'tipo_atividade',
+  TAG: 'tag',
+});
+
+export const ROTULOS_LISTA = Object.freeze({
+  [TIPOS_LISTA.STATUS]: 'Status',
+  [TIPOS_LISTA.FONTE_LEAD]: 'Origem',
+  [TIPOS_LISTA.MOTIVO_PERDA]: 'Motivos de perda',
+  [TIPOS_LISTA.TIPO_ATIVIDADE]: 'Tipos de atividade',
+  [TIPOS_LISTA.TAG]: 'Tags',
+});
+
+/** Só em status (obrigatória lá, proibida no resto). Relatórios e regras usam a categoria, não o nome. */
+export const CATEGORIAS_STATUS = Object.freeze({ ABERTO: 'aberto', GANHO: 'ganho', PERDIDO: 'perdido' });
+
+export const ROTULOS_CATEGORIA = Object.freeze({
+  [CATEGORIAS_STATUS.ABERTO]: 'Aberto',
+  [CATEGORIAS_STATUS.GANHO]: 'Ganho',
+  [CATEGORIAS_STATUS.PERDIDO]: 'Perdido',
+});
+
+/** Telas que consomem os campos; `visibilidade[contexto]` de cada campo. */
+export const CONTEXTO = Object.freeze({
+  CRIACAO: 'create_form',
+  FICHA: 'detail',
+  TABELA: 'table',
+  FILTRO: 'filter',
+});
+
+export const ROTULOS_CONTEXTO = Object.freeze({
+  [CONTEXTO.CRIACAO]: 'Criação',
+  [CONTEXTO.FICHA]: 'Ficha',
+  [CONTEXTO.TABELA]: 'Tabela',
+  [CONTEXTO.FILTRO]: 'Filtros',
+});
+
 export const CAMADA = Object.freeze({ CAMADA_1: 1, CAMADA_2: 2, CAMADA_3: 3 });
 
 export const TIPOS_CAMPO = Object.freeze({
@@ -17,7 +80,14 @@ export const TIPOS_CAMPO = Object.freeze({
   BOOLEANO: 'booleano',
   SELECAO: 'selecao',
   SELECAO_MULTIPLA: 'selecao_multipla',
+  TEXTO_LONGO: 'texto_longo',
+  MONETARIO: 'monetario',
+  TELEFONE: 'telefone',
+  EMAIL: 'email',
+  URL: 'url',
 });
+
+export const LIMITE_TEXTO_LONGO = 10_000;
 
 export const TIPOS_COM_OPCOES = Object.freeze([
   TIPOS_CAMPO.SELECAO,
@@ -32,6 +102,11 @@ export const OPERADORES_POR_TIPO = Object.freeze({
   booleano: ['igual', 'vazio', 'nao_vazio'],
   selecao: ['igual', 'e_um_dos', 'vazio', 'nao_vazio'],
   selecao_multipla: ['contem', 'e_um_dos', 'vazio', 'nao_vazio'],
+  texto_longo: ['contem', 'vazio', 'nao_vazio'],
+  monetario: ['igual', 'entre', 'vazio', 'nao_vazio'],
+  telefone: ['igual', 'contem', 'vazio', 'nao_vazio'],
+  email: ['igual', 'contem', 'e_um_dos', 'vazio', 'nao_vazio'],
+  url: ['igual', 'contem', 'vazio', 'nao_vazio'],
 });
 
 export const BUSCA_LEADS = Object.freeze({
@@ -101,27 +176,9 @@ export const ROTULOS_TIPO = Object.freeze({
   [TIPOS_CAMPO.BOOLEANO]: 'Sim/Não',
   [TIPOS_CAMPO.SELECAO]: 'Seleção',
   [TIPOS_CAMPO.SELECAO_MULTIPLA]: 'Seleção múltipla',
-});
-
-/**
- * Rótulo das 15 colunas da Camada 2 (espelho de `CAMADA_2_METADADOS` do
- * back). `/crm/field-visibility` só devolve a `coluna`, e `/fields` só traz
- * as visíveis — a página Campos precisa do rótulo de todas.
- */
-export const ROTULOS_CAMADA_2 = Object.freeze({
-  empresa: 'Empresa',
-  cargo: 'Cargo',
-  cpf: 'CPF',
-  cnpj: 'CNPJ',
-  cidade: 'Cidade',
-  uf: 'UF',
-  cep: 'CEP',
-  endereco: 'Endereço',
-  campanha_utm: 'Campanha (UTM)',
-  data_conversao: 'Data de conversão',
-  probabilidade_fechamento: 'Probabilidade de fechamento',
-  data_prevista_fechamento: 'Data prevista de fechamento',
-  motivo_perda: 'Motivo da perda',
-  lead_score: 'Lead score',
-  proximo_followup: 'Próximo follow-up',
+  [TIPOS_CAMPO.TEXTO_LONGO]: 'Texto longo',
+  [TIPOS_CAMPO.MONETARIO]: 'Monetário (R$)',
+  [TIPOS_CAMPO.TELEFONE]: 'Telefone',
+  [TIPOS_CAMPO.EMAIL]: 'E-mail',
+  [TIPOS_CAMPO.URL]: 'URL',
 });

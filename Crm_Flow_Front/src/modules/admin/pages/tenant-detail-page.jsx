@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/card';
 import { useAdminAuth } from '@/hooks/use-admin-auth';
 import { DeleteTenantDialog } from '../components/delete-tenant-dialog';
+import { TenantFeaturesSection } from '../components/tenant-features-section';
 import { TenantIdentitySection } from '../components/tenant-identity-section';
 import { TenantModulesSection } from '../components/tenant-modules-section';
 import { TenantStatusSection } from '../components/tenant-status-section';
@@ -78,6 +79,12 @@ export default function TenantDetailPage() {
         />
 
         <TenantModulesSection
+          adminApi={authApi}
+          onSaved={recarregar}
+          tenant={tenant}
+        />
+
+        <TenantFeaturesSection
           adminApi={authApi}
           onSaved={recarregar}
           tenant={tenant}

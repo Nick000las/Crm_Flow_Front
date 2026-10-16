@@ -8,6 +8,21 @@ export const CLIENT_ERROR_CODES = Object.freeze({
   UNKNOWN_ERROR: 'UNKNOWN_ERROR',
 })
 
+/** 403 de acesso por contratação/rollout — não é falta de permissão do papel. */
+export const ACCESS_ERROR_CODES = Object.freeze({
+  MODULE_NOT_ENABLED: 'MODULE_NOT_ENABLED',
+  FEATURE_NOT_ENABLED: 'FEATURE_NOT_ENABLED',
+})
+
+// Texto do front para esses códigos: o usuário final não liga módulo nem
+// flag, então a mensagem diz o que aconteceu sem jargão de configuração.
+const ACCESS_ERROR_MESSAGES = Object.freeze({
+  [ACCESS_ERROR_CODES.MODULE_NOT_ENABLED]:
+    'Este módulo não está ativo para a sua empresa.',
+  [ACCESS_ERROR_CODES.FEATURE_NOT_ENABLED]:
+    'Esta funcionalidade ainda não está disponível para a sua empresa.',
+})
+
 export class ApiError extends Error {
   /**
    * @param {string} message
@@ -47,19 +62,21 @@ export function createApiErrorFromResponse(payload, status) {
     typeof error.message === 'string'
   const canUseResponseMessage = status < 500 || hasCanonicalErrorEnvelope
 
-  const message = canUseResponseMessage
-    ? firstNonEmptyString(
-        error?.message,
-        typeof rawError === 'string' ? rawError : null,
-        body?.message,
-        getStatusFallback(status),
-      )
-    : getStatusFallback(status)
   const code = firstNonEmptyString(
     error?.code,
     body?.code,
     CLIENT_ERROR_CODES.UNKNOWN_ERROR,
   )
+  const message =
+    ACCESS_ERROR_MESSAGES[code] ??
+    (canUseResponseMessage
+      ? firstNonEmptyString(
+          error?.message,
+          typeof rawError === 'string' ? rawError : null,
+          body?.message,
+          getStatusFallback(status),
+        )
+      : getStatusFallback(status))
   const requestId = firstNonEmptyString(error?.requestId, body?.requestId)
 
   return new ApiError(message, {
@@ -88,6 +105,16 @@ export function createNetworkError(error) {
       cause: error,
     },
   )
+}
+
+/**
+ * 403 de contratação/rollout: a tela mostra um estado próprio
+ * (`AcessoIndisponivel`) em vez de um alerta de erro.
+ *
+ * @param {unknown} error
+ */
+export function isAccessError(error) {
+  return error instanceof ApiError && Object.hasOwn(ACCESS_ERROR_MESSAGES, error.code)
 }
 
 /** @param {unknown} error */

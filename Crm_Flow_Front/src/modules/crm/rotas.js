@@ -9,7 +9,7 @@ export const ID_NOVO_LEAD = 'novo';
 export const ROTAS_CRM = Object.freeze({
   LISTA: '/crm',
   IMPORTAR: '/crm/importar',
-  CAMPOS: '/crm/campos',
+  CONFIGURACOES: '/crm/configuracoes',
   NOVO_LEAD: `/crm/leads/${ID_NOVO_LEAD}`,
   lead: (id) => `/crm/leads/${encodeURIComponent(id)}`,
 });

@@ -4,7 +4,10 @@ import {
   formatarData,
   formatarMoeda,
   formatarNumero,
+  formatarTelefone,
+  mascararTelefone,
   paraNumero,
+  urlSegura,
 } from './formatadores.js';
 
 // Intl separa "R$" do valor com espaço não separável (U+00A0).
@@ -33,4 +36,27 @@ test('formatarNumero e formatarMoeda usam pt-BR', () => {
   assert.equal(formatarNumero('1234.5'), '1.234,5');
   assert.equal(semNbsp(formatarMoeda('1500')), 'R$ 1.500,00');
   assert.equal(formatarMoeda(null), null);
+});
+
+test('mascararTelefone formata aos poucos, enquanto se digita', () => {
+  assert.equal(mascararTelefone('11'), '11');
+  assert.equal(mascararTelefone('119'), '(11) 9');
+  assert.equal(mascararTelefone('1192345'), '(11) 9234-5');
+  assert.equal(mascararTelefone('11923456789'), '(11) 92345-6789');
+  assert.equal(mascararTelefone('(11) 92345-67890'), '(11) 92345-6789');
+});
+
+test('formatarTelefone: fixo e celular BR; o resto como veio', () => {
+  assert.equal(formatarTelefone('1123456789'), '(11) 2345-6789');
+  assert.equal(formatarTelefone('11923456789'), '(11) 92345-6789');
+  assert.equal(formatarTelefone('+1 555 0100'), '+1 555 0100');
+  assert.equal(formatarTelefone(null), null);
+});
+
+test('urlSegura aceita só http e https', () => {
+  assert.equal(urlSegura('https://acme.com/a'), 'https://acme.com/a');
+  assert.equal(urlSegura('http://acme.com'), 'http://acme.com/');
+  assert.equal(urlSegura('javascript:alert(1)'), null);
+  assert.equal(urlSegura('acme.com'), null);
+  assert.equal(urlSegura(''), null);
 });

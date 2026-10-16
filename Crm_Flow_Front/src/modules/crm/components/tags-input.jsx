@@ -5,17 +5,21 @@ import { Input } from '@/components/ui/input';
 const TECLAS_ADICIONAR = new Set(['Enter', ',']);
 
 /**
- * Seleção múltipla sem opções fixas (caso de `tags`): Enter adiciona, ✕
- * remove, Backspace no campo vazio remove a última.
+ * Seleção múltipla de entrada livre (caso de `tags`): Enter adiciona, ✕
+ * remove, Backspace no campo vazio remove a última. `sugestoes` vira um
+ * `<datalist>` — o navegador autocompleta sem prender a texto conhecido.
  *
  * @param {{
  *   value: string[],
  *   onChange: (tags: string[]) => void,
  *   id: string,
+ *   sugestoes?: string[],
  * } & Record<string, unknown>} props demais props vão para o `Input`
  */
-export function TagsInput({ value, onChange, id, ...controle }) {
+export function TagsInput({ value, onChange, id, sugestoes = [], ...controle }) {
   const [texto, setTexto] = useState('');
+  const listaId = `${id}-sugestoes`;
+  const disponiveis = sugestoes.filter((sugestao) => !value.includes(sugestao));
 
   function adicionar() {
     const tag = texto.trim();
@@ -58,12 +62,20 @@ export function TagsInput({ value, onChange, id, ...controle }) {
         {...controle}
         className="h-9 rounded-none"
         id={id}
+        list={disponiveis.length > 0 ? listaId : undefined}
         onBlur={adicionar}
         onChange={(event) => setTexto(event.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="Digite e tecle Enter"
         value={texto}
       />
+      {disponiveis.length > 0 && (
+        <datalist id={listaId}>
+          {disponiveis.map((sugestao) => (
+            <option key={sugestao} value={sugestao} />
+          ))}
+        </datalist>
+      )}
     </div>
   );
 }

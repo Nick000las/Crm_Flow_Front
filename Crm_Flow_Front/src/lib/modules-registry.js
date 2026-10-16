@@ -11,6 +11,8 @@ import { podeVer } from './acesso';
  * @property {string} label
  * @property {string} path
  * @property {readonly string[]} [roles] papéis que veem a página; omitido = todos
+ * @property {string | readonly string[]} [feature] feature flag(s) que liberam a
+ *   página (todas); omitido = sempre. Ver `podeVer`.
  * @property {readonly string[]} [ativoEm] prefixos extras em que a página
  *   conta como ativa (ex.: Leads em `/crm/leads/:id`)
  *
@@ -47,9 +49,11 @@ export const MODULES = [
         roles: PAPEIS_GESTAO,
       },
       {
-        key: 'campos',
-        label: 'Campos',
-        path: '/crm/campos',
+        key: 'configuracoes',
+        label: 'Configurações',
+        path: '/crm/configuracoes/campos',
+        // Subseções em `modules/crm/lib/secoes-configuracoes.js`.
+        ativoEm: ['/crm/configuracoes'],
         roles: PAPEIS_GESTAO,
       },
     ],

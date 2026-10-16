@@ -13,7 +13,8 @@ const sessaoTenant = createAuthSession({
   // Refresh token em cookie httpOnly: a sessão sobrevive ao F5.
   persistente: true,
   // Sempre `/auth/me`, nunca o usuário da resposta do login: é ele que traz
-  // `modulosAtivos`, usado para esconder módulo não contratado na navegação.
+  // `modulosAtivos` e `featuresAtivas`, usados para esconder da navegação
+  // módulo não contratado e funcionalidade com feature flag desligada.
   async resolverUsuario(accessToken) {
     const response = await api.get('/auth/me', { accessToken });
 

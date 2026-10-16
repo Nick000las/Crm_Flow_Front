@@ -2,7 +2,7 @@ import { Navigate } from 'react-router-dom';
 import ConfiguracoesPage from '@/modules/configuracoes/pages/configuracoes-page';
 import { LeadSheet } from '@/modules/crm/components/lead-sheet';
 import { PAPEIS_GESTAO } from '@/modules/crm/constants';
-import CamposPage from '@/modules/crm/pages/campos-page';
+import ConfiguracoesCrmPage from '@/modules/crm/pages/configuracoes-page';
 import ImportarPage from '@/modules/crm/pages/importar-page';
 import LeadsPage from '@/modules/crm/pages/leads-page';
 import { ROTAS_CRM } from '@/modules/crm/rotas';
@@ -32,11 +32,14 @@ export const appRoutes = [
           </RequireRole>
         ),
       },
+      // A antiga página Campos virou Configurações › Campos; links velhos seguem.
+      { path: 'campos', element: <Navigate to={ROTAS_CRM.CONFIGURACOES} replace /> },
       {
-        path: 'campos',
+        // Sem `:secao` (ou com uma oculta), a página leva à primeira visível.
+        path: 'configuracoes/:secao?',
         element: (
           <RequireRole roles={PAPEIS_GESTAO} fallback={ROTAS_CRM.LISTA}>
-            <CamposPage />
+            <ConfiguracoesCrmPage />
           </RequireRole>
         ),
       },

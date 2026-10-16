@@ -1,41 +1,11 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
-import {
-  criarDefinicao,
-  editarDefinicao,
-  excluirDefinicao,
-  listarDefinicoes,
-  listarVisibilidade,
-  reordenarDefinicoes,
-  salvarVisibilidade,
-} from '../api/campos-config.api';
+import { criarDefinicao, editarDefinicao, excluirDefinicao } from '../api/campos-config.api';
 import { crmKeys } from '../query-keys';
 
-/** Ordem por `ordem`, para as setas ↑/↓ refletirem o que o form mostra. */
-const porOrdem = (definicoes) => [...definicoes].sort((a, b) => a.ordem - b.ordem);
-
-export function useVisibilidade() {
-  const { authApi } = useAuth();
-
-  return useQuery({
-    queryKey: crmKeys.visibilidade(),
-    queryFn: ({ signal }) => listarVisibilidade(authApi, { signal }),
-  });
-}
-
-export function useDefinicoes() {
-  const { authApi } = useAuth();
-
-  return useQuery({
-    queryKey: crmKeys.definicoes(),
-    queryFn: ({ signal }) => listarDefinicoes(authApi, { signal }),
-    select: porOrdem,
-  });
-}
-
 /**
- * Mudar um campo faz coluna aparecer ou sumir em todo lugar: form, filtro,
- * colunas da tabela e a própria lista (Camada 2 desligada sai do lead).
+ * Mudar um campo personalizado faz coluna aparecer ou sumir em todo lugar:
+ * form, filtro, colunas da tabela, a lista e a própria matriz de Configurações.
  */
 function useMutacaoDeCampos(mutationFn) {
   const queryClient = useQueryClient();
@@ -44,16 +14,11 @@ function useMutacaoDeCampos(mutationFn) {
     mutationFn,
     onSuccess: () =>
       Promise.all(
-        [crmKeys.campos(), crmKeys.leads(), crmKeys.definicoes(), crmKeys.visibilidade()].map(
-          (queryKey) => queryClient.invalidateQueries({ queryKey }),
+        [crmKeys.campos(), crmKeys.leads(), crmKeys.camposConfigurados()].map((queryKey) =>
+          queryClient.invalidateQueries({ queryKey }),
         ),
       ),
   });
-}
-
-export function useSalvarVisibilidade() {
-  const { authApi } = useAuth();
-  return useMutacaoDeCampos((linhas) => salvarVisibilidade(authApi, linhas));
 }
 
 export function useCriarDefinicao() {
@@ -64,11 +29,6 @@ export function useCriarDefinicao() {
 export function useEditarDefinicao() {
   const { authApi } = useAuth();
   return useMutacaoDeCampos(({ id, definicao }) => editarDefinicao(authApi, id, definicao));
-}
-
-export function useReordenarDefinicoes() {
-  const { authApi } = useAuth();
-  return useMutacaoDeCampos((ordens) => reordenarDefinicoes(authApi, ordens));
 }
 
 export function useExcluirDefinicao() {
