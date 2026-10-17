@@ -28,9 +28,9 @@ export function useConfirmarImportacao() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (jobId) => confirmarImportacao(authApi, jobId),
+    mutationFn: ({ jobId, acoes }) => confirmarImportacao(authApi, jobId, acoes),
     // A resposta já é o status: o acompanhamento começa sem esperar o polling.
-    onSuccess: (job, jobId) => queryClient.setQueryData(crmKeys.importJob(jobId), job),
+    onSuccess: (job, { jobId }) => queryClient.setQueryData(crmKeys.importJob(jobId), job),
   });
 }
 

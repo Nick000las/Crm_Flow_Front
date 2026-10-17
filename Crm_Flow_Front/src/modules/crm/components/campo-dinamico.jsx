@@ -123,9 +123,10 @@ function escolherControle(campo) {
  *   value: unknown,
  *   onChange: (valor: unknown) => void,
  *   erro?: string | null,
- * }} props
+ *   onBlur?: () => void,
+ * }} props `onBlur` vai para o input (ex.: checar duplicidade ao sair do campo)
  */
-export function CampoDinamico({ campo, id, value, onChange, erro }) {
+export function CampoDinamico({ campo, id, value, onChange, erro, onBlur }) {
   const Controle = escolherControle(campo);
 
   return (
@@ -137,7 +138,12 @@ export function CampoDinamico({ campo, id, value, onChange, erro }) {
       obrigatorio={campo.obrigatorio}
     >
       {(controle) => (
-        <Controle campo={campo} controle={controle} onChange={onChange} value={value} />
+        <Controle
+          campo={campo}
+          controle={onBlur ? { ...controle, onBlur } : controle}
+          onChange={onChange}
+          value={value}
+        />
       )}
     </CampoForm>
   );

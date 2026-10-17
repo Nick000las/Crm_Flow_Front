@@ -41,10 +41,11 @@ export default function ImportarPage() {
     );
   }
 
-  function handleConfirmar() {
+  /** @param {Record<string, string> | null} acoes por linha duplicada */
+  function handleConfirmar(acoes) {
     const { jobId } = estado.validacao;
 
-    confirmar.mutate(jobId, {
+    confirmar.mutate({ jobId, acoes }, {
       onSuccess: () => {
         setSearchParams({ [PARAM_JOB]: jobId }, { replace: true });
         dispatch({ tipo: 'confirmado' });
@@ -84,6 +85,7 @@ export default function ImportarPage() {
       {estado.passo === PASSO.REVISAR && (
         <ImportacaoRevisar
           confirmacao={confirmar}
+          estrategia={estado.estrategia}
           onConfirmar={handleConfirmar}
           onVoltar={() => {
             confirmar.reset();

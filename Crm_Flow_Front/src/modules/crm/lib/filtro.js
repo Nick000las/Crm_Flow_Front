@@ -221,8 +221,8 @@ export function trocarOperador(linha, operador, campo) {
 
 const numeroParaTexto = (valor) => (typeof valor === 'number' ? String(valor).replace('.', ',') : '');
 
-/** Item aplicado → linha editável. */
-function linhaDoItem(item, campo) {
+/** Item aplicado → linha editável (também a condição de uma regra de campo). */
+export function linhaDoItem(item, campo) {
   const base = { id: gerarIdLinha(), chave: item.chave, operador: item.operador };
   const numerico = ehNumerico(campo);
 
@@ -273,11 +273,12 @@ function lerLimite(texto, numerico) {
 }
 
 /**
- * Linha → item do contrato, ou a mensagem do que falta.
+ * Linha → item do contrato, ou a mensagem do que falta. Também converte a
+ * condição de uma regra de campo (mesmos operadores e valores).
  *
  * @returns {{ item: FiltroCampo } | { erro: string }}
  */
-function itemDaLinha(linha, campo) {
+export function itemDaLinha(linha, campo) {
   const { chave, operador, valor } = linha;
   const numerico = ehNumerico(campo);
 

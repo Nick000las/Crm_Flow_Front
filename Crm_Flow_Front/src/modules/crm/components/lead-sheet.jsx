@@ -16,8 +16,10 @@ import {
   useDesarquivarLead,
 } from '../hooks/use-lead-mutations';
 import { useNavegacaoLeads } from '../hooks/use-navegacao-leads';
+import { useRegrasDoForm } from '../hooks/use-regras';
 import { useUsuarios } from '../hooks/use-usuarios';
 import { camposDoContexto } from '../lib/contextos';
+import { avaliarNoForm } from '../lib/regras';
 import {
   montarPayloadCriacao,
   montarPayloadEdicao,
@@ -48,8 +50,7 @@ function Carregando() {
  * link direto e não perde o contexto. `novo` cria; um id mostra o detalhe,
  * que alterna para edição no mesmo Sheet.
  */
-export function LeadSheet() {
-  const { leadId } = useParams();
+function SheetDoLead({ leadId }) {
   const location = useLocation();
   const criando = leadId === ID_NOVO_LEAD;
   const { user } = useAuth();
@@ -62,11 +63,12 @@ export function LeadSheet() {
   const [aviso, setAviso] = useState(null);
   const avisoDaListaRef = useRef(undefined);
 
-  const { voltarParaLista } = useNavegacaoLeads();
+  const { voltarParaLista, abrirLead } = useNavegacaoLeads();
   const camposQuery = useCampos();
   const leadQuery = useLead(criando ? undefined : leadId);
   const { usuarios, nomePorId } = useUsuarios();
   const layout = useLayoutEfetivo();
+  const regras = useRegrasDoForm();
   const criar = useCriarLead();
   const atualizar = useAtualizarLead(leadId);
   const arquivar = useArquivarLead();
@@ -80,6 +82,12 @@ export function LeadSheet() {
   );
   const lead = leadQuery.data;
   const iniciais = useMemo(() => valoresIniciais(campos, lead), [campos, lead]);
+  // Regras de campo: com todos os campos de `/fields`, porque a condição pode
+  // estar num campo fora do contexto do form. Sem a flag, `undefined`.
+  const todosCampos = camposQuery.data ?? CAMPOS_VAZIOS;
+  const avaliarRegras = regras
+    ? (valores) => avaliarNoForm(regras, todosCampos, criando ? undefined : lead, campos, valores)
+    : undefined;
 
   /** Fecha com animação; a navegação acontece quando ela termina. */
   function fechar(avisoDaLista) {
@@ -87,15 +95,21 @@ export function LeadSheet() {
     setAberto(false);
   }
 
-  async function salvar(valores) {
+  /**
+   * `ignorarDuplicados` vem do "Salvar mesmo assim" (409 de aviso): a
+   * mesma requisição de novo, com a flag.
+   */
+  async function salvar(valores, { ignorarDuplicados = false } = {}) {
+    const extra = ignorarDuplicados ? { ignorarDuplicados: true } : {};
+
     if (criando) {
-      await criar.mutateAsync(montarPayloadCriacao(campos, valores));
+      await criar.mutateAsync({ ...montarPayloadCriacao(campos, valores), ...extra });
       fechar(AVISOS_LEAD.CRIADO);
       return;
     }
 
     const payload = montarPayloadEdicao(campos, iniciais, valores);
-    if (!payloadVazio(payload)) await atualizar.mutateAsync(payload);
+    if (!payloadVazio(payload)) await atualizar.mutateAsync({ ...payload, ...extra });
 
     setEditando(false);
     setAviso(payloadVazio(payload) ? null : AVISOS_LEAD.SALVO);
@@ -173,7 +187,10 @@ export function LeadSheet() {
               enviando={criar.isPending || atualizar.isPending}
               iniciais={iniciais}
               key={criando ? ID_NOVO_LEAD : leadId}
+              avaliarRegras={avaliarRegras}
+              leadId={criando ? undefined : leadId}
               modo={criando ? 'criar' : 'editar'}
+              onAbrirLead={(id) => abrirLead(id)}
               onCancelar={() => (criando ? fechar() : setEditando(false))}
               onSalvar={salvar}
               usuarios={usuarios}
@@ -199,4 +216,14 @@ export function LeadSheet() {
       />
     </Sheet>
   );
+}
+
+/**
+ * Um Sheet por lead (`key`): ir de um lead a outro sem fechar (ex.: "Abrir o
+ * existente" no 409 de duplicidade) recomeça o estado do zero.
+ */
+export function LeadSheet() {
+  const { leadId } = useParams();
+
+  return <SheetDoLead key={leadId} leadId={leadId} />;
 }

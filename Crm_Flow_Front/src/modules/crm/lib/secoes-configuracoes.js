@@ -11,7 +11,8 @@ import { ROTAS_CRM } from '../rotas.js';
  * (rollout); `pronta: false` = ainda sem tela no front: some mesmo com a flag
  * ligada, para o MASTER não abrir uma subseção vazia ao ligar a flag cedo.
  * Papel por subseção: o Layout é de todos (cada um edita o próprio; o
- * padrão da empresa, só gestão — decidido dentro da tela).
+ * padrão da empresa, só gestão — decidido dentro da tela), e a Duplicidade
+ * todos leem (só gestão altera).
  *
  * @typedef {Object} SecaoConfiguracoes
  * @property {string} key       segmento de `/crm/configuracoes/:secao`
@@ -29,7 +30,9 @@ export const SECOES_CONFIGURACOES = Object.freeze([
   secao('layout', 'Layout do lead', CRM_FEATURES.LAYOUT, { pronta: true, roles: null }),
   secao('campos', 'Campos', null, { pronta: true }),
   secao('listas', 'Listas', CRM_FEATURES.LISTAS, { pronta: true }),
-  secao('duplicidade', 'Duplicidade', CRM_FEATURES.DUPLICIDADE),
+  secao('regras', 'Regras de campo', CRM_FEATURES.REGRAS, { pronta: true }),
+  // Leitura para todos; alterar as regras, só gestão (decidido na tela).
+  secao('duplicidade', 'Duplicidade', CRM_FEATURES.DUPLICIDADE, { pronta: true, roles: null }),
   secao('distribuicao', 'Distribuição', CRM_FEATURES.DISTRIBUICAO),
   secao('inatividade', 'Inatividade', CRM_FEATURES.INATIVIDADE),
   secao('pontuacao', 'Pontuação', CRM_FEATURES.SCORE),

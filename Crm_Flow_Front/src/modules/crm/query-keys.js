@@ -16,5 +16,7 @@ export const crmKeys = {
   camposConfigurados: () => ['crm', 'configuracoes', 'campos'],
   listas: () => ['crm', 'configuracoes', 'listas'],
   layout: () => ['crm', 'layout'],
+  duplicidade: () => ['crm', 'configuracoes', 'duplicidade'],
+  regras: () => ['crm', 'configuracoes', 'regras'],
   importJob: (jobId) => ['crm', 'import', jobId],
 };

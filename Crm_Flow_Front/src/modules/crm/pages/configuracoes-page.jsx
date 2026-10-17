@@ -3,8 +3,10 @@ import { PageHeader } from '@/components/page-header';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { SecaoCampos } from '../components/config-campos/secao-campos';
+import { SecaoDuplicidade } from '../components/config-duplicidade/secao-duplicidade';
 import { SecaoLayout } from '../components/config-layout/secao-layout';
 import { SecaoListas } from '../components/config-listas/secao-listas';
+import { SecaoRegras } from '../components/config-regras/secao-regras';
 import { caminhoDaSecao, secoesVisiveis } from '../lib/secoes-configuracoes';
 import { ROTAS_CRM } from '../rotas';
 
@@ -13,6 +15,8 @@ const TELA_DA_SECAO = Object.freeze({
   layout: SecaoLayout,
   campos: SecaoCampos,
   listas: SecaoListas,
+  regras: SecaoRegras,
+  duplicidade: SecaoDuplicidade,
 });
 
 function NavegacaoSecoes({ secoes, ativa }) {

@@ -189,6 +189,7 @@ export const AVISOS_LEAD = Object.freeze({
   DESARQUIVADO: 'Lead desarquivado.',
   RESTAURADO: 'Lead restaurado.',
   RESTAURADO_ARQUIVADO: 'Lead restaurado em Arquivados.',
+  MESCLADO: 'Leads mesclados.',
 });
 
 /** Filtro fixo da busca (`crm.arquivo`): não é filtro de campo nem vira chip. */
@@ -220,7 +221,36 @@ export const TIPOS_EVENTO = Object.freeze({
   DESARQUIVADO: 'desarquivado',
   EXCLUIDO: 'excluido',
   RESTAURADO: 'restaurado',
+  MESCLADO: 'mesclado',
 });
+
+/** Regras de duplicidade (`crm.duplicidade`): por campo, avisar ou bloquear. */
+export const ACOES_DUPLICIDADE = Object.freeze({ AVISAR: 'warn', BLOQUEAR: 'block' });
+
+export const ROTULOS_ACAO_DUPLICIDADE = Object.freeze({
+  [ACOES_DUPLICIDADE.AVISAR]: 'Avisar',
+  [ACOES_DUPLICIDADE.BLOQUEAR]: 'Bloquear',
+});
+
+/** 409 ao salvar lead: os candidatos vêm em `error.details.duplicados`. */
+export const CODIGOS_DUPLICIDADE = Object.freeze({
+  AVISO: 'DUPLICATE_WARNING',
+  BLOQUEIO: 'DUPLICATE_BLOCKED',
+});
+
+/** Regras de campo (`crm.regras`). */
+export const TIPOS_REGRA = Object.freeze({
+  POR_STATUS: 'required_from_status',
+  CONDICIONAL: 'conditional',
+});
+
+export const ROTULOS_TIPO_REGRA = Object.freeze({
+  [TIPOS_REGRA.POR_STATUS]: 'Obrigatório por status',
+  [TIPOS_REGRA.CONDICIONAL]: 'Condicional',
+});
+
+/** Campos que as regras checam — `chave` no form (`/fields`) e no corpo da checagem. */
+export const CAMPOS_DUPLICIDADE = Object.freeze(['email', 'telefone', 'cnpj', 'cpf']);
 
 export const ROTULOS_TIPO = Object.freeze({
   [TIPOS_CAMPO.TEXTO]: 'Texto',

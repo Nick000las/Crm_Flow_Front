@@ -19,9 +19,13 @@ export function useNavegacaoLeads() {
     [search],
   );
 
-  /** @param {string} id @param {{ editar?: boolean }} [opcoes] */
+  /**
+   * @param {string} id
+   * @param {{ editar?: boolean, aviso?: string }} [opcoes] `aviso` aparece na lista (`role="status"`)
+   */
   const abrirLead = useCallback(
-    (id, { editar = false } = {}) => navigate(destinos.lead(id), { state: { editar } }),
+    (id, { editar = false, aviso } = {}) =>
+      navigate(destinos.lead(id), { state: { editar, ...(aviso && { aviso }) } }),
     [destinos, navigate],
   );
 
