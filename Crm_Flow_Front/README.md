@@ -117,6 +117,18 @@ registrar (inclusive "já aconteceu"), concluir/reabrir, editar e remover ativid
 e a lista de mudanças do lead ("Ana mudou Status de Novo para Ganho"). Os tipos de
 atividade são a lista "Tipos de atividade" de Configurações › Listas.
 
+Com `crm.duplicidade`, cada empresa define em Configurações › Duplicidade quais dados
+(e-mail, telefone, CNPJ, CPF) contam como duplicado e se o CRM **avisa** ou **bloqueia**.
+O formulário mostra os parecidos ao sair desses campos e, ao salvar, pede confirmação
+(ou bloqueia). DONO e MASTER mesclam dois leads pelo menu "⋯" ou marcando 2 na tabela;
+o outro vai para a lixeira como "Mesclado em outro lead". No import, o passo Revisar
+mostra as linhas parecidas e deixa escolher pular, atualizar ou criar por linha.
+
+Com `crm.regras`, DONO e MASTER definem em Configurações › Regras de campo quando um
+campo fica obrigatório ("Motivo da perda quando o status é Perdido") ou só aparece
+("Empresa só quando Origem é Evento"). O formulário do lead aplica as regras enquanto
+a pessoa digita; quem valida de verdade é o back.
+
 Documentação do back: `Back/docs/crm/` (plano vigente em `plano-configuracoes.md`).
 
 ## Usuários de teste

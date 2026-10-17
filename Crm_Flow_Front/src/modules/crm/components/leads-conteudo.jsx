@@ -11,7 +11,8 @@ const SEM_FILTRO = Object.freeze({ busca: '', filtro: FILTRO_VAZIO, pagina: 1 })
 
 /**
  * Corpo da lista: escolhe entre erro, carregando, os estados vazios e a
- * tabela paginada. `acoesDeArquivo` só vem com `crm.arquivo`.
+ * tabela paginada. `acoesDeArquivo` só vem com `crm.arquivo`; `onMesclar` e
+ * `selecao`, com `crm.duplicidade` para DONO/MASTER.
  *
  * @param {{
  *   atualizar: (mudancas: Partial<import('../lib/url-state').EstadoLista>) => void,
@@ -33,6 +34,8 @@ const SEM_FILTRO = Object.freeze({ busca: '', filtro: FILTRO_VAZIO, pagina: 1 })
  *     onRestaurar: (lead: import('../types').Lead) => void,
  *     restaurandoId: string | null,
  *   },
+ *   onMesclar?: (lead: import('../types').Lead) => void,
+ *   selecao?: import('./leads-table').SelecaoDaTabela | null,
  * }} props
  */
 export function LeadsConteudo({
@@ -50,6 +53,8 @@ export function LeadsConteudo({
   podeImportar,
   situacao,
   acoesDeArquivo,
+  onMesclar,
+  selecao,
 }) {
   if (erro) return <ApiErrorAlert error={erro} id={ERRO_ID} />;
   if (carregando) return <LeadsTableSkeleton colunas={colunas} identificador={identificador} />;
@@ -81,6 +86,8 @@ export function LeadsConteudo({
         onEditar={(id) => onAbrir(id, { editar: true })}
         onExcluir={onExcluir}
         {...acoesDeArquivo}
+        onMesclar={onMesclar}
+        selecao={selecao}
       />
       <Paginacao onChange={atualizar} pagina={estado.pagina} tamanho={estado.tamanho} total={total} />
     </>

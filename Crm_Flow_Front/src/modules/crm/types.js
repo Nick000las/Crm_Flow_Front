@@ -50,6 +50,8 @@
  * @property {string | null} [archived_at]  arquivado (`crm.arquivo`)
  * @property {string | null} [deleted_at]   na lixeira
  * @property {string} [purga_em]  só na busca `situacao: lixeira`
+ * @property {string | null} [mesclado_em_id]  descartado numa mesclagem (na lixeira)
+ * @property {string | null} [mesclado_em_nome]  nome atual do lead que ficou (vem junto do id)
  *
  * @typedef {'igual' | 'contem' | 'entre' | 'e_um_dos' | 'vazio' | 'nao_vazio'} Operador
  *

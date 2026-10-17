@@ -38,12 +38,15 @@ export function validarImportacao(authApi, { arquivo, mapeamento, estrategiaDupl
 
 /**
  * 503 `QUEUE_UNAVAILABLE` devolve o job para `pendente` — dá para confirmar de novo.
+ * `acoes` decide linha a linha o que fazer com as duplicadas (`crm.duplicidade`);
+ * linha sem ação segue a estratégia geral.
  *
  * @param {import('@/hooks/create-auth-session').AuthApi} authApi
  * @param {string} jobId
+ * @param {Record<string, 'pular' | 'atualizar' | 'criar'> | null} [acoes]
  */
-export function confirmarImportacao(authApi, jobId) {
-  return authApi.post(`/crm/import/${encodeURIComponent(jobId)}/confirm`, {});
+export function confirmarImportacao(authApi, jobId, acoes) {
+  return authApi.post(`/crm/import/${encodeURIComponent(jobId)}/confirm`, acoes ? { acoes } : {});
 }
 
 /**

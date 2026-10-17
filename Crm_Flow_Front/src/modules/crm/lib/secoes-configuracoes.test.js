@@ -17,12 +17,16 @@ test('Listas aparece só com crm.listas, na ordem da spec', () => {
     secoesVisiveis({ ...dono, featuresAtivas: ['crm.listas'] }).map((secao) => secao.key),
     ['campos', 'listas'],
   );
+  assert.deepEqual(
+    secoesVisiveis({ ...dono, featuresAtivas: ['crm.listas', 'crm.regras'] }).map((secao) => secao.key),
+    ['campos', 'listas', 'regras'],
+  );
 });
 
 test('subseção ainda sem tela fica oculta mesmo com a flag dela ligada', () => {
-  const comDuplicidade = { ...dono, featuresAtivas: ['crm.duplicidade'] };
+  const comDistribuicao = { ...dono, featuresAtivas: ['crm.distribuicao'] };
 
-  assert.equal(secoesVisiveis(comDuplicidade).some((secao) => secao.key === 'duplicidade'), false);
+  assert.equal(secoesVisiveis(comDistribuicao).some((secao) => secao.key === 'distribuicao'), false);
 });
 
 test('OPERADOR vê só o Layout, e só com crm.layout', () => {
@@ -32,6 +36,13 @@ test('OPERADOR vê só o Layout, e só com crm.layout', () => {
   assert.deepEqual(
     secoesVisiveis({ ...operador, featuresAtivas: ['crm.layout', 'crm.listas'] }).map((secao) => secao.key),
     ['layout'],
+  );
+  // Regras de campo são de gestão: o OPERADOR não vê (o form dele aplica as regras).
+  assert.deepEqual(secoesVisiveis({ ...operador, featuresAtivas: ['crm.regras'] }), []);
+  // Duplicidade: o OPERADOR lê as regras (só gestão altera).
+  assert.deepEqual(
+    secoesVisiveis({ ...operador, featuresAtivas: ['crm.duplicidade'] }).map((secao) => secao.key),
+    ['duplicidade'],
   );
 });
 

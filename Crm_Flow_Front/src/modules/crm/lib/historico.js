@@ -71,11 +71,18 @@ export function fraseDoItem(item, nomePorId) {
  * O que o autor fez: uma frase por campo alterado, ou a frase do tipo do
  * evento. Tipo desconhecido (evento novo no back) vira "alterou o lead".
  *
+ * A mesclagem (`detalhes.nomeDescartado`) abre com quem foi mesclado e
+ * segue com o que mudou no lead que ficou.
+ *
  * @param {EventoLead} evento
  * @param {Map<string, string>} nomePorId
  * @returns {string[]}
  */
 export function frasesDoEvento(evento, nomePorId) {
+  if (evento.tipo === TIPOS_EVENTO.MESCLADO) {
+    const descartado = evento.detalhes?.nomeDescartado || 'outro lead';
+    return [`mesclou ${descartado} neste lead`, ...(evento.diff ?? []).map((item) => fraseDoItem(item, nomePorId))];
+  }
   if (evento.tipo === TIPOS_EVENTO.ATUALIZADO && evento.diff?.length > 0) {
     return evento.diff.map((item) => fraseDoItem(item, nomePorId));
   }

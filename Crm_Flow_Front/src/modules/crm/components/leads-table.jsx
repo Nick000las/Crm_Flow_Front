@@ -1,5 +1,7 @@
 import { RotateCcw } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
@@ -13,6 +15,7 @@ import { cn } from '@/lib/utils';
 import { textoDaPurga } from '../lib/arquivo';
 import { lerValorDaColuna } from '../lib/colunas';
 import { tituloDoLead } from '../lib/layout';
+import { ROTAS_CRM } from '../rotas';
 import { AcoesLead } from './acoes-lead';
 import { CelulaLead } from './celula-lead';
 import { LinkDoLead } from './link-do-lead';
@@ -21,10 +24,15 @@ const HEAD_CLASS =
   'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
 const LINHAS_SKELETON = 8;
 
-function Cabecalho({ colunas, identificador, comAcoes, lixeira }) {
+function Cabecalho({ colunas, identificador, comAcoes, lixeira, comSelecao }) {
   return (
     <TableHeader>
       <TableRow>
+        {comSelecao && (
+          <TableHead className="w-10" scope="col">
+            <span className="sr-only">Selecionar</span>
+          </TableHead>
+        )}
         {identificador && (
           <TableHead className={HEAD_CLASS} scope="col">
             {identificador.label}
@@ -90,6 +98,33 @@ function cliqueEmControle(event) {
   return event.target instanceof Element && event.target.closest('a, button, [role="menuitem"]');
 }
 
+/**
+ * @typedef {{
+ *   ids: Set<string>,
+ *   cheia: boolean,
+ *   alternar: (lead: import('../types').Lead) => void,
+ * }} SelecaoDaTabela  com `cheia`, só os marcados continuam clicáveis
+ */
+
+/**
+ * Lead descartado numa mesclagem: não se restaura (409). O back garante
+ * `mesclado_em_id` e `mesclado_em_nome` (o nome atual do que ficou) juntos;
+ * o nome é o link para ele.
+ */
+function MescladoEm({ lead }) {
+  return (
+    <span className="text-xs">
+      Mesclado em{' '}
+      <Link
+        className="underline underline-offset-2 outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+        to={ROTAS_CRM.lead(lead.mesclado_em_id)}
+      >
+        {lead.mesclado_em_nome}
+      </Link>
+    </span>
+  );
+}
+
 /** Lixeira: o lead não abre (o back dá 404); a ação da linha é restaurar. */
 function Restaurar({ lead, titulo, restaurando, onRestaurar }) {
   return (
@@ -130,7 +165,9 @@ function Restaurar({ lead, titulo, restaurando, onRestaurar }) {
  *   lixeira?: boolean,
  *   onRestaurar?: (lead: import('../types').Lead) => void,
  *   restaurandoId?: string | null,
- * }} props
+ *   onMesclar?: (lead: import('../types').Lead) => void,
+ *   selecao?: SelecaoDaTabela | null,
+ * }} props `selecao` (mesclar 2 leads) põe um checkbox por linha
  */
 export function LeadsTable({
   colunas,
@@ -146,6 +183,8 @@ export function LeadsTable({
   lixeira = false,
   onRestaurar,
   restaurandoId = null,
+  onMesclar,
+  selecao = null,
 }) {
   return (
     <div
@@ -156,7 +195,13 @@ export function LeadsTable({
       aria-busy={atualizando}
     >
       <Table>
-        <Cabecalho colunas={colunas} comAcoes identificador={identificador} lixeira={lixeira} />
+        <Cabecalho
+          colunas={colunas}
+          comAcoes
+          comSelecao={Boolean(selecao)}
+          identificador={identificador}
+          lixeira={lixeira}
+        />
         <TableBody>
           {leads.map((lead) => {
             const titulo = tituloDoLead(lead, identificador);
@@ -167,6 +212,16 @@ export function LeadsTable({
                 key={lead.id}
                 onClick={lixeira ? undefined : (event) => !cliqueEmControle(event) && onAbrir(lead.id)}
               >
+                {selecao && (
+                  <TableCell className="py-1">
+                    <Checkbox
+                      aria-label={`Selecionar ${titulo}`}
+                      checked={selecao.ids.has(lead.id)}
+                      disabled={selecao.cheia && !selecao.ids.has(lead.id)}
+                      onCheckedChange={() => selecao.alternar(lead)}
+                    />
+                  </TableCell>
+                )}
                 {identificador && (
                   <TableCell className="font-medium">
                     {lixeira ? (
@@ -198,11 +253,11 @@ export function LeadsTable({
                 })}
                 {lixeira && (
                   <TableCell className="font-mono text-xs whitespace-nowrap text-muted-foreground">
-                    {textoDaPurga(lead.purga_em)}
+                    {lead.mesclado_em_id ? <MescladoEm lead={lead} /> : textoDaPurga(lead.purga_em)}
                   </TableCell>
                 )}
                 <TableCell className="py-1 text-right">
-                  {lixeira ? (
+                  {lixeira && lead.mesclado_em_id ? null : lixeira ? (
                     <Restaurar
                       lead={lead}
                       onRestaurar={onRestaurar}
@@ -216,6 +271,7 @@ export function LeadsTable({
                       onDesarquivar={onDesarquivar && (() => onDesarquivar(lead))}
                       onEditar={() => onEditar(lead.id)}
                       onExcluir={() => onExcluir(lead)}
+                      onMesclar={onMesclar && (() => onMesclar(lead))}
                     />
                   )}
                 </TableCell>

@@ -63,5 +63,16 @@ test('frasesDoEvento: uma por campo, ou a do tipo', () => {
   assert.deepEqual(frasesDoEvento(evento({ tipo: 'arquivado' }), NOMES), ['arquivou o lead']);
   assert.deepEqual(frasesDoEvento(evento({ tipo: 'criado' }), NOMES), ['criou o lead']);
   assert.deepEqual(frasesDoEvento(evento(), NOMES), ['atualizou o lead']);
-  assert.deepEqual(frasesDoEvento(evento({ tipo: 'mesclado' }), NOMES), ['alterou o lead']);
+  assert.deepEqual(frasesDoEvento(evento({ tipo: 'convertido' }), NOMES), ['alterou o lead']);
+});
+
+test('mesclado diz quem foi mesclado e o que mudou', () => {
+  const mesclado = evento({
+    tipo: 'mesclado',
+    detalhes: { leadDescartadoId: 'l2', nomeDescartado: 'Ana S.' },
+    diff: [{ ...STATUS, antes: 'novo', depois: 'ganho' }],
+  });
+
+  assert.deepEqual(frasesDoEvento(mesclado, NOMES), ['mesclou Ana S. neste lead', 'mudou Status de Novo para Ganho']);
+  assert.deepEqual(frasesDoEvento(evento({ tipo: 'mesclado', detalhes: {} }), NOMES), ['mesclou outro lead neste lead']);
 });

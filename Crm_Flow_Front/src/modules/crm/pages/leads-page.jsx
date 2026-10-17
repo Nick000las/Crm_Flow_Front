@@ -14,6 +14,8 @@ import { ExcluirLeadDialog } from '../components/excluir-lead-dialog';
 import { ExportarDialog } from '../components/exportar-dialog';
 import { LeadsToolbar } from '../components/leads-toolbar';
 import { LeadsConteudo } from '../components/leads-conteudo';
+import { BarraSelecao } from '../components/mesclagem/barra-selecao';
+import { MesclarDialog } from '../components/mesclagem/mesclar-dialog';
 import { AVISOS_LEAD, CONTEXTO, CRM_FEATURES, PAPEIS_GESTAO, SITUACOES_LEAD } from '../constants';
 import { useAcoesDeArquivo } from '../hooks/use-acoes-de-arquivo';
 import { useCampos } from '../hooks/use-campos';
@@ -21,6 +23,7 @@ import { useColunasDaLista } from '../hooks/use-colunas-da-lista';
 import { useEstadoLista } from '../hooks/use-estado-lista';
 import { useLeadsSearch } from '../hooks/use-leads-search';
 import { useNavegacaoLeads } from '../hooks/use-navegacao-leads';
+import { useSelecaoMesclagem } from '../hooks/use-selecao-mesclagem';
 import { useUsuarios } from '../hooks/use-usuarios';
 import { situacaoDaBusca } from '../lib/arquivo';
 import { camposDoContexto } from '../lib/contextos';
@@ -52,6 +55,12 @@ export default function LeadsPage() {
   const [leadAExcluir, setLeadAExcluir] = useState(null);
   const [exportando, setExportando] = useState(false);
   const gestao = podeVer({ roles: PAPEIS_GESTAO }, user);
+  // Mesclar: DONO/MASTER com `crm.duplicidade`, fora da lixeira.
+  const podeMesclar = gestao && temFeature(user, CRM_FEATURES.DUPLICIDADE) && !naLixeira;
+  const selecao = useSelecaoMesclagem(
+    JSON.stringify([estado.busca, estado.filtro, situacao, estado.pagina, estado.tamanho]),
+  );
+  const [aMesclar, setAMesclar] = useState([]);
 
   // Uma chamada para a lista toda; cada parte recebe os campos da sua tela.
   // Chips e export usam todos: um filtro antigo por campo fora de "Filtros"
@@ -124,8 +133,18 @@ export default function LeadsPage() {
         title="Não foi possível mudar o lead"
       />
 
+      {podeMesclar && (
+        <BarraSelecao
+          onLimpar={selecao.limpar}
+          onMesclar={() => setAMesclar(selecao.leads)}
+          total={selecao.leads.length}
+        />
+      )}
+
       <LeadsConteudo
         acoesDeArquivo={comArquivo ? arquivo.acoes : undefined}
+        onMesclar={podeMesclar ? (lead) => setAMesclar([lead]) : undefined}
+        selecao={podeMesclar ? selecao.tabela : null}
         atualizar={atualizar}
         botaoNovo={botaoNovo(false)}
         carregando={camposQuery.isPending || leadsQuery.isPending}
@@ -167,6 +186,20 @@ export default function LeadsPage() {
         </AbasSituacao>
       ) : (
         lista
+      )}
+
+      {podeMesclar && (
+        <MesclarDialog
+          campos={campos}
+          leads={aMesclar}
+          nomePorId={nomePorId}
+          onMesclado={(principalId) => {
+            setAMesclar([]);
+            selecao.limpar();
+            abrirLead(principalId, { aviso: AVISOS_LEAD.MESCLADO });
+          }}
+          onOpenChange={(aberto) => !aberto && setAMesclar([])}
+        />
       )}
 
       <ExcluirLeadDialog

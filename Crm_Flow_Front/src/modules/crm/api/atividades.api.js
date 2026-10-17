@@ -32,6 +32,7 @@
  *   autor: { id: string, nome: string } | null,
  *   criadoEm: string,
  *   diff: ItemDiff[],
+ *   detalhes?: { leadDescartadoId?: string, nomeDescartado?: string } | null,
  * }} EventoLead
  */
 

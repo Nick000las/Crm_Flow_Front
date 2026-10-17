@@ -1,4 +1,4 @@
-import { Archive, ArchiveRestore, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { Archive, ArchiveRestore, Combine, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -11,7 +11,8 @@ import { estaArquivado } from '../lib/arquivo';
 
 /**
  * Menu "⋯" da linha. Arquivar/Desarquivar só aparecem com os handlers
- * (`crm.arquivo`); qual dos dois depende do lead.
+ * (`crm.arquivo`); qual dos dois depende do lead. Mesclar, só com o handler
+ * (`crm.duplicidade` + DONO/MASTER).
  *
  * @param {{
  *   lead: import('../types').Lead,
@@ -19,9 +20,10 @@ import { estaArquivado } from '../lib/arquivo';
  *   onExcluir: () => void,
  *   onArquivar?: () => void,
  *   onDesarquivar?: () => void,
+ *   onMesclar?: () => void,
  * }} props
  */
-export function AcoesLead({ lead, onEditar, onExcluir, onArquivar, onDesarquivar }) {
+export function AcoesLead({ lead, onEditar, onExcluir, onArquivar, onDesarquivar, onMesclar }) {
   const arquivado = estaArquivado(lead);
 
   return (
@@ -47,6 +49,12 @@ export function AcoesLead({ lead, onEditar, onExcluir, onArquivar, onDesarquivar
           <DropdownMenuItem onClick={onDesarquivar}>
             <ArchiveRestore aria-hidden="true" />
             Desarquivar
+          </DropdownMenuItem>
+        )}
+        {onMesclar && (
+          <DropdownMenuItem onClick={onMesclar}>
+            <Combine aria-hidden="true" />
+            Mesclar…
           </DropdownMenuItem>
         )}
         <DropdownMenuItem onClick={onExcluir} variant="destructive">
