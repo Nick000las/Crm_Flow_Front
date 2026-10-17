@@ -3,12 +3,14 @@ import { PageHeader } from '@/components/page-header';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { SecaoCampos } from '../components/config-campos/secao-campos';
+import { SecaoLayout } from '../components/config-layout/secao-layout';
 import { SecaoListas } from '../components/config-listas/secao-listas';
 import { caminhoDaSecao, secoesVisiveis } from '../lib/secoes-configuracoes';
 import { ROTAS_CRM } from '../rotas';
 
 /** Tela de cada subseção pronta. Subseção nova = uma entrada aqui + `pronta` no lib. */
 const TELA_DA_SECAO = Object.freeze({
+  layout: SecaoLayout,
   campos: SecaoCampos,
   listas: SecaoListas,
 });
@@ -44,9 +46,10 @@ function NavegacaoSecoes({ secoes, ativa }) {
 }
 
 /**
- * Área Configurações do CRM (`/crm/configuracoes/:secao`). A rota já barra
- * papel e flags; aqui só se escolhe a subseção — sem `:secao`, ou com uma
- * oculta, vai para a primeira visível.
+ * Área Configurações do CRM (`/crm/configuracoes/:secao`). Papel e flag
+ * valem por subseção (`secoesVisiveis`): o OPERADOR, por exemplo, só vê o
+ * Layout. Sem `:secao`, ou com uma que o usuário não vê, vai para a primeira
+ * visível; sem nenhuma, volta para a lista.
  */
 export default function ConfiguracoesCrmPage() {
   const { secao } = useParams();

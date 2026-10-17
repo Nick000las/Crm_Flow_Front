@@ -37,11 +37,8 @@ export const appRoutes = [
       {
         // Sem `:secao` (ou com uma oculta), a página leva à primeira visível.
         path: 'configuracoes/:secao?',
-        element: (
-          <RequireRole roles={PAPEIS_GESTAO} fallback={ROTAS_CRM.LISTA}>
-            <ConfiguracoesCrmPage />
-          </RequireRole>
-        ),
+        // Papel por subseção (o OPERADOR edita o próprio layout): a página decide.
+        element: <ConfiguracoesCrmPage />,
       },
     ],
   },

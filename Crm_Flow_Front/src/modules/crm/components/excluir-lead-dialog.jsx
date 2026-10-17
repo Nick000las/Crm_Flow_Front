@@ -9,21 +9,25 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { DIAS_NA_LIXEIRA } from '../constants';
 import { useExcluirLead } from '../hooks/use-lead-mutations';
 
 const ERRO_ID = 'excluir-lead-erro';
 
 /**
- * Confirmação de exclusão. Usada pela linha da tabela e pelo Sheet.
+ * Confirmação de exclusão. Usada pela linha da tabela e pelo Sheet. Excluir
+ * sempre manda para a lixeira; com `comLixeira` (`crm.arquivo`) há tela para
+ * restaurar, e o texto diz o prazo.
  *
  * @param {{
  *   lead: { id: string, nome: string } | null,
  *   open: boolean,
  *   onOpenChange: (open: boolean) => void,
  *   onExcluido: () => void,
+ *   comLixeira?: boolean,
  * }} props
  */
-export function ExcluirLeadDialog({ lead, open, onOpenChange, onExcluido }) {
+export function ExcluirLeadDialog({ lead, open, onOpenChange, onExcluido, comLixeira = false }) {
   const excluir = useExcluirLead();
 
   function handleOpenChange(proximo) {
@@ -47,7 +51,9 @@ export function ExcluirLeadDialog({ lead, open, onOpenChange, onExcluido }) {
         <AlertDialogHeader>
           <AlertDialogTitle>Excluir lead</AlertDialogTitle>
           <AlertDialogDescription>
-            {lead ? `"${lead.nome}" será excluído. ` : ''}Esta ação não pode ser desfeita.
+            {comLixeira
+              ? `${lead ? `"${lead.nome}"` : 'O lead'} vai para a lixeira e pode ser restaurado em até ${DIAS_NA_LIXEIRA} dias.`
+              : `${lead ? `"${lead.nome}" será excluído. ` : ''}Esta ação não pode ser desfeita.`}
           </AlertDialogDescription>
         </AlertDialogHeader>
 

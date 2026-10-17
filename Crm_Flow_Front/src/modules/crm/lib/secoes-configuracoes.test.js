@@ -20,13 +20,26 @@ test('Listas aparece só com crm.listas, na ordem da spec', () => {
 });
 
 test('subseção ainda sem tela fica oculta mesmo com a flag dela ligada', () => {
-  const comLayout = { ...dono, featuresAtivas: ['crm.layout'] };
+  const comDuplicidade = { ...dono, featuresAtivas: ['crm.duplicidade'] };
 
-  assert.equal(secoesVisiveis(comLayout).some((secao) => secao.key === 'layout'), false);
+  assert.equal(secoesVisiveis(comDuplicidade).some((secao) => secao.key === 'duplicidade'), false);
 });
 
-test('OPERADOR não vê a área', () => {
-  assert.deepEqual(secoesVisiveis({ ...dono, role: 'OPERADOR' }), []);
+test('OPERADOR vê só o Layout, e só com crm.layout', () => {
+  const operador = { ...dono, role: 'OPERADOR' };
+
+  assert.deepEqual(secoesVisiveis(operador), []);
+  assert.deepEqual(
+    secoesVisiveis({ ...operador, featuresAtivas: ['crm.layout', 'crm.listas'] }).map((secao) => secao.key),
+    ['layout'],
+  );
+});
+
+test('com crm.layout, o DONO vê Layout antes de Campos (ordem da spec)', () => {
+  assert.deepEqual(
+    secoesVisiveis({ ...dono, featuresAtivas: ['crm.layout'] }).map((secao) => secao.key),
+    ['layout', 'campos'],
+  );
 });
 
 test('caminho da subseção', () => {

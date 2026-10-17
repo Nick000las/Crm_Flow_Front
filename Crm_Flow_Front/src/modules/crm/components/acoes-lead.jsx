@@ -1,4 +1,4 @@
-import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { Archive, ArchiveRestore, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -7,17 +7,23 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { estaArquivado } from '../lib/arquivo';
 
 /**
- * Menu "⋯" da linha.
+ * Menu "⋯" da linha. Arquivar/Desarquivar só aparecem com os handlers
+ * (`crm.arquivo`); qual dos dois depende do lead.
  *
  * @param {{
- *   lead: { nome: string },
+ *   lead: import('../types').Lead,
  *   onEditar: () => void,
  *   onExcluir: () => void,
+ *   onArquivar?: () => void,
+ *   onDesarquivar?: () => void,
  * }} props
  */
-export function AcoesLead({ lead, onEditar, onExcluir }) {
+export function AcoesLead({ lead, onEditar, onExcluir, onArquivar, onDesarquivar }) {
+  const arquivado = estaArquivado(lead);
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -31,6 +37,18 @@ export function AcoesLead({ lead, onEditar, onExcluir }) {
           <Pencil aria-hidden="true" />
           Editar
         </DropdownMenuItem>
+        {onArquivar && !arquivado && (
+          <DropdownMenuItem onClick={onArquivar}>
+            <Archive aria-hidden="true" />
+            Arquivar
+          </DropdownMenuItem>
+        )}
+        {onDesarquivar && arquivado && (
+          <DropdownMenuItem onClick={onDesarquivar}>
+            <ArchiveRestore aria-hidden="true" />
+            Desarquivar
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onClick={onExcluir} variant="destructive">
           <Trash2 aria-hidden="true" />
           Excluir

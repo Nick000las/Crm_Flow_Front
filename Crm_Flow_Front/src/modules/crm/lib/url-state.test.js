@@ -3,8 +3,10 @@ import { test } from 'node:test';
 import {
   ESTADO_LISTA_PADRAO,
   escreverEstadoLista,
+  estadoDaVisao,
   lerEstadoLista,
   totalDePaginas,
+  visaoDoEstado,
 } from './url-state.js';
 
 test('URL vazia dá o estado padrão', () => {
@@ -58,4 +60,36 @@ test('filtro vai e volta pela URL e some quando vazio', () => {
     escreverEstadoLista(comFiltro, { filtro: ESTADO_LISTA_PADRAO.filtro }).has('f'),
     false,
   );
+});
+
+test('situação vai e volta pela URL, e ativos (o padrão) some', () => {
+  const naLixeira = escreverEstadoLista(new URLSearchParams(), { situacao: 'lixeira' });
+
+  assert.equal(naLixeira.toString(), 'situacao=lixeira');
+  assert.equal(lerEstadoLista(naLixeira).situacao, 'lixeira');
+  assert.equal(escreverEstadoLista(naLixeira, { situacao: 'ativos' }).toString(), '');
+  assert.equal(lerEstadoLista(new URLSearchParams('situacao=apagados')).situacao, 'ativos');
+});
+
+test('a view grava busca e situação só quando não são o padrão', () => {
+  const filtro = { filtros: [{ chave: 'email', operador: 'vazio' }] };
+
+  assert.deepEqual(visaoDoEstado({ ...ESTADO_LISTA_PADRAO, filtro }), filtro);
+  assert.deepEqual(visaoDoEstado({ ...ESTADO_LISTA_PADRAO, filtro, busca: 'ana', situacao: 'arquivados' }), {
+    ...filtro,
+    busca: 'ana',
+    situacao: 'arquivados',
+  });
+});
+
+test('estadoDaVisao lê a view salva e volta para a 1ª página', () => {
+  const filtro = { filtros: [{ chave: 'email', operador: 'vazio' }] };
+
+  assert.deepEqual(estadoDaVisao({ ...filtro, busca: 'ana', situacao: 'arquivados' }), {
+    busca: 'ana',
+    filtro,
+    situacao: 'arquivados',
+    pagina: 1,
+  });
+  assert.deepEqual(estadoDaVisao(null), { busca: '', filtro: ESTADO_LISTA_PADRAO.filtro, situacao: 'ativos', pagina: 1 });
 });

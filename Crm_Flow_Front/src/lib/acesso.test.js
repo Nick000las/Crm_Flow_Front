@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { podeVer, temFeature } from './acesso.js';
+import { paginaVisivel, podeVer, temFeature } from './acesso.js';
 
 const dono = { role: 'DONO', modulosAtivos: ['crm'] };
 const operador = { role: 'OPERADOR', modulosAtivos: ['crm'] };
@@ -66,4 +66,21 @@ test('feature em lista exige todas as flags ligadas', () => {
 
   assert.equal(podeVer(item, { ...dono, featuresAtivas: ['crm.layout', 'crm.listas'] }), true);
   assert.equal(podeVer(item, { ...dono, featuresAtivas: ['crm.layout'] }), false);
+});
+
+test('página com subseções só aparece se alguma subseção pronta for visível', () => {
+  const configuracoes = {
+    moduleKey: 'crm',
+    secoes: [
+      { key: 'campos', roles: ['DONO'], pronta: true },
+      { key: 'layout', feature: 'crm.layout', pronta: true },
+      { key: 'listas', feature: 'crm.listas', pronta: false },
+    ],
+  };
+
+  assert.equal(paginaVisivel(configuracoes, dono), true);
+  assert.equal(paginaVisivel(configuracoes, operador), false);
+  assert.equal(paginaVisivel(configuracoes, { ...operador, featuresAtivas: ['crm.layout'] }), true);
+  assert.equal(paginaVisivel(configuracoes, { ...operador, featuresAtivas: ['crm.listas'] }), false);
+  assert.equal(paginaVisivel({ roles: ['DONO'] }, operador), false);
 });

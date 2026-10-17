@@ -45,6 +45,11 @@
  * @property {string | null} valor
  * @property {string | null} usuario_responsavel_id
  * @property {Record<string, unknown>} [custom_fields]
+ * @property {string} [created_at]
+ * @property {string} [updated_at]
+ * @property {string | null} [archived_at]  arquivado (`crm.arquivo`)
+ * @property {string | null} [deleted_at]   na lixeira
+ * @property {string} [purga_em]  só na busca `situacao: lixeira`
  *
  * @typedef {'igual' | 'contem' | 'entre' | 'e_um_dos' | 'vazio' | 'nao_vazio'} Operador
  *

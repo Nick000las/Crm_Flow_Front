@@ -8,9 +8,13 @@ export const crmKeys = {
   leads: () => ['crm', 'leads'],
   leadsSearch: (params) => ['crm', 'leads', params],
   lead: (id) => ['crm', 'lead', id],
+  // Fora do prefixo `lead(id)`: recarregar o lead não recarrega as abas.
+  atividades: (leadId) => ['crm', 'atividades', leadId],
+  historico: (leadId) => ['crm', 'historico', leadId],
   views: () => ['crm', 'views'],
   usuarios: () => ['crm', 'usuarios'],
   camposConfigurados: () => ['crm', 'configuracoes', 'campos'],
   listas: () => ['crm', 'configuracoes', 'listas'],
+  layout: () => ['crm', 'layout'],
   importJob: (jobId) => ['crm', 'import', jobId],
 };

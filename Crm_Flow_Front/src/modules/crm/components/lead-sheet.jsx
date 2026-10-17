@@ -1,20 +1,20 @@
-import { Pencil, Trash2 } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { ApiErrorAlert } from '@/components/api-error-alert';
-import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
-import { AVISOS_LEAD, CONTEXTO } from '../constants';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { useAuth } from '@/hooks/useAuth';
+import { temFeature } from '@/lib/acesso';
+import { AVISOS_LEAD, CONTEXTO, CRM_FEATURES } from '../constants';
 import { useCampos } from '../hooks/use-campos';
+import { useLayoutEfetivo } from '../hooks/use-layout';
 import { useLead } from '../hooks/use-lead';
-import { useAtualizarLead, useCriarLead } from '../hooks/use-lead-mutations';
+import {
+  useArquivarLead,
+  useAtualizarLead,
+  useCriarLead,
+  useDesarquivarLead,
+} from '../hooks/use-lead-mutations';
 import { useNavegacaoLeads } from '../hooks/use-navegacao-leads';
 import { useUsuarios } from '../hooks/use-usuarios';
 import { camposDoContexto } from '../lib/contextos';
@@ -26,7 +26,8 @@ import {
 } from '../lib/form-lead';
 import { ID_BOTAO_NOVO_LEAD, ID_NOVO_LEAD, idLinkDoLead } from '../rotas';
 import { ExcluirLeadDialog } from './excluir-lead-dialog';
-import { LeadDetalhe } from './lead-detalhe';
+import { LeadCabecalho } from './lead-cabecalho';
+import { LeadAbas } from './lead-abas';
 import { LeadForm } from './lead-form';
 
 const CAMPOS_VAZIOS = [];
@@ -51,6 +52,9 @@ export function LeadSheet() {
   const { leadId } = useParams();
   const location = useLocation();
   const criando = leadId === ID_NOVO_LEAD;
+  const { user } = useAuth();
+  const comArquivo = temFeature(user, CRM_FEATURES.ARQUIVO);
+  const comAtividades = temFeature(user, CRM_FEATURES.ATIVIDADES);
 
   const [aberto, setAberto] = useState(true);
   const [editando, setEditando] = useState(Boolean(location.state?.editar));
@@ -62,8 +66,11 @@ export function LeadSheet() {
   const camposQuery = useCampos();
   const leadQuery = useLead(criando ? undefined : leadId);
   const { usuarios, nomePorId } = useUsuarios();
+  const layout = useLayoutEfetivo();
   const criar = useCriarLead();
   const atualizar = useAtualizarLead(leadId);
+  const arquivar = useArquivarLead();
+  const desarquivar = useDesarquivarLead();
 
   // Criar mostra os campos de "Criação"; ver e editar, os de "Ficha".
   const contexto = criando ? CONTEXTO.CRIACAO : CONTEXTO.FICHA;
@@ -94,9 +101,24 @@ export function LeadSheet() {
     setAviso(payloadVazio(payload) ? null : AVISOS_LEAD.SALVO);
   }
 
+  /** Arquivar/desarquivar não fecha o drawer: o selo troca e o aviso serve de desfazer. */
+  function mudarArquivo(mutacao, outra, avisoDeSucesso) {
+    setAviso(null);
+    outra.reset();
+    mutacao.mutate(leadId, { onSuccess: () => setAviso(avisoDeSucesso) });
+  }
+
+  const arquivo = comArquivo
+    ? {
+        ocupado: arquivar.isPending || desarquivar.isPending,
+        onArquivar: () => mudarArquivo(arquivar, desarquivar, AVISOS_LEAD.ARQUIVADO),
+        onDesarquivar: () => mudarArquivo(desarquivar, arquivar, AVISOS_LEAD.DESARQUIVADO),
+      }
+    : null;
+  const erroDeArquivo = arquivar.error ?? desarquivar.error;
+
   const erro = camposQuery.error ?? leadQuery.error;
   const carregando = camposQuery.isPending || (!criando && leadQuery.isPending);
-  const titulo = criando ? 'Novo lead' : (lead?.nome ?? 'Lead');
   const mostrarForm = criando || editando;
 
   return (
@@ -112,24 +134,21 @@ export function LeadSheet() {
           document.getElementById(criando ? ID_BOTAO_NOVO_LEAD : idLinkDoLead(leadId)) ?? true
         }
       >
-        <SheetHeader className="border-b border-border p-4">
-          <SheetTitle className="pr-8">{titulo}</SheetTitle>
-          <SheetDescription>
-            {criando ? 'Preencha os dados do contato.' : editando ? 'Editando o lead.' : 'Dados do lead.'}
-          </SheetDescription>
-          {!criando && lead && !editando && (
-            <div className="flex gap-2 pt-2">
-              <Button onClick={() => { setAviso(null); setEditando(true); }} size="sm" variant="outline">
-                <Pencil aria-hidden="true" />
-                Editar
-              </Button>
-              <Button onClick={() => setExcluindo(true)} size="sm" variant="destructive">
-                <Trash2 aria-hidden="true" />
-                Excluir
-              </Button>
-            </div>
-          )}
-        </SheetHeader>
+        <LeadCabecalho
+          arquivo={arquivo}
+          criando={criando}
+          editando={editando}
+          layout={layout}
+          lead={lead}
+          nomePorId={nomePorId}
+          onEditar={() => {
+            setAviso(null);
+            arquivar.reset();
+            desarquivar.reset();
+            setEditando(true);
+          }}
+          onExcluir={() => setExcluindo(true)}
+        />
 
         <div className="flex min-h-0 flex-1 flex-col pt-4">
           {aviso && (
@@ -137,6 +156,12 @@ export function LeadSheet() {
               {aviso}
             </p>
           )}
+          <ApiErrorAlert
+            className="mx-4 mb-4"
+            error={erroDeArquivo}
+            id="lead-sheet-arquivo-erro"
+            title="Não foi possível mudar o arquivo do lead"
+          />
 
           {erro ? (
             <ApiErrorAlert className="mx-4" error={erro} id="lead-sheet-erro" />
@@ -154,16 +179,21 @@ export function LeadSheet() {
               usuarios={usuarios}
             />
           ) : (
-            <div className="overflow-y-auto">
-              <LeadDetalhe campos={campos} lead={lead} nomePorId={nomePorId} />
-            </div>
+            <LeadAbas
+              campos={campos}
+              comAtividades={comAtividades}
+              layout={layout}
+              lead={lead}
+              nomePorId={nomePorId}
+            />
           )}
         </div>
       </SheetContent>
 
       <ExcluirLeadDialog
+        comLixeira={comArquivo}
         lead={lead ?? null}
-        onExcluido={() => fechar(AVISOS_LEAD.EXCLUIDO)}
+        onExcluido={() => fechar(comArquivo ? AVISOS_LEAD.NA_LIXEIRA : AVISOS_LEAD.EXCLUIDO)}
         onOpenChange={setExcluindo}
         open={excluindo}
       />
