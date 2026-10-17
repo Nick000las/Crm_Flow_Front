@@ -1,7 +1,10 @@
 import { TIPOS_CAMPO } from '../constants';
 import { TIPO_COLUNA } from '../lib/colunas';
 import {
+  formatarCnpj,
+  formatarCpf,
   formatarData,
+  formatarInstante,
   formatarMoeda,
   formatarNumero,
   formatarTelefone,
@@ -11,8 +14,12 @@ import { opcaoDoCampo } from '../lib/opcoes';
 import { OpcaoBadge } from './opcao-badge';
 
 const MAX_BADGES = 2;
+const TIPO_USUARIO = 'usuario';
 const TAMANHO_ID_CURTO = 8;
 const DADO = 'font-mono text-xs tabular-nums';
+/** Documentos são `texto` no back: a máscara vai pela chave do campo. */
+const MASCARA_POR_CHAVE = Object.freeze({ cnpj: formatarCnpj, cpf: formatarCpf });
+
 const LINK = 'underline-offset-4 outline-none hover:underline focus-visible:underline';
 
 function Vazio() {
@@ -85,11 +92,18 @@ function Url({ valor }) {
 export function CelulaLead({ coluna, valor, nomePorId, completo = false, semLink = false }) {
   if (valor === null || valor === undefined || valor === '') return <Vazio />;
 
+  const mascara = MASCARA_POR_CHAVE[coluna.campo?.chave];
+  if (mascara) return <span className={DADO}>{mascara(valor)}</span>;
+
   switch (coluna.tipo) {
     case TIPO_COLUNA.MOEDA:
     case TIPOS_CAMPO.MONETARIO:
       return <span className={DADO}>{formatarMoeda(valor) ?? '—'}</span>;
+    case TIPO_COLUNA.INSTANTE:
+      return <span className={DADO}>{formatarInstante(valor) ?? '—'}</span>;
+    // Item de layout (`lead.responsavel`) chega com tipo `usuario`.
     case TIPO_COLUNA.RESPONSAVEL:
+    case TIPO_USUARIO:
       return <Responsavel id={String(valor)} nomePorId={nomePorId} />;
     case TIPOS_CAMPO.NUMERO:
       return <span className={DADO}>{formatarNumero(valor) ?? '—'}</span>;

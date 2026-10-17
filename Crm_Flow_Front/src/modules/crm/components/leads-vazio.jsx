@@ -1,7 +1,8 @@
-import { SearchX, Users } from 'lucide-react';
+import { Archive, SearchX, Trash2, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ModulePlaceholder } from '@/components/module-placeholder';
 import { Button, buttonVariants } from '@/components/ui/button';
+import { DIAS_NA_LIXEIRA, SITUACOES_LEAD } from '../constants';
 import { ROTAS_CRM } from '../rotas';
 
 /** Tenant sem leads ainda. Importar só aparece para quem pode importar. */
@@ -22,6 +23,26 @@ export function LeadsVazio({ acaoNovo, podeImportar }) {
       </div>
     </ModulePlaceholder>
   );
+}
+
+const VAZIO_DA_SITUACAO = Object.freeze({
+  [SITUACOES_LEAD.ARQUIVADOS]: {
+    icon: Archive,
+    title: 'Nenhum lead arquivado',
+    description: 'Leads arquivados saem da lista principal e continuam aqui, prontos para desarquivar.',
+  },
+  [SITUACOES_LEAD.LIXEIRA]: {
+    icon: Trash2,
+    title: 'A lixeira está vazia',
+    description: `Leads excluídos ficam aqui por ${DIAS_NA_LIXEIRA} dias e podem ser restaurados.`,
+  },
+});
+
+/** Arquivados ou lixeira sem nenhum lead (sem busca nem filtro). */
+export function SituacaoVazia({ situacao }) {
+  const { icon, title, description } = VAZIO_DA_SITUACAO[situacao];
+
+  return <ModulePlaceholder description={description} icon={icon} title={title} />;
 }
 
 export function LeadsNaoEncontrados({ onLimpar }) {

@@ -25,13 +25,14 @@ function salvar(chave, ids) {
  *
  * @param {string | undefined} tenantId
  * @param {import('../lib/colunas').Coluna[]} colunas todas as exibíveis
+ * @param {readonly string[]} [padrao] colunas do layout do tenant, para quem ainda não escolheu
  */
-export function useColunasVisiveis(tenantId, colunas) {
+export function useColunasVisiveis(tenantId, colunas, padrao) {
   const chave = `${PREFIXO_CHAVE}${tenantId ?? 'anonimo'}`;
   const [escolha, setEscolha] = useState(() => lerSalvo(chave));
 
   // Saneia na leitura: um campo desligado depois de salvo some sem quebrar.
-  const ids = useMemo(() => sanearSelecao(escolha, colunas), [escolha, colunas]);
+  const ids = useMemo(() => sanearSelecao(escolha, colunas, padrao), [escolha, colunas, padrao]);
   const visiveis = useMemo(
     () => colunas.filter((coluna) => ids.includes(coluna.id)),
     [colunas, ids],

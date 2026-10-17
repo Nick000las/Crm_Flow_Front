@@ -9,9 +9,9 @@ import { BUSCA_DEBOUNCE_MS } from '../constants';
  * depois da pausa. Se a URL mudar por fora (voltar no navegador), o campo
  * acompanha.
  *
- * @param {{ busca: string, onBuscaChange: (busca: string) => void }} props
+ * @param {{ busca: string, onBuscaChange: (busca: string) => void, placeholder: string }} props
  */
-export function BuscaLeads({ busca, onBuscaChange }) {
+export function BuscaLeads({ busca, onBuscaChange, placeholder }) {
   const [texto, setTexto] = useState(busca);
   const [buscaAnterior, setBuscaAnterior] = useState(busca);
   const buscarComAtraso = useDebouncedCallback(onBuscaChange, BUSCA_DEBOUNCE_MS);
@@ -34,7 +34,7 @@ export function BuscaLeads({ busca, onBuscaChange }) {
           setTexto(event.target.value);
           buscarComAtraso(event.target.value);
         }}
-        placeholder="Buscar por nome, e-mail ou telefone"
+        placeholder={placeholder}
         type="search"
         value={texto}
       />

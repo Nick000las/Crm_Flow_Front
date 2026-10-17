@@ -32,11 +32,11 @@ test('lerValorDoCampo lê Camadas 1/2 pela coluna e Camada 3 em custom_fields', 
   assert.equal(lerValorDoCampo({ id: 'x' }, campos[5]), undefined);
 });
 
-test('montarColunas acrescenta Valor e Responsável', () => {
+test('montarColunas acrescenta Valor, Responsável e Criado em', () => {
   const ids = montarColunas(campos).map((coluna) => coluna.id);
 
-  assert.deepEqual(ids.slice(-2), ['valor', 'responsavel']);
-  assert.equal(ids.length, campos.length + 2);
+  assert.deepEqual(ids.slice(-3), ['valor', 'responsavel', 'criadoEm']);
+  assert.equal(ids.length, campos.length + 3);
 });
 
 test('lerValorDaColuna resolve colunas especiais', () => {
@@ -54,4 +54,11 @@ test('sanearSelecao descarta colunas inexistentes e cai no padrão', () => {
   assert.deepEqual(sanearSelecao(['renda', 'sumiu'], colunas), ['renda']);
   assert.deepEqual(sanearSelecao(['sumiu'], colunas), [...COLUNAS_PADRAO]);
   assert.deepEqual(sanearSelecao('lixo', colunas), [...COLUNAS_PADRAO]);
+});
+
+test('sem escolha do usuário, o padrão do layout vale no lugar do fixo', () => {
+  const colunas = montarColunas(campos);
+
+  assert.deepEqual(sanearSelecao(null, colunas, ['criadoEm', 'email']), ['criadoEm', 'email']);
+  assert.deepEqual(sanearSelecao(['email'], colunas, ['criadoEm']), ['email']);
 });

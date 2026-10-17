@@ -1,5 +1,6 @@
 import { CAMADA } from '../constants';
-import { TIPO_COLUNA, lerValorDoCampo } from '../lib/colunas';
+import { TIPO_COLUNA, lerValorDaColuna, lerValorDoCampo } from '../lib/colunas';
+import { colunaDoItem } from '../lib/layout';
 import { CelulaLead } from './celula-lead';
 
 const GRUPOS = Object.freeze([
@@ -10,6 +11,7 @@ const GRUPOS = Object.freeze([
 
 const COLUNA_VALOR = { id: 'valor', label: 'Valor', tipo: TIPO_COLUNA.MOEDA };
 const COLUNA_RESPONSAVEL = { id: 'responsavel', label: 'Responsável', tipo: TIPO_COLUNA.RESPONSAVEL };
+const COLUNAS_NEGOCIO = Object.freeze([COLUNA_VALOR, COLUNA_RESPONSAVEL]);
 
 function Item({ label, children }) {
   return (
@@ -31,51 +33,82 @@ function Grupo({ titulo, children }) {
   );
 }
 
+/** Seções do layout (`crm.layout`), na ordem; a automática ("Outros campos") vem no fim. */
+function SecoesDoLayout({ lead, secoes, nomePorId }) {
+  return secoes.map((secao) => (
+    <Grupo key={secao.nome} titulo={secao.nome}>
+      {secao.campos.map((item) => {
+        const coluna = colunaDoItem(item);
+
+        return (
+          <Item key={item.ref} label={item.label}>
+            <CelulaLead completo coluna={coluna} nomePorId={nomePorId} valor={lerValorDaColuna(lead, coluna)} />
+          </Item>
+        );
+      })}
+    </Grupo>
+  ));
+}
+
+/** Sem layout: agrupado por camada. */
+function GruposPorCamada({ lead, campos, nomePorId }) {
+  return GRUPOS.map(({ camada, titulo }) => {
+    const doGrupo = campos.filter((campo) => campo.camada === camada);
+    if (doGrupo.length === 0) return null;
+
+    return (
+      <Grupo key={camada} titulo={titulo}>
+        {doGrupo.map((campo) => (
+          <Item key={campo.chave} label={campo.label}>
+            <CelulaLead
+              completo
+              coluna={{ id: campo.chave, label: campo.label, tipo: campo.tipo, campo }}
+              nomePorId={nomePorId}
+              valor={lerValorDoCampo(lead, campo)}
+            />
+          </Item>
+        ))}
+      </Grupo>
+    );
+  });
+}
+
 /**
- * Lead em modo leitura, agrupado por camada. A formatação é a mesma da
- * tabela (`CelulaLead`), para o valor nunca aparecer de dois jeitos.
+ * Lead em modo leitura. Com layout, pelas seções configuradas; sem, por
+ * camada. A formatação é a mesma da tabela (`CelulaLead`), para o valor
+ * nunca aparecer de dois jeitos. Valor e Responsável ficam em "Negócio",
+ * a não ser que o layout já os tenha posto numa seção.
  *
  * @param {{
  *   lead: import('../types').Lead,
  *   campos: import('../types').Campo[],
+ *   layout: import('../lib/layout').LayoutEfetivo | null,
  *   nomePorId: Map<string, string>,
  * }} props
  */
-export function LeadDetalhe({ lead, campos, nomePorId }) {
+export function LeadDetalhe({ lead, campos, layout, nomePorId }) {
+  const nasSecoes = new Set(
+    (layout?.secoes ?? []).flatMap((secao) => secao.campos.map((item) => colunaDoItem(item).id)),
+  );
+  const negocio = COLUNAS_NEGOCIO.filter((coluna) => !nasSecoes.has(coluna.id));
+
   return (
     <div className="grid gap-6 px-4 pb-4">
-      {GRUPOS.map(({ camada, titulo }) => {
-        const doGrupo = campos.filter((campo) => campo.camada === camada);
-        if (doGrupo.length === 0) return null;
+      {layout ? (
+        <SecoesDoLayout lead={lead} nomePorId={nomePorId} secoes={layout.secoes} />
+      ) : (
+        <GruposPorCamada campos={campos} lead={lead} nomePorId={nomePorId} />
+      )}
 
-        return (
-          <Grupo key={camada} titulo={titulo}>
-            {doGrupo.map((campo) => (
-              <Item key={campo.chave} label={campo.label}>
-                <CelulaLead
-                  completo
-                  coluna={{ id: campo.chave, label: campo.label, tipo: campo.tipo, campo }}
-                  nomePorId={nomePorId}
-                  valor={lerValorDoCampo(lead, campo)}
-                />
-              </Item>
-            ))}
-          </Grupo>
-        );
-      })}
-
-      <Grupo titulo="Negócio">
-        <Item label={COLUNA_VALOR.label}>
-          <CelulaLead coluna={COLUNA_VALOR} nomePorId={nomePorId} valor={lead.valor} />
-        </Item>
-        <Item label={COLUNA_RESPONSAVEL.label}>
-          <CelulaLead
-            coluna={COLUNA_RESPONSAVEL}
-            nomePorId={nomePorId}
-            valor={lead.usuario_responsavel_id}
-          />
-        </Item>
-      </Grupo>
+      {negocio.length > 0 && (
+        <Grupo titulo="Negócio">
+          {negocio.map((coluna) => (
+            <Item key={coluna.id} label={coluna.label}>
+              <CelulaLead coluna={coluna} nomePorId={nomePorId} valor={lerValorDaColuna(lead, coluna)} />
+            </Item>
+          ))}
+        </Grupo>
+      )}
 
       <p className="font-mono text-[11px] text-muted-foreground">
         ID <span className="select-all">{lead.id}</span>

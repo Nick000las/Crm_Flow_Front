@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
-import { EXPORTACAO } from '../constants';
+import { EXPORTACAO, SITUACOES_LEAD } from '../constants';
 import { useExportarLeads } from '../hooks/use-exportacao';
 import { alternarItem, colunasSelecionadas, itensIniciais, moverItem } from '../lib/colunas-export';
 import { contarFiltros, paraCorpoDeBusca } from '../lib/filtro';
@@ -66,15 +66,19 @@ function ListaDeColunas({ itens, onAlternar, onMover }) {
 }
 
 /** Conteúdo do dialog. Montado a cada abertura: começa das colunas da tabela. */
-function FormExportar({ campos, idsVisiveis, busca, filtro, onExportado }) {
+function FormExportar({ campos, idsVisiveis, busca, filtro, situacao, onExportado }) {
   const [itens, setItens] = useState(() => itensIniciais(campos, idsVisiveis));
   const [usarFiltros, setUsarFiltros] = useState(true);
   const exportar = useExportarLeads();
   const colunas = colunasSelecionadas(itens);
-  const totalFiltros = contarFiltros(filtro) + (busca ? 1 : 0);
+  // "Arquivados" também é o que se está vendo: vai junto e conta.
+  const comSituacao = situacao !== SITUACOES_LEAD.ATIVOS;
+  const totalFiltros = contarFiltros(filtro) + (busca ? 1 : 0) + (comSituacao ? 1 : 0);
 
   function handleExportar() {
-    const filtroDoPedido = usarFiltros ? { ...(busca && { busca }), ...paraCorpoDeBusca(filtro) } : undefined;
+    const filtroDoPedido = usarFiltros
+      ? { ...(busca && { busca }), ...paraCorpoDeBusca(filtro), ...(comSituacao && { situacao }) }
+      : undefined;
     exportar.mutate({ colunas, filtro: filtroDoPedido }, { onSuccess: onExportado });
   }
 
@@ -120,6 +124,7 @@ function FormExportar({ campos, idsVisiveis, busca, filtro, onExportado }) {
  *   idsVisiveis: string[],
  *   busca: string,
  *   filtro: import('../lib/filtro').FiltroAplicado,
+ *   situacao: 'ativos' | 'arquivados' | 'lixeira',
  * }} props
  */
 export function ExportarDialog({ open, onOpenChange, ...form }) {

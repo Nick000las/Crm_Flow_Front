@@ -1,6 +1,7 @@
 import { Construction, KanbanSquare, LayoutDashboard, Settings } from 'lucide-react';
 import { PAPEIS_GESTAO } from '@/modules/crm/constants';
-import { podeVer } from './acesso';
+import { SECOES_CONFIGURACOES } from '@/modules/crm/lib/secoes-configuracoes';
+import { paginaVisivel, podeVer } from './acesso';
 
 /**
  * Fonte única de verdade da navegação. O Rail (nível 1) e a Sidebar
@@ -13,6 +14,8 @@ import { podeVer } from './acesso';
  * @property {readonly string[]} [roles] papéis que veem a página; omitido = todos
  * @property {string | readonly string[]} [feature] feature flag(s) que liberam a
  *   página (todas); omitido = sempre. Ver `podeVer`.
+ * @property {readonly { pronta?: boolean }[]} [secoes] subseções com papel/flag
+ *   próprios; a página só aparece se alguma for visível (`paginaVisivel`)
  * @property {readonly string[]} [ativoEm] prefixos extras em que a página
  *   conta como ativa (ex.: Leads em `/crm/leads/:id`)
  *
@@ -51,10 +54,11 @@ export const MODULES = [
       {
         key: 'configuracoes',
         label: 'Configurações',
-        path: '/crm/configuracoes/campos',
-        // Subseções em `modules/crm/lib/secoes-configuracoes.js`.
+        // A página leva à primeira subseção visível.
+        path: '/crm/configuracoes',
         ativoEm: ['/crm/configuracoes'],
-        roles: PAPEIS_GESTAO,
+        // O papel vale por subseção (OPERADOR edita só o próprio layout).
+        secoes: SECOES_CONFIGURACOES,
       },
     ],
   },
@@ -88,7 +92,7 @@ export const PLACEHOLDER_ICON = Construction;
 export function modulosVisiveis(user) {
   return MODULES.filter((entry) => podeVer(entry, user)).map((entry) => ({
     ...entry,
-    pages: entry.pages.filter((page) => podeVer(page, user)),
+    pages: entry.pages.filter((page) => paginaVisivel(page, user)),
   }));
 }
 

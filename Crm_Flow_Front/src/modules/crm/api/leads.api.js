@@ -49,3 +49,16 @@ export function atualizarLead(authApi, id, payload) {
 export function excluirLead(authApi, id) {
   return authApi.delete(`/crm/leads/${encodeURIComponent(id)}`);
 }
+
+/**
+ * Arquivar, desarquivar e restaurar da lixeira (`crm.arquivo`). Respondem
+ * com o lead formatado; lead na lixeira (ou fora do prazo, ao restaurar) é 404.
+ *
+ * @param {import('@/hooks/create-auth-session').AuthApi} authApi
+ * @param {string} id
+ * @param {'arquivar' | 'desarquivar' | 'restaurar'} acao
+ * @returns {Promise<import('../types.js').Lead>}
+ */
+export function acaoDeArquivo(authApi, id, acao) {
+  return authApi.post(`/crm/leads/${encodeURIComponent(id)}/${acao}`);
+}

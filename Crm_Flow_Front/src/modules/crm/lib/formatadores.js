@@ -114,3 +114,47 @@ export function urlSegura(valor) {
     return null;
   }
 }
+
+const DIGITOS_CNPJ = 14;
+const DIGITOS_CPF = 11;
+
+const instanteFormatter = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' });
+
+/** Pontuação que um documento pode trazer gravada (`12.345.678/0001-90`). */
+const PONTUACAO_DOCUMENTO = /[.\-/\s]/g;
+
+/**
+ * Aplica o molde só quando o texto, sem pontuação, tem exatamente `tamanho`
+ * dígitos. CNPJ alfanumérico, dado antigo ou documento estrangeiro: como veio.
+ */
+function moldar(valor, tamanho, regex, molde) {
+  if (valor === null || valor === undefined || valor === '') return null;
+
+  const texto = String(valor);
+  const limpo = texto.replace(PONTUACAO_DOCUMENTO, '');
+  return limpo.length === tamanho && /^\d+$/.test(limpo) ? limpo.replace(regex, molde) : texto;
+}
+
+/** `12345678000190` → `12.345.678/0001-90`. */
+export function formatarCnpj(valor) {
+  return moldar(valor, DIGITOS_CNPJ, /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+}
+
+/** `12345678909` → `123.456.789-09`. */
+export function formatarCpf(valor) {
+  return moldar(valor, DIGITOS_CPF, /^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
+}
+
+/**
+ * `created_at`/`updated_at` são instantes de verdade (com fuso), ao contrário
+ * das datas de campo: aqui sim a data é a do fuso de quem está vendo.
+ *
+ * @param {unknown} valor ISO 8601
+ * @returns {string | null} `dd/MM/aaaa`
+ */
+export function formatarInstante(valor) {
+  if (typeof valor !== 'string' || valor === '') return null;
+
+  const data = new Date(valor);
+  return Number.isNaN(data.getTime()) ? null : instanteFormatter.format(data);
+}

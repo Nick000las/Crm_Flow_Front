@@ -103,6 +103,20 @@ Status, origem, motivo de perda e tags são **listas do tenant** (Configuraçõe
 Listas, flag `crm.listas`): rótulo, cor e opções ativas vêm de
 `/crm/leads/fields` (`opcoesLista`), nunca de constante no front.
 
+Com `crm.layout`, cada tenant define o **layout do lead** (identificador, subtítulo,
+destaques, seções e colunas padrão) e cada usuário pode ter o seu (Configurações ›
+Layout do lead, aberto também ao OPERADOR).
+
+Com `crm.arquivo`, a lista ganha as abas **Ativos · Arquivados · Lixeira** (filtro
+fixo `situacao` da busca, guardado na URL e nas views). "Arquivar" é a ação de
+destaque do lead; "Excluir" manda para a lixeira, de onde dá para restaurar por 30
+dias. A lixeira não abre o lead nem exporta. Sem a flag, a lista é a de antes.
+
+Com `crm.atividades`, o drawer do lead tem as abas **Dados · Atividades · Histórico**:
+registrar (inclusive "já aconteceu"), concluir/reabrir, editar e remover atividades,
+e a lista de mudanças do lead ("Ana mudou Status de Novo para Ganho"). Os tipos de
+atividade são a lista "Tipos de atividade" de Configurações › Listas.
+
 Documentação do back: `Back/docs/crm/` (plano vigente em `plano-configuracoes.md`).
 
 ## Usuários de teste

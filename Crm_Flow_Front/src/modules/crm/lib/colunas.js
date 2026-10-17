@@ -4,6 +4,8 @@ import { CAMADA } from '../constants.js';
 export const TIPO_COLUNA = Object.freeze({
   MOEDA: 'moeda',
   RESPONSAVEL: 'responsavel',
+  /** Timestamp com fuso (`created_at`): data no fuso de quem vê. */
+  INSTANTE: 'instante',
 });
 
 const COLUNA_VALOR = Object.freeze({ id: 'valor', label: 'Valor', tipo: TIPO_COLUNA.MOEDA });
@@ -12,6 +14,8 @@ const COLUNA_RESPONSAVEL = Object.freeze({
   label: 'Responsável',
   tipo: TIPO_COLUNA.RESPONSAVEL,
 });
+
+const COLUNA_CRIADO_EM = Object.freeze({ id: 'criadoEm', label: 'Criado em', tipo: TIPO_COLUNA.INSTANTE });
 
 export const COLUNAS_PADRAO = Object.freeze(['nome', 'email', 'telefone', 'status', 'responsavel']);
 
@@ -39,7 +43,7 @@ export function lerValorDoCampo(lead, campo) {
 
 /**
  * Todas as colunas exibíveis: campos ativos do tenant, na ordem do back, mais
- * Valor e Responsável, que não são campos de `/fields`.
+ * Valor, Responsável e Criado em, que não são campos de `/fields`.
  *
  * @param {import('../types.js').Campo[]} campos
  * @returns {Coluna[]}
@@ -52,7 +56,7 @@ export function montarColunas(campos) {
     campo,
   }));
 
-  return [...colunasDeCampo, COLUNA_VALOR, COLUNA_RESPONSAVEL];
+  return [...colunasDeCampo, COLUNA_VALOR, COLUNA_RESPONSAVEL, COLUNA_CRIADO_EM];
 }
 
 /**
@@ -62,21 +66,24 @@ export function montarColunas(campos) {
 export function lerValorDaColuna(lead, coluna) {
   if (coluna.tipo === TIPO_COLUNA.MOEDA) return lead.valor;
   if (coluna.tipo === TIPO_COLUNA.RESPONSAVEL) return lead.usuario_responsavel_id;
+  if (coluna.tipo === TIPO_COLUNA.INSTANTE) return lead.created_at;
 
   return lerValorDoCampo(lead, coluna.campo);
 }
 
 /**
  * Descarta ids de colunas que deixaram de existir (campo desligado ou
- * excluído). Sem nada válido, volta ao padrão.
+ * excluído). Sem nada válido — inclusive quando o usuário nunca escolheu —,
+ * volta ao padrão: o do layout do tenant, se houver, senão `COLUNAS_PADRAO`.
  *
  * @param {unknown} ids
  * @param {Coluna[]} colunas
+ * @param {readonly string[]} [padrao]
  * @returns {string[]}
  */
-export function sanearSelecao(ids, colunas) {
+export function sanearSelecao(ids, colunas, padrao = COLUNAS_PADRAO) {
   const existentes = new Set(colunas.map((coluna) => coluna.id));
   const validos = Array.isArray(ids) ? ids.filter((id) => existentes.has(id)) : [];
 
-  return validos.length > 0 ? validos : COLUNAS_PADRAO.filter((id) => existentes.has(id));
+  return validos.length > 0 ? validos : padrao.filter((id) => existentes.has(id));
 }

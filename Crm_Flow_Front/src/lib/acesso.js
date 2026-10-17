@@ -54,3 +54,18 @@ export function temFeature(user, featureKey) {
 function temTodas(user, flags) {
   return flags.every((flag) => temFeature(user, flag));
 }
+
+/**
+ * Página de navegação com subseções próprias (CRM › Configurações): só
+ * aparece se o usuário enxerga ao menos uma subseção pronta — senão o
+ * OPERADOR veria um item que leva a lugar nenhum.
+ *
+ * @param {Parameters<typeof podeVer>[0] & { secoes?: readonly (Parameters<typeof podeVer>[0] & { pronta?: boolean })[] }} page
+ * @param {Parameters<typeof podeVer>[1]} user
+ */
+export function paginaVisivel(page, user) {
+  if (!podeVer(page, user)) return false;
+  if (!page.secoes) return true;
+
+  return page.secoes.some((secao) => secao.pronta !== false && podeVer(secao, user));
+}

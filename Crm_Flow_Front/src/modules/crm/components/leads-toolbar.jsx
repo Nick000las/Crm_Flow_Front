@@ -1,4 +1,4 @@
-import { lerFiltro } from '../lib/filtro';
+import { estadoDaVisao, visaoDoEstado } from '../lib/url-state';
 import { BuscaLeads } from './busca-leads';
 import { ConstrutorFiltro } from './construtor-filtro';
 import { SeletorColunas } from './seletor-colunas';
@@ -20,6 +20,7 @@ const totalFormatter = new Intl.NumberFormat('pt-BR');
  *   onAlternarColuna: (id: string) => void,
  *   chavesComErro: Set<string>,
  *   total: number | undefined,
+ *   placeholderBusca: string,
  * }} props
  */
 export function LeadsToolbar({
@@ -32,16 +33,15 @@ export function LeadsToolbar({
   onAlternarColuna,
   chavesComErro,
   total,
+  placeholderBusca,
 }) {
-  const visaoAtual = { ...estado.filtro, ...(estado.busca && { busca: estado.busca }) };
-
-  function aplicarView(filtros) {
-    atualizar({ busca: filtros?.busca ?? '', filtro: lerFiltro(filtros), pagina: 1 });
-  }
-
   return (
     <div className="mb-3 flex flex-wrap items-center gap-2">
-      <BuscaLeads busca={estado.busca} onBuscaChange={(busca) => atualizar({ busca, pagina: 1 })} />
+      <BuscaLeads
+        busca={estado.busca}
+        onBuscaChange={(busca) => atualizar({ busca, pagina: 1 })}
+        placeholder={placeholderBusca}
+      />
       <ConstrutorFiltro
         campos={campos}
         chavesComErro={chavesComErro}
@@ -49,7 +49,11 @@ export function LeadsToolbar({
         onAplicar={(filtro) => atualizar({ filtro, pagina: 1 })}
         usuarios={usuarios}
       />
-      <ViewsMenu onAplicar={aplicarView} visaoAtual={visaoAtual} />
+      {/* A view grava e reabre também a situação (Arquivados, Lixeira). */}
+      <ViewsMenu
+        onAplicar={(filtros) => atualizar(estadoDaVisao(filtros))}
+        visaoAtual={visaoDoEstado(estado)}
+      />
       <SeletorColunas colunas={colunas} onAlternar={onAlternarColuna} selecionadas={colunasSelecionadas} />
       {total !== undefined && (
         <p className="ml-auto font-mono text-xs text-muted-foreground tabular-nums">

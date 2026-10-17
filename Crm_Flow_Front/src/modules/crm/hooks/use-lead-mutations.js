@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
-import { atualizarLead, criarLead, excluirLead } from '../api/leads.api';
+import { acaoDeArquivo, atualizarLead, criarLead, excluirLead } from '../api/leads.api';
 import { crmKeys } from '../query-keys';
 
 /**
@@ -33,6 +33,8 @@ export function useAtualizarLead(id) {
     onSuccess: (leadAtualizado) => {
       // A resposta já é o lead formatado: o detalhe atualiza sem nova ida.
       queryClient.setQueryData(crmKeys.lead(id), leadAtualizado);
+      // Cada edição vira um evento no histórico (`crm.atividades`).
+      queryClient.invalidateQueries({ queryKey: crmKeys.historico(id) });
       return invalidar();
     },
   });
@@ -51,3 +53,29 @@ export function useExcluirLead() {
     },
   });
 }
+
+/**
+ * Arquivar, desarquivar ou restaurar: mudam a situação do lead, então a
+ * lista invalida; a resposta já é o lead, e vira o detalhe (o selo
+ * "Arquivado" do drawer troca sem nova ida).
+ *
+ * @param {'arquivar' | 'desarquivar' | 'restaurar'} acao
+ */
+function useAcaoDeArquivo(acao) {
+  const { authApi } = useAuth();
+  const queryClient = useQueryClient();
+  const invalidar = useInvalidarLista();
+
+  return useMutation({
+    mutationFn: (id) => acaoDeArquivo(authApi, id, acao),
+    onSuccess: (lead, id) => {
+      queryClient.setQueryData(crmKeys.lead(id), lead);
+      queryClient.invalidateQueries({ queryKey: crmKeys.historico(id) });
+      return invalidar();
+    },
+  });
+}
+
+export const useArquivarLead = () => useAcaoDeArquivo('arquivar');
+export const useDesarquivarLead = () => useAcaoDeArquivo('desarquivar');
+export const useRestaurarLead = () => useAcaoDeArquivo('restaurar');

@@ -56,6 +56,23 @@ export const ROTULOS_CATEGORIA = Object.freeze({
   [CATEGORIAS_STATUS.PERDIDO]: 'Perdido',
 });
 
+/**
+ * Layout do lead (flag `crm.layout`): espelho de `constants/layout.js` do
+ * back. Referência fixa = dado do lead que não é campo configurável; `coluna`
+ * é a propriedade do lead lido.
+ */
+export const REFERENCIAS_FIXAS = Object.freeze({
+  'lead.valor': { chave: 'valor', label: 'Valor', tipo: 'monetario', coluna: 'valor' },
+  'lead.responsavel': { chave: 'usuarioResponsavelId', label: 'Responsável', tipo: 'usuario', coluna: 'usuario_responsavel_id' },
+  'lead.estagio': { chave: 'funilEstagio', label: 'Estágio do funil', tipo: 'texto', coluna: 'estagio_nome' },
+  'lead.criadoEm': { chave: 'createdAt', label: 'Criado em', tipo: 'data', coluna: 'created_at' },
+});
+
+export const LIMITES_LAYOUT = Object.freeze({ SUBTITULO: 2, DESTAQUES: 4, SECOES: 12, NOME_SECAO: 60 });
+
+/** Campos do sistema que podem ser identificador; personalizado pode, se for texto. */
+export const CHAVES_IDENTIFICADOR = Object.freeze(['nome', 'empresa', 'cnpj', 'cpf', 'email']);
+
 /** Telas que consomem os campos; `visibilidade[contexto]` de cada campo. */
 export const CONTEXTO = Object.freeze({
   CRIACAO: 'create_form',
@@ -167,6 +184,42 @@ export const AVISOS_LEAD = Object.freeze({
   CRIADO: 'Lead criado.',
   SALVO: 'Alterações salvas.',
   EXCLUIDO: 'Lead excluído.',
+  NA_LIXEIRA: 'Lead enviado para a lixeira.',
+  ARQUIVADO: 'Lead arquivado.',
+  DESARQUIVADO: 'Lead desarquivado.',
+  RESTAURADO: 'Lead restaurado.',
+  RESTAURADO_ARQUIVADO: 'Lead restaurado em Arquivados.',
+});
+
+/** Filtro fixo da busca (`crm.arquivo`): não é filtro de campo nem vira chip. */
+export const SITUACOES_LEAD = Object.freeze({
+  ATIVOS: 'ativos',
+  ARQUIVADOS: 'arquivados',
+  LIXEIRA: 'lixeira',
+});
+
+export const ROTULOS_SITUACAO = Object.freeze({
+  [SITUACOES_LEAD.ATIVOS]: 'Ativos',
+  [SITUACOES_LEAD.ARQUIVADOS]: 'Arquivados',
+  [SITUACOES_LEAD.LIXEIRA]: 'Lixeira',
+});
+
+/** Prazo para restaurar um lead excluído (o back purga depois). */
+export const DIAS_NA_LIXEIRA = 30;
+
+/** Espelho dos limites do back (`LIMITES_ATIVIDADE`). */
+export const LIMITES_ATIVIDADE = Object.freeze({ TITULO: 200, NOTAS: 5000 });
+
+/** Página do histórico do lead (o back aceita até 200). */
+export const TAMANHO_HISTORICO = 50;
+
+export const TIPOS_EVENTO = Object.freeze({
+  CRIADO: 'criado',
+  ATUALIZADO: 'atualizado',
+  ARQUIVADO: 'arquivado',
+  DESARQUIVADO: 'desarquivado',
+  EXCLUIDO: 'excluido',
+  RESTAURADO: 'restaurado',
 });
 
 export const ROTULOS_TIPO = Object.freeze({

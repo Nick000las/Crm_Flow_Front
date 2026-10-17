@@ -2,25 +2,29 @@ import { Download, Plus } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
+import { ApiErrorAlert } from '@/components/api-error-alert';
 import { PageHeader } from '@/components/page-header';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { podeVer } from '@/lib/acesso';
+import { podeVer, temFeature } from '@/lib/acesso';
 import { isAccessError } from '@/services/api';
+import { AbasSituacao } from '../components/abas-situacao';
 import { ChipsFiltro } from '../components/chips-filtro';
 import { ExcluirLeadDialog } from '../components/excluir-lead-dialog';
 import { ExportarDialog } from '../components/exportar-dialog';
 import { LeadsToolbar } from '../components/leads-toolbar';
 import { LeadsConteudo } from '../components/leads-conteudo';
-import { AVISOS_LEAD, CONTEXTO, PAPEIS_GESTAO } from '../constants';
+import { AVISOS_LEAD, CONTEXTO, CRM_FEATURES, PAPEIS_GESTAO, SITUACOES_LEAD } from '../constants';
+import { useAcoesDeArquivo } from '../hooks/use-acoes-de-arquivo';
 import { useCampos } from '../hooks/use-campos';
-import { useColunasVisiveis } from '../hooks/use-colunas-visiveis';
+import { useColunasDaLista } from '../hooks/use-colunas-da-lista';
 import { useEstadoLista } from '../hooks/use-estado-lista';
 import { useLeadsSearch } from '../hooks/use-leads-search';
 import { useNavegacaoLeads } from '../hooks/use-navegacao-leads';
 import { useUsuarios } from '../hooks/use-usuarios';
-import { montarColunas } from '../lib/colunas';
+import { situacaoDaBusca } from '../lib/arquivo';
 import { camposDoContexto } from '../lib/contextos';
+import { placeholderDaBusca } from '../lib/layout';
 import { FILTRO_VAZIO, chavesComErro, chipsDoFiltro } from '../lib/filtro';
 import { ID_BOTAO_NOVO_LEAD } from '../rotas';
 
@@ -28,15 +32,22 @@ const CAMPOS_VAZIOS = [];
 
 /**
  * Lista de leads. O Sheet de detalhe/criação é rota filha (`<Outlet />`):
- * abre sobre a lista sem desmontá-la.
+ * abre sobre a lista sem desmontá-la. Com `crm.arquivo`, abas de situação
+ * (Ativos · Arquivados · Lixeira) e ações de arquivo na linha.
  */
 export default function LeadsPage() {
   const { user } = useAuth();
   const { state } = useLocation();
-  const { estado, atualizar } = useEstadoLista();
+  const { estado: estadoDaUrl, atualizar } = useEstadoLista();
+  const comArquivo = temFeature(user, CRM_FEATURES.ARQUIVO);
+  // Sem a flag, um link ou view da lixeira cai em "ativos" (o back daria 403).
+  const situacao = situacaoDaBusca(estadoDaUrl.situacao, comArquivo);
+  const estado = useMemo(() => ({ ...estadoDaUrl, situacao }), [estadoDaUrl, situacao]);
+  const naLixeira = situacao === SITUACOES_LEAD.LIXEIRA;
   const { destinos, abrirLead, voltarParaLista } = useNavegacaoLeads();
   const camposQuery = useCampos();
   const leadsQuery = useLeadsSearch(estado);
+  const arquivo = useAcoesDeArquivo(voltarParaLista);
   const { usuarios, nomePorId } = useUsuarios();
   const [leadAExcluir, setLeadAExcluir] = useState(null);
   const [exportando, setExportando] = useState(false);
@@ -47,8 +58,7 @@ export default function LeadsPage() {
   // ainda precisa do rótulo (o back o recusa com 400, destacado no chip).
   const campos = camposQuery.data ?? CAMPOS_VAZIOS;
   const camposDoFiltro = useMemo(() => camposDoContexto(campos, CONTEXTO.FILTRO), [campos]);
-  const colunas = useMemo(() => montarColunas(camposDoContexto(campos, CONTEXTO.TABELA)), [campos]);
-  const { ids, visiveis, alternar } = useColunasVisiveis(user?.tenantId, colunas);
+  const { identificador, colunas, ids, visiveis, alternar } = useColunasDaLista(campos, user?.tenantId);
 
   const erro = camposQuery.error ?? leadsQuery.error;
   const pagina = leadsQuery.data;
@@ -72,13 +82,64 @@ export default function LeadsPage() {
 
   const acoesDoCabecalho = (
     <>
-      {gestao && (
+      {/* A lixeira não se exporta (o back dá 400). */}
+      {gestao && !naLixeira && (
         <Button onClick={() => setExportando(true)} variant="outline">
           <Download aria-hidden="true" />
           Exportar
         </Button>
       )}
       {botaoNovo(true)}
+    </>
+  );
+
+  const lista = (
+    <>
+      <LeadsToolbar
+        atualizar={atualizar}
+        campos={camposDoFiltro}
+        chavesComErro={errosDeFiltro}
+        colunas={colunas}
+        colunasSelecionadas={ids}
+        estado={estado}
+        onAlternarColuna={alternar}
+        placeholderBusca={placeholderDaBusca(identificador)}
+        total={pagina?.total}
+        usuarios={usuarios}
+      />
+      <ChipsFiltro
+        chavesComErro={errosDeFiltro}
+        chips={chips}
+        onLimpar={() => atualizar({ filtro: FILTRO_VAZIO, pagina: 1 })}
+        onRemover={(chip) => atualizar({ filtro: chip.remover(), pagina: 1 })}
+      />
+
+      <p className={aviso ? 'mb-4 border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
+        {aviso}
+      </p>
+      <ApiErrorAlert
+        className="mb-4"
+        error={arquivo.erro}
+        id="crm-leads-arquivo-erro"
+        title="Não foi possível mudar o lead"
+      />
+
+      <LeadsConteudo
+        acoesDeArquivo={comArquivo ? arquivo.acoes : undefined}
+        atualizar={atualizar}
+        botaoNovo={botaoNovo(false)}
+        carregando={camposQuery.isPending || leadsQuery.isPending}
+        colunas={visiveis}
+        erro={erro}
+        estado={estado}
+        identificador={identificador}
+        leadsQuery={leadsQuery}
+        nomePorId={nomePorId}
+        onAbrir={abrirLead}
+        onExcluir={setLeadAExcluir}
+        podeImportar={gestao}
+        situacao={situacao}
+      />
     </>
   );
 
@@ -94,46 +155,24 @@ export default function LeadsPage() {
   return (
     <>
       <PageHeader actions={acoesDoCabecalho} title="Leads" description="Contatos e oportunidades do CRM." />
-
-      <LeadsToolbar
-        atualizar={atualizar}
-        campos={camposDoFiltro}
-        chavesComErro={errosDeFiltro}
-        colunas={colunas}
-        colunasSelecionadas={ids}
-        estado={estado}
-        onAlternarColuna={alternar}
-        total={pagina?.total}
-        usuarios={usuarios}
-      />
-      <ChipsFiltro
-        chavesComErro={errosDeFiltro}
-        chips={chips}
-        onLimpar={() => atualizar({ filtro: FILTRO_VAZIO, pagina: 1 })}
-        onRemover={(chip) => atualizar({ filtro: chip.remover(), pagina: 1 })}
-      />
-
-      <p className={aviso ? 'mb-4 border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
-        {aviso}
-      </p>
-
-      <LeadsConteudo
-        atualizar={atualizar}
-        botaoNovo={botaoNovo(false)}
-        carregando={camposQuery.isPending || leadsQuery.isPending}
-        colunas={visiveis}
-        erro={erro}
-        estado={estado}
-        leadsQuery={leadsQuery}
-        nomePorId={nomePorId}
-        onAbrir={abrirLead}
-        onExcluir={setLeadAExcluir}
-        podeImportar={gestao}
-      />
+      {comArquivo ? (
+        <AbasSituacao
+          onChange={(proxima) => {
+            arquivo.limparErro();
+            atualizar({ situacao: proxima, pagina: 1 });
+          }}
+          situacao={situacao}
+        >
+          {lista}
+        </AbasSituacao>
+      ) : (
+        lista
+      )}
 
       <ExcluirLeadDialog
+        comLixeira={comArquivo}
         lead={leadAExcluir}
-        onExcluido={() => voltarParaLista(AVISOS_LEAD.EXCLUIDO)}
+        onExcluido={() => voltarParaLista(comArquivo ? AVISOS_LEAD.NA_LIXEIRA : AVISOS_LEAD.EXCLUIDO)}
         onOpenChange={(aberto) => !aberto && setLeadAExcluir(null)}
         open={Boolean(leadAExcluir)}
       />
@@ -146,6 +185,7 @@ export default function LeadsPage() {
           idsVisiveis={ids}
           onOpenChange={setExportando}
           open={exportando}
+          situacao={situacao}
         />
       )}
 
