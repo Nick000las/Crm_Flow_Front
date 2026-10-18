@@ -19,18 +19,39 @@ import { ROTAS_CRM } from '../rotas';
 import { AcoesLead } from './acoes-lead';
 import { CelulaLead } from './celula-lead';
 import { LinkDoLead } from './link-do-lead';
+import { SeloEsfriando } from './selo-esfriando';
 
 const HEAD_CLASS =
   'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
 const LINHAS_SKELETON = 8;
 
-function Cabecalho({ colunas, identificador, comAcoes, lixeira, comSelecao }) {
+/** Marca ou desmarca a página inteira (edição em massa). */
+function SelecionarPagina({ selecao, leads }) {
+  const marcados = leads.filter((lead) => selecao.ids.has(lead.id)).length;
+  const todos = leads.length > 0 && marcados === leads.length;
+
+  return (
+    <Checkbox
+      aria-label={todos ? 'Desmarcar os leads desta página' : 'Selecionar os leads desta página'}
+      checked={todos}
+      disabled={!todos && selecao.cheia}
+      indeterminate={marcados > 0 && !todos}
+      onCheckedChange={() => selecao.alternarPagina(leads)}
+    />
+  );
+}
+
+function Cabecalho({ colunas, identificador, comAcoes, lixeira, selecao = null, leads = [] }) {
   return (
     <TableHeader>
       <TableRow>
-        {comSelecao && (
+        {selecao && (
           <TableHead className="w-10" scope="col">
-            <span className="sr-only">Selecionar</span>
+            {selecao.emMassa ? (
+              <SelecionarPagina leads={leads} selecao={selecao} />
+            ) : (
+              <span className="sr-only">Selecionar</span>
+            )}
           </TableHead>
         )}
         {identificador && (
@@ -93,9 +114,16 @@ export function LeadsTableSkeleton({ colunas, identificador }) {
   );
 }
 
-/** Clique em controle interno (link, botão, menu) não deve abrir a linha. */
+/**
+ * Clique em controle interno não deve abrir a linha: link, botão, menu e o
+ * checkbox — que no Base UI é um `<span role="checkbox">` com `<input>`
+ * oculto, não um `<button>`. A célula da seleção inteira (`data-selecao`)
+ * também conta: errar o box por pouco não pode abrir o lead.
+ */
+const CONTROLES = 'a, button, input, label, [role="menuitem"], [role="checkbox"], [data-selecao]';
+
 function cliqueEmControle(event) {
-  return event.target instanceof Element && event.target.closest('a, button, [role="menuitem"]');
+  return event.target instanceof Element && event.target.closest(CONTROLES);
 }
 
 /**
@@ -103,7 +131,10 @@ function cliqueEmControle(event) {
  *   ids: Set<string>,
  *   cheia: boolean,
  *   alternar: (lead: import('../types').Lead) => void,
- * }} SelecaoDaTabela  com `cheia`, só os marcados continuam clicáveis
+ *   alternarPagina: (leads: import('../types').Lead[]) => void,
+ *   emMassa: boolean,
+ * }} SelecaoDaTabela  com `cheia`, só os marcados continuam clicáveis;
+ *   `emMassa` (`crm.massa`) põe o "selecionar a página" no cabeçalho
  */
 
 /**
@@ -121,6 +152,21 @@ function MescladoEm({ lead }) {
       >
         {lead.mesclado_em_nome}
       </Link>
+    </span>
+  );
+}
+
+/**
+ * Título do lead com o selo "Esfriando" ao lado — fora do link, para o nome
+ * acessível do link continuar sendo só o título.
+ */
+function ComSelo({ lead, children }) {
+  if (!lead.esfriando_desde) return children;
+
+  return (
+    <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+      {children}
+      <SeloEsfriando esfriandoDesde={lead.esfriando_desde} />
     </span>
   );
 }
@@ -167,7 +213,7 @@ function Restaurar({ lead, titulo, restaurando, onRestaurar }) {
  *   restaurandoId?: string | null,
  *   onMesclar?: (lead: import('../types').Lead) => void,
  *   selecao?: SelecaoDaTabela | null,
- * }} props `selecao` (mesclar 2 leads) põe um checkbox por linha
+ * }} props `selecao` (mesclar 2 leads ou editar em massa) põe um checkbox por linha
  */
 export function LeadsTable({
   colunas,
@@ -198,7 +244,8 @@ export function LeadsTable({
         <Cabecalho
           colunas={colunas}
           comAcoes
-          comSelecao={Boolean(selecao)}
+          leads={leads}
+          selecao={selecao}
           identificador={identificador}
           lixeira={lixeira}
         />
@@ -213,7 +260,7 @@ export function LeadsTable({
                 onClick={lixeira ? undefined : (event) => !cliqueEmControle(event) && onAbrir(lead.id)}
               >
                 {selecao && (
-                  <TableCell className="py-1">
+                  <TableCell className="py-1" data-selecao>
                     <Checkbox
                       aria-label={`Selecionar ${titulo}`}
                       checked={selecao.ids.has(lead.id)}
@@ -227,9 +274,11 @@ export function LeadsTable({
                     {lixeira ? (
                       titulo
                     ) : (
-                      <LinkDoLead lead={lead} titulo={titulo}>
-                        {titulo}
-                      </LinkDoLead>
+                      <ComSelo lead={lead}>
+                        <LinkDoLead lead={lead} titulo={titulo}>
+                          {titulo}
+                        </LinkDoLead>
+                      </ComSelo>
                     )}
                   </TableCell>
                 )}
@@ -247,7 +296,13 @@ export function LeadsTable({
   
                   return (
                     <TableCell className={comLink ? 'font-medium' : undefined} key={coluna.id}>
-                      {comLink ? <LinkDoLead lead={lead}>{celula}</LinkDoLead> : celula}
+                      {comLink ? (
+                        <ComSelo lead={lead}>
+                          <LinkDoLead lead={lead}>{celula}</LinkDoLead>
+                        </ComSelo>
+                      ) : (
+                        celula
+                      )}
                     </TableCell>
                   );
                 })}

@@ -22,6 +22,14 @@ export const CAMPO_VALOR = Object.freeze({
 });
 export const CHAVE_RESPONSAVEL = 'usuarioResponsavelId';
 
+/**
+ * Dica abaixo do campo, por chave. `primeiroNome`: o back deriva do Nome
+ * quando vazio (e rederiva ao mudar o Nome, se não foi editado à mão).
+ */
+export const AJUDA_POR_CHAVE = Object.freeze({
+  primeiroNome: 'Vazio usa o primeiro nome do Nome.',
+});
+
 const PREFIXO_CUSTOM = 'custom.';
 const DATA_ISO = /^\d{4}-\d{2}-\d{2}/;
 const MILHAR_COM_PONTO = /^-?\d{1,3}(\.\d{3})+$/;

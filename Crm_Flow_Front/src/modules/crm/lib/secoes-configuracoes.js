@@ -34,7 +34,8 @@ export const SECOES_CONFIGURACOES = Object.freeze([
   // Leitura para todos; alterar as regras, só gestão (decidido na tela).
   secao('duplicidade', 'Duplicidade', CRM_FEATURES.DUPLICIDADE, { pronta: true, roles: null }),
   secao('distribuicao', 'Distribuição', CRM_FEATURES.DISTRIBUICAO),
-  secao('inatividade', 'Inatividade', CRM_FEATURES.INATIVIDADE),
+  // Leitura para todos (o selo e a view dependem dela); alterar, só gestão.
+  secao('inatividade', 'Inatividade', CRM_FEATURES.INATIVIDADE, { pronta: true, roles: null }),
   secao('pontuacao', 'Pontuação', CRM_FEATURES.SCORE),
   secao('enriquecimento', 'Enriquecimento', CRM_FEATURES.CNPJ),
   secao('privacidade', 'Privacidade (LGPD)', CRM_FEATURES.LGPD),

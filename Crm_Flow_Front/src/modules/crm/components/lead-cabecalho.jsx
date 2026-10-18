@@ -13,6 +13,7 @@ import { estaArquivado } from '../lib/arquivo';
 import { lerValorDaColuna } from '../lib/colunas';
 import { colunaDoItem, subtituloDoLead, tituloDoLead } from '../lib/layout';
 import { CelulaLead } from './celula-lead';
+import { SeloEsfriando } from './selo-esfriando';
 
 const DESCRICAO = Object.freeze({
   CRIANDO: 'Preencha os dados do contato.',
@@ -132,6 +133,7 @@ export function LeadCabecalho({ criando, editando, lead, layout, nomePorId, onEd
             Arquivado
           </Badge>
         )}
+        {!criando && <SeloEsfriando esfriandoDesde={lead?.esfriando_desde} />}
       </div>
       {/* Com subtítulo, ele descreve o lead; a frase do modo vira só leitor de tela. */}
       <SheetDescription>

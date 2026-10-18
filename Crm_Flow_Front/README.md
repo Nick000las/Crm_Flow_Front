@@ -129,6 +129,26 @@ campo fica obrigatório ("Motivo da perda quando o status é Perdido") ou só ap
 ("Empresa só quando Origem é Evento"). O formulário do lead aplica as regras enquanto
 a pessoa digita; quem valida de verdade é o back.
 
+Com `crm.inatividade`, cada status aberto tem um prazo em dias (Configurações ›
+Inatividade). Lead sem interação além do prazo ganha o selo **Esfriando há N dias** na
+tabela e no drawer, e a view do sistema **Esfriando** lista só esses. Ganho e perdido não
+esfriam. O cálculo é do back; o front só mostra `esfriando_desde`.
+
+Com `crm.massa`, qualquer papel marca até 200 leads (ou a página inteira) e usa
+**Editar em massa** para trocar status, origem e responsável, ou somar e tirar tags. Cada
+lead passa pelas mesmas regras da edição normal; os que falham aparecem com o motivo e
+continuam marcados. O export ganha o formato `.csv` e as colunas Responsável e Criado em.
+
+O **primeiro nome** é um campo do sistema: se ficar vazio, o CRM usa o primeiro nome do
+Nome (e acompanha quando o Nome muda, até alguém editá-lo à mão).
+
+## Notificações
+
+O sino no Rail (para todo usuário logado, sem flag) mostra as não lidas, a lista
+paginada e "Marcar todas como lidas". Clicar marca como lida e leva ao destino — no
+resumo diário do CRM, a lista de leads já filtrada em Esfriando. Não há push: recarrega
+a cada minuto e ao abrir.
+
 Documentação do back: `Back/docs/crm/` (plano vigente em `plano-configuracoes.md`).
 
 ## Usuários de teste

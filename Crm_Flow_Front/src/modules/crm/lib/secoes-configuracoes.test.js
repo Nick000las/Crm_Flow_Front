@@ -56,3 +56,15 @@ test('com crm.layout, o DONO vê Layout antes de Campos (ordem da spec)', () => 
 test('caminho da subseção', () => {
   assert.equal(caminhoDaSecao('campos'), '/crm/configuracoes/campos');
 });
+
+test('Inatividade aparece com crm.inatividade, para gestão e OPERADOR', () => {
+  assert.equal(secoesVisiveis(dono).some((secao) => secao.key === 'inatividade'), false);
+  assert.deepEqual(
+    secoesVisiveis({ ...dono, featuresAtivas: ['crm.inatividade'] }).map((secao) => secao.key),
+    ['campos', 'inatividade'],
+  );
+  assert.deepEqual(
+    secoesVisiveis({ ...dono, role: 'OPERADOR', featuresAtivas: ['crm.inatividade'] }).map((secao) => secao.key),
+    ['inatividade'],
+  );
+});

@@ -23,6 +23,8 @@ const MENU_CLASS = 'w-56 rounded-none shadow-none ring-border';
 /**
  * Views salvas do usuário. Aplicar substitui busca e filtro da URL;
  * excluir pede confirmação. Não há compartilhamento: são de quem salvou.
+ * Views do sistema (`sistema: true`, ex.: "Esfriando" com `crm.inatividade`)
+ * vêm primeiro do back, com selo e sem excluir (o DELETE delas é 400).
  *
  * @param {{
  *   visaoAtual: object,
@@ -33,6 +35,7 @@ export function ViewsMenu({ visaoAtual, onAplicar }) {
   const { data: views = [], isPending, error } = useViews();
   const [salvando, setSalvando] = useState(false);
   const [viewAExcluir, setViewAExcluir] = useState(null);
+  const doUsuario = views.filter((view) => !view.sistema);
 
   return (
     <>
@@ -46,12 +49,17 @@ export function ViewsMenu({ visaoAtual, onAplicar }) {
             <DropdownMenuLabel>Views salvas</DropdownMenuLabel>
             {isPending && <DropdownMenuItem disabled>Carregando…</DropdownMenuItem>}
             {error && <DropdownMenuItem disabled>Não foi possível carregar</DropdownMenuItem>}
-            {!isPending && !error && views.length === 0 && (
+            {!isPending && !error && doUsuario.length === 0 && (
               <DropdownMenuItem disabled>Nenhuma view salva</DropdownMenuItem>
             )}
             {views.map((view) => (
               <DropdownMenuItem key={view.id} onClick={() => onAplicar(view.filtros)}>
                 {view.nome}
+                {view.sistema && (
+                  <span className="ml-auto font-mono text-[10px] tracking-wide text-muted-foreground uppercase">
+                    <span className="sr-only">, view do </span>sistema
+                  </span>
+                )}
               </DropdownMenuItem>
             ))}
           </DropdownMenuGroup>
@@ -63,14 +71,14 @@ export function ViewsMenu({ visaoAtual, onAplicar }) {
             Salvar visão atual…
           </DropdownMenuItem>
 
-          {views.length > 0 && (
+          {doUsuario.length > 0 && (
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>
                 <Trash2 aria-hidden="true" />
                 Excluir view
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent className={MENU_CLASS}>
-                {views.map((view) => (
+                {doUsuario.map((view) => (
                   <DropdownMenuItem key={view.id} onClick={() => setViewAExcluir(view)} variant="destructive">
                     {view.nome}
                   </DropdownMenuItem>

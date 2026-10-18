@@ -11,8 +11,8 @@ const SEM_FILTRO = Object.freeze({ busca: '', filtro: FILTRO_VAZIO, pagina: 1 })
 
 /**
  * Corpo da lista: escolhe entre erro, carregando, os estados vazios e a
- * tabela paginada. `acoesDeArquivo` só vem com `crm.arquivo`; `onMesclar` e
- * `selecao`, com `crm.duplicidade` para DONO/MASTER.
+ * tabela paginada. `acoesDeArquivo` só vem com `crm.arquivo`; `onMesclar`,
+ * com `crm.duplicidade` para DONO/MASTER; `selecao`, com isso ou `crm.massa`.
  *
  * @param {{
  *   atualizar: (mudancas: Partial<import('../lib/url-state').EstadoLista>) => void,

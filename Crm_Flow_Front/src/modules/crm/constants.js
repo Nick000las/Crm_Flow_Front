@@ -179,6 +179,12 @@ export const EXPORTACAO = Object.freeze({
   NOME_ARQUIVO: 'leads.xlsx',
 });
 
+/** Formatos do export; `csv` só com `crm.massa` (sem a flag, o back dá 403). */
+export const FORMATOS_EXPORTACAO = Object.freeze({ XLSX: 'xlsx', CSV: 'csv' });
+
+/** Edição em massa (`crm.massa`): espelho do limite do back. */
+export const BULK = Object.freeze({ MAX_IDS: 200 });
+
 /** Confirmações breves (`role="status"`) — sem toast, por decisão do README. */
 export const AVISOS_LEAD = Object.freeze({
   CRIADO: 'Lead criado.',
@@ -204,6 +210,12 @@ export const ROTULOS_SITUACAO = Object.freeze({
   [SITUACOES_LEAD.ARQUIVADOS]: 'Arquivados',
   [SITUACOES_LEAD.LIXEIRA]: 'Lixeira',
 });
+
+/**
+ * Lead esfriando (`crm.inatividade`): espelho de `DIAS_ESFRIAR` do back.
+ * `DIAS_PADRAO` é só a sugestão ao ligar um status sem dias.
+ */
+export const INATIVIDADE = Object.freeze({ DIAS_MIN: 1, DIAS_MAX: 365, DIAS_PADRAO: 7 });
 
 /** Prazo para restaurar um lead excluído (o back purga depois). */
 export const DIAS_NA_LIXEIRA = 30;

@@ -3,7 +3,8 @@
  *
  * @param {import('@/hooks/create-auth-session').AuthApi} authApi
  * @param {{ signal?: AbortSignal }} [options]
- * @returns {Promise<{ id: string, nome: string, filtros: object }[]>}
+ * @returns {Promise<{ id: string, nome: string, filtros: object, sistema?: boolean }[]>}  as do
+ *   sistema (`sistema: true`) vêm primeiro e não se excluem
  */
 export function listarViews(authApi, options) {
   return authApi.get('/crm/filter-views', options);

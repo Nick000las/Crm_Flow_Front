@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
-import { acaoDeArquivo, atualizarLead, criarLead, excluirLead } from '../api/leads.api';
+import { acaoDeArquivo, atualizarLead, criarLead, editarEmMassa, excluirLead } from '../api/leads.api';
 import { crmKeys } from '../query-keys';
 
 /**
@@ -51,6 +51,25 @@ export function useExcluirLead() {
       queryClient.removeQueries({ queryKey: crmKeys.lead(id) });
       return invalidar();
     },
+  });
+}
+
+/**
+ * Edição em massa (`crm.massa`). O back responde 200 mesmo com falhas, então
+ * lista, leads abertos e históricos recarregam sempre.
+ */
+export function useEditarEmMassa() {
+  const { authApi } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (corpo) => editarEmMassa(authApi, corpo),
+    onSuccess: () =>
+      Promise.all(
+        [crmKeys.leads(), crmKeys.leadsAbertos(), crmKeys.historicos()].map((queryKey) =>
+          queryClient.invalidateQueries({ queryKey }),
+        ),
+      ),
   });
 }
 

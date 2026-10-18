@@ -11,6 +11,8 @@ export const crmKeys = {
   // Fora do prefixo `lead(id)`: recarregar o lead não recarrega as abas.
   atividades: (leadId) => ['crm', 'atividades', leadId],
   historico: (leadId) => ['crm', 'historico', leadId],
+  // Prefixo do histórico de todos os leads (edição em massa).
+  historicos: () => ['crm', 'historico'],
   views: () => ['crm', 'views'],
   usuarios: () => ['crm', 'usuarios'],
   camposConfigurados: () => ['crm', 'configuracoes', 'campos'],
@@ -18,5 +20,8 @@ export const crmKeys = {
   layout: () => ['crm', 'layout'],
   duplicidade: () => ['crm', 'configuracoes', 'duplicidade'],
   regras: () => ['crm', 'configuracoes', 'regras'],
+  inatividade: () => ['crm', 'configuracoes', 'inatividade'],
+  // Prefixo de todos os leads abertos (`lead(id)`).
+  leadsAbertos: () => ['crm', 'lead'],
   importJob: (jobId) => ['crm', 'import', jobId],
 };

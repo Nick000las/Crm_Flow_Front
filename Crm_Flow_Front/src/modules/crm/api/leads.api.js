@@ -51,6 +51,18 @@ export function excluirLead(authApi, id) {
 }
 
 /**
+ * Edição em massa (`crm.massa`). Sempre 200: o resultado de cada lead vem em
+ * `resultados` (falha com o mesmo erro do PUT).
+ *
+ * @param {import('@/hooks/create-auth-session').AuthApi} authApi
+ * @param {{ ids: string[], alteracoes: import('../lib/massa.js').AlteracoesMassa }} corpo
+ * @returns {Promise<import('../lib/massa.js').RespostaMassa>}
+ */
+export function editarEmMassa(authApi, corpo) {
+  return authApi.patch('/crm/leads/bulk', corpo);
+}
+
+/**
  * Arquivar, desarquivar e restaurar da lixeira (`crm.arquivo`). Respondem
  * com o lead formatado; lead na lixeira (ou fora do prazo, ao restaurar) é 404.
  *

@@ -50,6 +50,7 @@
  * @property {string | null} [archived_at]  arquivado (`crm.arquivo`)
  * @property {string | null} [deleted_at]   na lixeira
  * @property {string} [purga_em]  só na busca `situacao: lixeira`
+ * @property {string | null} [esfriando_desde]  ISO quando esfriando; `null` sem a flag `crm.inatividade`
  * @property {string | null} [mesclado_em_id]  descartado numa mesclagem (na lixeira)
  * @property {string | null} [mesclado_em_nome]  nome atual do lead que ficou (vem junto do id)
  *

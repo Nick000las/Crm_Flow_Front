@@ -306,3 +306,21 @@ describe('listas do tenant', () => {
     assert.deepEqual(porCampo, { motivoPerda: 'Opção desativada' });
   });
 });
+
+describe('primeiroNome (campo do sistema)', () => {
+  const comPrimeiroNome = [
+    ...campos,
+    { chave: 'primeiroNome', coluna: 'primeiro_nome', label: 'Primeiro nome', tipo: 'texto', camada: 1, obrigatorio: false, ordem: 1 },
+  ];
+  const iniciais = valoresIniciais(comPrimeiroNome, { ...lead, primeiro_nome: 'Ana' });
+
+  test('lê do lead pela coluna', () => {
+    assert.equal(iniciais.primeiroNome, 'Ana');
+  });
+
+  test('esvaziar envia null: o back volta ao derivado do Nome', () => {
+    const payload = montarPayloadEdicao(comPrimeiroNome, iniciais, { ...iniciais, primeiroNome: '' });
+
+    assert.deepEqual(payload, { primeiroNome: null });
+  });
+});
