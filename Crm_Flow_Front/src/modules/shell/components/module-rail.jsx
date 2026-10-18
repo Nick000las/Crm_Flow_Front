@@ -8,6 +8,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { UTILITY_ITEMS } from '@/lib/modules-registry';
 import { cn } from '@/lib/utils';
+import { SinoNotificacoes } from '@/modules/notificacoes/components/sino-notificacoes';
 
 const ITEM_BASE =
   'relative grid size-9 place-items-center rounded-md outline-none transition-colors duration-200 focus-visible:ring-3 focus-visible:ring-ring/50';
@@ -61,6 +62,8 @@ export function ModuleRail({ modules }) {
       ))}
 
       <div className="mt-auto flex flex-col items-center gap-1">
+        {/* Core, sem flag: todo usuário logado tem o sino. */}
+        <SinoNotificacoes triggerClassName={cn(ITEM_BASE, ITEM_INACTIVE)} />
         {UTILITY_ITEMS.map((item) => (
           <RailLink key={item.key} item={item} isActive={isItemActive(item)} />
         ))}

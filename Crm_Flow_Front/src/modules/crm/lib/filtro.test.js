@@ -3,6 +3,7 @@ import { describe, test } from 'node:test';
 import {
   FILTRO_VAZIO,
   MENSAGENS_FILTRO,
+  RESPONSAVEL_NENHUM,
   chavesComErro,
   chipsDoFiltro,
   contarFiltros,
@@ -257,5 +258,68 @@ describe('tipos do M2', () => {
 
     assert.deepEqual(filtro.filtros, [{ chave: 'ticket', operador: 'entre', valor: { de: 1500.5 } }]);
     assert.match(descreverItem(filtro.filtros[0], ticket), /^Ticket a partir de R\$\s1\.500,50$/);
+  });
+});
+
+describe('esfriando (crm.inatividade)', () => {
+  test('lerFiltro aceita só esfriando: true', () => {
+    assert.equal(lerFiltro({ filtros: [], esfriando: true }).esfriando, true);
+    assert.equal('esfriando' in lerFiltro({ filtros: [], esfriando: false }), false);
+    assert.equal('esfriando' in lerFiltro({ filtros: [], esfriando: 'sim' }), false);
+  });
+
+  test('conta, vai para a URL e para o corpo da busca', () => {
+    const filtro = lerFiltro({ filtros: [], esfriando: true });
+
+    assert.equal(contarFiltros(filtro), 1);
+    assert.deepEqual(lerFiltro(serializarFiltro(filtro)), filtro);
+    assert.equal(paraCorpoDeBusca(filtro).esfriando, true);
+  });
+
+  test('vira chip removível', () => {
+    const filtro = lerFiltro({ filtros: [], esfriando: true, valorMin: 5 });
+    const chip = chipsDoFiltro(filtro, campos, new Map()).find((item) => item.id === 'esfriando');
+
+    assert.equal(chip.texto, 'Esfriando');
+    assert.deepEqual(chip.remover(), { filtros: [], valorMin: 5 });
+  });
+
+  test('atravessa o rascunho: Aplicar no construtor não perde o esfriando', () => {
+    const filtro = lerFiltro({ filtros: [], esfriando: true });
+    const { filtro: aplicado } = filtroDoRascunho(rascunhoDoFiltro(filtro, campos), campos);
+
+    assert.equal(aplicado.esfriando, true);
+  });
+});
+
+describe('semResponsavel', () => {
+  test('lerFiltro aceita só true, e nunca junto com usuarioResponsavelId', () => {
+    assert.equal(lerFiltro({ filtros: [], semResponsavel: true }).semResponsavel, true);
+    assert.equal('semResponsavel' in lerFiltro({ filtros: [], semResponsavel: 'sim' }), false);
+
+    const ambos = lerFiltro({ filtros: [], semResponsavel: true, usuarioResponsavelId: 'u1' });
+    assert.equal(ambos.usuarioResponsavelId, 'u1');
+    assert.equal('semResponsavel' in ambos, false);
+  });
+
+  test('conta como o filtro de responsável e vira chip removível', () => {
+    const filtro = lerFiltro({ filtros: [], esfriando: true, semResponsavel: true });
+    const chip = chipsDoFiltro(filtro, campos, new Map()).find((item) => item.id === 'sem-responsavel');
+
+    assert.equal(contarFiltros(filtro), 2);
+    assert.equal(paraCorpoDeBusca(filtro).semResponsavel, true);
+    assert.equal(chip.texto, 'Sem responsável');
+    assert.deepEqual(chip.remover(), { filtros: [], esfriando: true });
+  });
+
+  test('no rascunho é uma opção do select Responsável', () => {
+    const filtro = lerFiltro({ filtros: [], semResponsavel: true });
+    const rascunho = rascunhoDoFiltro(filtro, campos);
+
+    assert.equal(rascunho.fixos.usuarioResponsavelId, RESPONSAVEL_NENHUM);
+    assert.deepEqual(filtroDoRascunho(rascunho, campos).filtro, filtro);
+
+    const trocado = { ...rascunho, fixos: { ...rascunho.fixos, usuarioResponsavelId: 'u1' } };
+    assert.deepEqual(filtroDoRascunho(trocado, campos).filtro, { filtros: [], usuarioResponsavelId: 'u1' });
   });
 });

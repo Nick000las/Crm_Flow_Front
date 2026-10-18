@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { SecaoCampos } from '../components/config-campos/secao-campos';
 import { SecaoDuplicidade } from '../components/config-duplicidade/secao-duplicidade';
+import { SecaoInatividade } from '../components/config-inatividade/secao-inatividade';
 import { SecaoLayout } from '../components/config-layout/secao-layout';
 import { SecaoListas } from '../components/config-listas/secao-listas';
 import { SecaoRegras } from '../components/config-regras/secao-regras';
@@ -17,6 +18,7 @@ const TELA_DA_SECAO = Object.freeze({
   listas: SecaoListas,
   regras: SecaoRegras,
   duplicidade: SecaoDuplicidade,
+  inatividade: SecaoInatividade,
 });
 
 function NavegacaoSecoes({ secoes, ativa }) {

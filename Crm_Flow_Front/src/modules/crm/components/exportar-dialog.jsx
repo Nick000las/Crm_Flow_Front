@@ -12,11 +12,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { EXPORTACAO, SITUACOES_LEAD } from '../constants';
+import { EXPORTACAO, FORMATOS_EXPORTACAO, SITUACOES_LEAD } from '../constants';
 import { useExportarLeads } from '../hooks/use-exportacao';
 import { alternarItem, colunasSelecionadas, itensIniciais, moverItem } from '../lib/colunas-export';
 import { contarFiltros, paraCorpoDeBusca } from '../lib/filtro';
+import { SelectSimples } from './select-simples';
+
+const OPCOES_FORMATO = Object.freeze([
+  { valor: FORMATOS_EXPORTACAO.XLSX, rotulo: 'Excel (.xlsx)' },
+  { valor: FORMATOS_EXPORTACAO.CSV, rotulo: 'CSV (.csv)' },
+]);
 
 const SUBIR = -1;
 const DESCER = 1;
@@ -66,9 +73,10 @@ function ListaDeColunas({ itens, onAlternar, onMover }) {
 }
 
 /** Conteúdo do dialog. Montado a cada abertura: começa das colunas da tabela. */
-function FormExportar({ campos, idsVisiveis, busca, filtro, situacao, onExportado }) {
-  const [itens, setItens] = useState(() => itensIniciais(campos, idsVisiveis));
+function FormExportar({ campos, idsVisiveis, busca, filtro, situacao, comMassa, onExportado }) {
+  const [itens, setItens] = useState(() => itensIniciais(campos, idsVisiveis, { comMassa }));
   const [usarFiltros, setUsarFiltros] = useState(true);
+  const [formato, setFormato] = useState(FORMATOS_EXPORTACAO.XLSX);
   const exportar = useExportarLeads();
   const colunas = colunasSelecionadas(itens);
   // "Arquivados" também é o que se está vendo: vai junto e conta.
@@ -79,11 +87,19 @@ function FormExportar({ campos, idsVisiveis, busca, filtro, situacao, onExportad
     const filtroDoPedido = usarFiltros
       ? { ...(busca && { busca }), ...paraCorpoDeBusca(filtro), ...(comSituacao && { situacao }) }
       : undefined;
-    exportar.mutate({ colunas, filtro: filtroDoPedido }, { onSuccess: onExportado });
+    // Sem `crm.massa` o formato não vai: o back só gera .xlsx (csv daria 403).
+    exportar.mutate({ colunas, filtro: filtroDoPedido, ...(comMassa && { formato }) }, { onSuccess: onExportado });
   }
 
   return (
     <div className="grid gap-4">
+      {comMassa && (
+        <div className="grid gap-1.5">
+          <Label htmlFor="exportar-formato">Formato</Label>
+          <SelectSimples id="exportar-formato" onChange={(valor) => valor && setFormato(valor)} opcoes={OPCOES_FORMATO} value={formato} />
+        </div>
+      )}
+
       <ListaDeColunas
         itens={itens}
         onAlternar={(chave) => setItens((atuais) => alternarItem(atuais, chave))}
@@ -106,7 +122,7 @@ function FormExportar({ campos, idsVisiveis, busca, filtro, situacao, onExportad
           Cancelar
         </DialogClose>
         <Button aria-busy={exportar.isPending} disabled={colunas.length === 0 || exportar.isPending} onClick={handleExportar}>
-          {exportar.isPending ? 'Gerando planilha…' : 'Exportar .xlsx'}
+          {exportar.isPending ? 'Gerando arquivo…' : `Exportar .${formato}`}
         </Button>
       </DialogFooter>
     </div>
@@ -125,7 +141,8 @@ function FormExportar({ campos, idsVisiveis, busca, filtro, situacao, onExportad
  *   busca: string,
  *   filtro: import('../lib/filtro').FiltroAplicado,
  *   situacao: 'ativos' | 'arquivados' | 'lixeira',
- * }} props
+ *   comMassa: boolean,
+ * }} props `comMassa` (`crm.massa`): escolha de formato e colunas Responsável/Criado em
  */
 export function ExportarDialog({ open, onOpenChange, ...form }) {
   return (
@@ -133,7 +150,11 @@ export function ExportarDialog({ open, onOpenChange, ...form }) {
       <DialogContent className="rounded-none sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Exportar leads</DialogTitle>
-          <DialogDescription>Gera uma planilha .xlsx com as colunas escolhidas.</DialogDescription>
+          <DialogDescription>
+            {form.comMassa
+              ? 'Gera uma planilha .xlsx ou um .csv com as colunas escolhidas.'
+              : 'Gera uma planilha .xlsx com as colunas escolhidas.'}
+          </DialogDescription>
         </DialogHeader>
         {open && <FormExportar {...form} onExportado={() => onOpenChange(false)} />}
       </DialogContent>

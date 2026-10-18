@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
  *   label: string,
  *   obrigatorio?: boolean,
  *   erro?: string | null,
+ *   ajuda?: string | null,
  *   comoGrupo?: boolean,
  *   children: (controle: {
  *     id: string,
@@ -17,9 +18,10 @@ import { Label } from '@/components/ui/label';
  *   }) => import('react').ReactNode,
  * }} props
  */
-export function CampoForm({ id, label, obrigatorio = false, erro, comoGrupo = false, children }) {
+export function CampoForm({ id, label, obrigatorio = false, erro, ajuda = null, comoGrupo = false, children }) {
   const erroId = `${id}-erro`;
-  const descricao = erro ? erroId : undefined;
+  const ajudaId = `${id}-ajuda`;
+  const descricao = [ajuda && ajudaId, erro && erroId].filter(Boolean).join(' ') || undefined;
   const rotulo = (
     <>
       {label}
@@ -38,10 +40,19 @@ export function CampoForm({ id, label, obrigatorio = false, erro, comoGrupo = fa
     'aria-invalid': erro ? true : undefined,
     'aria-describedby': descricao,
   });
-  const mensagemErro = erro && (
-    <p className="text-xs text-destructive" id={erroId}>
-      {erro}
-    </p>
+  const mensagemErro = (
+    <>
+      {ajuda && (
+        <p className="text-xs text-muted-foreground" id={ajudaId}>
+          {ajuda}
+        </p>
+      )}
+      {erro && (
+        <p className="text-xs text-destructive" id={erroId}>
+          {erro}
+        </p>
+      )}
+    </>
   );
 
   if (comoGrupo) {

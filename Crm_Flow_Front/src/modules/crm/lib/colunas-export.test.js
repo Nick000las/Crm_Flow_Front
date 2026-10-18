@@ -37,3 +37,26 @@ test('colunas selecionadas respeitam a ordem escolhida', () => {
   assert.deepEqual(colunasSelecionadas(itens), ['nome', 'email', 'valor']);
   assert.deepEqual(colunasSelecionadas(alternarItem(itens, 'nome')), ['email', 'valor']);
 });
+
+test('com crm.massa, Responsável e Criado em entram e casam com as colunas da tabela', () => {
+  const itens = itensIniciais(campos, ['nome', 'responsavel', 'criadoEm'], { comMassa: true });
+
+  assert.deepEqual(
+    itens.map(({ chave, marcada }) => [chave, marcada]),
+    [
+      ['nome', true],
+      ['usuarioResponsavelId', true],
+      ['createdAt', true],
+      ['email', false],
+      ['status', false],
+      ['valor', false],
+    ],
+  );
+});
+
+test('sem a flag, as colunas novas não aparecem', () => {
+  const chaves = itensIniciais(campos, ['responsavel', 'criadoEm']).map((item) => item.chave);
+
+  assert.equal(chaves.includes('usuarioResponsavelId'), false);
+  assert.equal(chaves.includes('createdAt'), false);
+});

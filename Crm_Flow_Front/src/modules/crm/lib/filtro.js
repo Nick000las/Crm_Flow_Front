@@ -19,15 +19,20 @@ import { rotuloOpcao } from './opcoes.js';
  *   valorMax?: number,
  *   criadoDe?: string,
  *   criadoAte?: string,
- * }} FiltroAplicado   datas em `AAAA-MM-DD`
+ *   esfriando?: true,
+ *   semResponsavel?: true,
+ * }} FiltroAplicado   datas em `AAAA-MM-DD`; `esfriando` exige `crm.inatividade`;
+ *   `semResponsavel` (sem dono ou dono desativado) exclui `usuarioResponsavelId`
  * @typedef {{ id: string, chave: string, operador: string, valor: unknown }} LinhaFiltro
  * @typedef {{
- *   usuarioResponsavelId: string,
+ *   usuarioResponsavelId: string,   `RESPONSAVEL_NENHUM` = sem responsável
  *   valorMin: string,
  *   valorMax: string,
  *   criadoDe: string,
  *   criadoAte: string,
- * }} FixosRascunho
+ *   esfriando: boolean,
+ * }} FixosRascunho   `esfriando` não tem controle no construtor (vem da view
+ *   ou da notificação); só atravessa o rascunho para "Aplicar" não perdê-lo
  * @typedef {{ linhas: LinhaFiltro[], fixos: FixosRascunho }} Rascunho
  */
 
@@ -62,6 +67,12 @@ const DATA = /^\d{4}-\d{2}-\d{2}$/;
 const PREFIXO_ERRO = 'filtros.';
 const TAMANHO_ID_CURTO = 8;
 
+/**
+ * Valor do select "Responsável" no rascunho para "Sem responsável": um select
+ * só para os dois filtros, então não dá para combiná-los (o back daria 400).
+ */
+export const RESPONSAVEL_NENHUM = 'sem-responsavel';
+
 /** @type {FiltroAplicado} */
 export const FILTRO_VAZIO = Object.freeze({ filtros: Object.freeze([]) });
 
@@ -72,6 +83,7 @@ const FIXOS_VAZIOS = Object.freeze({
   valorMax: '',
   criadoDe: '',
   criadoAte: '',
+  esfriando: false,
 });
 
 let proximoIdLinha = 0;
@@ -84,9 +96,10 @@ const gerarIdLinha = () => `linha-${(proximoIdLinha += 1)}`;
 export function contarFiltros(filtro) {
   return (
     filtro.filtros.length +
-    (filtro.usuarioResponsavelId ? 1 : 0) +
+    (filtro.usuarioResponsavelId || filtro.semResponsavel ? 1 : 0) +
     (filtro.valorMin !== undefined || filtro.valorMax !== undefined ? 1 : 0) +
-    (filtro.criadoDe || filtro.criadoAte ? 1 : 0)
+    (filtro.criadoDe || filtro.criadoAte ? 1 : 0) +
+    (filtro.esfriando ? 1 : 0)
   );
 }
 
@@ -125,16 +138,22 @@ export function lerFiltro(entrada) {
       SEM_VALOR.has(operador) ? { chave, operador } : { chave, operador, valor },
     );
 
+  const usuarioResponsavelId =
+    typeof bruto.usuarioResponsavelId === 'string' && bruto.usuarioResponsavelId
+      ? bruto.usuarioResponsavelId
+      : undefined;
+
   return omitirIndefinidos({
     filtros,
-    usuarioResponsavelId:
-      typeof bruto.usuarioResponsavelId === 'string' && bruto.usuarioResponsavelId
-        ? bruto.usuarioResponsavelId
-        : undefined,
+    usuarioResponsavelId,
     valorMin: numeroFinito(bruto.valorMin),
     valorMax: numeroFinito(bruto.valorMax),
     criadoDe: dataValida(bruto.criadoDe),
     criadoAte: dataValida(bruto.criadoAte),
+    // Só `true` conta: `false` é o mesmo que não filtrar.
+    esfriando: bruto.esfriando === true ? true : undefined,
+    // Os dois juntos dão 400: num link editado à mão, vale o responsável.
+    semResponsavel: bruto.semResponsavel === true && !usuarioResponsavelId ? true : undefined,
   });
 }
 
@@ -251,11 +270,12 @@ export function rascunhoDoFiltro(filtro, campos) {
   return {
     linhas: filtro.filtros.map((item) => linhaDoItem(item, campoPorChave.get(item.chave))),
     fixos: {
-      usuarioResponsavelId: filtro.usuarioResponsavelId ?? '',
+      usuarioResponsavelId: filtro.semResponsavel ? RESPONSAVEL_NENHUM : (filtro.usuarioResponsavelId ?? ''),
       valorMin: numeroParaTexto(filtro.valorMin),
       valorMax: numeroParaTexto(filtro.valorMax),
       criadoDe: filtro.criadoDe ?? '',
       criadoAte: filtro.criadoAte ?? '',
+      esfriando: Boolean(filtro.esfriando),
     },
   };
 }
@@ -346,11 +366,16 @@ export function filtroDoRascunho({ linhas, fixos }, campos) {
   return {
     filtro: lerFiltro({
       filtros,
-      usuarioResponsavelId: fixos.usuarioResponsavelId || undefined,
+      usuarioResponsavelId:
+        fixos.usuarioResponsavelId && fixos.usuarioResponsavelId !== RESPONSAVEL_NENHUM
+          ? fixos.usuarioResponsavelId
+          : undefined,
+      semResponsavel: fixos.usuarioResponsavelId === RESPONSAVEL_NENHUM || undefined,
       valorMin,
       valorMax,
       criadoDe: fixos.criadoDe || undefined,
       criadoAte: fixos.criadoAte || undefined,
+      esfriando: fixos.esfriando || undefined,
     }),
   };
 }
@@ -428,6 +453,9 @@ export function chipsDoFiltro(filtro, campos, nomePorId) {
       remover: sem('usuarioResponsavelId'),
     });
   }
+  if (filtro.semResponsavel) {
+    chips.push({ id: 'sem-responsavel', texto: 'Sem responsável', remover: sem('semResponsavel') });
+  }
   if (filtro.valorMin !== undefined || filtro.valorMax !== undefined) {
     chips.push({
       id: 'valor',
@@ -441,6 +469,9 @@ export function chipsDoFiltro(filtro, campos, nomePorId) {
       texto: `Criado ${descreverFaixa(filtro.criadoDe, filtro.criadoAte, formatarData)}`,
       remover: sem('criadoDe', 'criadoAte'),
     });
+  }
+  if (filtro.esfriando) {
+    chips.push({ id: 'esfriando', texto: 'Esfriando', remover: sem('esfriando') });
   }
 
   return chips;

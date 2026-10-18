@@ -9,29 +9,34 @@ import { useAuth } from '@/hooks/useAuth';
 import { podeVer, temFeature } from '@/lib/acesso';
 import { isAccessError } from '@/services/api';
 import { AbasSituacao } from '../components/abas-situacao';
+import { BarraSelecao } from '../components/barra-selecao';
+import { EditarEmMassaDialog } from '../components/editar-em-massa-dialog';
 import { ChipsFiltro } from '../components/chips-filtro';
 import { ExcluirLeadDialog } from '../components/excluir-lead-dialog';
 import { ExportarDialog } from '../components/exportar-dialog';
 import { LeadsToolbar } from '../components/leads-toolbar';
 import { LeadsConteudo } from '../components/leads-conteudo';
-import { BarraSelecao } from '../components/mesclagem/barra-selecao';
 import { MesclarDialog } from '../components/mesclagem/mesclar-dialog';
-import { AVISOS_LEAD, CONTEXTO, CRM_FEATURES, PAPEIS_GESTAO, SITUACOES_LEAD } from '../constants';
+import { AVISOS_LEAD, BULK, CONTEXTO, CRM_FEATURES, PAPEIS_GESTAO, SITUACOES_LEAD } from '../constants';
 import { useAcoesDeArquivo } from '../hooks/use-acoes-de-arquivo';
 import { useCampos } from '../hooks/use-campos';
 import { useColunasDaLista } from '../hooks/use-colunas-da-lista';
 import { useEstadoLista } from '../hooks/use-estado-lista';
 import { useLeadsSearch } from '../hooks/use-leads-search';
 import { useNavegacaoLeads } from '../hooks/use-navegacao-leads';
-import { useSelecaoMesclagem } from '../hooks/use-selecao-mesclagem';
+import { useSelecaoLeads } from '../hooks/use-selecao-leads';
 import { useUsuarios } from '../hooks/use-usuarios';
 import { situacaoDaBusca } from '../lib/arquivo';
+import { filtroDaBusca } from '../lib/inatividade';
+import { avisoDoResultado } from '../lib/massa';
 import { camposDoContexto } from '../lib/contextos';
 import { placeholderDaBusca } from '../lib/layout';
 import { FILTRO_VAZIO, chavesComErro, chipsDoFiltro } from '../lib/filtro';
 import { ID_BOTAO_NOVO_LEAD } from '../rotas';
 
 const CAMPOS_VAZIOS = [];
+/** Sem `crm.massa`, a seleção serve só para mesclar. */
+const MAXIMO_MESCLAR = 2;
 
 /**
  * Lista de leads. O Sheet de detalhe/criação é rota filha (`<Outlet />`):
@@ -45,7 +50,12 @@ export default function LeadsPage() {
   const comArquivo = temFeature(user, CRM_FEATURES.ARQUIVO);
   // Sem a flag, um link ou view da lixeira cai em "ativos" (o back daria 403).
   const situacao = situacaoDaBusca(estadoDaUrl.situacao, comArquivo);
-  const estado = useMemo(() => ({ ...estadoDaUrl, situacao }), [estadoDaUrl, situacao]);
+  // Sem `crm.inatividade`, o "esfriando" de um link ou view antiga sai (idem).
+  const comInatividade = temFeature(user, CRM_FEATURES.INATIVIDADE);
+  const estado = useMemo(
+    () => ({ ...estadoDaUrl, situacao, filtro: filtroDaBusca(estadoDaUrl.filtro, comInatividade) }),
+    [estadoDaUrl, situacao, comInatividade],
+  );
   const naLixeira = situacao === SITUACOES_LEAD.LIXEIRA;
   const { destinos, abrirLead, voltarParaLista } = useNavegacaoLeads();
   const camposQuery = useCampos();
@@ -57,10 +67,14 @@ export default function LeadsPage() {
   const gestao = podeVer({ roles: PAPEIS_GESTAO }, user);
   // Mesclar: DONO/MASTER com `crm.duplicidade`, fora da lixeira.
   const podeMesclar = gestao && temFeature(user, CRM_FEATURES.DUPLICIDADE) && !naLixeira;
-  const selecao = useSelecaoMesclagem(
-    JSON.stringify([estado.busca, estado.filtro, situacao, estado.pagina, estado.tamanho]),
-  );
+  // Edição em massa: qualquer papel com `crm.massa`, fora da lixeira (lá o back dá 404).
+  const emMassa = temFeature(user, CRM_FEATURES.MASSA) && !naLixeira;
+  const chaveDaConsulta = JSON.stringify([estado.busca, estado.filtro, situacao, estado.pagina, estado.tamanho]);
+  const selecao = useSelecaoLeads(chaveDaConsulta, emMassa ? BULK.MAX_IDS : MAXIMO_MESCLAR);
   const [aMesclar, setAMesclar] = useState([]);
+  const [editandoEmMassa, setEditandoEmMassa] = useState(false);
+  const [resultadoMassa, setResultadoMassa] = useState(null);
+  const [avisoMassa, setAvisoMassa] = useState(null);
 
   // Uma chamada para a lista toda; cada parte recebe os campos da sua tela.
   // Chips e export usam todos: um filtro antigo por campo fora de "Filtros"
@@ -79,7 +93,20 @@ export default function LeadsPage() {
   );
   // Confirmação breve de salvar/excluir. Chega pelo state da navegação, então
   // some sozinha na próxima navegação (troca de página, busca).
-  const aviso = state?.aviso;
+  // O da edição em massa vale só para a consulta em que foi feita.
+  const aviso = (avisoMassa?.chave === chaveDaConsulta && avisoMassa.texto) || state?.aviso;
+
+  /** Ao fechar o dialog (por qualquer caminho): só as falhas seguem marcadas. */
+  function fecharEdicaoEmMassa() {
+    setEditandoEmMassa(false);
+    if (!resultadoMassa) return;
+
+    const falhas = resultadoMassa.resultados.filter((resultado) => !resultado.ok).map((resultado) => resultado.id);
+    if (falhas.length > 0) selecao.manter(falhas);
+    else selecao.limpar();
+    setAvisoMassa({ chave: chaveDaConsulta, texto: avisoDoResultado(resultadoMassa) });
+    setResultadoMassa(null);
+  }
 
   const botaoNovo = (comId) => (
     // Só o do cabeçalho leva o id: é ele que recebe o foco de volta.
@@ -133,10 +160,11 @@ export default function LeadsPage() {
         title="Não foi possível mudar o lead"
       />
 
-      {podeMesclar && (
+      {(emMassa || podeMesclar) && (
         <BarraSelecao
+          onEditarEmMassa={emMassa ? () => setEditandoEmMassa(true) : undefined}
           onLimpar={selecao.limpar}
-          onMesclar={() => setAMesclar(selecao.leads)}
+          onMesclar={podeMesclar ? () => setAMesclar(selecao.leads) : undefined}
           total={selecao.leads.length}
         />
       )}
@@ -144,7 +172,7 @@ export default function LeadsPage() {
       <LeadsConteudo
         acoesDeArquivo={comArquivo ? arquivo.acoes : undefined}
         onMesclar={podeMesclar ? (lead) => setAMesclar([lead]) : undefined}
-        selecao={podeMesclar ? selecao.tabela : null}
+        selecao={emMassa || podeMesclar ? selecao.tabela : null}
         atualizar={atualizar}
         botaoNovo={botaoNovo(false)}
         carregando={camposQuery.isPending || leadsQuery.isPending}
@@ -202,6 +230,18 @@ export default function LeadsPage() {
         />
       )}
 
+      {emMassa && (
+        <EditarEmMassaDialog
+          campos={campos}
+          identificador={identificador}
+          leads={selecao.leads}
+          onOpenChange={(aberto) => (aberto ? setEditandoEmMassa(true) : fecharEdicaoEmMassa())}
+          onResultado={setResultadoMassa}
+          open={editandoEmMassa}
+          usuarios={usuarios}
+        />
+      )}
+
       <ExcluirLeadDialog
         comLixeira={comArquivo}
         lead={leadAExcluir}
@@ -214,6 +254,7 @@ export default function LeadsPage() {
         <ExportarDialog
           busca={estado.busca}
           campos={campos}
+          comMassa={temFeature(user, CRM_FEATURES.MASSA)}
           filtro={estado.filtro}
           idsVisiveis={ids}
           onOpenChange={setExportando}

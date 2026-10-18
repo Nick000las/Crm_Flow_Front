@@ -1,5 +1,6 @@
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { RESPONSAVEL_NENHUM } from '../lib/filtro';
 import { SelectSimples } from './select-simples';
 
 const INPUT_CLASS = 'h-9 rounded-none font-mono tabular-nums';
@@ -56,24 +57,26 @@ function Faixa({ legenda, nome, de, ate, tipo, erros, onChange }) {
  * }} props
  */
 export function FiltrosFixos({ fixos, usuarios, erros, onChange, className }) {
-  const opcoesResponsavel = usuarios.map((usuario) => ({ valor: usuario.id, rotulo: usuario.nome }));
+  // "Sem responsável" (sem dono ou dono desativado) vale mesmo sem a lista de usuários.
+  const opcoesResponsavel = [
+    { valor: RESPONSAVEL_NENHUM, rotulo: 'Sem responsável' },
+    ...usuarios.map((usuario) => ({ valor: usuario.id, rotulo: usuario.nome })),
+  ];
 
   return (
     <div className={cn('grid gap-3 sm:grid-cols-3', className)}>
-      {usuarios.length > 0 && (
-        <div className="grid content-start gap-1.5">
-          <label className="mb-1.5 text-sm font-medium" htmlFor="filtro-responsavel">
-            Responsável
-          </label>
-          <SelectSimples
-            id="filtro-responsavel"
-            onChange={(valor) => onChange('usuarioResponsavelId', valor)}
-            opcoes={opcoesResponsavel}
-            vazio="Qualquer um"
-            value={fixos.usuarioResponsavelId}
-          />
-        </div>
-      )}
+      <div className="grid content-start gap-1.5">
+        <label className="mb-1.5 text-sm font-medium" htmlFor="filtro-responsavel">
+          Responsável
+        </label>
+        <SelectSimples
+          id="filtro-responsavel"
+          onChange={(valor) => onChange('usuarioResponsavelId', valor)}
+          opcoes={opcoesResponsavel}
+          vazio="Qualquer um"
+          value={fixos.usuarioResponsavelId}
+        />
+      </div>
       <Faixa
         ate={fixos.valorMax}
         de={fixos.valorMin}

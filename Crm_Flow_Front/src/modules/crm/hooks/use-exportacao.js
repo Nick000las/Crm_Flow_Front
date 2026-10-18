@@ -4,12 +4,13 @@ import { salvarBlob } from '@/lib/download';
 import { exportarLeads } from '../api/exportacao.api';
 import { EXPORTACAO } from '../constants';
 
-/** Gera a planilha e já dispara o download. */
+/** Gera o arquivo e já dispara o download (sem nome do back, `leads.<formato>`). */
 export function useExportarLeads() {
   const { authApi } = useAuth();
 
   return useMutation({
     mutationFn: (pedido) => exportarLeads(authApi, pedido),
-    onSuccess: ({ blob, filename }) => salvarBlob(blob, filename ?? EXPORTACAO.NOME_ARQUIVO),
+    onSuccess: ({ blob, filename }, { formato }) =>
+      salvarBlob(blob, filename ?? (formato ? `leads.${formato}` : EXPORTACAO.NOME_ARQUIVO)),
   });
 }

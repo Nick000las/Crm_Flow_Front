@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import { TIPOS_CAMPO } from '../constants';
+import { AJUDA_POR_CHAVE } from '../lib/form-lead';
 import { opcoesDoSeletor, rotuloOpcao, sugestoesDoCampo } from '../lib/opcoes';
 import { CampoForm } from './campo-form';
 import {
@@ -131,6 +132,7 @@ export function CampoDinamico({ campo, id, value, onChange, erro, onBlur }) {
 
   return (
     <CampoForm
+      ajuda={AJUDA_POR_CHAVE[campo.chave]}
       comoGrupo={Controle === CampoOpcoesMultiplas}
       erro={erro}
       id={id}
