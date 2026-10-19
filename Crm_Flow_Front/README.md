@@ -142,6 +142,17 @@ continuam marcados. O export ganha o formato `.csv` e as colunas Responsável e 
 O **primeiro nome** é um campo do sistema: se ficar vazio, o CRM usa o primeiro nome do
 Nome (e acompanha quando o Nome muda, até alguém editá-lo à mão).
 
+Campos podem ser também **CPF, CNPJ e CEP** (com máscara na tela, gravados sem ela),
+**Hora**, **Usuário**, **Período** (de/até) e **Endereço** (CEP, logradouro, número,
+complemento, bairro, cidade e UF). CNPJ aceita o formato alfanumérico.
+
+Com `crm.cnpj`, o formulário ganha **Buscar dados na Receita** ao lado do CNPJ: as
+sugestões aparecem para revisar e só entram no formulário — o lead é salvo pelo usuário.
+O resto do que a Receita devolveu aparece só para leitura.
+Em Configurações › Enriquecimento por CNPJ, DONO e MASTER escolhem entre a lupa e o
+preenchimento automático ao salvar, se sobrescreve campos já preenchidos e para que
+campo vai cada dado da Receita.
+
 ## Notificações
 
 O sino no Rail (para todo usuário logado, sem flag) mostra as não lidas, a lista

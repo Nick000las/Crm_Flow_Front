@@ -1,6 +1,13 @@
 import { BUSCA_LEADS, OPERADORES_POR_TIPO, TIPOS_CAMPO } from '../constants.js';
 import { lerNumeroDigitado } from './form-lead.js';
-import { formatarData, formatarMoeda, formatarNumero } from './formatadores.js';
+import {
+  formatarCep,
+  formatarCnpj,
+  formatarCpf,
+  formatarData,
+  formatarMoeda,
+  formatarNumero,
+} from './formatadores.js';
 import { rotuloOpcao } from './opcoes.js';
 
 /**
@@ -179,8 +186,9 @@ function omitirIndefinidos(objeto) {
 
 /**
  * Família de input do tipo no construtor: monetário edita como número; texto
- * longo, telefone, e-mail e URL, como texto. Os operadores continuam sendo os
- * do tipo real (`OPERADORES_POR_TIPO`).
+ * longo, telefone, e-mail, URL, documentos e endereço, como texto; período,
+ * como data (de/até). Os operadores continuam sendo os do tipo real
+ * (`OPERADORES_POR_TIPO`).
  *
  * @param {import('../types.js').TipoCampo} tipo
  */
@@ -194,6 +202,19 @@ const TIPO_BASE = Object.freeze({
   [TIPOS_CAMPO.TELEFONE]: TIPOS_CAMPO.TEXTO,
   [TIPOS_CAMPO.EMAIL]: TIPOS_CAMPO.TEXTO,
   [TIPOS_CAMPO.URL]: TIPOS_CAMPO.TEXTO,
+  [TIPOS_CAMPO.CPF]: TIPOS_CAMPO.TEXTO,
+  [TIPOS_CAMPO.CNPJ]: TIPOS_CAMPO.TEXTO,
+  [TIPOS_CAMPO.CEP]: TIPOS_CAMPO.TEXTO,
+  [TIPOS_CAMPO.ENDERECO]: TIPOS_CAMPO.TEXTO,
+  // `entre` no período = sobreposição com o de/até do filtro.
+  [TIPOS_CAMPO.INTERVALO_DATAS]: TIPOS_CAMPO.DATA,
+});
+
+/** Máscara do valor no chip, para documento digitado sem pontuação. */
+const MASCARA_NO_CHIP = Object.freeze({
+  [TIPOS_CAMPO.CPF]: formatarCpf,
+  [TIPOS_CAMPO.CNPJ]: formatarCnpj,
+  [TIPOS_CAMPO.CEP]: formatarCep,
 });
 
 const ehNumerico = (campo) => Boolean(campo) && tipoBase(campo.tipo) === TIPOS_CAMPO.NUMERO;
@@ -393,10 +414,14 @@ function descreverFaixa(de, ate, formatar) {
   return `até ${formatar(ate)}`;
 }
 
-function formatadorDoCampo(campo) {
+function formatadorDoCampo(campo, nomePorId) {
   if (campo?.tipo === TIPOS_CAMPO.MONETARIO) return (valor) => formatarMoeda(valor) ?? String(valor);
   if (ehNumerico(campo)) return (valor) => formatarNumero(valor) ?? String(valor);
-  if (campo?.tipo === TIPOS_CAMPO.DATA) return (valor) => formatarData(valor) ?? String(valor);
+  if (campo && tipoBase(campo.tipo) === TIPOS_CAMPO.DATA) return (valor) => formatarData(valor) ?? String(valor);
+  if (campo?.tipo === TIPOS_CAMPO.USUARIO) {
+    return (valor) => nomePorId?.get(String(valor)) ?? String(valor).slice(0, TAMANHO_ID_CURTO);
+  }
+  if (MASCARA_NO_CHIP[campo?.tipo]) return (valor) => MASCARA_NO_CHIP[campo.tipo](valor) ?? String(valor);
   if (campo?.tipo === TIPOS_CAMPO.BOOLEANO) return (valor) => (valor ? 'Sim' : 'Não');
   if (campo?.tipo === TIPOS_CAMPO.SELECAO || campo?.tipo === TIPOS_CAMPO.SELECAO_MULTIPLA) {
     return (valor) => rotuloOpcao(valor, campo);
@@ -409,11 +434,12 @@ function formatadorDoCampo(campo) {
  *
  * @param {FiltroCampo} item
  * @param {import('../types.js').Campo | undefined} campo ausente se foi desligado
+ * @param {Map<string, string>} [nomePorId] nome do usuário (tipo `usuario`)
  */
-export function descreverItem(item, campo) {
+export function descreverItem(item, campo, nomePorId) {
   const label = campo?.label ?? item.chave;
   const operador = ROTULOS_OPERADOR[item.operador];
-  const formatar = formatadorDoCampo(campo);
+  const formatar = formatadorDoCampo(campo, nomePorId);
 
   if (SEM_VALOR.has(item.operador)) return `${label} ${operador}`;
   if (item.operador === OPERADOR.ENTRE) {
@@ -440,7 +466,7 @@ export function chipsDoFiltro(filtro, campos, nomePorId) {
 
   const chips = filtro.filtros.map((item, indice) => ({
     id: `filtro-${indice}`,
-    texto: descreverItem(item, campoPorChave.get(item.chave)),
+    texto: descreverItem(item, campoPorChave.get(item.chave), nomePorId),
     chave: item.chave,
     remover: () => ({ ...filtro, filtros: filtro.filtros.filter((_, atual) => atual !== indice) }),
   }));

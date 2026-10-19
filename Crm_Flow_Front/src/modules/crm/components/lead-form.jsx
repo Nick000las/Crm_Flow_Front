@@ -3,6 +3,7 @@ import { ApiErrorAlert } from '@/components/api-error-alert';
 import { Button } from '@/components/ui/button';
 import { semChave } from '@/lib/objetos';
 import { isAbortError, toApiError } from '@/services/api';
+import { TIPOS_CAMPO } from '../constants';
 import { useChecarDuplicados } from '../hooks/use-duplicidade';
 import {
   checaDuplicidade,
@@ -22,6 +23,7 @@ import {
 import { CampoDinamico } from './campo-dinamico';
 import { CampoResponsavel } from './campo-responsavel';
 import { DuplicadosDialog } from './duplicados-dialog';
+import { LupaCnpj } from './lupa-cnpj';
 
 const PREFIXO_ID = 'lead-form-';
 const ERRO_GERAL_ID = 'lead-form-erro';
@@ -177,8 +179,7 @@ export function LeadForm({
 
   const campoDoForm = (campo) => {
     const id = idNoForm(campo);
-
-    return (
+    const controle = (
       <CampoDinamico
         campo={campo}
         erro={erros[id]}
@@ -188,6 +189,23 @@ export function LeadForm({
         onChange={(valor) => alterar(id, valor)}
         value={valores[id]}
       />
+    );
+
+    // Lupa da Receita (`crm.cnpj`) logo abaixo de cada campo de CNPJ.
+    if (campo.tipo !== TIPOS_CAMPO.CNPJ) return controle;
+
+    return (
+      <div className="grid gap-2" key={id}>
+        {controle}
+        <LupaCnpj
+          campos={campos}
+          cnpj={String(valores[id] ?? '')}
+          idBase={`${htmlId(id)}-receita`}
+          onAplicar={setValores}
+          onErroNoCampo={(mensagem) => setErros((atuais) => ({ ...atuais, [id]: mensagem }))}
+          valores={valores}
+        />
+      </div>
     );
   };
 

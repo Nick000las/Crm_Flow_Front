@@ -1,6 +1,13 @@
-import { CAMADA, TIPOS_CAMPO } from '../constants.js';
+import { CAMADA, PARTES_ENDERECO, TIPOS_CAMPO } from '../constants.js';
 import { lerValorDoCampo } from './colunas.js';
-import { formatarTelefone, paraNumero } from './formatadores.js';
+import {
+  documentoSemMascara,
+  formatarTelefone,
+  mascararCep,
+  mascararCnpj,
+  mascararCpf,
+  paraNumero,
+} from './formatadores.js';
 import { ehListaLivre, rotuloOpcao } from './opcoes.js';
 
 /**
@@ -37,13 +44,39 @@ const CENTAVOS = 100;
 /** O back só aceita telefone BR com DDD: fixo (10) ou celular (11), sem DDI. */
 const DIGITOS_TELEFONE = Object.freeze([10, 11]);
 const CHAVES_CONTATO = Object.freeze(['email', 'telefone']);
+const TAMANHO_DIA = 10;
+/** Tamanho do documento sem máscara (o back confere o DV). */
+const TAMANHO_DOCUMENTO = Object.freeze({
+  [TIPOS_CAMPO.CPF]: 11,
+  [TIPOS_CAMPO.CNPJ]: 14,
+  [TIPOS_CAMPO.CEP]: 8,
+});
+const MASCARA_DOCUMENTO = Object.freeze({
+  [TIPOS_CAMPO.CPF]: mascararCpf,
+  [TIPOS_CAMPO.CNPJ]: mascararCnpj,
+  [TIPOS_CAMPO.CEP]: mascararCep,
+});
 
 export const MENSAGENS = Object.freeze({
   OBRIGATORIO: 'Campo obrigatório',
   CONTATO: 'Informe e-mail ou telefone',
   NUMERO_INVALIDO: 'Informe um número válido',
   TELEFONE_INVALIDO: 'Informe DDD e número (10 ou 11 dígitos)',
+  CPF_INVALIDO: 'Informe os 11 dígitos do CPF',
+  CNPJ_INVALIDO: 'Informe os 14 caracteres do CNPJ',
+  CEP_INVALIDO: 'Informe os 8 dígitos do CEP',
+  PERIODO_INCOMPLETO: 'Informe o início e o fim',
+  PERIODO_INVERTIDO: 'O início precisa ser antes do fim',
 });
+
+const MENSAGEM_DOCUMENTO = Object.freeze({
+  [TIPOS_CAMPO.CPF]: MENSAGENS.CPF_INVALIDO,
+  [TIPOS_CAMPO.CNPJ]: MENSAGENS.CNPJ_INVALIDO,
+  [TIPOS_CAMPO.CEP]: MENSAGENS.CEP_INVALIDO,
+});
+
+const textoDe = (valor) => (typeof valor === 'string' ? valor : '');
+const diaDe = (valor) => (typeof valor === 'string' && DATA_ISO.test(valor) ? valor.slice(0, TAMANHO_DIA) : '');
 
 /**
  * Id do campo no estado do form. A Camada 3 ganha prefixo para nunca colidir
@@ -75,8 +108,8 @@ export function lerNumeroDigitado(texto) {
   return /^-?\d+(\.\d+)?$/.test(normalizado) ? Number(normalizado) : Number.NaN;
 }
 
-/** Valor do lead → valor que o controle do tipo edita. */
-function paraValorDeForm(tipo, valor) {
+/** Valor do lead (ou sugestão da Receita) → valor que o controle do tipo edita. */
+export function paraValorDeForm(tipo, valor) {
   switch (tipo) {
     case TIPOS_CAMPO.NUMERO:
     case TIPOS_CAMPO.MONETARIO: {
@@ -94,9 +127,42 @@ function paraValorDeForm(tipo, valor) {
       return typeof valor === 'boolean' ? valor : null;
     case TIPOS_CAMPO.SELECAO_MULTIPLA:
       return Array.isArray(valor) ? valor.map(String) : [];
+    // M11: o back grava sem máscara; o input mostra com.
+    case TIPOS_CAMPO.CPF:
+    case TIPOS_CAMPO.CNPJ:
+    case TIPOS_CAMPO.CEP:
+      return MASCARA_DOCUMENTO[tipo](textoDe(valor));
+    case TIPOS_CAMPO.INTERVALO_DATAS:
+      return { de: diaDe(valor?.de), ate: diaDe(valor?.ate) };
+    case TIPOS_CAMPO.ENDERECO:
+      return Object.fromEntries(
+        PARTES_ENDERECO.map((parte) => {
+          const texto = textoDe(valor?.[parte]);
+          return [parte, parte === 'cep' ? mascararCep(texto) : texto];
+        }),
+      );
     default:
       return valor === null || valor === undefined ? '' : String(valor);
   }
+}
+
+/** Período: os dois lados vazios = sem valor; um lado só fica para a validação apontar. */
+function periodoDeApi(valor) {
+  const de = textoDe(valor?.de).trim();
+  const ate = textoDe(valor?.ate).trim();
+  return de || ate ? { de, ate } : null;
+}
+
+/** Endereço: só as partes preenchidas, CEP sem máscara e UF maiúscula; nenhuma = `null`. */
+function enderecoDeApi(valor) {
+  const partes = PARTES_ENDERECO.flatMap((parte) => {
+    const texto = textoDe(valor?.[parte]).trim();
+    if (!texto) return [];
+    if (parte === 'cep') return [[parte, texto.replace(/\D/g, '')]];
+    return [[parte, parte === 'uf' ? texto.toUpperCase() : texto]];
+  });
+
+  return partes.length > 0 ? Object.fromEntries(partes) : null;
 }
 
 /**
@@ -118,6 +184,14 @@ export function paraValorDeApi(tipo, valor) {
       return typeof valor === 'boolean' ? valor : null;
     case TIPOS_CAMPO.SELECAO_MULTIPLA:
       return Array.isArray(valor) && valor.length > 0 ? valor : null;
+    case TIPOS_CAMPO.CPF:
+    case TIPOS_CAMPO.CNPJ:
+    case TIPOS_CAMPO.CEP:
+      return documentoSemMascara(valor) || null;
+    case TIPOS_CAMPO.INTERVALO_DATAS:
+      return periodoDeApi(valor);
+    case TIPOS_CAMPO.ENDERECO:
+      return enderecoDeApi(valor);
     default: {
       const texto = String(valor ?? '').trim();
       return texto === '' ? null : texto;
@@ -182,6 +256,8 @@ function iguais(a, b) {
   if (Array.isArray(a) && Array.isArray(b)) {
     return a.length === b.length && a.every((item, indice) => item === b[indice]);
   }
+  // Endereço e período: mesma ordem de chaves dos dois lados (`*DeApi`).
+  if (a && b && typeof a === 'object' && typeof b === 'object') return JSON.stringify(a) === JSON.stringify(b);
 
   return a === b;
 }
@@ -236,6 +312,7 @@ export function validarNoCliente(campos, valores) {
     else if (campo.tipo === TIPOS_CAMPO.TELEFONE && valor !== null && !telefoneValido(valor)) {
       erros[id] = MENSAGENS.TELEFONE_INVALIDO;
     }
+    else if (valor !== null && erroDoTipo(campo.tipo, valor)) erros[id] = erroDoTipo(campo.tipo, valor);
     else if (campo.obrigatorio && valor === null) erros[id] = MENSAGENS.OBRIGATORIO;
   }
 
@@ -278,6 +355,25 @@ export function errosDoServidor(fields, campos) {
   }
 
   return { porCampo, gerais };
+}
+
+/**
+ * Forma dos tipos do M11 (UX: o back confere o DV e responde 400 no campo).
+ *
+ * @returns {string | null}
+ */
+function erroDoTipo(tipo, valor) {
+  if (TAMANHO_DOCUMENTO[tipo]) {
+    return valor.length === TAMANHO_DOCUMENTO[tipo] ? null : MENSAGEM_DOCUMENTO[tipo];
+  }
+  if (tipo === TIPOS_CAMPO.INTERVALO_DATAS) {
+    if (!valor.de || !valor.ate) return MENSAGENS.PERIODO_INCOMPLETO;
+    return valor.de > valor.ate ? MENSAGENS.PERIODO_INVERTIDO : null;
+  }
+  if (tipo === TIPOS_CAMPO.ENDERECO && valor.cep) {
+    return valor.cep.length === TAMANHO_DOCUMENTO[TIPOS_CAMPO.CEP] ? null : MENSAGENS.CEP_INVALIDO;
+  }
+  return null;
 }
 
 /** @param {string} texto */

@@ -102,6 +102,27 @@ export const TIPOS_CAMPO = Object.freeze({
   TELEFONE: 'telefone',
   EMAIL: 'email',
   URL: 'url',
+  // M11: documentos (sem máscara no back), hora, usuário, período e endereço.
+  CPF: 'cpf',
+  CNPJ: 'cnpj',
+  CEP: 'cep',
+  HORA: 'hora',
+  USUARIO: 'usuario',
+  INTERVALO_DATAS: 'intervalo_datas',
+  ENDERECO: 'endereco',
+});
+
+/** Partes do tipo `endereco`, na ordem do back (`PARTES_ENDERECO`). */
+export const PARTES_ENDERECO = Object.freeze(['cep', 'logradouro', 'numero', 'complemento', 'bairro', 'cidade', 'uf']);
+
+export const ROTULOS_PARTE_ENDERECO = Object.freeze({
+  cep: 'CEP',
+  logradouro: 'Logradouro',
+  numero: 'Número',
+  complemento: 'Complemento',
+  bairro: 'Bairro',
+  cidade: 'Cidade',
+  uf: 'UF',
 });
 
 export const LIMITE_TEXTO_LONGO = 10_000;
@@ -124,6 +145,14 @@ export const OPERADORES_POR_TIPO = Object.freeze({
   telefone: ['igual', 'contem', 'vazio', 'nao_vazio'],
   email: ['igual', 'contem', 'e_um_dos', 'vazio', 'nao_vazio'],
   url: ['igual', 'contem', 'vazio', 'nao_vazio'],
+  cpf: ['igual', 'contem', 'vazio', 'nao_vazio'],
+  cnpj: ['igual', 'contem', 'vazio', 'nao_vazio'],
+  cep: ['igual', 'contem', 'vazio', 'nao_vazio'],
+  endereco: ['contem', 'vazio', 'nao_vazio'],
+  usuario: ['igual', 'e_um_dos', 'vazio', 'nao_vazio'],
+  // `entre` no período = os dois períodos se sobrepõem.
+  intervalo_datas: ['entre', 'vazio', 'nao_vazio'],
+  hora: ['igual', 'entre', 'vazio', 'nao_vazio'],
 });
 
 export const BUSCA_LEADS = Object.freeze({
@@ -234,6 +263,8 @@ export const TIPOS_EVENTO = Object.freeze({
   EXCLUIDO: 'excluido',
   RESTAURADO: 'restaurado',
   MESCLADO: 'mesclado',
+  // M11b: dados da Receita aplicados pelo enriquecimento automático (autor nulo).
+  ENRIQUECIDO: 'enriquecido',
 });
 
 /** Regras de duplicidade (`crm.duplicidade`): por campo, avisar ou bloquear. */
@@ -276,4 +307,11 @@ export const ROTULOS_TIPO = Object.freeze({
   [TIPOS_CAMPO.TELEFONE]: 'Telefone',
   [TIPOS_CAMPO.EMAIL]: 'E-mail',
   [TIPOS_CAMPO.URL]: 'URL',
+  [TIPOS_CAMPO.CPF]: 'CPF',
+  [TIPOS_CAMPO.CNPJ]: 'CNPJ',
+  [TIPOS_CAMPO.CEP]: 'CEP',
+  [TIPOS_CAMPO.HORA]: 'Hora',
+  [TIPOS_CAMPO.USUARIO]: 'Usuário',
+  [TIPOS_CAMPO.INTERVALO_DATAS]: 'Período (de/até)',
+  [TIPOS_CAMPO.ENDERECO]: 'Endereço',
 });

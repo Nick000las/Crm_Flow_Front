@@ -21,6 +21,7 @@ export const crmKeys = {
   duplicidade: () => ['crm', 'configuracoes', 'duplicidade'],
   regras: () => ['crm', 'configuracoes', 'regras'],
   inatividade: () => ['crm', 'configuracoes', 'inatividade'],
+  configCnpj: () => ['crm', 'configuracoes', 'cnpj'],
   // Prefixo de todos os leads abertos (`lead(id)`).
   leadsAbertos: () => ['crm', 'lead'],
   importJob: (jobId) => ['crm', 'import', jobId],

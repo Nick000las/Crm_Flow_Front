@@ -1,9 +1,12 @@
 import { TIPOS_CAMPO } from '../constants';
 import { TIPO_COLUNA } from '../lib/colunas';
 import {
+  formatarCep,
   formatarCnpj,
   formatarCpf,
   formatarData,
+  formatarEndereco,
+  formatarIntervalo,
   formatarInstante,
   formatarMoeda,
   formatarNumero,
@@ -14,11 +17,14 @@ import { opcaoDoCampo } from '../lib/opcoes';
 import { OpcaoBadge } from './opcao-badge';
 
 const MAX_BADGES = 2;
-const TIPO_USUARIO = 'usuario';
 const TAMANHO_ID_CURTO = 8;
 const DADO = 'font-mono text-xs tabular-nums';
-/** Documentos são `texto` no back: a máscara vai pela chave do campo. */
-const MASCARA_POR_CHAVE = Object.freeze({ cnpj: formatarCnpj, cpf: formatarCpf });
+/** Documentos (M11) chegam sem máscara: o front aplica pelo tipo. */
+const MASCARA_POR_TIPO = Object.freeze({
+  [TIPOS_CAMPO.CPF]: formatarCpf,
+  [TIPOS_CAMPO.CNPJ]: formatarCnpj,
+  [TIPOS_CAMPO.CEP]: formatarCep,
+});
 
 const LINK = 'underline-offset-4 outline-none hover:underline focus-visible:underline';
 
@@ -92,7 +98,7 @@ function Url({ valor }) {
 export function CelulaLead({ coluna, valor, nomePorId, completo = false, semLink = false }) {
   if (valor === null || valor === undefined || valor === '') return <Vazio />;
 
-  const mascara = MASCARA_POR_CHAVE[coluna.campo?.chave];
+  const mascara = MASCARA_POR_TIPO[coluna.tipo];
   if (mascara) return <span className={DADO}>{mascara(valor)}</span>;
 
   switch (coluna.tipo) {
@@ -103,7 +109,7 @@ export function CelulaLead({ coluna, valor, nomePorId, completo = false, semLink
       return <span className={DADO}>{formatarInstante(valor) ?? '—'}</span>;
     // Item de layout (`lead.responsavel`) chega com tipo `usuario`.
     case TIPO_COLUNA.RESPONSAVEL:
-    case TIPO_USUARIO:
+    case TIPOS_CAMPO.USUARIO:
       return <Responsavel id={String(valor)} nomePorId={nomePorId} />;
     case TIPOS_CAMPO.NUMERO:
       return <span className={DADO}>{formatarNumero(valor) ?? '—'}</span>;
@@ -113,6 +119,19 @@ export function CelulaLead({ coluna, valor, nomePorId, completo = false, semLink
       return valor ? 'Sim' : 'Não';
     case TIPOS_CAMPO.TELEFONE:
       return <span className={DADO}>{formatarTelefone(valor)}</span>;
+    case TIPOS_CAMPO.HORA:
+      return <span className={DADO}>{String(valor)}</span>;
+    case TIPOS_CAMPO.INTERVALO_DATAS:
+      return <span className={DADO}>{formatarIntervalo(valor) ?? '—'}</span>;
+    case TIPOS_CAMPO.ENDERECO: {
+      const texto = formatarEndereco(valor);
+      if (!texto) return <Vazio />;
+      return completo ? texto : (
+        <span className="line-clamp-1" title={texto}>
+          {texto}
+        </span>
+      );
+    }
     case TIPOS_CAMPO.EMAIL:
       return semLink ? (
         String(valor)

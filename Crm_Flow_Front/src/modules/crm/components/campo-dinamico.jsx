@@ -6,7 +6,10 @@ import { TIPOS_CAMPO } from '../constants';
 import { AJUDA_POR_CHAVE } from '../lib/form-lead';
 import { opcoesDoSeletor, rotuloOpcao, sugestoesDoCampo } from '../lib/opcoes';
 import { CampoForm } from './campo-form';
+import { CampoEndereco, CampoIntervalo, CampoUsuario } from './campos-compostos';
 import {
+  CampoDocumento,
+  CampoHora,
   CampoMonetario,
   CampoTelefone,
   CampoTexto,
@@ -100,7 +103,17 @@ const CONTROLE_POR_TIPO = Object.freeze({
   [TIPOS_CAMPO.MONETARIO]: CampoMonetario,
   [TIPOS_CAMPO.TELEFONE]: CampoTelefone,
   // E-mail e URL: input de texto com `type` próprio (ver `campos-texto`).
+  [TIPOS_CAMPO.CPF]: CampoDocumento,
+  [TIPOS_CAMPO.CNPJ]: CampoDocumento,
+  [TIPOS_CAMPO.CEP]: CampoDocumento,
+  [TIPOS_CAMPO.HORA]: CampoHora,
+  [TIPOS_CAMPO.USUARIO]: CampoUsuario,
+  [TIPOS_CAMPO.INTERVALO_DATAS]: CampoIntervalo,
+  [TIPOS_CAMPO.ENDERECO]: CampoEndereco,
 });
+
+/** Controles com mais de um input: o rótulo nomeia o grupo (`fieldset`). */
+const CONTROLES_EM_GRUPO = new Set([CampoOpcoesMultiplas, CampoIntervalo, CampoEndereco]);
 
 function temOpcoes(campo) {
   return Array.isArray(campo.opcoes) && campo.opcoes.length > 0;
@@ -133,7 +146,7 @@ export function CampoDinamico({ campo, id, value, onChange, erro, onBlur }) {
   return (
     <CampoForm
       ajuda={AJUDA_POR_CHAVE[campo.chave]}
-      comoGrupo={Controle === CampoOpcoesMultiplas}
+      comoGrupo={CONTROLES_EM_GRUPO.has(Controle)}
       erro={erro}
       id={id}
       label={campo.label}

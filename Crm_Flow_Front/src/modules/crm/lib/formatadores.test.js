@@ -1,13 +1,20 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
+  documentoSemMascara,
+  formatarCep,
   formatarCnpj,
   formatarCpf,
   formatarData,
+  formatarEndereco,
   formatarInstante,
+  formatarIntervalo,
   formatarMoeda,
   formatarNumero,
   formatarTelefone,
+  mascararCep,
+  mascararCnpj,
+  mascararCpf,
   mascararTelefone,
   paraNumero,
   urlSegura,
@@ -67,7 +74,8 @@ test('urlSegura aceita só http e https', () => {
 test('CNPJ e CPF ganham máscara só com a quantidade certa de dígitos', () => {
   assert.equal(formatarCnpj('12345678000190'), '12.345.678/0001-90');
   assert.equal(formatarCnpj('12.345.678/0001-90'), '12.345.678/0001-90');
-  assert.equal(formatarCnpj('12ABC34501DE35'), '12ABC34501DE35');
+  // M11: CNPJ alfanumérico também ganha o molde.
+  assert.equal(formatarCnpj('12abc34501de35'), '12.ABC.345/01DE-35');
   assert.equal(formatarCnpj('123'), '123');
   assert.equal(formatarCpf('12345678909'), '123.456.789-09');
   assert.equal(formatarCpf(null), null);
@@ -79,4 +87,26 @@ test('formatarInstante usa o fuso local e ignora lixo', () => {
   assert.equal(formatarInstante(meioDoDia), '16/10/2026');
   assert.equal(formatarInstante('não é data'), null);
   assert.equal(formatarInstante(null), null);
+});
+
+test('máscaras progressivas de CPF, CNPJ e CEP', () => {
+  assert.equal(mascararCpf('1234'), '123.4');
+  assert.equal(mascararCpf('123.456.789-0912'), '123.456.789-09');
+  assert.equal(mascararCnpj('12abc3'), '12.ABC.3');
+  assert.equal(mascararCnpj('12ABC34501DE35XX'), '12.ABC.345/01DE-35');
+  assert.equal(mascararCep('013101'), '01310-1');
+  assert.equal(formatarCep('01310100'), '01310-100');
+  assert.equal(documentoSemMascara('12.abc.345/01de-35'), '12ABC34501DE35');
+});
+
+test('formatarIntervalo e formatarEndereco', () => {
+  assert.equal(formatarIntervalo({ de: '2026-02-01', ate: '2026-02-10' }), '01/02/2026 a 10/02/2026');
+  assert.equal(formatarIntervalo({ de: '2026-02-01' }), 'a partir de 01/02/2026');
+  assert.equal(formatarIntervalo(null), null);
+  assert.equal(
+    formatarEndereco({ cep: '01310100', logradouro: 'Av. Paulista', numero: '1000', bairro: 'Bela Vista', cidade: 'São Paulo', uf: 'SP' }),
+    'Av. Paulista, 1000 - Bela Vista, São Paulo/SP, 01310-100',
+  );
+  assert.equal(formatarEndereco({ cidade: 'Recife' }), 'Recife');
+  assert.equal(formatarEndereco({}), null);
 });

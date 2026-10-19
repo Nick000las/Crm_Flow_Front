@@ -35,10 +35,32 @@ const TAMANHO_DIA = 10;
 const textoNormalizado = (valor) => String(valor).trim().toLowerCase();
 const diaDe = (valor) => (valor instanceof Date ? valor.toISOString() : String(valor)).slice(0, TAMANHO_DIA);
 const somenteDigitos = (texto) => texto.replace(/\D/g, '');
+/** CNPJ (M11, alfanumérico): sem pontuação e em maiúsculas — `chaveDocumento` do back. */
+const chaveDocumento = (texto) => texto.replace(/[^0-9A-Za-z]/g, '').toUpperCase();
+const PADRAO_HORA = /^(\d{1,2}):(\d{2})(?::\d{2})?$/;
+const HORAS_NO_DIA = 24;
+const MINUTOS_NA_HORA = 60;
 
-/** Vazio para fins de obrigatoriedade: ausente, `null`, texto vazio ou lista vazia. */
+/** `9:05`, `09:05` ou `09:05:30` → `09:05`; inválida → `null` (`normalizarHora` do back). */
+function normalizarHora(texto) {
+  const partes = PADRAO_HORA.exec(texto.trim());
+  if (!partes) return null;
+  const [horas, minutos] = [Number(partes[1]), Number(partes[2])];
+  if (horas >= HORAS_NO_DIA || minutos >= MINUTOS_NA_HORA) return null;
+  return `${String(horas).padStart(2, '0')}:${partes[2]}`;
+}
+
+const objetoSimples = (valor) => typeof valor === 'object' && valor !== null && !Array.isArray(valor);
+
+/**
+ * Vazio para fins de obrigatoriedade: ausente, `null`, texto vazio, lista
+ * vazia ou objeto (endereço, período) sem nenhuma parte preenchida.
+ */
 export function valorAusente(valor) {
-  return valor === undefined || valor === null || valor === '' || (Array.isArray(valor) && valor.length === 0);
+  if (valor === undefined || valor === null || valor === '') return true;
+  if (Array.isArray(valor)) return valor.length === 0;
+  if (objetoSimples(valor)) return Object.values(valor).every(valorAusente);
+  return false;
 }
 
 function comparavel(tipo, valor) {
@@ -51,7 +73,16 @@ function comparavel(tipo, valor) {
     case TIPOS_CAMPO.BOOLEANO:
       return Boolean(valor);
     case TIPOS_CAMPO.TELEFONE:
+    case TIPOS_CAMPO.CPF:
+    case TIPOS_CAMPO.CEP:
       return somenteDigitos(String(valor));
+    case TIPOS_CAMPO.CNPJ:
+      return chaveDocumento(String(valor));
+    case TIPOS_CAMPO.HORA:
+      return normalizarHora(String(valor)) ?? String(valor);
+    // Endereço: só os valores das partes, como o filtro.
+    case TIPOS_CAMPO.ENDERECO:
+      return textoNormalizado(objetoSimples(valor) ? Object.values(valor).join(' ') : valor);
     case TIPOS_CAMPO.SELECAO:
       return valor;
     default:
@@ -87,6 +118,12 @@ export function avaliarCondicao(tipo, operador, valorRegra, valorLead) {
     }
     case OPERADOR.ENTRE: {
       const { de, ate } = valorRegra ?? {};
+      if (tipo === TIPOS_CAMPO.INTERVALO_DATAS) {
+        // Sobreposição: o período começa até o fim da regra e termina depois do início dela.
+        const comecaAntesDoFim = ate === undefined || ate === null || diaDe(valorLead.de) <= diaDe(ate);
+        const terminaDepoisDoInicio = de === undefined || de === null || diaDe(valorLead.ate) >= diaDe(de);
+        return comecaAntesDoFim && terminaDepoisDoInicio;
+      }
       const atual = comparavel(tipo, valorLead);
       const depoisDoInicio = de === undefined || de === null || atual >= comparavel(tipo, de);
       const antesDoFim = ate === undefined || ate === null || atual <= comparavel(tipo, ate);

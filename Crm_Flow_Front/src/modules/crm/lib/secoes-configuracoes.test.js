@@ -68,3 +68,14 @@ test('Inatividade aparece com crm.inatividade, para gestão e OPERADOR', () => {
     ['inatividade'],
   );
 });
+
+test('Enriquecimento aparece com crm.cnpj; o OPERADOR também vê (só leitura)', () => {
+  assert.deepEqual(
+    secoesVisiveis({ ...dono, featuresAtivas: ['crm.cnpj'] }).map((secao) => secao.key),
+    ['campos', 'enriquecimento'],
+  );
+  assert.deepEqual(
+    secoesVisiveis({ ...dono, role: 'OPERADOR', featuresAtivas: ['crm.cnpj'] }).map((secao) => secao.key),
+    ['enriquecimento'],
+  );
+});
