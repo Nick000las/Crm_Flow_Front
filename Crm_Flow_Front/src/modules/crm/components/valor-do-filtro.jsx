@@ -2,6 +2,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { TIPOS_CAMPO } from '../constants';
+import { useUsuarios } from '../hooks/use-usuarios';
 import { OPERADOR, operadorSemValor, tipoBase } from '../lib/filtro';
 import { opcoesDoFiltro } from '../lib/opcoes';
 import { SelectSimples } from './select-simples';
@@ -13,19 +14,20 @@ const OPCOES_BOOLEANO = Object.freeze([
   { valor: 'false', rotulo: 'Não' },
 ]);
 
-/** Input de texto/número/data conforme o tipo do campo. */
+/** Input de texto/número/data/hora conforme o tipo do campo. */
 function InputDoTipo({ campo, value, onChange, ...controle }) {
   const base = tipoBase(campo.tipo);
   const numerico = base === TIPOS_CAMPO.NUMERO;
   const data = base === TIPOS_CAMPO.DATA;
+  const hora = base === TIPOS_CAMPO.HORA;
 
   return (
     <Input
       {...controle}
-      className={cn(INPUT_CLASS, (numerico || data) && 'font-mono tabular-nums')}
+      className={cn(INPUT_CLASS, (numerico || data || hora) && 'font-mono tabular-nums')}
       inputMode={numerico ? 'decimal' : undefined}
       onChange={(event) => onChange(event.target.value)}
-      type={data ? 'date' : 'text'}
+      type={data ? 'date' : hora ? 'time' : 'text'}
       value={value}
     />
   );
@@ -86,6 +88,17 @@ function ListaDeOpcoes({ opcoes, value, onChange, controle }) {
   );
 }
 
+/** Campo de usuário (M11): as opções são os usuários do tenant. */
+function ValorUsuario({ operador, value, onChange, controle }) {
+  const { usuarios } = useUsuarios();
+  const opcoes = usuarios.map((usuario) => ({ valor: usuario.id, rotulo: usuario.nome }));
+
+  if (operador === OPERADOR.E_UM_DOS) {
+    return <ListaDeOpcoes controle={controle} onChange={onChange} opcoes={opcoes} value={value} />;
+  }
+  return <SelectSimples {...controle} onChange={onChange} opcoes={opcoes} value={value} />;
+}
+
 /**
  * Valor de uma linha de filtro: o controle muda com o operador.
  * `entre` → de/até; `e_um_dos` → checkboxes (ou tags livres);
@@ -108,6 +121,8 @@ export function ValorDoFiltro({ campo, operador, value, onChange, rotulo, contro
   const opcoes = opcoesDoFiltro(campo);
 
   if (operador === OPERADOR.ENTRE) return <Faixa {...props} rotulo={rotulo} />;
+
+  if (campo.tipo === TIPOS_CAMPO.USUARIO) return <ValorUsuario {...props} operador={operador} />;
 
   if (operador === OPERADOR.E_UM_DOS) {
     return opcoes.length > 0 ? (

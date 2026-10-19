@@ -76,3 +76,18 @@ test('mesclado diz quem foi mesclado e o que mudou', () => {
   assert.deepEqual(frasesDoEvento(mesclado, NOMES), ['mesclou Ana S. neste lead', 'mudou Status de Novo para Ganho']);
   assert.deepEqual(frasesDoEvento(evento({ tipo: 'mesclado', detalhes: {} }), NOMES), ['mesclou outro lead neste lead']);
 });
+
+test('enriquecido: autor Sistema, CNPJ mascarado e o que foi preenchido', () => {
+  const evento = {
+    tipo: 'enriquecido',
+    autor: null,
+    detalhes: { cnpj: '12345678000190', provedor: 'brasilapi' },
+    diff: [{ chave: 'empresa', label: 'Empresa', tipo: 'texto', antes: null, depois: 'ACME LTDA' }],
+  };
+
+  assert.equal(autorDoEvento(evento), 'Sistema');
+  assert.deepEqual(frasesDoEvento(evento, new Map()), [
+    'preencheu dados da Receita (CNPJ 12.345.678/0001-90)',
+    'preencheu Empresa com ACME LTDA',
+  ]);
+});

@@ -3,6 +3,7 @@ import { PageHeader } from '@/components/page-header';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { SecaoCampos } from '../components/config-campos/secao-campos';
+import { SecaoCnpj } from '../components/config-cnpj/secao-cnpj';
 import { SecaoDuplicidade } from '../components/config-duplicidade/secao-duplicidade';
 import { SecaoInatividade } from '../components/config-inatividade/secao-inatividade';
 import { SecaoLayout } from '../components/config-layout/secao-layout';
@@ -19,6 +20,7 @@ const TELA_DA_SECAO = Object.freeze({
   regras: SecaoRegras,
   duplicidade: SecaoDuplicidade,
   inatividade: SecaoInatividade,
+  enriquecimento: SecaoCnpj,
 });
 
 function NavegacaoSecoes({ secoes, ativa }) {

@@ -324,3 +324,68 @@ describe('primeiroNome (campo do sistema)', () => {
     assert.deepEqual(payload, { primeiroNome: null });
   });
 });
+
+describe('tipos do M11', () => {
+  const m11 = [
+    { chave: 'nome', coluna: 'nome', label: 'Nome', tipo: 'texto', camada: 1, obrigatorio: false, ordem: 0 },
+    { chave: 'email', coluna: 'email', label: 'E-mail', tipo: 'email', camada: 1, obrigatorio: false, ordem: 1 },
+    { chave: 'cpf', coluna: 'cpf', label: 'CPF', tipo: 'cpf', camada: 2, obrigatorio: false, ordem: 2 },
+    { chave: 'cnpj', coluna: 'cnpj', label: 'CNPJ', tipo: 'cnpj', camada: 2, obrigatorio: false, ordem: 3 },
+    { chave: 'viagem', label: 'Viagem', tipo: 'intervalo_datas', camada: 3, obrigatorio: false, ordem: 4 },
+    { chave: 'entrega', label: 'Entrega', tipo: 'endereco', camada: 3, obrigatorio: false, ordem: 5 },
+    { chave: 'horario', label: 'Horário', tipo: 'hora', camada: 3, obrigatorio: false, ordem: 6 },
+  ];
+  const leadM11 = {
+    id: 'l2',
+    nome: 'Ana',
+    email: 'ana@x.com',
+    cpf: '12345678909',
+    cnpj: '12ABC34501DE35',
+    custom_fields: {
+      viagem: { de: '2026-02-01', ate: '2026-02-10' },
+      entrega: { cep: '01310100', cidade: 'São Paulo', uf: 'SP' },
+      horario: '09:30',
+    },
+  };
+  const iniciais = valoresIniciais(m11, leadM11);
+
+  test('documentos aparecem mascarados no form', () => {
+    assert.equal(iniciais.cpf, '123.456.789-09');
+    assert.equal(iniciais.cnpj, '12.ABC.345/01DE-35');
+    assert.equal(iniciais['custom.entrega'].cep, '01310-100');
+    assert.deepEqual(iniciais['custom.viagem'], { de: '2026-02-01', ate: '2026-02-10' });
+  });
+
+  test('objeto intocado não entra no diff', () => {
+    assert.ok(payloadVazio(montarPayloadEdicao(m11, iniciais, { ...iniciais })));
+  });
+
+  test('payload sem máscara, endereço só com o preenchido, limpar vira null', () => {
+    const payload = montarPayloadEdicao(m11, iniciais, {
+      ...iniciais,
+      cpf: '987.654.321-00',
+      'custom.entrega': { ...iniciais['custom.entrega'], numero: '10', uf: 'rj' },
+      'custom.viagem': { de: '', ate: '' },
+    });
+
+    assert.deepEqual(payload, {
+      cpf: '98765432100',
+      customFields: {
+        viagem: null,
+        entrega: { cep: '01310100', numero: '10', cidade: 'São Paulo', uf: 'RJ' },
+      },
+    });
+  });
+
+  test('validação de forma: documento curto e período pela metade', () => {
+    const erros = validarNoCliente(m11, {
+      ...iniciais,
+      cpf: '123.456',
+      'custom.viagem': { de: '2026-02-01', ate: '' },
+    });
+
+    assert.equal(erros.cpf, MENSAGENS.CPF_INVALIDO);
+    assert.equal(erros['custom.viagem'], MENSAGENS.PERIODO_INCOMPLETO);
+    assert.equal(erros.cnpj, undefined);
+  });
+});

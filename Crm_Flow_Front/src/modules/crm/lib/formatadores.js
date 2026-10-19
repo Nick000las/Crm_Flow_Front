@@ -117,6 +117,7 @@ export function urlSegura(valor) {
 
 const DIGITOS_CNPJ = 14;
 const DIGITOS_CPF = 11;
+const DIGITOS_CEP = 8;
 
 const instanteFormatter = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' });
 
@@ -125,24 +126,105 @@ const PONTUACAO_DOCUMENTO = /[.\-/\s]/g;
 
 /**
  * Aplica o molde só quando o texto, sem pontuação, tem exatamente `tamanho`
- * dígitos. CNPJ alfanumérico, dado antigo ou documento estrangeiro: como veio.
+ * caracteres aceitos por `aceitos`. Dado antigo ou documento estrangeiro:
+ * como veio.
  */
-function moldar(valor, tamanho, regex, molde) {
+function moldar(valor, tamanho, regex, molde, aceitos = /^\d+$/) {
   if (valor === null || valor === undefined || valor === '') return null;
 
   const texto = String(valor);
-  const limpo = texto.replace(PONTUACAO_DOCUMENTO, '');
-  return limpo.length === tamanho && /^\d+$/.test(limpo) ? limpo.replace(regex, molde) : texto;
+  const limpo = texto.replace(PONTUACAO_DOCUMENTO, '').toUpperCase();
+  return limpo.length === tamanho && aceitos.test(limpo) ? limpo.replace(regex, molde) : texto;
 }
 
-/** `12345678000190` → `12.345.678/0001-90`. */
+/** CNPJ alfanumérico (M11): 12 primeiros `[0-9A-Z]`, DV numérico — molde igual. */
+const CNPJ_ACEITO = /^[0-9A-Z]+$/;
+
+/** `12345678000190` → `12.345.678/0001-90`; `12ABC34501DE35` → `12.ABC.345/01DE-35`. */
 export function formatarCnpj(valor) {
-  return moldar(valor, DIGITOS_CNPJ, /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+  return moldar(valor, DIGITOS_CNPJ, /^(.{2})(.{3})(.{3})(.{4})(.{2})$/, '$1.$2.$3/$4-$5', CNPJ_ACEITO);
 }
 
 /** `12345678909` → `123.456.789-09`. */
 export function formatarCpf(valor) {
   return moldar(valor, DIGITOS_CPF, /^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
+}
+
+/** `01310100` → `01310-100`. */
+export function formatarCep(valor) {
+  return moldar(valor, DIGITOS_CEP, /^(\d{5})(\d{3})$/, '$1-$2');
+}
+
+/**
+ * Máscara progressiva para o input: encaixa o que já foi digitado no molde
+ * (`separadores` = posição → caractere inserido antes dela).
+ */
+function mascarar(limpo, separadores) {
+  let saida = '';
+  for (const [indice, caractere] of [...limpo].entries()) {
+    saida += (separadores[indice] ?? '') + caractere;
+  }
+  return saida;
+}
+
+/** `123456789` → `123.456.789`, até `123.456.789-09`. */
+export function mascararCpf(valor) {
+  const digitos = String(valor ?? '').replace(/\D/g, '').slice(0, DIGITOS_CPF);
+  return mascarar(digitos, { 3: '.', 6: '.', 9: '-' });
+}
+
+/** CNPJ numérico ou alfanumérico, em maiúsculas. */
+export function mascararCnpj(valor) {
+  const limpo = String(valor ?? '')
+    .toUpperCase()
+    .replace(/[^0-9A-Z]/g, '')
+    .slice(0, DIGITOS_CNPJ);
+  return mascarar(limpo, { 2: '.', 5: '.', 8: '/', 12: '-' });
+}
+
+export function mascararCep(valor) {
+  const digitos = String(valor ?? '').replace(/\D/g, '').slice(0, DIGITOS_CEP);
+  return mascarar(digitos, { 5: '-' });
+}
+
+/** Documento sem pontuação, como o back grava (CNPJ em maiúsculas). */
+export function documentoSemMascara(valor) {
+  return String(valor ?? '')
+    .toUpperCase()
+    .replace(/[^0-9A-Z]/g, '');
+}
+
+/**
+ * Período (`intervalo_datas`): "01/02/2026 a 10/02/2026". Só um lado (dado
+ * de filtro): "a partir de"/"até".
+ *
+ * @param {{ de?: string, ate?: string } | null | undefined} valor
+ */
+export function formatarIntervalo(valor) {
+  if (!valor || typeof valor !== 'object') return null;
+
+  const de = formatarData(valor.de);
+  const ate = formatarData(valor.ate);
+  if (de && ate) return `${de} a ${ate}`;
+  if (de) return `a partir de ${de}`;
+  return ate ? `até ${ate}` : null;
+}
+
+/**
+ * Endereço em uma linha: "Rua X, 123, apto 4 - Centro, São Paulo/SP, 01310-100".
+ * Só as partes preenchidas.
+ *
+ * @param {Record<string, string> | null | undefined} valor
+ */
+export function formatarEndereco(valor) {
+  if (!valor || typeof valor !== 'object') return null;
+
+  const parte = (nome) => (typeof valor[nome] === 'string' ? valor[nome].trim() : '');
+  const rua = [parte('logradouro'), parte('numero'), parte('complemento')].filter(Boolean).join(', ');
+  const local = [parte('cidade'), parte('uf')].filter(Boolean).join('/');
+  const blocos = [[rua, parte('bairro')].filter(Boolean).join(' - '), local, formatarCep(parte('cep')) ?? ''];
+
+  return blocos.filter(Boolean).join(', ') || null;
 }
 
 /**

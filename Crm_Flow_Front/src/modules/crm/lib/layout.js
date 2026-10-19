@@ -1,10 +1,13 @@
 import { CAMADA, CHAVES_IDENTIFICADOR, LIMITES_LAYOUT, REFERENCIAS_FIXAS, TIPOS_CAMPO } from '../constants.js';
 import { TIPO_COLUNA, lerValorDoCampo } from './colunas.js';
 import {
+  formatarCep,
   formatarCnpj,
   formatarCpf,
   formatarData,
+  formatarEndereco,
   formatarInstante,
+  formatarIntervalo,
   formatarMoeda,
   formatarNumero,
   formatarTelefone,
@@ -52,9 +55,6 @@ const COLUNA_DA_REF = Object.freeze({
   [REF_CRIADO_EM]: { id: 'criadoEm', tipo: TIPO_COLUNA.INSTANTE },
 });
 
-/** Máscara de documento pela chave do campo (o tipo deles é `texto`). */
-const MASCARA_POR_CHAVE = Object.freeze({ cnpj: formatarCnpj, cpf: formatarCpf });
-
 export const MENSAGENS_LAYOUT = Object.freeze({
   IDENTIFICADOR: 'Escolha o identificador',
   SUBTITULO: `Use até ${LIMITES_LAYOUT.SUBTITULO} campos no subtítulo`,
@@ -83,9 +83,18 @@ export function textoDoValor(item, valor, nomePorId) {
   if (vazio) return null;
 
   if (item.ref === REF_CRIADO_EM) return formatarInstante(valor);
-  if (MASCARA_POR_CHAVE[item.chave]) return MASCARA_POR_CHAVE[item.chave](valor);
-
   switch (item.tipo) {
+    // M11: documentos gravados sem máscara; o front aplica.
+    case TIPOS_CAMPO.CPF:
+      return formatarCpf(valor);
+    case TIPOS_CAMPO.CNPJ:
+      return formatarCnpj(valor);
+    case TIPOS_CAMPO.CEP:
+      return formatarCep(valor);
+    case TIPOS_CAMPO.INTERVALO_DATAS:
+      return formatarIntervalo(valor);
+    case TIPOS_CAMPO.ENDERECO:
+      return formatarEndereco(valor);
     case TIPOS_CAMPO.MONETARIO:
       return formatarMoeda(valor);
     case TIPOS_CAMPO.NUMERO:
@@ -100,7 +109,7 @@ export function textoDoValor(item, valor, nomePorId) {
       return rotuloOpcao(valor, item);
     case TIPOS_CAMPO.SELECAO_MULTIPLA:
       return [valor].flat().map((opcao) => rotuloOpcao(opcao, item)).join(', ');
-    case 'usuario':
+    case TIPOS_CAMPO.USUARIO:
       return nomePorId?.get(String(valor)) ?? null;
     default:
       return String(valor).trim() || null;

@@ -18,7 +18,8 @@ import {
   validarLayout,
 } from './layout.js';
 
-const cnpj = { ref: 'f-cnpj', chave: 'cnpj', label: 'CNPJ', tipo: 'texto', camada: 2, coluna: 'cnpj' };
+// M11: o CNPJ nativo vem com o tipo `cnpj` (gravado sem máscara).
+const cnpj = { ref: 'f-cnpj', chave: 'cnpj', label: 'CNPJ', tipo: 'cnpj', camada: 2, coluna: 'cnpj' };
 const empresa = { ref: 'f-emp', chave: 'empresa', label: 'Empresa', tipo: 'texto', camada: 2, coluna: 'empresa' };
 const cidade = { ref: 'f-cid', chave: 'cidade', label: 'Cidade', tipo: 'texto', camada: 2, coluna: 'cidade' };
 const valor = { ref: 'lead.valor', chave: 'valor', label: 'Valor', tipo: 'monetario', coluna: 'valor' };

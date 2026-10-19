@@ -323,3 +323,30 @@ describe('semResponsavel', () => {
     assert.deepEqual(filtroDoRascunho(trocado, campos).filtro, { filtros: [], usuarioResponsavelId: 'u1' });
   });
 });
+
+describe('tipos do M11 no filtro', () => {
+  const cnpj = { chave: 'cnpj', label: 'CNPJ', tipo: 'cnpj', camada: 2 };
+  const dono = { chave: 'dono', label: 'Dono', tipo: 'usuario', camada: 3 };
+  const viagem = { chave: 'viagem', label: 'Viagem', tipo: 'intervalo_datas', camada: 3 };
+
+  test('operadores do back', () => {
+    assert.deepEqual(operadoresDoCampo(dono), ['igual', 'e_um_dos', 'vazio', 'nao_vazio']);
+    assert.deepEqual(operadoresDoCampo(viagem), ['entre', 'vazio', 'nao_vazio']);
+    assert.equal(tipoBase('intervalo_datas'), 'data');
+    assert.equal(tipoBase('cnpj'), 'texto');
+  });
+
+  test('chips: documento mascarado, usuário pelo nome, período em datas', () => {
+    const nomes = new Map([['u1', 'Bia']]);
+
+    assert.equal(
+      descreverItem({ chave: 'cnpj', operador: 'igual', valor: '12345678000190' }, cnpj),
+      'CNPJ é 12.345.678/0001-90',
+    );
+    assert.equal(descreverItem({ chave: 'dono', operador: 'e_um_dos', valor: ['u1'] }, dono, nomes), 'Dono é um de Bia');
+    assert.equal(
+      descreverItem({ chave: 'viagem', operador: 'entre', valor: { de: '2026-02-01', ate: '2026-02-10' } }, viagem),
+      'Viagem de 01/02/2026 a 10/02/2026',
+    );
+  });
+});

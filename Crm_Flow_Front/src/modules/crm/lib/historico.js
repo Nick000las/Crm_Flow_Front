@@ -1,4 +1,5 @@
 import { TIPOS_EVENTO } from '../constants.js';
+import { formatarCnpj } from './formatadores.js';
 import { textoDoValor } from './layout.js';
 
 /**
@@ -79,6 +80,11 @@ export function fraseDoItem(item, nomePorId) {
  * @returns {string[]}
  */
 export function frasesDoEvento(evento, nomePorId) {
+  // M11b: o enriquecimento automático (autor nulo = "Sistema") e o que ele preencheu.
+  if (evento.tipo === TIPOS_EVENTO.ENRIQUECIDO) {
+    const cnpj = evento.detalhes?.cnpj ? ` (CNPJ ${formatarCnpj(evento.detalhes.cnpj)})` : '';
+    return [`preencheu dados da Receita${cnpj}`, ...(evento.diff ?? []).map((item) => fraseDoItem(item, nomePorId))];
+  }
   if (evento.tipo === TIPOS_EVENTO.MESCLADO) {
     const descartado = evento.detalhes?.nomeDescartado || 'outro lead';
     return [`mesclou ${descartado} neste lead`, ...(evento.diff ?? []).map((item) => fraseDoItem(item, nomePorId))];

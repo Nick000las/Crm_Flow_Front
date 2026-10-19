@@ -2,7 +2,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { LIMITE_TEXTO_LONGO, TIPOS_CAMPO } from '../constants';
-import { mascararTelefone } from '../lib/formatadores';
+import { mascararCep, mascararCnpj, mascararCpf, mascararTelefone } from '../lib/formatadores';
 
 export const INPUT_CLASS = 'h-9 rounded-none';
 
@@ -80,6 +80,40 @@ export function CampoTelefone({ value, onChange, controle }) {
       onChange={(event) => onChange(mascararTelefone(event.target.value))}
       placeholder="(11) 91234-5678"
       type="tel"
+      value={value}
+    />
+  );
+}
+
+const DOCUMENTOS = Object.freeze({
+  [TIPOS_CAMPO.CPF]: { mascarar: mascararCpf, placeholder: '000.000.000-00', inputMode: 'numeric' },
+  // CNPJ alfanumérico (M11): teclado de texto, não numérico.
+  [TIPOS_CAMPO.CNPJ]: { mascarar: mascararCnpj, placeholder: '00.000.000/0000-00', inputMode: 'text' },
+  [TIPOS_CAMPO.CEP]: { mascarar: mascararCep, placeholder: '00000-000', inputMode: 'numeric', autoComplete: 'postal-code' },
+});
+
+/** CPF, CNPJ e CEP: máscara ao digitar; o payload vai sem ela (`paraValorDeApi`). */
+export function CampoDocumento({ campo, value, onChange, controle }) {
+  const { mascarar, ...atributos } = DOCUMENTOS[campo.tipo];
+
+  return (
+    <Input
+      {...controle}
+      {...atributos}
+      className={cn(INPUT_CLASS, 'font-mono tabular-nums')}
+      onChange={(event) => onChange(mascarar(event.target.value))}
+      value={value}
+    />
+  );
+}
+
+export function CampoHora({ value, onChange, controle }) {
+  return (
+    <Input
+      {...controle}
+      className={cn(INPUT_CLASS, 'w-32 font-mono tabular-nums')}
+      onChange={(event) => onChange(event.target.value)}
+      type="time"
       value={value}
     />
   );
