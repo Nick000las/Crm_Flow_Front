@@ -1,4 +1,4 @@
-import { Archive, ArchiveRestore, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { Archive, ArchiveRestore, MoreHorizontal, Pencil, Shuffle, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
@@ -140,6 +140,13 @@ export function LeadCabecalho({ criando, editando, lead, layout, nomePorId, onEd
         {subtitulo || modo}
         {subtitulo && <span className="sr-only">. {modo}</span>}
       </SheetDescription>
+      {/* M12: a regra de distribuição que escolheu o responsável. */}
+      {!criando && lead?.atribuido_por_regra_nome && (
+        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Shuffle aria-hidden="true" className="size-3.5" />
+          Atribuído pela regra <span className="font-medium text-foreground">{lead.atribuido_por_regra_nome}</span>
+        </p>
+      )}
 
       {lead && layout && !criando && !editando && (
         <Destaques itens={layout.destaques} lead={lead} nomePorId={nomePorId} />

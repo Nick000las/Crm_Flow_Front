@@ -355,8 +355,15 @@ export function valoresDaRegra(regra, campos, kind = TIPOS_REGRA.POR_STATUS) {
   };
 }
 
-/** Condição do form → `{ valor }` do contrato, ou `{ erro }`. */
-function valorDaCondicao(condicao, campos) {
+/**
+ * Condição do form → `{ valor }` do contrato, ou `{ erro }`. Também a das
+ * regras de distribuição (M12, mesmo formato).
+ *
+ * @param {{ campoId: string, operador: string, valor: unknown }} condicao
+ * @param {import('../types.js').Campo[]} campos
+ * @returns {{ valor: unknown } | { erro: string }}
+ */
+export function valorDaCondicao(condicao, campos) {
   const campo = campos.find((atual) => atual.id === condicao.campoId);
   if (!campo) return { erro: MENSAGENS_REGRA.CAMPO_CONDICAO };
   const resultado = itemDaLinha({ chave: campo.chave, operador: condicao.operador, valor: condicao.valor }, campo);

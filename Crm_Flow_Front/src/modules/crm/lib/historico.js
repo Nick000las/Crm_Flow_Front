@@ -1,4 +1,4 @@
-import { TIPOS_EVENTO } from '../constants.js';
+import { ORIGEM_DISTRIBUICAO, TIPOS_EVENTO } from '../constants.js';
 import { formatarCnpj } from './formatadores.js';
 import { textoDoValor } from './layout.js';
 
@@ -14,6 +14,26 @@ import { textoDoValor } from './layout.js';
 const AUTOR_SISTEMA = 'Sistema';
 const USUARIO_REMOVIDO = 'usuário removido';
 const MAX_VALOR = 80;
+
+/**
+ * Como a distribuição escolheu o responsável (`detalhes.distribuicao` do `criado`).
+ *
+ * @param {{ origem: string, regraNome?: string } | undefined} distribuicao
+ */
+function fraseDaDistribuicao(distribuicao) {
+  switch (distribuicao?.origem) {
+    case ORIGEM_DISTRIBUICAO.REGRA:
+      return distribuicao.regraNome
+        ? `responsável definido pela regra "${distribuicao.regraNome}"`
+        : 'responsável definido por uma regra de distribuição';
+    case ORIGEM_DISTRIBUICAO.RODIZIO_GERAL:
+      return 'responsável definido pelo rodízio geral';
+    case ORIGEM_DISTRIBUICAO.SEM_RESPONSAVEL:
+      return 'ficou sem responsável (nenhuma regra casou)';
+    default:
+      return null;
+  }
+}
 
 const FRASE_DO_TIPO = Object.freeze({
   [TIPOS_EVENTO.CRIADO]: 'criou o lead',
@@ -80,6 +100,11 @@ export function fraseDoItem(item, nomePorId) {
  * @returns {string[]}
  */
 export function frasesDoEvento(evento, nomePorId) {
+  // M12: na criação, de onde veio o responsável (distribuição automática).
+  if (evento.tipo === TIPOS_EVENTO.CRIADO) {
+    const distribuicao = fraseDaDistribuicao(evento.detalhes?.distribuicao);
+    return distribuicao ? [FRASE_DO_TIPO[evento.tipo], distribuicao] : [FRASE_DO_TIPO[evento.tipo]];
+  }
   // M11b: o enriquecimento automático (autor nulo = "Sistema") e o que ele preencheu.
   if (evento.tipo === TIPOS_EVENTO.ENRIQUECIDO) {
     const cnpj = evento.detalhes?.cnpj ? ` (CNPJ ${formatarCnpj(evento.detalhes.cnpj)})` : '';

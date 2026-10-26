@@ -32,7 +32,12 @@
  *   autor: { id: string, nome: string } | null,
  *   criadoEm: string,
  *   diff: ItemDiff[],
- *   detalhes?: { leadDescartadoId?: string, nomeDescartado?: string } | null,
+ *   detalhes?: {
+ *     leadDescartadoId?: string,
+ *     nomeDescartado?: string,
+ *     cnpj?: string,
+ *     distribuicao?: { origem: string, regraId?: string, regraNome?: string },
+ *   } | null,
  * }} EventoLead
  */
 

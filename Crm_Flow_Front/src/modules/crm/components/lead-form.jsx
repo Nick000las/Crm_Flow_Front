@@ -77,6 +77,12 @@ const POR_MODO = Object.freeze({
   },
 });
 
+/** Distribuição ligada (`crm.distribuicao`): sem escolha, o back distribui pelas regras. */
+const RESPONSAVEL_AUTOMATICO = Object.freeze({
+  rotulo: 'Automático',
+  ajuda: 'A distribuição escolhe o responsável ao salvar.',
+});
+
 /**
  * Formulário dinâmico do lead: itera `/crm/leads/fields` sem saber a camada
  * de cada campo. Valida só para UX; o back é quem valida de verdade, e seus
@@ -103,7 +109,8 @@ const POR_MODO = Object.freeze({
  *   onAbrirLead: (id: string) => void,
  *   leadId?: string,
  *   avaliarRegras?: (valores: Record<string, unknown>) => { obrigatorios: string[], ocultos: string[] },
- * }} props
+ *   distribuicaoLigada?: boolean,
+ * }} props `distribuicaoLigada`: na criação, o responsável vazio vira "Automático"
  */
 export function LeadForm({
   campos,
@@ -116,8 +123,10 @@ export function LeadForm({
   onAbrirLead,
   leadId,
   avaliarRegras,
+  distribuicaoLigada = false,
 }) {
   const { rotuloEnviar, responsavelVazio } = POR_MODO[modo];
+  const automatico = modo === 'criar' && distribuicaoLigada;
   const [valores, setValores] = useState(iniciais);
   const [erros, setErros] = useState({});
   const [erroGeral, setErroGeral] = useState(null);
@@ -224,10 +233,11 @@ export function LeadForm({
 
         {usuarios.length > 0 && (
           <CampoResponsavel
+            ajuda={automatico ? RESPONSAVEL_AUTOMATICO.ajuda : undefined}
             erro={erros[CHAVE_RESPONSAVEL]}
             id={htmlId(CHAVE_RESPONSAVEL)}
             onChange={(valor) => alterar(CHAVE_RESPONSAVEL, valor)}
-            rotuloVazio={responsavelVazio}
+            rotuloVazio={automatico ? RESPONSAVEL_AUTOMATICO.rotulo : responsavelVazio}
             usuarios={usuarios}
             value={valores[CHAVE_RESPONSAVEL]}
           />

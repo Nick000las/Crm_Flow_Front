@@ -153,11 +153,20 @@ Em Configurações › Enriquecimento por CNPJ, DONO e MASTER escolhem entre a l
 preenchimento automático ao salvar, se sobrescreve campos já preenchidos e para que
 campo vai cada dado da Receita.
 
+Com `crm.distribuicao`, Configurações › Distribuição define quem recebe cada lead novo
+(no cadastro e no import) quando ninguém escolheu o responsável. As regras são avaliadas
+de cima para baixo (arraste para reordenar) e a primeira que casar manda o lead para um
+usuário ou para um grupo, em rodízio. Sem regra que case, vale o rodízio geral ou o lead
+fica sem responsável. As regras são um rascunho até o **Salvar**; os grupos salvam na
+hora. Com a distribuição ligada, o responsável vazio no cadastro aparece como
+**Automático**, e o lead mostra "Atribuído pela regra X".
+
 ## Notificações
 
 O sino no Rail (para todo usuário logado, sem flag) mostra as não lidas, a lista
 paginada e "Marcar todas como lidas". Clicar marca como lida e leva ao destino — no
-resumo diário do CRM, a lista de leads já filtrada em Esfriando. Não há push: recarrega
+resumo diário do CRM, a lista de leads já filtrada em Esfriando; num lead atribuído
+pela distribuição, o próprio lead; num import distribuído, a lista dos leads recebidos. Não há push: recarrega
 a cada minuto e ao abrir.
 
 Documentação do back: `Back/docs/crm/` (plano vigente em `plano-configuracoes.md`).

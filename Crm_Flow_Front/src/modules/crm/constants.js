@@ -214,6 +214,29 @@ export const FORMATOS_EXPORTACAO = Object.freeze({ XLSX: 'xlsx', CSV: 'csv' });
 /** Edição em massa (`crm.massa`): espelho do limite do back. */
 export const BULK = Object.freeze({ MAX_IDS: 200 });
 
+/** Distribuição automática (`crm.distribuicao`): espelho dos limites do back. */
+export const DISTRIBUICAO = Object.freeze({ MAX_REGRAS: 50, MAX_CONDICOES: 10 });
+
+/** O que acontece quando nenhuma regra de distribuição casa. */
+export const FALLBACK_DISTRIBUICAO = Object.freeze({
+  RODIZIO_GERAL: 'rodizio_geral',
+  SEM_RESPONSAVEL: 'sem_responsavel',
+});
+
+export const ROTULOS_FALLBACK = Object.freeze({
+  rodizio_geral: 'Rodízio geral (DONO e OPERADOR ativos)',
+  sem_responsavel: 'Deixar sem responsável',
+});
+
+export const TIPOS_DESTINO = Object.freeze({ USUARIO: 'usuario', GRUPO: 'grupo' });
+
+/** De onde veio o responsável (`detalhes.distribuicao.origem` no evento `criado`). */
+export const ORIGEM_DISTRIBUICAO = Object.freeze({
+  REGRA: 'regra',
+  RODIZIO_GERAL: 'rodizio_geral',
+  SEM_RESPONSAVEL: 'sem_responsavel',
+});
+
 /** Confirmações breves (`role="status"`) — sem toast, por decisão do README. */
 export const AVISOS_LEAD = Object.freeze({
   CRIADO: 'Lead criado.',

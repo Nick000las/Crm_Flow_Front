@@ -15,11 +15,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getFieldError } from '@/services/api';
 import { CATEGORIAS_STATUS, ROTULOS_CATEGORIA, ROTULOS_TIPO_REGRA, TIPOS_REGRA } from '../../constants';
 import { useCriarRegra, useEditarRegra } from '../../hooks/use-regras';
-import { ROTULOS_OPERADOR, operadoresDoCampo, trocarOperador } from '../../lib/filtro';
-import { condicaoDoCampo, payloadDaRegra, validarRegra, valoresDaRegra } from '../../lib/regras';
+import { payloadDaRegra, validarRegra, valoresDaRegra } from '../../lib/regras';
 import { CampoForm } from '../campo-form';
+import { CondicaoDeCampo } from '../condicao-de-campo';
 import { SelectSimples } from '../select-simples';
-import { ValorDoFiltro } from '../valor-do-filtro';
 
 const CAMPOS_DO_SERVIDOR = ['campoId', 'condicao', 'condicao.campoId', 'condicao.operador', 'condicao.valor', 'efeito'];
 const CATEGORIAS = Object.values(CATEGORIAS_STATUS);
@@ -71,55 +70,22 @@ function CondicaoPorStatus({ valores, statusDoTenant, erro, onChange }) {
   );
 }
 
-function CondicaoDeCampo({ valores, campos, erroDe, onChange }) {
-  const { condicao } = valores;
-  const campo = campos.find((atual) => atual.id === condicao.campoId);
-  const opcoesCampo = campos
-    .filter((atual) => atual.id !== valores.campoId)
-    .map((atual) => ({ valor: atual.id, rotulo: atual.label }));
-  const opcoesOperador = campo
-    ? operadoresDoCampo(campo).map((operador) => ({ valor: operador, rotulo: ROTULOS_OPERADOR[operador] }))
-    : [];
-
+/** A condição da regra condicional: de outro campo que não o afetado. */
+function CondicaoDaRegra({ valores, campos, erroDe, onChange }) {
   return (
     <fieldset className="grid gap-3">
       <legend className="mb-1.5 text-sm font-medium">Condição</legend>
-      <CampoForm erro={erroDe('condicao.campoId')} id="regra-condicao-campo" label="Quando o campo" obrigatorio>
-        {(controle) => (
-          <SelectSimples
-            {...controle}
-            onChange={(id) => onChange({ condicao: condicaoDoCampo(campos.find((atual) => atual.id === id)) })}
-            opcoes={opcoesCampo}
-            value={condicao.campoId}
-          />
-        )}
-      </CampoForm>
-      {campo && (
-        <div className="grid gap-3 sm:grid-cols-[10rem_minmax(0,1fr)]">
-          <CampoForm erro={erroDe('condicao.operador')} id="regra-condicao-operador" label="Operador">
-            {(controle) => (
-              <SelectSimples
-                {...controle}
-                onChange={(operador) => onChange({ condicao: trocarOperador(condicao, operador, campo) })}
-                opcoes={opcoesOperador}
-                value={condicao.operador}
-              />
-            )}
-          </CampoForm>
-          <CampoForm erro={erroDe('condicao.valor')} id="regra-condicao-valor" label="Valor">
-            {(controle) => (
-              <ValorDoFiltro
-                campo={campo}
-                controle={controle}
-                onChange={(valor) => onChange({ condicao: { ...condicao, valor } })}
-                operador={condicao.operador}
-                rotulo={campo.label}
-                value={condicao.valor}
-              />
-            )}
-          </CampoForm>
-        </div>
-      )}
+      <CondicaoDeCampo
+        campos={campos.filter((atual) => atual.id !== valores.campoId)}
+        condicao={valores.condicao}
+        erros={{
+          campo: erroDe('condicao.campoId'),
+          operador: erroDe('condicao.operador'),
+          valor: erroDe('condicao.valor'),
+        }}
+        idBase="regra-condicao"
+        onChange={(condicao) => onChange({ condicao })}
+      />
     </fieldset>
   );
 }
@@ -215,7 +181,7 @@ function FormRegra({ regra, campos, onSalvo }) {
         />
       ) : (
         <>
-          <CondicaoDeCampo campos={comId} erroDe={erroDe} onChange={alterar} valores={valores} />
+          <CondicaoDaRegra campos={comId} erroDe={erroDe} onChange={alterar} valores={valores} />
           <Efeitos erro={erroDe('efeito')} onChange={alterar} valores={valores} />
         </>
       )}
