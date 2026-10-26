@@ -16,6 +16,7 @@ import {
   useDesarquivarLead,
 } from '../hooks/use-lead-mutations';
 import { useNavegacaoLeads } from '../hooks/use-navegacao-leads';
+import { useDistribuicaoLigada } from '../hooks/use-distribuicao';
 import { useRegrasDoForm } from '../hooks/use-regras';
 import { useUsuarios } from '../hooks/use-usuarios';
 import { camposDoContexto } from '../lib/contextos';
@@ -69,6 +70,7 @@ function SheetDoLead({ leadId }) {
   const { usuarios, nomePorId } = useUsuarios();
   const layout = useLayoutEfetivo();
   const regras = useRegrasDoForm();
+  const distribuicaoLigada = useDistribuicaoLigada();
   const criar = useCriarLead();
   const atualizar = useAtualizarLead(leadId);
   const arquivar = useArquivarLead();
@@ -188,6 +190,7 @@ function SheetDoLead({ leadId }) {
               iniciais={iniciais}
               key={criando ? ID_NOVO_LEAD : leadId}
               avaliarRegras={avaliarRegras}
+              distribuicaoLigada={distribuicaoLigada}
               leadId={criando ? undefined : leadId}
               modo={criando ? 'criar' : 'editar'}
               onAbrirLead={(id) => abrirLead(id)}

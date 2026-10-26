@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { SecaoCampos } from '../components/config-campos/secao-campos';
 import { SecaoCnpj } from '../components/config-cnpj/secao-cnpj';
 import { SecaoDuplicidade } from '../components/config-duplicidade/secao-duplicidade';
+import { SecaoDistribuicao } from '../components/config-distribuicao/secao-distribuicao';
 import { SecaoInatividade } from '../components/config-inatividade/secao-inatividade';
 import { SecaoLayout } from '../components/config-layout/secao-layout';
 import { SecaoListas } from '../components/config-listas/secao-listas';
@@ -19,6 +20,7 @@ const TELA_DA_SECAO = Object.freeze({
   listas: SecaoListas,
   regras: SecaoRegras,
   duplicidade: SecaoDuplicidade,
+  distribuicao: SecaoDistribuicao,
   inatividade: SecaoInatividade,
   enriquecimento: SecaoCnpj,
 });

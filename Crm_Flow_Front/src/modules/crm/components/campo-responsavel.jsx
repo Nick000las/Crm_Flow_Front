@@ -12,13 +12,14 @@ import { SelectSimples } from './select-simples';
  *   usuarios: { id: string, nome: string }[],
  *   rotuloVazio: string,
  *   erro?: string | null,
+ *   ajuda?: string,
  * }} props
  */
-export function CampoResponsavel({ id, value, onChange, usuarios, rotuloVazio, erro }) {
+export function CampoResponsavel({ id, value, onChange, usuarios, rotuloVazio, erro, ajuda }) {
   const opcoes = usuarios.map((usuario) => ({ valor: usuario.id, rotulo: usuario.nome }));
 
   return (
-    <CampoForm erro={erro} id={id} label="Responsável">
+    <CampoForm ajuda={ajuda} erro={erro} id={id} label="Responsável">
       {(controle) => (
         <SelectSimples {...controle} onChange={onChange} opcoes={opcoes} vazio={rotuloVazio} value={value} />
       )}

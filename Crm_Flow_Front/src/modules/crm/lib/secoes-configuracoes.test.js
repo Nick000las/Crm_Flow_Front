@@ -24,9 +24,9 @@ test('Listas aparece só com crm.listas, na ordem da spec', () => {
 });
 
 test('subseção ainda sem tela fica oculta mesmo com a flag dela ligada', () => {
-  const comDistribuicao = { ...dono, featuresAtivas: ['crm.distribuicao'] };
+  const comPontuacao = { ...dono, featuresAtivas: ['crm.score'] };
 
-  assert.equal(secoesVisiveis(comDistribuicao).some((secao) => secao.key === 'distribuicao'), false);
+  assert.equal(secoesVisiveis(comPontuacao).some((secao) => secao.key === 'pontuacao'), false);
 });
 
 test('OPERADOR vê só o Layout, e só com crm.layout', () => {
@@ -77,5 +77,16 @@ test('Enriquecimento aparece com crm.cnpj; o OPERADOR também vê (só leitura)'
   assert.deepEqual(
     secoesVisiveis({ ...dono, role: 'OPERADOR', featuresAtivas: ['crm.cnpj'] }).map((secao) => secao.key),
     ['enriquecimento'],
+  );
+});
+
+test('Distribuição aparece com crm.distribuicao; o OPERADOR também vê (só leitura)', () => {
+  assert.deepEqual(
+    secoesVisiveis({ ...dono, featuresAtivas: ['crm.distribuicao'] }).map((secao) => secao.key),
+    ['campos', 'distribuicao'],
+  );
+  assert.deepEqual(
+    secoesVisiveis({ ...dono, role: 'OPERADOR', featuresAtivas: ['crm.distribuicao'] }).map((secao) => secao.key),
+    ['distribuicao'],
   );
 });

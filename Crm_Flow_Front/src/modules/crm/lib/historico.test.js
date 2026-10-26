@@ -91,3 +91,20 @@ test('enriquecido: autor Sistema, CNPJ mascarado e o que foi preenchido', () => 
     'preencheu Empresa com ACME LTDA',
   ]);
 });
+
+test('criado com distribuição: de onde veio o responsável', () => {
+  const criado = (distribuicao) => evento({ tipo: 'criado', detalhes: { distribuicao } });
+
+  assert.deepEqual(frasesDoEvento(criado({ origem: 'regra', regraId: 'r1', regraNome: 'Site' }), NOMES), [
+    'criou o lead',
+    'responsável definido pela regra "Site"',
+  ]);
+  assert.deepEqual(frasesDoEvento(criado({ origem: 'rodizio_geral' }), NOMES), [
+    'criou o lead',
+    'responsável definido pelo rodízio geral',
+  ]);
+  assert.deepEqual(frasesDoEvento(criado({ origem: 'sem_responsavel' }), NOMES), [
+    'criou o lead',
+    'ficou sem responsável (nenhuma regra casou)',
+  ]);
+});

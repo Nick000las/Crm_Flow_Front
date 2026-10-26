@@ -53,6 +53,7 @@
  * @property {string | null} [esfriando_desde]  ISO quando esfriando; `null` sem a flag `crm.inatividade`
  * @property {string | null} [mesclado_em_id]  descartado numa mesclagem (na lixeira)
  * @property {string | null} [mesclado_em_nome]  nome atual do lead que ficou (vem junto do id)
+ * @property {string | null} [atribuido_por_regra_nome]  regra de distribuição que escolheu o responsável (`crm.distribuicao`)
  *
  * @typedef {'igual' | 'contem' | 'entre' | 'e_um_dos' | 'vazio' | 'nao_vazio'} Operador
  *

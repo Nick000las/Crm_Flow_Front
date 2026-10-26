@@ -17,6 +17,24 @@ test('CRM: /crm/leads vira a lista com o filtro na URL', () => {
   });
 });
 
+test('CRM com leadId (crm.lead_atribuido) abre o lead', () => {
+  assert.equal(
+    destinoDaNotificacao({ modulo: 'crm', dados: { rota: '/crm/leads', leadId: 'l-1' } }),
+    '/crm/leads/l-1',
+  );
+});
+
+test('CRM: crm.leads_atribuidos abre a lista filtrada pelo responsável', () => {
+  const destino = destinoDaNotificacao({
+    modulo: 'crm',
+    dados: { rota: '/crm/leads', filtro: { usuarioResponsavelId: 'u-1' }, importJobId: 'j-1', total: 3 },
+  });
+  const url = new URL(destino, 'http://x');
+
+  assert.equal(url.pathname, '/crm');
+  assert.deepEqual(JSON.parse(url.searchParams.get('f')), { filtros: [], usuarioResponsavelId: 'u-1' });
+});
+
 test('CRM sem filtro vai para a lista limpa', () => {
   assert.equal(destinoDaNotificacao({ modulo: 'crm', dados: { rota: '/crm/leads' } }), '/crm');
 });
