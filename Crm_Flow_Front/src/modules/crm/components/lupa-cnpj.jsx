@@ -117,7 +117,7 @@ function Sugestoes({ idBase, itens, marcados, onAlternar }) {
               <span className="text-xs text-muted-foreground">{item.label}</span>
               <span>{item.texto}</span>
               {item.substitui && <span className="text-xs text-muted-foreground">Substitui o valor atual</span>}
-              {!item.disponivel && <span className="text-xs text-muted-foreground">{MENSAGENS_CNPJ.FORA_DO_FORM}</span>}
+              {item.motivo && <span className="text-xs text-muted-foreground">{item.motivo}</span>}
             </label>
           </li>
         );

@@ -31,7 +31,7 @@ import { filtroDaBusca } from '../lib/inatividade';
 import { avisoDoResultado } from '../lib/massa';
 import { camposDoContexto } from '../lib/contextos';
 import { placeholderDaBusca } from '../lib/layout';
-import { FILTRO_VAZIO, chavesComErro, chipsDoFiltro } from '../lib/filtro';
+import { FILTRO_VAZIO, chavesComErro, chavesForaDosCampos, chipsDoFiltro } from '../lib/filtro';
 import { ID_BOTAO_NOVO_LEAD } from '../rotas';
 
 const CAMPOS_VAZIOS = [];
@@ -87,6 +87,11 @@ export default function LeadsPage() {
   const pagina = leadsQuery.data;
   // Um 400 de filtro (`filtros.<chave>`) destaca o chip e a linha do construtor.
   const errosDeFiltro = useMemo(() => chavesComErro(leadsQuery.error?.fields), [leadsQuery.error]);
+  // Filtro por campo que este usuário não vê (permissão por campo): aviso próprio.
+  const ocultosNoFiltro = useMemo(
+    () => (camposQuery.data ? chavesForaDosCampos(leadsQuery.error?.fields, camposQuery.data) : []),
+    [leadsQuery.error, camposQuery.data],
+  );
   const chips = useMemo(
     () => chipsDoFiltro(estado.filtro, campos, nomePorId),
     [estado.filtro, campos, nomePorId],
@@ -182,6 +187,7 @@ export default function LeadsPage() {
         identificador={identificador}
         leadsQuery={leadsQuery}
         nomePorId={nomePorId}
+        ocultosNoFiltro={ocultosNoFiltro}
         onAbrir={abrirLead}
         onExcluir={setLeadAExcluir}
         podeImportar={gestao}

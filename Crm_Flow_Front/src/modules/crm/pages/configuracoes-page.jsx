@@ -10,6 +10,7 @@ import { SecaoInatividade } from '../components/config-inatividade/secao-inativi
 import { SecaoLayout } from '../components/config-layout/secao-layout';
 import { SecaoListas } from '../components/config-listas/secao-listas';
 import { SecaoRegras } from '../components/config-regras/secao-regras';
+import { SecaoPermissoes } from '../components/config-permissoes/secao-permissoes';
 import { caminhoDaSecao, secoesVisiveis } from '../lib/secoes-configuracoes';
 import { ROTAS_CRM } from '../rotas';
 
@@ -19,6 +20,7 @@ const TELA_DA_SECAO = Object.freeze({
   campos: SecaoCampos,
   listas: SecaoListas,
   regras: SecaoRegras,
+  permissoes: SecaoPermissoes,
   duplicidade: SecaoDuplicidade,
   distribuicao: SecaoDistribuicao,
   inatividade: SecaoInatividade,

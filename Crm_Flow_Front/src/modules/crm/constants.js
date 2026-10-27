@@ -214,6 +214,13 @@ export const FORMATOS_EXPORTACAO = Object.freeze({ XLSX: 'xlsx', CSV: 'csv' });
 /** Edição em massa (`crm.massa`): espelho do limite do back. */
 export const BULK = Object.freeze({ MAX_IDS: 200 });
 
+/** Permissão por campo (`crm.permissoes`). Sem `acesso` no campo = `edit`. */
+export const ACESSOS_CAMPO = Object.freeze({ EDITAR: 'edit', VER: 'view', OCULTO: 'hidden' });
+
+export const ROTULOS_ACESSO = Object.freeze({ edit: 'Editar', view: 'Só ver', hidden: 'Oculto' });
+
+export const MENSAGEM_SEM_PERMISSAO = 'Sem permissão para editar';
+
 /** Distribuição automática (`crm.distribuicao`): espelho dos limites do back. */
 export const DISTRIBUICAO = Object.freeze({ MAX_REGRAS: 50, MAX_CONDICOES: 10 });
 

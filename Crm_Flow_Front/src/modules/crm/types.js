@@ -20,6 +20,7 @@
  * @property {Visibilidade} [visibilidade]  em que telas o campo aparece (ver `camposDoContexto`)
  * @property {'status' | 'fonte_lead' | 'motivo_perda' | 'tag'} [lista]  campo de lista do tenant
  * @property {import('./lib/opcoes.js').Opcao[]} [opcoesLista]  todas as opções da lista, com as inativas
+ * @property {'edit' | 'view'} [acesso]  permissão por campo (`crm.permissoes`); ausente = edit. Oculto nem vem
  *
  * @typedef {Object} CampoConfigurado  Item de `GET /crm/configuracoes/campos`, já ordenado.
  *   Inclui os ocultos em todos os contextos.

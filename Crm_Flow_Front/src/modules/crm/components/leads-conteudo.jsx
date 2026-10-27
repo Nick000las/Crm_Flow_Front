@@ -1,6 +1,8 @@
+import { EyeOff } from 'lucide-react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
+import { Button } from '@/components/ui/button';
 import { SITUACOES_LEAD } from '../constants';
-import { FILTRO_VAZIO, contarFiltros } from '../lib/filtro';
+import { FILTRO_VAZIO, contarFiltros, filtroSemChaves } from '../lib/filtro';
 import { LeadsTable, LeadsTableSkeleton } from './leads-table';
 import { LeadsNaoEncontrados, LeadsVazio, PaginaSemLeads, SituacaoVazia } from './leads-vazio';
 import { Paginacao } from './paginacao';
@@ -8,6 +10,23 @@ import { Paginacao } from './paginacao';
 const ERRO_ID = 'crm-leads-erro';
 // Sem `situacao`: limpar a busca não troca de aba.
 const SEM_FILTRO = Object.freeze({ busca: '', filtro: FILTRO_VAZIO, pagina: 1 });
+
+/**
+ * O filtro (uma view salva por outra pessoa, um link) usa um campo oculto
+ * para este usuário (permissão por campo): o back dá 400. Em vez do erro
+ * genérico, explica e oferece tirar só esses itens.
+ */
+function FiltroComCampoOculto({ onTirar }) {
+  return (
+    <div className="flex flex-wrap items-center gap-3 border border-border px-4 py-3 text-sm" role="alert">
+      <EyeOff aria-hidden="true" className="size-4 text-muted-foreground" />
+      <p className="flex-1">Este filtro usa um campo que você não pode ver.</p>
+      <Button onClick={onTirar} size="sm" variant="outline">
+        Tirar este filtro
+      </Button>
+    </div>
+  );
+}
 
 /**
  * Corpo da lista: escolhe entre erro, carregando, os estados vazios e a
@@ -36,7 +55,8 @@ const SEM_FILTRO = Object.freeze({ busca: '', filtro: FILTRO_VAZIO, pagina: 1 })
  *   },
  *   onMesclar?: (lead: import('../types').Lead) => void,
  *   selecao?: import('./leads-table').SelecaoDaTabela | null,
- * }} props
+ *   ocultosNoFiltro?: string[],
+ * }} props `ocultosNoFiltro`: chaves do filtro que o usuário não vê (400 do back)
  */
 export function LeadsConteudo({
   atualizar,
@@ -55,7 +75,15 @@ export function LeadsConteudo({
   acoesDeArquivo,
   onMesclar,
   selecao,
+  ocultosNoFiltro = [],
 }) {
+  if (erro && ocultosNoFiltro.length > 0) {
+    return (
+      <FiltroComCampoOculto
+        onTirar={() => atualizar({ filtro: filtroSemChaves(estado.filtro, ocultosNoFiltro), pagina: 1 })}
+      />
+    );
+  }
   if (erro) return <ApiErrorAlert error={erro} id={ERRO_ID} />;
   if (carregando) return <LeadsTableSkeleton colunas={colunas} identificador={identificador} />;
 

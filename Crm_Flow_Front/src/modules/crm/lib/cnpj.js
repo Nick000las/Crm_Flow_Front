@@ -1,5 +1,6 @@
 import { formatarCep, formatarData, formatarEndereco, formatarTelefone } from './formatadores.js';
-import { idNoForm, paraValorDeApi, paraValorDeForm } from './form-lead.js';
+import { MENSAGEM_SEM_PERMISSAO } from '../constants.js';
+import { idNoForm, paraValorDeApi, paraValorDeForm, podeEditarCampo } from './form-lead.js';
 import { textoDoValor } from './layout.js';
 
 /**
@@ -15,6 +16,7 @@ import { textoDoValor } from './layout.js';
  *   texto: string,
  *   valorDeForm: unknown,
  *   disponivel: boolean,
+ *   motivo: string | null,
  *   substitui: boolean,
  *   marcadaPorPadrao: boolean,
  * }} ItemSugestao
@@ -108,7 +110,8 @@ export function situacaoDestacada(dados) {
  * Sugestões da Receita prontas para o painel: o valor no formato do controle
  * e se vem marcada. Marcada por padrão quando o campo está vazio ou já tem o
  * mesmo valor; com outro valor, o usuário decide substituir. Campo que não
- * está no form (oculto na criação, por exemplo) aparece, mas não se aplica.
+ * está no form (oculto na criação, por exemplo) ou só de ver (permissão por
+ * campo) aparece, mas não se aplica — `motivo` diz por quê.
  *
  * @param {SugestaoCnpj[]} sugestao
  * @param {import('../types.js').Campo[]} campos  campos do form
@@ -122,14 +125,15 @@ export function itensDaSugestao(sugestao, campos, valores) {
     // Sem o campo no form, o `tipo` do destino (vem na sugestão) ainda formata o valor.
     const texto = textoDoValor(campo ?? { tipo: item.tipo }, item.valor) ?? String(item.valor);
 
-    if (!campo) {
+    if (!campo || !podeEditarCampo(campo)) {
       return {
         campoReceita: item.campoReceita,
         id,
-        label: item.label,
+        label: campo?.label ?? item.label,
         texto,
         valorDeForm: null,
         disponivel: false,
+        motivo: campo ? MENSAGEM_SEM_PERMISSAO : MENSAGENS_CNPJ.FORA_DO_FORM,
         substitui: false,
         marcadaPorPadrao: false,
       };
@@ -148,6 +152,7 @@ export function itensDaSugestao(sugestao, campos, valores) {
       texto,
       valorDeForm,
       disponivel: true,
+      motivo: null,
       substitui: !vazio && !mesmo,
       marcadaPorPadrao: vazio || mesmo,
     };

@@ -161,6 +161,11 @@ fica sem responsável. As regras são um rascunho até o **Salvar**; os grupos s
 hora. Com a distribuição ligada, o responsável vazio no cadastro aparece como
 **Automático**, e o lead mostra "Atribuído pela regra X".
 
+Com `crm.permissoes`, Configurações › Permissões por campo (DONO e MASTER) define, para
+o OPERADOR, se cada campo é **Editar**, **Só ver** ou **Oculto**. Só ver aparece travado
+no formulário ("Sem permissão para editar"); oculto some do lead, da tabela, dos filtros e
+do histórico. O Nome é sempre editável, e e-mail ou telefone precisa continuar editável.
+
 ## Notificações
 
 O sino no Rail (para todo usuário logado, sem flag) mostra as não lidas, a lista

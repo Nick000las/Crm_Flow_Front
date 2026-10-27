@@ -46,14 +46,16 @@ export function TagsInput({ value, onChange, id, sugestoes = [], ...controle }) 
               key={tag}
             >
               {tag}
-              <button
-                aria-label={`Remover ${tag}`}
-                className="text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
-                onClick={() => onChange(value.filter((atual) => atual !== tag))}
-                type="button"
-              >
-                <X className="size-3" aria-hidden="true" />
-              </button>
+              {!controle.disabled && (
+                <button
+                  aria-label={`Remover ${tag}`}
+                  className="text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
+                  onClick={() => onChange(value.filter((atual) => atual !== tag))}
+                  type="button"
+                >
+                  <X className="size-3" aria-hidden="true" />
+                </button>
+              )}
             </li>
           ))}
         </ul>
@@ -66,7 +68,7 @@ export function TagsInput({ value, onChange, id, sugestoes = [], ...controle }) 
         onBlur={adicionar}
         onChange={(event) => setTexto(event.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Digite e tecle Enter"
+        placeholder={controle.disabled ? undefined : 'Digite e tecle Enter'}
         value={texto}
       />
       {disponiveis.length > 0 && (

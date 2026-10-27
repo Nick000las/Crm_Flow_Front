@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import { TIPOS_CAMPO } from '../constants';
-import { AJUDA_POR_CHAVE } from '../lib/form-lead';
+import { AJUDA_POR_CHAVE, podeEditarCampo } from '../lib/form-lead';
 import { opcoesDoSeletor, rotuloOpcao, sugestoesDoCampo } from '../lib/opcoes';
 import { CampoForm } from './campo-form';
 import { CampoEndereco, CampoIntervalo, CampoUsuario } from './campos-compostos';
@@ -77,6 +77,7 @@ function CampoOpcoesMultiplas({ campo, value, onChange, controle }) {
           <label className="flex items-center gap-2 text-sm" htmlFor={opcaoId} key={opcao}>
             <Checkbox
               checked={value.includes(opcao)}
+              disabled={controle.disabled}
               id={opcaoId}
               onCheckedChange={(marcada) => alternar(opcao, marcada)}
             />
@@ -130,6 +131,7 @@ function escolherControle(campo) {
 
 /**
  * Controle de um campo de `/crm/leads/fields`, escolhido pelo `tipo`.
+ * Campo só de ver (`acesso: 'view'`, permissão por campo) aparece travado.
  *
  * @param {{
  *   campo: import('../types').Campo,
@@ -150,7 +152,8 @@ export function CampoDinamico({ campo, id, value, onChange, erro, onBlur }) {
       erro={erro}
       id={id}
       label={campo.label}
-      obrigatorio={campo.obrigatorio}
+      obrigatorio={campo.obrigatorio && podeEditarCampo(campo)}
+      semPermissao={!podeEditarCampo(campo)}
     >
       {(controle) => (
         <Controle
