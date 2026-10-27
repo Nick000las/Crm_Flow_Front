@@ -1,4 +1,4 @@
-import { CAMADA, PARTES_ENDERECO, TIPOS_CAMPO } from '../constants.js';
+import { ACESSOS_CAMPO, CAMADA, PARTES_ENDERECO, TIPOS_CAMPO } from '../constants.js';
 import { lerValorDoCampo } from './colunas.js';
 import {
   documentoSemMascara,
@@ -233,6 +233,17 @@ function atribuir(payload, campo, valor) {
 }
 
 /**
+ * Pode editar o campo? `acesso: 'view'` (permissão por campo, M13) = só
+ * ver: aparece desabilitado e nunca vai no payload — o back conta até o
+ * `null` como "enviado" e responde 403. Sem `acesso` = editável.
+ *
+ * @param {{ acesso?: string }} campo
+ */
+export function podeEditarCampo(campo) {
+  return campo.acesso !== ACESSOS_CAMPO.VER;
+}
+
+/**
  * Payload de criação: só o que foi preenchido. Sem responsável, o back usa
  * quem está criando.
  *
@@ -242,7 +253,7 @@ function atribuir(payload, campo, valor) {
 export function montarPayloadCriacao(campos, valores) {
   const payload = {};
 
-  for (const campo of [...campos, CAMPO_VALOR]) {
+  for (const campo of [...campos.filter(podeEditarCampo), CAMPO_VALOR]) {
     const valor = paraValorDeApi(campo.tipo, valores[idNoForm(campo)]);
     if (valor !== null) atribuir(payload, campo, valor);
   }
@@ -274,7 +285,7 @@ function iguais(a, b) {
 export function montarPayloadEdicao(campos, iniciais, valores) {
   const payload = {};
 
-  for (const campo of [...campos, CAMPO_VALOR]) {
+  for (const campo of [...campos.filter(podeEditarCampo), CAMPO_VALOR]) {
     const id = idNoForm(campo);
     const antes = paraValorDeApi(campo.tipo, iniciais[id]);
     const depois = paraValorDeApi(campo.tipo, valores[id]);
@@ -304,7 +315,8 @@ export function payloadVazio(payload) {
 export function validarNoCliente(campos, valores) {
   const erros = {};
 
-  for (const campo of [...campos, CAMPO_VALOR]) {
+  // Campo só de ver: o usuário não tem como corrigir — não cobra nada dele.
+  for (const campo of [...campos.filter(podeEditarCampo), CAMPO_VALOR]) {
     const id = idNoForm(campo);
     const valor = paraValorDeApi(campo.tipo, valores[id]);
 
@@ -316,10 +328,15 @@ export function validarNoCliente(campos, valores) {
     else if (campo.obrigatorio && valor === null) erros[id] = MENSAGENS.OBRIGATORIO;
   }
 
-  const temContato = CHAVES_CONTATO.some(
-    (chave) => paraValorDeApi(TIPOS_CAMPO.TEXTO, valores[chave]) !== null,
+  // E-mail ou telefone: conta o que está no form (até o só de ver, que já
+  // tem valor); o erro vai para o primeiro editável. Sem nenhum editável
+  // (ocultos pela permissão), o back decide.
+  const contatos = CHAVES_CONTATO.map((chave) => campos.find((campo) => campo.chave === chave)).filter(Boolean);
+  const temContato = contatos.some(
+    (campo) => paraValorDeApi(TIPOS_CAMPO.TEXTO, valores[idNoForm(campo)]) !== null,
   );
-  if (!temContato) erros.email ??= MENSAGENS.CONTATO;
+  const ondeAvisar = contatos.find(podeEditarCampo);
+  if (!temContato && ondeAvisar) erros[idNoForm(ondeAvisar)] ??= MENSAGENS.CONTATO;
 
   return erros;
 }

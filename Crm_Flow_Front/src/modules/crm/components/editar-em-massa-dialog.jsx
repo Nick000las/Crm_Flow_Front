@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { useEditarEmMassa } from '../hooks/use-lead-mutations';
 import { RESPONSAVEL_NENHUM } from '../lib/filtro';
+import { podeEditarCampo } from '../lib/form-lead';
 import { tituloDoLead } from '../lib/layout';
 import {
   FORM_MASSA_VAZIO,
@@ -120,7 +121,8 @@ function FormMassa({ leads, campos, usuarios, identificador, onResultado, onFech
 
   const selecao = (chave, rotulo) => {
     const campo = campoPorChave.get(chave);
-    if (!campo) return null;
+    // Oculto (não vem) ou só de ver (permissão por campo): o back daria 403 no pedido inteiro.
+    if (!campo || !podeEditarCampo(campo)) return null;
 
     return (
       <Alteracao
@@ -144,7 +146,8 @@ function FormMassa({ leads, campos, usuarios, identificador, onResultado, onFech
       </Alteracao>
     );
   };
-  const campoTags = campoPorChave.get('tags');
+  const tags = campoPorChave.get('tags');
+  const campoTags = tags && podeEditarCampo(tags) ? tags : null;
 
   return (
     <form className="grid gap-4" noValidate onSubmit={handleSubmit}>

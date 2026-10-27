@@ -5,10 +5,12 @@ import {
   MENSAGENS_FILTRO,
   RESPONSAVEL_NENHUM,
   chavesComErro,
+  chavesForaDosCampos,
   chipsDoFiltro,
   contarFiltros,
   descreverItem,
   filtroDoRascunho,
+  filtroSemChaves,
   lerFiltro,
   novaLinha,
   operadoresDoCampo,
@@ -349,4 +351,22 @@ describe('tipos do M11 no filtro', () => {
       'Viagem de 01/02/2026 a 10/02/2026',
     );
   });
+});
+
+test('filtro por campo oculto: acha a chave e tira do filtro e do rascunho', () => {
+  const campos = [{ chave: 'status', label: 'Status', tipo: 'texto', camada: 1 }];
+  const fields = { 'filtros.renda': ['"renda" não é um campo ativo para filtro'], 'filtros.status': ['x'] };
+  const filtro = {
+    filtros: [
+      { chave: 'status', operador: 'contem', valor: 'a' },
+      { chave: 'renda', operador: 'vazio' },
+    ],
+  };
+
+  assert.deepEqual(chavesForaDosCampos(fields, campos), ['renda']);
+  assert.deepEqual(filtroSemChaves(filtro, ['renda']).filtros, [{ chave: 'status', operador: 'contem', valor: 'a' }]);
+  assert.deepEqual(
+    rascunhoDoFiltro(filtro, campos).linhas.map((linha) => linha.chave),
+    ['status'],
+  );
 });

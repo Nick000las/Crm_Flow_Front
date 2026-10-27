@@ -23,6 +23,7 @@ export const crmKeys = {
   inatividade: () => ['crm', 'configuracoes', 'inatividade'],
   configCnpj: () => ['crm', 'configuracoes', 'cnpj'],
   distribuicao: () => ['crm', 'configuracoes', 'distribuicao'],
+  permissoes: () => ['crm', 'configuracoes', 'permissoes'],
   // Prefixo de todos os leads abertos (`lead(id)`).
   leadsAbertos: () => ['crm', 'lead'],
   importJob: (jobId) => ['crm', 'import', jobId],

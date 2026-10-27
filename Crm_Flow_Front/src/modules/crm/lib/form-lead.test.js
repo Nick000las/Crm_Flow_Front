@@ -389,3 +389,41 @@ describe('tipos do M11', () => {
     assert.equal(erros.cnpj, undefined);
   });
 });
+
+describe('permissão por campo (crm.permissoes)', () => {
+  const comAcesso = (acessos) => campos.map((campo) => (acessos[campo.chave] ? { ...campo, acesso: acessos[campo.chave] } : campo));
+
+  test('campo só de ver não vai na criação nem na edição, mesmo alterado', () => {
+    const restritos = comAcesso({ status: 'view', renda: 'view' });
+    const valores = { ...valoresIniciais(restritos), nome: 'Ana', email: 'a@x.com', status: 'novo', renda: '10' };
+
+    assert.deepEqual(montarPayloadCriacao(restritos, valores), { nome: 'Ana', email: 'a@x.com' });
+
+    const iniciais = valoresIniciais(restritos, lead);
+    const editados = { ...iniciais, status: 'ganho', renda: '', nome: 'Bia' };
+    assert.deepEqual(montarPayloadEdicao(restritos, iniciais, editados), { nome: 'Bia' });
+  });
+
+  test('não cobra obrigatório de campo só de ver', () => {
+    const restritos = comAcesso({ nome: 'view' });
+    assert.equal(validarNoCliente(restritos, { ...valoresIniciais(restritos), email: 'a@x.com' }).nome, undefined);
+  });
+
+  test('contato: e-mail oculto ou só de ver manda o aviso para o telefone', () => {
+    const semEmail = campos.filter((campo) => campo.chave !== 'email');
+    assert.equal(validarNoCliente(semEmail, valoresIniciais(semEmail)).telefone, MENSAGENS.CONTATO);
+
+    const emailSoVer = comAcesso({ email: 'view' });
+    const erros = validarNoCliente(emailSoVer, valoresIniciais(emailSoVer));
+    assert.equal(erros.telefone, MENSAGENS.CONTATO);
+    assert.equal(erros.email, undefined);
+
+    // O e-mail só de ver já preenchido conta como contato.
+    assert.equal(validarNoCliente(emailSoVer, valoresIniciais(emailSoVer, lead)).telefone, undefined);
+  });
+
+  test('sem contato editável no form, o back decide', () => {
+    const semContato = campos.filter((campo) => !['email', 'telefone'].includes(campo.chave));
+    assert.equal(validarNoCliente(semContato, { ...valoresIniciais(semContato), nome: 'Ana' }).email, undefined);
+  });
+});

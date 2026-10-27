@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils';
  *   vazio?: string,
  *   placeholder?: string,
  *   className?: string,
+ *   disabled?: boolean,
  * } & Record<string, unknown>} props demais props (id, aria-*) vão para o trigger
  */
 export function SelectSimples({
@@ -27,13 +28,14 @@ export function SelectSimples({
   vazio,
   placeholder = 'Selecione',
   className,
+  disabled,
   ...trigger
 }) {
   const rotuloPorValor = new Map(opcoes.map((opcao) => [opcao.valor, opcao.rotulo]));
   const textoVazio = vazio ?? placeholder;
 
   return (
-    <Select onValueChange={(valor) => onChange(valor ?? '')} value={value || null}>
+    <Select disabled={disabled} onValueChange={(valor) => onChange(valor ?? '')} value={value || null}>
       <SelectTrigger {...trigger} className={cn('h-9 w-full rounded-none', className)}>
         <SelectValue placeholder={textoVazio}>
           {(valor) => rotuloPorValor.get(valor) ?? textoVazio}

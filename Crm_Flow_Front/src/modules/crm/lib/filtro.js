@@ -281,6 +281,9 @@ export function linhaDoItem(item, campo) {
 }
 
 /**
+ * Item de campo que não está em `campos` (oculto pela permissão, desligado)
+ * fica fora: a linha não teria como aparecer e voltaria no "Aplicar".
+ *
  * @param {FiltroAplicado} filtro
  * @param {import('../types.js').Campo[]} campos
  * @returns {Rascunho}
@@ -289,7 +292,9 @@ export function rascunhoDoFiltro(filtro, campos) {
   const campoPorChave = new Map(campos.map((campo) => [campo.chave, campo]));
 
   return {
-    linhas: filtro.filtros.map((item) => linhaDoItem(item, campoPorChave.get(item.chave))),
+    linhas: filtro.filtros
+      .filter((item) => campoPorChave.has(item.chave))
+      .map((item) => linhaDoItem(item, campoPorChave.get(item.chave))),
     fixos: {
       usuarioResponsavelId: filtro.semResponsavel ? RESPONSAVEL_NENHUM : (filtro.usuarioResponsavelId ?? ''),
       valorMin: numeroParaTexto(filtro.valorMin),
@@ -515,4 +520,23 @@ export function chavesComErro(fields) {
       .filter((chave) => chave.startsWith(PREFIXO_ERRO))
       .map((chave) => chave.slice(PREFIXO_ERRO.length)),
   );
+}
+
+/**
+ * Chaves com erro no filtro que nem existem nos campos do usuário — o
+ * filtro usa um campo oculto para ele (permissão por campo, M13; uma view
+ * salva por outra pessoa, por exemplo).
+ *
+ * @param {Record<string, string[]> | undefined} fields
+ * @param {import('../types.js').Campo[]} campos
+ * @returns {string[]}
+ */
+export function chavesForaDosCampos(fields, campos) {
+  const conhecidas = new Set(campos.map((campo) => campo.chave));
+  return [...chavesComErro(fields)].filter((chave) => !conhecidas.has(chave));
+}
+
+/** O filtro sem os itens dessas chaves. @param {FiltroAplicado} filtro @param {string[]} chaves */
+export function filtroSemChaves(filtro, chaves) {
+  return { ...filtro, filtros: filtro.filtros.filter((item) => !chaves.includes(item.chave)) };
 }

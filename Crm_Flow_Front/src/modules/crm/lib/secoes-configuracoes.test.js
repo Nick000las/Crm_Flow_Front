@@ -90,3 +90,11 @@ test('Distribuição aparece com crm.distribuicao; o OPERADOR também vê (só l
     ['distribuicao'],
   );
 });
+
+test('Permissões por campo aparece com crm.permissoes, só para gestão', () => {
+  assert.deepEqual(
+    secoesVisiveis({ ...dono, featuresAtivas: ['crm.permissoes'] }).map((secao) => secao.key),
+    ['campos', 'permissoes'],
+  );
+  assert.deepEqual(secoesVisiveis({ ...dono, role: 'OPERADOR', featuresAtivas: ['crm.permissoes'] }), []);
+});

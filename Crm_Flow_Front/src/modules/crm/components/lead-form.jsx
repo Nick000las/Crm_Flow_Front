@@ -18,6 +18,7 @@ import {
   CHAVE_RESPONSAVEL,
   errosDoServidor,
   idNoForm,
+  podeEditarCampo,
   validarNoCliente,
 } from '../lib/form-lead';
 import { CampoDinamico } from './campo-dinamico';
@@ -200,8 +201,8 @@ export function LeadForm({
       />
     );
 
-    // Lupa da Receita (`crm.cnpj`) logo abaixo de cada campo de CNPJ.
-    if (campo.tipo !== TIPOS_CAMPO.CNPJ) return controle;
+    // Lupa da Receita (`crm.cnpj`) logo abaixo de cada campo de CNPJ que o usuário edita.
+    if (campo.tipo !== TIPOS_CAMPO.CNPJ || !podeEditarCampo(campo)) return controle;
 
     return (
       <div className="grid gap-2" key={id}>

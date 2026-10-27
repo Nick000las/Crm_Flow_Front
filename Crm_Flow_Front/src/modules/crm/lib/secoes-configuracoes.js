@@ -31,6 +31,7 @@ export const SECOES_CONFIGURACOES = Object.freeze([
   secao('campos', 'Campos', null, { pronta: true }),
   secao('listas', 'Listas', CRM_FEATURES.LISTAS, { pronta: true }),
   secao('regras', 'Regras de campo', CRM_FEATURES.REGRAS, { pronta: true }),
+  secao('permissoes', 'Permissões por campo', CRM_FEATURES.PERMISSOES, { pronta: true }),
   // Leitura para todos; alterar as regras, só gestão (decidido na tela).
   secao('duplicidade', 'Duplicidade', CRM_FEATURES.DUPLICIDADE, { pronta: true, roles: null }),
   secao('distribuicao', 'Distribuição', CRM_FEATURES.DISTRIBUICAO, { pronta: true, roles: null }),

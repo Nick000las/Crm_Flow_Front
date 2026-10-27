@@ -44,8 +44,19 @@ test('marca o vazio e o igual; com outro valor, pede para substituir; fora do fo
   assert.equal(porReceita.endereco.id, 'custom.sede');
   assert.equal(porReceita.endereco.marcadaPorPadrao, true);
   assert.equal(porReceita.municipio.disponivel, false);
+  assert.equal(porReceita.municipio.motivo, 'Campo fora deste formulário');
   // Fora do form, o tipo que vem na sugestão ainda formata o valor.
   assert.equal(porReceita.dataAbertura.texto, '10/05/2001');
+});
+
+test('campo só de ver (permissão) aparece, mas não se aplica', () => {
+  const soVer = campos.map((campo) => (campo.chave === 'empresa' ? { ...campo, acesso: 'view' } : campo));
+  const [empresa] = itensDaSugestao(sugestao, soVer, { empresa: '' });
+
+  assert.equal(empresa.disponivel, false);
+  assert.equal(empresa.marcadaPorPadrao, false);
+  assert.equal(empresa.motivo, 'Sem permissão para editar');
+  assert.deepEqual(aplicarSugestoes({ empresa: '' }, [empresa], new Set([empresa.id])), { empresa: '' });
 });
 
 test('aplicar põe só os marcados, no formato do controle (Camada 3 inclusa)', () => {
