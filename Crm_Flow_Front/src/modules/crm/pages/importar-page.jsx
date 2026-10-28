@@ -36,6 +36,7 @@ export default function ImportarPage() {
         arquivo: estado.arquivo,
         mapeamento: mapeamentoParaEnvio(estado.mapeamento),
         estrategiaDuplicata: estado.estrategia,
+        baseLegalLote: estado.baseLegalLote,
       },
       { onSuccess: (validacao) => dispatch({ tipo: 'validado', validacao }) },
     );
@@ -64,9 +65,14 @@ export default function ImportarPage() {
 
       {estado.passo === PASSO.MAPEAR && (
         <ImportacaoMapear
+          baseLegalLote={estado.baseLegalLote}
           estrategia={estado.estrategia}
           mapeamento={estado.mapeamento}
           nomeArquivo={estado.arquivo.name}
+          onBaseLegalLote={(baseLegalLote) => {
+            validar.reset();
+            dispatch({ tipo: 'baseLegalLote', baseLegalLote });
+          }}
           onEstrategia={(estrategia) => {
             validar.reset();
             dispatch({ tipo: 'estrategia', estrategia });
@@ -84,6 +90,7 @@ export default function ImportarPage() {
 
       {estado.passo === PASSO.REVISAR && (
         <ImportacaoRevisar
+          baseLegalLote={estado.baseLegalLote}
           confirmacao={confirmar}
           estrategia={estado.estrategia}
           onConfirmar={handleConfirmar}

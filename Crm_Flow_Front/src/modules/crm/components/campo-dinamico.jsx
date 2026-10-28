@@ -2,7 +2,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
-import { TIPOS_CAMPO } from '../constants';
+import { MENSAGEM_CALCULADO, MENSAGEM_SEM_PERMISSAO, MENSAGEM_SOMENTE_LEITURA, TIPOS_CAMPO } from '../constants';
 import { AJUDA_POR_CHAVE, podeEditarCampo } from '../lib/form-lead';
 import { opcoesDoSeletor, rotuloOpcao, sugestoesDoCampo } from '../lib/opcoes';
 import { CampoForm } from './campo-form';
@@ -129,9 +129,17 @@ function escolherControle(campo) {
   return CONTROLE_POR_TIPO[campo.tipo] ?? CampoTexto;
 }
 
+/** Por que o campo não se edita (`null` = editável). */
+function motivoTravado(campo) {
+  if (campo.calculado) return MENSAGEM_CALCULADO;
+  if (campo.somenteLeitura) return MENSAGEM_SOMENTE_LEITURA;
+  return podeEditarCampo(campo) ? null : MENSAGEM_SEM_PERMISSAO;
+}
+
 /**
  * Controle de um campo de `/crm/leads/fields`, escolhido pelo `tipo`.
- * Campo só de ver (`acesso: 'view'`, permissão por campo) aparece travado.
+ * Campo calculado (Lead score com `crm.score`) ou só de ver (`acesso:
+ * 'view'`, permissão por campo) aparece travado, com o motivo.
  *
  * @param {{
  *   campo: import('../types').Campo,
@@ -152,8 +160,8 @@ export function CampoDinamico({ campo, id, value, onChange, erro, onBlur }) {
       erro={erro}
       id={id}
       label={campo.label}
+      motivoTravado={motivoTravado(campo)}
       obrigatorio={campo.obrigatorio && podeEditarCampo(campo)}
-      semPermissao={!podeEditarCampo(campo)}
     >
       {(controle) => (
         <Controle

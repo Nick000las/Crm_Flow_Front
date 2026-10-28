@@ -1,6 +1,8 @@
 import { DISTRIBUICAO, TIPOS_DESTINO } from '../constants.js';
-import { descreverItem, itemDaLinha, linhaDoItem } from './filtro.js';
-import { MENSAGENS_REGRA, valorDaCondicao } from './regras.js';
+import { condicaoParaEnvio, condicaoParaForm, validarCondicoes } from './condicoes.js';
+import { errosPorItem } from './erros-de-lista.js';
+
+export { descreverCondicoes } from './condicoes.js';
 
 /**
  * Distribuição automática (`crm.distribuicao`): regras "quando o lead casa
@@ -11,7 +13,7 @@ import { MENSAGENS_REGRA, valorDaCondicao } from './regras.js';
  * @typedef {import('../api/distribuicao.api.js').ConfigDistribuicao} ConfigDistribuicao
  * @typedef {import('../api/distribuicao.api.js').RegraDistribuicao} RegraDistribuicao
  * @typedef {import('../api/distribuicao.api.js').GrupoDistribuicao} GrupoDistribuicao
- * @typedef {{ campoId: string, operador: string, valor: unknown }} CondicaoNoForm  `valor` no formato do construtor de filtro
+ * @typedef {import('./condicoes.js').CondicaoNoForm} CondicaoNoForm
  * @typedef {{
  *   chaveLocal: string,
  *   id: string | null,
@@ -45,13 +47,6 @@ export function destinoDoSelect(valor) {
   const tipo = valor.slice(0, posicao);
   const id = valor.slice(posicao + 1);
   return Object.values(TIPOS_DESTINO).includes(tipo) && id ? { tipo, id } : null;
-}
-
-/** Condição da API → linha do editor. Campo que saiu do schema fica como veio (a validação acusa). */
-function condicaoParaForm({ campoId, operador, valor }, campos) {
-  const campo = campos.find((atual) => atual.id === campoId);
-  if (!campo) return { campoId, operador, valor: valor ?? null };
-  return { campoId, operador, valor: linhaDoItem({ chave: campo.chave, operador, valor }, campo).valor };
 }
 
 /**
@@ -100,14 +95,8 @@ export function validarRegraDistribuicao(regra, campos) {
   const erros = {};
   if (!regra.nome.trim()) erros.nome = MENSAGENS_DISTRIBUICAO.NOME;
   if (!destinoDoSelect(regra.destino)) erros.destino = MENSAGENS_DISTRIBUICAO.DESTINO;
-  if (regra.condicoes.length > DISTRIBUICAO.MAX_CONDICOES) erros.condicoes = MENSAGENS_DISTRIBUICAO.MAX_CONDICOES;
 
-  regra.condicoes.forEach((condicao, indice) => {
-    const resultado = valorDaCondicao(condicao, campos);
-    if ('erro' in resultado) erros[`condicoes.${indice}`] = resultado.erro;
-  });
-
-  return erros;
+  return { ...erros, ...validarCondicoes(regra.condicoes, campos, DISTRIBUICAO.MAX_CONDICOES) };
 }
 
 /** Regra do rascunho → item do PUT. Chame depois de `validarRegraDistribuicao`. */
@@ -116,10 +105,7 @@ function regraParaEnvio(regra, campos) {
     ...(regra.id && { id: regra.id }),
     nome: regra.nome.trim(),
     ativo: regra.ativo,
-    condicoes: regra.condicoes.map((condicao) => {
-      const { valor } = /** @type {{ valor: unknown }} */ (valorDaCondicao(condicao, campos));
-      return { campoId: condicao.campoId, operador: condicao.operador, ...(valor !== undefined && { valor }) };
-    }),
+    condicoes: regra.condicoes.map((condicao) => condicaoParaEnvio(condicao, campos)),
     destino: destinoDoSelect(regra.destino),
   };
 }
@@ -151,33 +137,19 @@ export function distribuicaoParaEnvio(valores, campos) {
   };
 }
 
-const CAMINHO_DA_REGRA = /^regras\.(\d+)(?:\.(.+))?$/;
-
 /**
- * 400 do PUT → erros por regra. O índice é o da lista **enviada**: com as
- * chaves na ordem do envio, o erro acha a regra mesmo depois de reordenar.
- * Erro da regra inteira (`regras.<n>`) fica em `regra`; o que não é de uma
- * regra (`regras`, `fallback`…) volta em `outros`.
+ * 400 do PUT → erros por regra (`errosPorItem`). Erro da regra inteira
+ * (`regras.<n>`) fica em `regra`.
  *
  * @param {Record<string, string[]> | null | undefined} fields
  * @param {string[]} chavesEnviadas `chaveLocal` na ordem do PUT
  * @returns {{ porRegra: Record<string, Record<string, string>>, outros: string[] }}
  */
 export function errosDoPut(fields, chavesEnviadas) {
-  const porRegra = {};
-  const outros = [];
-
-  for (const [caminho, mensagens] of Object.entries(fields ?? {})) {
-    const mensagem = Array.isArray(mensagens) ? mensagens[0] : String(mensagens);
-    const partes = CAMINHO_DA_REGRA.exec(caminho);
-    const chave = partes ? chavesEnviadas[Number(partes[1])] : undefined;
-    if (!chave) {
-      outros.push(mensagem);
-      continue;
-    }
-    porRegra[chave] = { ...porRegra[chave], [partes[2] ?? 'regra']: mensagem };
-  }
-
+  const { porItem, outros } = errosPorItem(fields, 'regras', chavesEnviadas);
+  const porRegra = Object.fromEntries(
+    Object.entries(porItem).map(([chave, { item, ...resto }]) => [chave, item ? { ...resto, regra: item } : resto]),
+  );
   return { porRegra, outros };
 }
 
@@ -235,25 +207,4 @@ export function nomeDoDestino(destino, nomePorId, grupos) {
     return grupo ? `Grupo ${grupo.nome}` : 'Grupo removido';
   }
   return nomePorId.get(escolhido.id) ?? 'Usuário inativo';
-}
-
-/**
- * Frase das condições: "Origem é Site e UF é SP"; sem condição, "Todos os
- * leads". Condição incompleta aparece só pelo campo.
- *
- * @param {RegraNoForm} regra
- * @param {import('../types.js').Campo[]} campos
- * @param {Map<string, string>} [nomePorId]
- */
-export function descreverCondicoes(regra, campos, nomePorId) {
-  if (regra.condicoes.length === 0) return 'Todos os leads';
-
-  return regra.condicoes
-    .map(({ campoId, operador, valor }) => {
-      const campo = campos.find((atual) => atual.id === campoId);
-      if (!campo) return MENSAGENS_REGRA.CAMPO_CONDICAO;
-      const resultado = itemDaLinha({ chave: campo.chave, operador, valor }, campo);
-      return 'erro' in resultado ? `${campo.label} (incompleta)` : descreverItem(resultado.item, campo, nomePorId);
-    })
-    .join(' e ');
 }

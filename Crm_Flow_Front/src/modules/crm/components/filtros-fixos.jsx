@@ -1,5 +1,6 @@
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { useFaixasScore } from '../hooks/use-score';
 import { RESPONSAVEL_NENHUM } from '../lib/filtro';
 import { SelectSimples } from './select-simples';
 
@@ -46,7 +47,8 @@ function Faixa({ legenda, nome, de, ate, tipo, erros, onChange }) {
 }
 
 /**
- * Filtros que não dependem de `/fields`: responsável, valor e data de criação.
+ * Filtros que não dependem de `/fields`: responsável, valor, data de criação
+ * e, com `crm.score`, a faixa de score (as faixas vêm da configuração).
  *
  * @param {{
  *   fixos: import('../lib/filtro').FixosRascunho,
@@ -57,6 +59,7 @@ function Faixa({ legenda, nome, de, ate, tipo, erros, onChange }) {
  * }} props
  */
 export function FiltrosFixos({ fixos, usuarios, erros, onChange, className }) {
+  const faixas = useFaixasScore();
   // "Sem responsável" (sem dono ou dono desativado) vale mesmo sem a lista de usuários.
   const opcoesResponsavel = [
     { valor: RESPONSAVEL_NENHUM, rotulo: 'Sem responsável' },
@@ -95,6 +98,20 @@ export function FiltrosFixos({ fixos, usuarios, erros, onChange, className }) {
         onChange={onChange}
         tipo="date"
       />
+      {faixas && (
+        <div className="grid content-start gap-1.5">
+          <label className="mb-1.5 text-sm font-medium" htmlFor="filtro-faixa-score">
+            Faixa de score
+          </label>
+          <SelectSimples
+            id="filtro-faixa-score"
+            onChange={(valor) => onChange('faixaScore', valor)}
+            opcoes={faixas.map((faixa) => ({ valor: faixa.chave, rotulo: faixa.rotulo }))}
+            vazio="Qualquer faixa"
+            value={fixos.faixaScore}
+          />
+        </div>
+      )}
     </div>
   );
 }

@@ -11,8 +11,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAuth } from '@/hooks/useAuth';
+import { temFeature } from '@/lib/acesso';
 import { cn } from '@/lib/utils';
-import { CONTEXTO, SITUACOES_LEAD } from '../../constants';
+import { CHAVE_SCORE, CONTEXTO, CRM_FEATURES, SITUACOES_LEAD } from '../../constants';
 import { useMesclarLeads } from '../../hooks/use-duplicidade';
 import { useLead } from '../../hooks/use-lead';
 import { useLeadsSearch } from '../../hooks/use-leads-search';
@@ -35,7 +37,8 @@ function EscolherOutro({ lead, onEscolher }) {
     filtro: FILTRO_VAZIO,
     situacao: SITUACOES_LEAD.ATIVOS,
   });
-  const outros = (resultados.data?.itens ?? []).filter((item) => item.id !== lead.id);
+  // Lead anonimizado não mescla (o back daria 409): fica fora da escolha.
+  const outros = (resultados.data?.itens ?? []).filter((item) => item.id !== lead.id && !item.anonimizado_em);
 
   return (
     <div className="grid gap-3">
@@ -226,7 +229,13 @@ function Comparar({ idA, idB, campos, nomePorId, onMesclado }) {
 export function MesclarDialog({ leads, campos, nomePorId, onOpenChange, onMesclado }) {
   const [escolhido, setEscolhido] = useState(null);
   const [primeiro, segundo = escolhido] = leads;
-  const camposDaFicha = useMemo(() => camposDoContexto(campos, CONTEXTO.FICHA), [campos]);
+  const { user } = useAuth();
+  const comScore = temFeature(user, CRM_FEATURES.SCORE);
+  // Com `crm.score`, o back recalcula o score depois de mesclar e ignora a escolha: fora da comparação.
+  const camposDaFicha = useMemo(
+    () => camposDoContexto(campos, CONTEXTO.FICHA).filter((campo) => !comScore || campo.chave !== CHAVE_SCORE),
+    [campos, comScore],
+  );
 
   function handleOpenChange(aberto) {
     if (!aberto) setEscolhido(null);

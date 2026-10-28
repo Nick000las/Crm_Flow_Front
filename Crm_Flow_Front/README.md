@@ -166,6 +166,18 @@ o OPERADOR, se cada campo é **Editar**, **Só ver** ou **Oculto**. Só ver apar
 no formulário ("Sem permissão para editar"); oculto some do lead, da tabela, dos filtros e
 do histórico. O Nome é sempre editável, e e-mail ou telefone precisa continuar editável.
 
+Com `crm.score`, Configurações › Pontuação define regras que somam (ou tiram) pontos e as
+faixas do score (Frio, Morno e Quente por padrão, com nome, limites e cor). Salvar
+recalcula todos os leads, com o progresso na tela; há também "Recalcular agora". O score
+aparece com a faixa e a cor na tabela e no lead, fica só de leitura no formulário e entra
+no filtro como "Faixa de score".
+
+Com `crm.lgpd`, o lead ganha Base legal, a data dela, a origem do registro e o opt-out de
+marketing (marcado no formulário). Configurações › Privacidade define a base padrão e se ela
+é obrigatória; no import, dá para escolher a base legal do lote. DONO e MASTER podem
+**anonimizar** um lead a pedido do titular (menu ⋯, com confirmação pelo nome): é
+irreversível, e o lead anonimizado não pode mais ser editado nem mesclado.
+
 ## Notificações
 
 O sino no Rail (para todo usuário logado, sem flag) mostra as não lidas, a lista

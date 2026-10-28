@@ -23,11 +23,6 @@ test('Listas aparece só com crm.listas, na ordem da spec', () => {
   );
 });
 
-test('subseção ainda sem tela fica oculta mesmo com a flag dela ligada', () => {
-  const comPontuacao = { ...dono, featuresAtivas: ['crm.score'] };
-
-  assert.equal(secoesVisiveis(comPontuacao).some((secao) => secao.key === 'pontuacao'), false);
-});
 
 test('OPERADOR vê só o Layout, e só com crm.layout', () => {
   const operador = { ...dono, role: 'OPERADOR' };
@@ -97,4 +92,26 @@ test('Permissões por campo aparece com crm.permissoes, só para gestão', () =>
     ['campos', 'permissoes'],
   );
   assert.deepEqual(secoesVisiveis({ ...dono, role: 'OPERADOR', featuresAtivas: ['crm.permissoes'] }), []);
+});
+
+test('Pontuação aparece com crm.score; o OPERADOR também vê (só leitura)', () => {
+  assert.deepEqual(
+    secoesVisiveis({ ...dono, featuresAtivas: ['crm.score'] }).map((secao) => secao.key),
+    ['campos', 'pontuacao'],
+  );
+  assert.deepEqual(
+    secoesVisiveis({ ...dono, role: 'OPERADOR', featuresAtivas: ['crm.score'] }).map((secao) => secao.key),
+    ['pontuacao'],
+  );
+});
+
+test('Privacidade aparece com crm.lgpd; o OPERADOR também vê (só leitura)', () => {
+  assert.deepEqual(
+    secoesVisiveis({ ...dono, featuresAtivas: ['crm.lgpd'] }).map((secao) => secao.key),
+    ['campos', 'privacidade'],
+  );
+  assert.deepEqual(
+    secoesVisiveis({ ...dono, role: 'OPERADOR', featuresAtivas: ['crm.lgpd'] }).map((secao) => secao.key),
+    ['privacidade'],
+  );
 });

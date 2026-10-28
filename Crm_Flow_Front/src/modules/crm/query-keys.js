@@ -24,6 +24,8 @@ export const crmKeys = {
   configCnpj: () => ['crm', 'configuracoes', 'cnpj'],
   distribuicao: () => ['crm', 'configuracoes', 'distribuicao'],
   permissoes: () => ['crm', 'configuracoes', 'permissoes'],
+  configScore: () => ['crm', 'configuracoes', 'score'],
+  lgpd: () => ['crm', 'configuracoes', 'lgpd'],
   // Prefixo de todos os leads abertos (`lead(id)`).
   leadsAbertos: () => ['crm', 'lead'],
   importJob: (jobId) => ['crm', 'import', jobId],

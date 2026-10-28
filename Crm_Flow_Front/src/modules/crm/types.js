@@ -21,6 +21,7 @@
  * @property {'status' | 'fonte_lead' | 'motivo_perda' | 'tag'} [lista]  campo de lista do tenant
  * @property {import('./lib/opcoes.js').Opcao[]} [opcoesLista]  todas as opções da lista, com as inativas
  * @property {'edit' | 'view'} [acesso]  permissão por campo (`crm.permissoes`); ausente = edit. Oculto nem vem
+ * @property {boolean} [somenteLeitura]  preenchido pelo back (LGPD: data da base legal, origem, opt-out): travado e fora do payload
  *
  * @typedef {Object} CampoConfigurado  Item de `GET /crm/configuracoes/campos`, já ordenado.
  *   Inclui os ocultos em todos os contextos.
@@ -54,6 +55,11 @@
  * @property {string | null} [esfriando_desde]  ISO quando esfriando; `null` sem a flag `crm.inatividade`
  * @property {string | null} [mesclado_em_id]  descartado numa mesclagem (na lixeira)
  * @property {string | null} [mesclado_em_nome]  nome atual do lead que ficou (vem junto do id)
+ * @property {string | null} [anonimizado_em]  ISO quando anonimizado (LGPD): não edita nem mescla
+ * @property {string | null} [legal_basis]  base legal (`crm.lgpd`)
+ * @property {string | null} [legal_basis_at]
+ * @property {string | null} [origem_registro]
+ * @property {string | null} [marketing_opt_out_at]  ISO do opt-out de marketing; `null` = recebe
  * @property {string | null} [atribuido_por_regra_nome]  regra de distribuição que escolheu o responsável (`crm.distribuicao`)
  *
  * @typedef {'igual' | 'contem' | 'entre' | 'e_um_dos' | 'vazio' | 'nao_vazio'} Operador

@@ -28,7 +28,9 @@ import { rotuloOpcao } from './opcoes.js';
  *   criadoAte?: string,
  *   esfriando?: true,
  *   semResponsavel?: true,
+ *   faixaScore?: string,
  * }} FiltroAplicado   datas em `AAAA-MM-DD`; `esfriando` exige `crm.inatividade`;
+ *   `faixaScore` (chave da faixa) exige `crm.score`;
  *   `semResponsavel` (sem dono ou dono desativado) exclui `usuarioResponsavelId`
  * @typedef {{ id: string, chave: string, operador: string, valor: unknown }} LinhaFiltro
  * @typedef {{
@@ -38,6 +40,7 @@ import { rotuloOpcao } from './opcoes.js';
  *   criadoDe: string,
  *   criadoAte: string,
  *   esfriando: boolean,
+ *   faixaScore: string,             '' = qualquer faixa
  * }} FixosRascunho   `esfriando` não tem controle no construtor (vem da view
  *   ou da notificação); só atravessa o rascunho para "Aplicar" não perdê-lo
  * @typedef {{ linhas: LinhaFiltro[], fixos: FixosRascunho }} Rascunho
@@ -91,7 +94,16 @@ const FIXOS_VAZIOS = Object.freeze({
   criadoDe: '',
   criadoAte: '',
   esfriando: false,
+  faixaScore: '',
 });
+
+/** Chave de faixa de score (slug do back): texto curto, sem validar contra as faixas. */
+const MAX_CHAVE_FAIXA = 60;
+/** Chave do erro de faixa de score no 400 da busca (`filtros.faixaScore`). */
+const CHAVE_ERRO_FAIXA = 'faixaScore';
+
+const chaveDeFaixa = (valor) =>
+  typeof valor === 'string' && valor.trim() && valor.length <= MAX_CHAVE_FAIXA ? valor.trim() : undefined;
 
 let proximoIdLinha = 0;
 const gerarIdLinha = () => `linha-${(proximoIdLinha += 1)}`;
@@ -106,7 +118,8 @@ export function contarFiltros(filtro) {
     (filtro.usuarioResponsavelId || filtro.semResponsavel ? 1 : 0) +
     (filtro.valorMin !== undefined || filtro.valorMax !== undefined ? 1 : 0) +
     (filtro.criadoDe || filtro.criadoAte ? 1 : 0) +
-    (filtro.esfriando ? 1 : 0)
+    (filtro.esfriando ? 1 : 0) +
+    (filtro.faixaScore ? 1 : 0)
   );
 }
 
@@ -161,6 +174,7 @@ export function lerFiltro(entrada) {
     esfriando: bruto.esfriando === true ? true : undefined,
     // Os dois juntos dão 400: num link editado à mão, vale o responsável.
     semResponsavel: bruto.semResponsavel === true && !usuarioResponsavelId ? true : undefined,
+    faixaScore: chaveDeFaixa(bruto.faixaScore),
   });
 }
 
@@ -302,6 +316,7 @@ export function rascunhoDoFiltro(filtro, campos) {
       criadoDe: filtro.criadoDe ?? '',
       criadoAte: filtro.criadoAte ?? '',
       esfriando: Boolean(filtro.esfriando),
+      faixaScore: filtro.faixaScore ?? '',
     },
   };
 }
@@ -402,6 +417,7 @@ export function filtroDoRascunho({ linhas, fixos }, campos) {
       criadoDe: fixos.criadoDe || undefined,
       criadoAte: fixos.criadoAte || undefined,
       esfriando: fixos.esfriando || undefined,
+      faixaScore: fixos.faixaScore || undefined,
     }),
   };
 }
@@ -462,9 +478,10 @@ export function descreverItem(item, campo, nomePorId) {
  * @param {FiltroAplicado} filtro
  * @param {import('../types.js').Campo[]} campos
  * @param {Map<string, string>} nomePorId
+ * @param {{ chave: string, rotulo: string }[] | null} [faixas] faixas de score (rótulo do chip `faixaScore`)
  * @returns {{ id: string, texto: string, chave?: string, remover: () => FiltroAplicado }[]}
  */
-export function chipsDoFiltro(filtro, campos, nomePorId) {
+export function chipsDoFiltro(filtro, campos, nomePorId, faixas = null) {
   const campoPorChave = new Map(campos.map((campo) => [campo.chave, campo]));
   const sem = (...chaves) => () =>
     lerFiltro(Object.fromEntries(Object.entries(filtro).filter(([chave]) => !chaves.includes(chave))));
@@ -504,6 +521,16 @@ export function chipsDoFiltro(filtro, campos, nomePorId) {
   if (filtro.esfriando) {
     chips.push({ id: 'esfriando', texto: 'Esfriando', remover: sem('esfriando') });
   }
+  if (filtro.faixaScore) {
+    const faixa = faixas?.find((atual) => atual.chave === filtro.faixaScore);
+    // `chave`: o 400 de faixa apagada vem em `filtros.faixaScore` e destaca este chip.
+    chips.push({
+      id: 'faixaScore',
+      texto: `Score: ${faixa?.rotulo ?? filtro.faixaScore}`,
+      chave: CHAVE_ERRO_FAIXA,
+      remover: sem('faixaScore'),
+    });
+  }
 
   return chips;
 }
@@ -532,7 +559,8 @@ export function chavesComErro(fields) {
  * @returns {string[]}
  */
 export function chavesForaDosCampos(fields, campos) {
-  const conhecidas = new Set(campos.map((campo) => campo.chave));
+  // `faixaScore` não é campo: é o filtro fixo de score (faixa apagada), não campo oculto.
+  const conhecidas = new Set([...campos.map((campo) => campo.chave), CHAVE_ERRO_FAIXA]);
   return [...chavesComErro(fields)].filter((chave) => !conhecidas.has(chave));
 }
 

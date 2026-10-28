@@ -165,6 +165,8 @@ export function estadoInicial(jobId = null) {
     preview: null,
     mapeamento: {},
     estrategia: ESTRATEGIA_PADRAO,
+    // LGPD (`crm.lgpd`): base legal das linhas que não trazem a sua ('' = nenhuma).
+    baseLegalLote: '',
     validacao: null,
     jobId,
   };
@@ -188,6 +190,8 @@ export function wizardReducer(estado, acao) {
       return { ...estado, mapeamento: { ...estado.mapeamento, [acao.coluna]: acao.chave }, validacao: null };
     case 'estrategia':
       return { ...estado, estrategia: acao.estrategia, validacao: null };
+    case 'baseLegalLote':
+      return { ...estado, baseLegalLote: acao.baseLegalLote, validacao: null };
     case 'validado':
       return estado.passo === PASSO.MAPEAR ? { ...estado, passo: PASSO.REVISAR, validacao: acao.validacao } : estado;
     case 'confirmado':
