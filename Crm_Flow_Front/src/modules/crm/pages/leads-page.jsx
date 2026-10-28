@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { podeVer, temFeature } from '@/lib/acesso';
 import { isAccessError } from '@/services/api';
 import { AbasSituacao } from '../components/abas-situacao';
+import { AnonimizarLeadDialog } from '../components/anonimizar-lead-dialog';
 import { BarraSelecao } from '../components/barra-selecao';
 import { EditarEmMassaDialog } from '../components/editar-em-massa-dialog';
 import { ChipsFiltro } from '../components/chips-filtro';
@@ -26,8 +27,10 @@ import { useLeadsSearch } from '../hooks/use-leads-search';
 import { useNavegacaoLeads } from '../hooks/use-navegacao-leads';
 import { useSelecaoLeads } from '../hooks/use-selecao-leads';
 import { useUsuarios } from '../hooks/use-usuarios';
+import { useFaixasScore } from '../hooks/use-score';
 import { situacaoDaBusca } from '../lib/arquivo';
 import { filtroDaBusca } from '../lib/inatividade';
+import { filtroComScore } from '../lib/score';
 import { avisoDoResultado } from '../lib/massa';
 import { camposDoContexto } from '../lib/contextos';
 import { placeholderDaBusca } from '../lib/layout';
@@ -52,9 +55,14 @@ export default function LeadsPage() {
   const situacao = situacaoDaBusca(estadoDaUrl.situacao, comArquivo);
   // Sem `crm.inatividade`, o "esfriando" de um link ou view antiga sai (idem).
   const comInatividade = temFeature(user, CRM_FEATURES.INATIVIDADE);
+  const comScore = temFeature(user, CRM_FEATURES.SCORE);
   const estado = useMemo(
-    () => ({ ...estadoDaUrl, situacao, filtro: filtroDaBusca(estadoDaUrl.filtro, comInatividade) }),
-    [estadoDaUrl, situacao, comInatividade],
+    () => ({
+      ...estadoDaUrl,
+      situacao,
+      filtro: filtroComScore(filtroDaBusca(estadoDaUrl.filtro, comInatividade), comScore),
+    }),
+    [estadoDaUrl, situacao, comInatividade, comScore],
   );
   const naLixeira = situacao === SITUACOES_LEAD.LIXEIRA;
   const { destinos, abrirLead, voltarParaLista } = useNavegacaoLeads();
@@ -63,10 +71,14 @@ export default function LeadsPage() {
   const arquivo = useAcoesDeArquivo(voltarParaLista);
   const { usuarios, nomePorId } = useUsuarios();
   const [leadAExcluir, setLeadAExcluir] = useState(null);
+  const [aAnonimizar, setAAnonimizar] = useState(null);
+  const [avisoAnonimizar, setAvisoAnonimizar] = useState(null);
   const [exportando, setExportando] = useState(false);
   const gestao = podeVer({ roles: PAPEIS_GESTAO }, user);
   // Mesclar: DONO/MASTER com `crm.duplicidade`, fora da lixeira.
   const podeMesclar = gestao && temFeature(user, CRM_FEATURES.DUPLICIDADE) && !naLixeira;
+  // Anonimizar (LGPD): DONO/MASTER com `crm.lgpd`, em qualquer aba (inclusive a lixeira).
+  const podeAnonimizar = gestao && temFeature(user, CRM_FEATURES.LGPD);
   // Edição em massa: qualquer papel com `crm.massa`, fora da lixeira (lá o back dá 404).
   const emMassa = temFeature(user, CRM_FEATURES.MASSA) && !naLixeira;
   const chaveDaConsulta = JSON.stringify([estado.busca, estado.filtro, situacao, estado.pagina, estado.tamanho]);
@@ -92,14 +104,18 @@ export default function LeadsPage() {
     () => (camposQuery.data ? chavesForaDosCampos(leadsQuery.error?.fields, camposQuery.data) : []),
     [leadsQuery.error, camposQuery.data],
   );
+  const faixasScore = useFaixasScore();
   const chips = useMemo(
-    () => chipsDoFiltro(estado.filtro, campos, nomePorId),
-    [estado.filtro, campos, nomePorId],
+    () => chipsDoFiltro(estado.filtro, campos, nomePorId, faixasScore),
+    [estado.filtro, campos, nomePorId, faixasScore],
   );
   // Confirmação breve de salvar/excluir. Chega pelo state da navegação, então
   // some sozinha na próxima navegação (troca de página, busca).
   // O da edição em massa vale só para a consulta em que foi feita.
-  const aviso = (avisoMassa?.chave === chaveDaConsulta && avisoMassa.texto) || state?.aviso;
+  const aviso =
+    (avisoMassa?.chave === chaveDaConsulta && avisoMassa.texto) ||
+    (avisoAnonimizar?.chave === chaveDaConsulta && avisoAnonimizar.texto) ||
+    state?.aviso;
 
   /** Ao fechar o dialog (por qualquer caminho): só as falhas seguem marcadas. */
   function fecharEdicaoEmMassa() {
@@ -169,6 +185,9 @@ export default function LeadsPage() {
         <BarraSelecao
           onEditarEmMassa={emMassa ? () => setEditandoEmMassa(true) : undefined}
           onLimpar={selecao.limpar}
+          bloqueioMesclar={
+            selecao.leads.some((lead) => lead.anonimizado_em) ? 'Lead anonimizado não pode ser mesclado.' : null
+          }
           onMesclar={podeMesclar ? () => setAMesclar(selecao.leads) : undefined}
           total={selecao.leads.length}
         />
@@ -176,6 +195,7 @@ export default function LeadsPage() {
 
       <LeadsConteudo
         acoesDeArquivo={comArquivo ? arquivo.acoes : undefined}
+        onAnonimizar={podeAnonimizar ? setAAnonimizar : undefined}
         onMesclar={podeMesclar ? (lead) => setAMesclar([lead]) : undefined}
         selecao={emMassa || podeMesclar ? selecao.tabela : null}
         atualizar={atualizar}
@@ -245,6 +265,14 @@ export default function LeadsPage() {
           onResultado={setResultadoMassa}
           open={editandoEmMassa}
           usuarios={usuarios}
+        />
+      )}
+
+      {podeAnonimizar && (
+        <AnonimizarLeadDialog
+          lead={aAnonimizar}
+          onAnonimizado={(texto) => setAvisoAnonimizar({ chave: chaveDaConsulta, texto })}
+          onOpenChange={(aberto) => !aberto && setAAnonimizar(null)}
         />
       )}
 

@@ -7,9 +7,11 @@ import { SecaoCnpj } from '../components/config-cnpj/secao-cnpj';
 import { SecaoDuplicidade } from '../components/config-duplicidade/secao-duplicidade';
 import { SecaoDistribuicao } from '../components/config-distribuicao/secao-distribuicao';
 import { SecaoInatividade } from '../components/config-inatividade/secao-inatividade';
+import { SecaoLgpd } from '../components/config-lgpd/secao-lgpd';
 import { SecaoLayout } from '../components/config-layout/secao-layout';
 import { SecaoListas } from '../components/config-listas/secao-listas';
 import { SecaoRegras } from '../components/config-regras/secao-regras';
+import { SecaoScore } from '../components/config-score/secao-score';
 import { SecaoPermissoes } from '../components/config-permissoes/secao-permissoes';
 import { caminhoDaSecao, secoesVisiveis } from '../lib/secoes-configuracoes';
 import { ROTAS_CRM } from '../rotas';
@@ -24,7 +26,9 @@ const TELA_DA_SECAO = Object.freeze({
   duplicidade: SecaoDuplicidade,
   distribuicao: SecaoDistribuicao,
   inatividade: SecaoInatividade,
+  pontuacao: SecaoScore,
   enriquecimento: SecaoCnpj,
+  privacidade: SecaoLgpd,
 });
 
 function NavegacaoSecoes({ secoes, ativa }) {

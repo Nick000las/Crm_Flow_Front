@@ -10,8 +10,10 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { getFieldError } from '@/services/api';
-import { ESTRATEGIAS_DUPLICATA, ROTULOS_ESTRATEGIA } from '../constants';
+import { CAMPOS_LGPD, ESTRATEGIAS_DUPLICATA, ROTULOS_ESTRATEGIA } from '../constants';
+import { useConfigLgpd } from '../hooks/use-lgpd';
 import { problemasDoMapeamento } from '../lib/importacao';
+import { exigeLote, problemaDoLote } from '../lib/lgpd';
 import { SelectSimples } from './select-simples';
 
 const HEAD_CLASS = 'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
@@ -68,6 +70,50 @@ function Estrategia({ valor, onChange }) {
 }
 
 /**
+ * Base legal do lote (LGPD, `crm.lgpd`): preenche as linhas sem base. Com
+ * a base obrigatória e nenhuma coluna mapeada para ela, é exigida.
+ */
+function BaseDoLote({ config, valor, obrigatoria, erro, onChange }) {
+  const ajudaId = 'importacao-base-lote-ajuda';
+  const erroId = 'importacao-base-lote-erro';
+
+  return (
+    <div className="grid max-w-md gap-1.5">
+      <label className="text-sm font-medium" htmlFor="importacao-base-lote">
+        Base legal do lote
+        {obrigatoria && (
+          <>
+            <span aria-hidden="true" className="text-destructive">
+              *
+            </span>
+            <span className="sr-only">(obrigatório)</span>
+          </>
+        )}
+      </label>
+      <SelectSimples
+        aria-describedby={[ajudaId, erro && erroId].filter(Boolean).join(' ')}
+        aria-invalid={erro ? true : undefined}
+        id="importacao-base-lote"
+        onChange={onChange}
+        opcoes={config.basesLegais.map((base) => ({ valor: base.key, rotulo: base.label }))}
+        vazio="Nenhuma (usar a da planilha)"
+        value={valor}
+      />
+      <p className="text-xs text-muted-foreground" id={ajudaId}>
+        {obrigatoria
+          ? 'A base legal é obrigatória e nenhuma coluna foi mapeada para ela: escolha a base destes leads.'
+          : 'Preenche as linhas que não trazem base legal.'}
+      </p>
+      {erro && (
+        <p className="text-xs text-destructive" id={erroId}>
+          {erro}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/**
  * Passo 2: para cada coluna da planilha, o campo do CRM que a recebe.
  * Avisos no cliente espelham o back; a validação de verdade é o passo 3.
  *
@@ -81,7 +127,9 @@ function Estrategia({ valor, onChange }) {
  *   onEstrategia: (estrategia: string) => void,
  *   onValidar: () => void,
  *   onTrocarArquivo: () => void,
- * }} props
+ *   baseLegalLote?: string,
+ *   onBaseLegalLote?: (base: string) => void,
+ * }} props `baseLegalLote` só aparece com `crm.lgpd`
  */
 export function ImportacaoMapear({
   preview,
@@ -93,9 +141,13 @@ export function ImportacaoMapear({
   onEstrategia,
   onValidar,
   onTrocarArquivo,
+  baseLegalLote = '',
+  onBaseLegalLote,
 }) {
+  const lgpd = useConfigLgpd().data ?? null;
   const opcoes = preview.campos.map((campo) => ({ valor: campo.chave, rotulo: campo.label }));
-  const problemas = problemasDoMapeamento(mapeamento, preview.campos);
+  const doLote = problemaDoLote(lgpd, mapeamento, baseLegalLote, CAMPOS_LGPD.BASE_LEGAL);
+  const problemas = [...problemasDoMapeamento(mapeamento, preview.campos), ...(doLote ? [doLote] : [])];
   // O back devolve os problemas de mapeamento como lista em `fields.mapeamento`.
   const problemasDoBack = validacao.error ? (validacao.error.fields?.mapeamento ?? []) : [];
 
@@ -142,7 +194,16 @@ export function ImportacaoMapear({
       </div>
 
       <Avisos problemas={problemasDoBack.length > 0 ? problemasDoBack : problemas} />
-      {validacao.error && !getFieldError(validacao.error, 'mapeamento') && (
+      {lgpd && onBaseLegalLote && (
+        <BaseDoLote
+          config={lgpd}
+          erro={validacao.error ? getFieldError(validacao.error, 'baseLegalLote') : null}
+          obrigatoria={exigeLote(lgpd, mapeamento, CAMPOS_LGPD.BASE_LEGAL)}
+          onChange={onBaseLegalLote}
+          valor={baseLegalLote}
+        />
+      )}
+      {validacao.error && !getFieldError(validacao.error, 'mapeamento') && !getFieldError(validacao.error, 'baseLegalLote') && (
         <ApiErrorAlert error={validacao.error} id="importacao-validar-erro" title="Não foi possível validar" />
       )}
 

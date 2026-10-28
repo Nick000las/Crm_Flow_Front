@@ -4,6 +4,7 @@ import {
   MENSAGENS,
   errosDoServidor,
   lerNumeroDigitado,
+  marcarCalculados,
   montarPayloadCriacao,
   montarPayloadEdicao,
   payloadVazio,
@@ -425,5 +426,49 @@ describe('permissão por campo (crm.permissoes)', () => {
   test('sem contato editável no form, o back decide', () => {
     const semContato = campos.filter((campo) => !['email', 'telefone'].includes(campo.chave));
     assert.equal(validarNoCliente(semContato, { ...valoresIniciais(semContato), nome: 'Ana' }).email, undefined);
+  });
+});
+
+describe('Lead score calculado (crm.score)', () => {
+  test('com a flag, leadScore não vai no payload; sem a flag, vai', () => {
+    const valores = { ...valoresIniciais(campos), nome: 'Ana', email: 'a@x.com', leadScore: '50' };
+
+    assert.equal(montarPayloadCriacao(marcarCalculados(campos, false), valores).leadScore, 50);
+    assert.equal(montarPayloadCriacao(marcarCalculados(campos, true), valores).leadScore, undefined);
+
+    const iniciais = valoresIniciais(campos, lead);
+    const editados = { ...iniciais, leadScore: '99' };
+    assert.deepEqual(montarPayloadEdicao(marcarCalculados(campos, true), iniciais, editados), {});
+  });
+});
+
+describe('LGPD (crm.lgpd)', () => {
+  const comLgpd = [
+    ...campos,
+    { chave: 'baseLegal', coluna: 'legal_basis', label: 'Base legal', tipo: 'selecao', camada: 2, obrigatorio: false, ordem: 20 },
+    { chave: 'baseLegalEm', coluna: 'legal_basis_at', label: 'Data da base legal', tipo: 'data', camada: 2, obrigatorio: false, ordem: 21, somenteLeitura: true },
+  ];
+
+  test('campo somenteLeitura não vai no payload', () => {
+    const valores = { ...valoresIniciais(comLgpd), nome: 'Ana', email: 'a@x.com', baseLegalEm: '2026-10-01' };
+    assert.equal(montarPayloadCriacao(comLgpd, valores).baseLegalEm, undefined);
+  });
+
+  test('opt-out: na criação só vai marcado; na edição, quando muda', () => {
+    const base = { ...valoresIniciais(comLgpd), nome: 'Ana', email: 'a@x.com' };
+    assert.equal(montarPayloadCriacao(comLgpd, base).optOutMarketing, undefined);
+    assert.equal(montarPayloadCriacao(comLgpd, { ...base, optOutMarketing: true }).optOutMarketing, true);
+
+    const iniciais = valoresIniciais(comLgpd, { ...lead, marketing_opt_out_at: '2026-10-01T00:00:00Z' });
+    assert.equal(iniciais.optOutMarketing, true);
+    assert.deepEqual(montarPayloadEdicao(comLgpd, iniciais, iniciais), {});
+    assert.deepEqual(montarPayloadEdicao(comLgpd, iniciais, { ...iniciais, optOutMarketing: false }), {
+      optOutMarketing: false,
+    });
+  });
+
+  test('base padrão só na criação', () => {
+    assert.equal(valoresIniciais(comLgpd, undefined, { baseLegal: 'consentimento' }).baseLegal, 'consentimento');
+    assert.equal(valoresIniciais(comLgpd, lead, { baseLegal: 'consentimento' }).baseLegal, '');
   });
 });

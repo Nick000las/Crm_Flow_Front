@@ -1,4 +1,4 @@
-import { Archive, ArchiveRestore, Combine, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { Archive, ArchiveRestore, Combine, MoreHorizontal, Pencil, ShieldOff, Trash2 } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -12,7 +12,8 @@ import { estaArquivado } from '../lib/arquivo';
 /**
  * Menu "⋯" da linha. Arquivar/Desarquivar só aparecem com os handlers
  * (`crm.arquivo`); qual dos dois depende do lead. Mesclar, só com o handler
- * (`crm.duplicidade` + DONO/MASTER).
+ * (`crm.duplicidade` + DONO/MASTER). Anonimizar, só com o handler (`crm.lgpd`
+ * + DONO/MASTER). Lead anonimizado não edita, não mescla e não anonimiza de novo.
  *
  * @param {{
  *   lead: import('../types').Lead,
@@ -21,10 +22,12 @@ import { estaArquivado } from '../lib/arquivo';
  *   onArquivar?: () => void,
  *   onDesarquivar?: () => void,
  *   onMesclar?: () => void,
+ *   onAnonimizar?: () => void,
  * }} props
  */
-export function AcoesLead({ lead, onEditar, onExcluir, onArquivar, onDesarquivar, onMesclar }) {
+export function AcoesLead({ lead, onEditar, onExcluir, onArquivar, onDesarquivar, onMesclar, onAnonimizar }) {
   const arquivado = estaArquivado(lead);
+  const anonimizado = Boolean(lead.anonimizado_em);
 
   return (
     <DropdownMenu>
@@ -35,10 +38,12 @@ export function AcoesLead({ lead, onEditar, onExcluir, onArquivar, onDesarquivar
         <MoreHorizontal aria-hidden="true" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40 rounded-none shadow-none ring-border">
-        <DropdownMenuItem onClick={onEditar}>
-          <Pencil aria-hidden="true" />
-          Editar
-        </DropdownMenuItem>
+        {!anonimizado && (
+          <DropdownMenuItem onClick={onEditar}>
+            <Pencil aria-hidden="true" />
+            Editar
+          </DropdownMenuItem>
+        )}
         {onArquivar && !arquivado && (
           <DropdownMenuItem onClick={onArquivar}>
             <Archive aria-hidden="true" />
@@ -51,10 +56,16 @@ export function AcoesLead({ lead, onEditar, onExcluir, onArquivar, onDesarquivar
             Desarquivar
           </DropdownMenuItem>
         )}
-        {onMesclar && (
+        {onMesclar && !anonimizado && (
           <DropdownMenuItem onClick={onMesclar}>
             <Combine aria-hidden="true" />
             Mesclar…
+          </DropdownMenuItem>
+        )}
+        {onAnonimizar && !anonimizado && (
+          <DropdownMenuItem onClick={onAnonimizar}>
+            <ShieldOff aria-hidden="true" />
+            Anonimizar…
           </DropdownMenuItem>
         )}
         <DropdownMenuItem onClick={onExcluir} variant="destructive">

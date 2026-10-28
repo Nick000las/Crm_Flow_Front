@@ -370,3 +370,28 @@ test('filtro por campo oculto: acha a chave e tira do filtro e do rascunho', () 
     ['status'],
   );
 });
+
+describe('faixaScore (crm.score)', () => {
+  test('lerFiltro aceita a chave da faixa; conta, vira chip e atravessa o rascunho', () => {
+    const filtro = lerFiltro({ filtros: [], faixaScore: 'quente' });
+    assert.equal(filtro.faixaScore, 'quente');
+    assert.equal(lerFiltro({ filtros: [], faixaScore: '' }).faixaScore, undefined);
+    assert.equal(lerFiltro({ filtros: [], faixaScore: 3 }).faixaScore, undefined);
+    assert.equal(contarFiltros(filtro), 1);
+
+    const [chip] = chipsDoFiltro(filtro, [], new Map(), [{ chave: 'quente', rotulo: 'Quente' }]);
+    assert.equal(chip.texto, 'Score: Quente');
+    assert.equal(chip.remover().faixaScore, undefined);
+    assert.equal(chipsDoFiltro(filtro, [], new Map())[0].texto, 'Score: quente');
+
+    assert.deepEqual(filtroDoRascunho(rascunhoDoFiltro(filtro, []), []).filtro, filtro);
+  });
+});
+
+test('faixa de score apagada (filtros.faixaScore): destaca o chip, não vira "campo oculto"', () => {
+  const fields = { 'filtros.faixaScore': ['"x" não é uma faixa de score'] };
+  const [chip] = chipsDoFiltro({ filtros: [], faixaScore: 'x' }, [], new Map());
+
+  assert.equal(chavesComErro(fields).has(chip.chave), true);
+  assert.deepEqual(chavesForaDosCampos(fields, []), []);
+});

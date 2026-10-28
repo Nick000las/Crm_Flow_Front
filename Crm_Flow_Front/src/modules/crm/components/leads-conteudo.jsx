@@ -54,6 +54,7 @@ function FiltroComCampoOculto({ onTirar }) {
  *     restaurandoId: string | null,
  *   },
  *   onMesclar?: (lead: import('../types').Lead) => void,
+ *   onAnonimizar?: (lead: import('../types').Lead) => void,
  *   selecao?: import('./leads-table').SelecaoDaTabela | null,
  *   ocultosNoFiltro?: string[],
  * }} props `ocultosNoFiltro`: chaves do filtro que o usuário não vê (400 do back)
@@ -74,6 +75,7 @@ export function LeadsConteudo({
   situacao,
   acoesDeArquivo,
   onMesclar,
+  onAnonimizar,
   selecao,
   ocultosNoFiltro = [],
 }) {
@@ -114,6 +116,7 @@ export function LeadsConteudo({
         onEditar={(id) => onAbrir(id, { editar: true })}
         onExcluir={onExcluir}
         {...acoesDeArquivo}
+        onAnonimizar={onAnonimizar}
         onMesclar={onMesclar}
         selecao={selecao}
       />

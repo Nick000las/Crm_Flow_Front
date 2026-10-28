@@ -1,4 +1,4 @@
-import { Archive, ArchiveRestore, MoreHorizontal, Pencil, Shuffle, Trash2 } from 'lucide-react';
+import { Archive, ArchiveRestore, MoreHorizontal, Pencil, ShieldOff, Shuffle, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
@@ -13,6 +13,8 @@ import { estaArquivado } from '../lib/arquivo';
 import { lerValorDaColuna } from '../lib/colunas';
 import { colunaDoItem, subtituloDoLead, tituloDoLead } from '../lib/layout';
 import { CelulaLead } from './celula-lead';
+import { ControleTravado } from './controle-travado';
+import { SeloAnonimizado } from './selo-anonimizado';
 import { SeloEsfriando } from './selo-esfriando';
 
 const DESCRICAO = Object.freeze({
@@ -43,16 +45,59 @@ function Destaques({ lead, itens, nomePorId }) {
   );
 }
 
+const MOTIVO_ANONIMIZADO = 'Lead anonimizado não pode ser editado';
+
+/** Menu "⋯" do lead: Excluir (com `crm.arquivo`) e Anonimizar (LGPD, gestão). */
+function MaisAcoes({ comExcluir, onExcluir, onAnonimizar }) {
+  if (!comExcluir && !onAnonimizar) return null;
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        aria-label="Mais ações do lead"
+        className={cn(buttonVariants({ variant: 'outline', size: 'icon-sm' }), 'rounded-none')}
+      >
+        <MoreHorizontal aria-hidden="true" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-44 rounded-none shadow-none ring-border">
+        {onAnonimizar && (
+          <DropdownMenuItem onClick={onAnonimizar}>
+            <ShieldOff aria-hidden="true" />
+            Anonimizar…
+          </DropdownMenuItem>
+        )}
+        {comExcluir && (
+          <DropdownMenuItem onClick={onExcluir} variant="destructive">
+            <Trash2 aria-hidden="true" />
+            Excluir
+          </DropdownMenuItem>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 /**
  * Ações do lead aberto. Com `crm.arquivo`, Arquivar/Desarquivar é o destaque
  * e Excluir (lixeira) vai para o "⋯"; sem a flag, Excluir em vermelho.
+ * `onAnonimizar` (LGPD, só gestão) entra no "⋯". Lead anonimizado: Editar
+ * travado, com o motivo.
  */
-function AcoesDoLead({ arquivo, onEditar, onExcluir }) {
+function AcoesDoLead({ arquivo, anonimizado, onEditar, onExcluir, onAnonimizar }) {
   const editar = (
-    <Button onClick={onEditar} size="sm" variant="outline">
-      <Pencil aria-hidden="true" />
-      Editar
-    </Button>
+    <ControleTravado motivo={anonimizado ? MOTIVO_ANONIMIZADO : null} motivoId="lead-editar-motivo">
+      <Button
+        aria-describedby={anonimizado ? 'lead-editar-motivo' : undefined}
+        className={anonimizado ? 'pointer-events-none' : undefined}
+        disabled={anonimizado}
+        onClick={onEditar}
+        size="sm"
+        variant="outline"
+      >
+        <Pencil aria-hidden="true" />
+        Editar
+      </Button>
+    </ControleTravado>
   );
 
   if (!arquivo) {
@@ -63,6 +108,7 @@ function AcoesDoLead({ arquivo, onEditar, onExcluir }) {
           <Trash2 aria-hidden="true" />
           Excluir
         </Button>
+        <MaisAcoes comExcluir={false} onAnonimizar={onAnonimizar} />
       </div>
     );
   }
@@ -82,20 +128,7 @@ function AcoesDoLead({ arquivo, onEditar, onExcluir }) {
         {arquivado ? <ArchiveRestore aria-hidden="true" /> : <Archive aria-hidden="true" />}
         {arquivado ? 'Desarquivar' : 'Arquivar'}
       </Button>
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          aria-label="Mais ações do lead"
-          className={cn(buttonVariants({ variant: 'outline', size: 'icon-sm' }), 'rounded-none')}
-        >
-          <MoreHorizontal aria-hidden="true" />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-40 rounded-none shadow-none ring-border">
-          <DropdownMenuItem onClick={onExcluir} variant="destructive">
-            <Trash2 aria-hidden="true" />
-            Excluir
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <MaisAcoes comExcluir onAnonimizar={onAnonimizar} onExcluir={onExcluir} />
     </div>
   );
 }
@@ -115,9 +148,20 @@ function AcoesDoLead({ arquivo, onEditar, onExcluir }) {
  *   onEditar: () => void,
  *   onExcluir: () => void,
  *   arquivo?: { ocupado: boolean, onArquivar: () => void, onDesarquivar: () => void } | null,
- * }} props
+ *   onAnonimizar?: () => void,
+ * }} props `onAnonimizar`: só para gestão com `crm.lgpd`
  */
-export function LeadCabecalho({ criando, editando, lead, layout, nomePorId, onEditar, onExcluir, arquivo = null }) {
+export function LeadCabecalho({
+  criando,
+  editando,
+  lead,
+  layout,
+  nomePorId,
+  onEditar,
+  onExcluir,
+  arquivo = null,
+  onAnonimizar,
+}) {
   const titulo = criando ? 'Novo lead' : lead ? tituloDoLead(lead, layout?.identificador) : 'Lead';
   const subtitulo = lead && layout && !criando ? subtituloDoLead(lead, layout.subtitulo, nomePorId) : '';
   const modo = criando ? DESCRICAO.CRIANDO : editando ? DESCRICAO.EDITANDO : DESCRICAO.VENDO;
@@ -134,6 +178,7 @@ export function LeadCabecalho({ criando, editando, lead, layout, nomePorId, onEd
           </Badge>
         )}
         {!criando && <SeloEsfriando esfriandoDesde={lead?.esfriando_desde} />}
+        {!criando && <SeloAnonimizado anonimizadoEm={lead?.anonimizado_em} />}
       </div>
       {/* Com subtítulo, ele descreve o lead; a frase do modo vira só leitor de tela. */}
       <SheetDescription>
@@ -153,7 +198,13 @@ export function LeadCabecalho({ criando, editando, lead, layout, nomePorId, onEd
       )}
 
       {!criando && lead && !editando && (
-        <AcoesDoLead arquivo={arquivo && { ...arquivo, arquivado }} onEditar={onEditar} onExcluir={onExcluir} />
+        <AcoesDoLead
+          anonimizado={Boolean(lead.anonimizado_em)}
+          arquivo={arquivo && { ...arquivo, arquivado }}
+          onAnonimizar={onAnonimizar}
+          onEditar={onEditar}
+          onExcluir={onExcluir}
+        />
       )}
     </SheetHeader>
   );

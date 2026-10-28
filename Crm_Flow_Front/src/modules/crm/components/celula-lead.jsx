@@ -1,4 +1,4 @@
-import { TIPOS_CAMPO } from '../constants';
+import { CHAVE_SCORE, TIPOS_CAMPO } from '../constants';
 import { TIPO_COLUNA } from '../lib/colunas';
 import {
   formatarCep,
@@ -15,6 +15,7 @@ import {
 } from '../lib/formatadores';
 import { opcaoDoCampo } from '../lib/opcoes';
 import { OpcaoBadge } from './opcao-badge';
+import { SeloScore } from './selo-score';
 
 const MAX_BADGES = 2;
 const TAMANHO_ID_CURTO = 8;
@@ -97,6 +98,8 @@ function Url({ valor }) {
  */
 export function CelulaLead({ coluna, valor, nomePorId, completo = false, semLink = false }) {
   if (valor === null || valor === undefined || valor === '') return <Vazio />;
+  // Lead score: selo da faixa (`crm.score`; sem a flag, só o número).
+  if (coluna.id === CHAVE_SCORE) return <SeloScore valor={valor} />;
 
   const mascara = MASCARA_POR_TIPO[coluna.tipo];
   if (mascara) return <span className={DADO}>{mascara(valor)}</span>;

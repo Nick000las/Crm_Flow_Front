@@ -26,13 +26,20 @@ export function previsualizarImportacao(authApi, arquivo) {
  * O arquivo vai de novo: o back não guarda a planilha entre as etapas.
  *
  * @param {import('@/hooks/create-auth-session').AuthApi} authApi
- * @param {{ arquivo: File, mapeamento: Record<string, string>, estrategiaDuplicata: string }} dados
+ * @param {{ arquivo: File, mapeamento: Record<string, string>, estrategiaDuplicata: string, baseLegalLote?: string }} dados
+ *   `baseLegalLote` (LGPD): base das linhas sem base; com a base obrigatória e sem coluna mapeada,
+ *   o back dá 400 em `mapeamento` sem ela
  * @returns {Promise<{ jobId: string | null, totalLinhas: number, linhasValidas: number, erros: { linha: number, coluna?: string, motivo: string }[] }>}
  */
-export function validarImportacao(authApi, { arquivo, mapeamento, estrategiaDuplicata }) {
+export function validarImportacao(authApi, { arquivo, mapeamento, estrategiaDuplicata, baseLegalLote }) {
   return authApi.upload(
     '/crm/import/validate',
-    formComArquivo(arquivo, { mapeamento: JSON.stringify(mapeamento), estrategiaDuplicata }),
+    formComArquivo(arquivo, {
+      mapeamento: JSON.stringify(mapeamento),
+      estrategiaDuplicata,
+      // LGPD: só vai escolhido (o back exige a flag para aceitá-lo).
+      ...(baseLegalLote && { baseLegalLote }),
+    }),
   );
 }
 

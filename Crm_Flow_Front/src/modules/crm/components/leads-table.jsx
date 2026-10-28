@@ -1,4 +1,4 @@
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, ShieldOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -17,8 +17,10 @@ import { lerValorDaColuna } from '../lib/colunas';
 import { tituloDoLead } from '../lib/layout';
 import { ROTAS_CRM } from '../rotas';
 import { AcoesLead } from './acoes-lead';
+import { BotaoIcone } from './botao-icone';
 import { CelulaLead } from './celula-lead';
 import { LinkDoLead } from './link-do-lead';
+import { SeloAnonimizado } from './selo-anonimizado';
 import { SeloEsfriando } from './selo-esfriando';
 
 const HEAD_CLASS =
@@ -157,16 +159,17 @@ function MescladoEm({ lead }) {
 }
 
 /**
- * Título do lead com o selo "Esfriando" ao lado — fora do link, para o nome
- * acessível do link continuar sendo só o título.
+ * Título do lead com os selos "Esfriando" e "Anonimizado" ao lado — fora do
+ * link, para o nome acessível do link continuar sendo só o título.
  */
 function ComSelo({ lead, children }) {
-  if (!lead.esfriando_desde) return children;
+  if (!lead.esfriando_desde && !lead.anonimizado_em) return children;
 
   return (
     <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
       {children}
       <SeloEsfriando esfriandoDesde={lead.esfriando_desde} />
+      <SeloAnonimizado anonimizadoEm={lead.anonimizado_em} />
     </span>
   );
 }
@@ -212,6 +215,7 @@ function Restaurar({ lead, titulo, restaurando, onRestaurar }) {
  *   onRestaurar?: (lead: import('../types').Lead) => void,
  *   restaurandoId?: string | null,
  *   onMesclar?: (lead: import('../types').Lead) => void,
+ *   onAnonimizar?: (lead: import('../types').Lead) => void,
  *   selecao?: SelecaoDaTabela | null,
  * }} props `selecao` (mesclar 2 leads ou editar em massa) põe um checkbox por linha
  */
@@ -230,6 +234,7 @@ export function LeadsTable({
   onRestaurar,
   restaurandoId = null,
   onMesclar,
+  onAnonimizar,
   selecao = null,
 }) {
   return (
@@ -313,12 +318,18 @@ export function LeadsTable({
                 )}
                 <TableCell className="py-1 text-right">
                   {lixeira && lead.mesclado_em_id ? null : lixeira ? (
-                    <Restaurar
-                      lead={lead}
-                      onRestaurar={onRestaurar}
-                      restaurando={restaurandoId === lead.id}
-                      titulo={titulo}
-                    />
+                    <span className="inline-flex items-center gap-1">
+                      <Restaurar
+                        lead={lead}
+                        onRestaurar={onRestaurar}
+                        restaurando={restaurandoId === lead.id}
+                        titulo={titulo}
+                      />
+                      {/* O lead da lixeira não abre: a linha é o único caminho para anonimizar. */}
+                      {onAnonimizar && !lead.anonimizado_em && (
+                        <BotaoIcone icone={ShieldOff} onClick={() => onAnonimizar(lead)} rotulo={`Anonimizar ${titulo}`} />
+                      )}
+                    </span>
                   ) : (
                     <AcoesLead
                       lead={lead}
@@ -326,6 +337,7 @@ export function LeadsTable({
                       onDesarquivar={onDesarquivar && (() => onDesarquivar(lead))}
                       onEditar={() => onEditar(lead.id)}
                       onExcluir={() => onExcluir(lead)}
+                      onAnonimizar={onAnonimizar && (() => onAnonimizar(lead))}
                       onMesclar={onMesclar && (() => onMesclar(lead))}
                     />
                   )}

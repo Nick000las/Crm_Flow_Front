@@ -42,6 +42,7 @@ const FRASE_DO_TIPO = Object.freeze({
   [TIPOS_EVENTO.DESARQUIVADO]: 'desarquivou o lead',
   [TIPOS_EVENTO.EXCLUIDO]: 'enviou o lead para a lixeira',
   [TIPOS_EVENTO.RESTAURADO]: 'restaurou o lead da lixeira',
+  [TIPOS_EVENTO.ANONIMIZADO]: 'anonimizou o lead (pedido do titular)',
 });
 
 /** `autor: null` = sistema (import, job) ou usuário removido. */

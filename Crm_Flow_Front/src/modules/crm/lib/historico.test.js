@@ -108,3 +108,8 @@ test('criado com distribuição: de onde veio o responsável', () => {
     'ficou sem responsável (nenhuma regra casou)',
   ]);
 });
+
+test('anonimizado: frase própria, sem os detalhes do resumo', () => {
+  const anonimizado = evento({ tipo: 'anonimizado', detalhes: { leads: 1, atividades: 2 } });
+  assert.deepEqual(frasesDoEvento(anonimizado, NOMES), ['anonimizou o lead (pedido do titular)']);
+});

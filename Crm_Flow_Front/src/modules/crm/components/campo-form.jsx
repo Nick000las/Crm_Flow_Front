@@ -1,14 +1,14 @@
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { MENSAGEM_SEM_PERMISSAO } from '../constants';
 
 /**
  * Rótulo, controle e erro de um campo. O controle recebe `id`, `aria-invalid`
  * e `aria-describedby` prontos — o erro é sempre anunciado junto do campo.
  *
- * `semPermissao` (permissão por campo, M13): o controle vem com `disabled`
- * e um tooltip "Sem permissão para editar" (o mesmo texto em `sr-only`, na
- * descrição). Os eventos do controle desligam para o hover chegar ao gatilho.
+ * `motivoTravado` (campo só de ver pela permissão, M13; calculado pela
+ * pontuação, M14): o controle vem com `disabled` e o motivo num tooltip (o
+ * mesmo texto em `sr-only`, na descrição). Os eventos do controle desligam
+ * para o hover chegar ao gatilho.
  *
  * @param {{
  *   id: string,
@@ -17,7 +17,7 @@ import { MENSAGEM_SEM_PERMISSAO } from '../constants';
  *   erro?: string | null,
  *   ajuda?: string | null,
  *   comoGrupo?: boolean,
- *   semPermissao?: boolean,
+ *   motivoTravado?: string | null,
  *   children: (controle: {
  *     id: string,
  *     'aria-invalid': boolean | undefined,
@@ -33,13 +33,13 @@ export function CampoForm({
   erro,
   ajuda = null,
   comoGrupo = false,
-  semPermissao = false,
+  motivoTravado = null,
   children,
 }) {
   const erroId = `${id}-erro`;
   const ajudaId = `${id}-ajuda`;
-  const semPermissaoId = `${id}-sem-permissao`;
-  const descricao = [semPermissao && semPermissaoId, ajuda && ajudaId, erro && erroId].filter(Boolean).join(' ') || undefined;
+  const travadoId = `${id}-travado`;
+  const descricao = [motivoTravado && travadoId, ajuda && ajudaId, erro && erroId].filter(Boolean).join(' ') || undefined;
   const rotulo = (
     <>
       {label}
@@ -57,18 +57,18 @@ export function CampoForm({
     id,
     'aria-invalid': erro ? true : undefined,
     'aria-describedby': descricao,
-    ...(semPermissao && { disabled: true }),
+    ...(motivoTravado && { disabled: true }),
   });
-  const controle = semPermissao ? (
+  const controle = motivoTravado ? (
     <>
       <Tooltip>
         <TooltipTrigger render={<div className="cursor-not-allowed [&_*]:pointer-events-none" />}>
           {controleLivre}
         </TooltipTrigger>
-        <TooltipContent>{MENSAGEM_SEM_PERMISSAO}</TooltipContent>
+        <TooltipContent>{motivoTravado}</TooltipContent>
       </Tooltip>
-      <span className="sr-only" id={semPermissaoId}>
-        {MENSAGEM_SEM_PERMISSAO}
+      <span className="sr-only" id={travadoId}>
+        {motivoTravado}
       </span>
     </>
   ) : (

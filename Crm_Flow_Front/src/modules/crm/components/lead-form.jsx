@@ -15,6 +15,7 @@ import { camposComRegras } from '../lib/regras';
 import { ROTAS_CRM } from '../rotas';
 import {
   CAMPO_VALOR,
+  CHAVE_OPT_OUT,
   CHAVE_RESPONSAVEL,
   errosDoServidor,
   idNoForm,
@@ -22,6 +23,7 @@ import {
   validarNoCliente,
 } from '../lib/form-lead';
 import { CampoDinamico } from './campo-dinamico';
+import { CampoOptOut } from './campo-opt-out';
 import { CampoResponsavel } from './campo-responsavel';
 import { DuplicadosDialog } from './duplicados-dialog';
 import { LupaCnpj } from './lupa-cnpj';
@@ -111,7 +113,10 @@ const RESPONSAVEL_AUTOMATICO = Object.freeze({
  *   leadId?: string,
  *   avaliarRegras?: (valores: Record<string, unknown>) => { obrigatorios: string[], ocultos: string[] },
  *   distribuicaoLigada?: boolean,
- * }} props `distribuicaoLigada`: na criação, o responsável vazio vira "Automático"
+ *   comLgpd?: boolean,
+ *   optOutDesde?: string | null,
+ * }} props `distribuicaoLigada`: na criação, o responsável vazio vira "Automático";
+ *   `comLgpd`: mostra o opt-out de marketing (`optOutDesde` = a data já gravada)
  */
 export function LeadForm({
   campos,
@@ -125,6 +130,8 @@ export function LeadForm({
   leadId,
   avaliarRegras,
   distribuicaoLigada = false,
+  comLgpd = false,
+  optOutDesde = null,
 }) {
   const { rotuloEnviar, responsavelVazio } = POR_MODO[modo];
   const automatico = modo === 'criar' && distribuicaoLigada;
@@ -241,6 +248,15 @@ export function LeadForm({
             rotuloVazio={automatico ? RESPONSAVEL_AUTOMATICO.rotulo : responsavelVazio}
             usuarios={usuarios}
             value={valores[CHAVE_RESPONSAVEL]}
+          />
+        )}
+        {comLgpd && (
+          <CampoOptOut
+            desde={optOutDesde}
+            erro={erros[CHAVE_OPT_OUT]}
+            id={htmlId(CHAVE_OPT_OUT)}
+            onChange={(valor) => alterar(CHAVE_OPT_OUT, valor)}
+            value={Boolean(valores[CHAVE_OPT_OUT])}
           />
         )}
         <ParecidosAoVivo candidatos={parecidos} />

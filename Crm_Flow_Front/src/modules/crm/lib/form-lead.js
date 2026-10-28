@@ -1,4 +1,4 @@
-import { ACESSOS_CAMPO, CAMADA, PARTES_ENDERECO, TIPOS_CAMPO } from '../constants.js';
+import { ACESSOS_CAMPO, CAMADA, CAMPOS_LGPD, CHAVE_SCORE, PARTES_ENDERECO, TIPOS_CAMPO } from '../constants.js';
 import { lerValorDoCampo } from './colunas.js';
 import {
   documentoSemMascara,
@@ -28,6 +28,9 @@ export const CAMPO_VALOR = Object.freeze({
   obrigatorio: false,
 });
 export const CHAVE_RESPONSAVEL = 'usuarioResponsavelId';
+
+/** Opt-out de marketing (LGPD): não é campo de `/fields`; no payload, sim/não. */
+export const CHAVE_OPT_OUT = CAMPOS_LGPD.OPT_OUT;
 
 /**
  * Dica abaixo do campo, por chave. `primeiroNome`: o back deriva do Nome
@@ -200,13 +203,16 @@ export function paraValorDeApi(tipo, valor) {
 }
 
 /**
- * Estado inicial do form. Sem lead, é o form de criação vazio.
+ * Estado inicial do form. Sem lead, é o form de criação vazio — e aí
+ * `padroes` (por `chave`; a base legal padrão da LGPD) preenche o campo
+ * que está no form.
  *
  * @param {import('../types.js').Campo[]} campos
  * @param {import('../types.js').Lead} [lead]
+ * @param {Record<string, unknown>} [padroes]
  * @returns {Record<string, unknown>}
  */
-export function valoresIniciais(campos, lead) {
+export function valoresIniciais(campos, lead, padroes = {}) {
   const valores = Object.fromEntries(
     campos.map((campo) => {
       const valor = paraValorDeForm(campo.tipo, lead ? lerValorDoCampo(lead, campo) : null);
@@ -219,6 +225,14 @@ export function valoresIniciais(campos, lead) {
 
   valores[CAMPO_VALOR.chave] = paraValorDeForm(CAMPO_VALOR.tipo, lead?.valor);
   valores[CHAVE_RESPONSAVEL] = lead?.usuario_responsavel_id ?? '';
+  valores[CHAVE_OPT_OUT] = Boolean(lead?.marketing_opt_out_at);
+
+  if (!lead) {
+    for (const campo of campos) {
+      const padrao = padroes[campo.chave];
+      if (padrao !== undefined && padrao !== null && padrao !== '') valores[idNoForm(campo)] = padrao;
+    }
+  }
 
   return valores;
 }
@@ -235,12 +249,28 @@ function atribuir(payload, campo, valor) {
 /**
  * Pode editar o campo? `acesso: 'view'` (permissão por campo, M13) = só
  * ver: aparece desabilitado e nunca vai no payload — o back conta até o
- * `null` como "enviado" e responde 403. Sem `acesso` = editável.
+ * `null` como "enviado" e responde 403. Sem `acesso` = editável. Também
+ * travados: o calculado (Lead score com `crm.score`) e o `somenteLeitura`
+ * (carimbado pelo back, LGPD).
  *
- * @param {{ acesso?: string }} campo
+ * @param {{ acesso?: string, calculado?: boolean, somenteLeitura?: boolean }} campo
  */
 export function podeEditarCampo(campo) {
-  return campo.acesso !== ACESSOS_CAMPO.VER;
+  return campo.acesso !== ACESSOS_CAMPO.VER && !campo.calculado && !campo.somenteLeitura;
+}
+
+/**
+ * Com `crm.score`, o Lead score é calculado pelas regras de pontuação: vira
+ * só leitura (`calculado`), sai do payload (o back daria 400) e da validação.
+ *
+ * @template {{ chave: string }} T
+ * @param {T[]} campos
+ * @param {boolean} comScore
+ * @returns {Array<T & { calculado?: true }>}
+ */
+export function marcarCalculados(campos, comScore) {
+  if (!comScore) return campos;
+  return campos.map((campo) => (campo.chave === CHAVE_SCORE ? { ...campo, calculado: true } : campo));
 }
 
 /**
@@ -259,6 +289,8 @@ export function montarPayloadCriacao(campos, valores) {
   }
 
   if (valores[CHAVE_RESPONSAVEL]) payload[CHAVE_RESPONSAVEL] = valores[CHAVE_RESPONSAVEL];
+  // Opt-out: só quando marcado (desmarcado é o padrão de quem nunca saiu).
+  if (valores[CHAVE_OPT_OUT] === true) payload[CHAVE_OPT_OUT] = true;
 
   return payload;
 }
@@ -296,6 +328,11 @@ export function montarPayloadEdicao(campos, iniciais, valores) {
   const responsavelAntes = iniciais[CHAVE_RESPONSAVEL] || null;
   const responsavelDepois = valores[CHAVE_RESPONSAVEL] || null;
   if (responsavelAntes !== responsavelDepois) payload[CHAVE_RESPONSAVEL] = responsavelDepois;
+
+  // Opt-out: só quando muda (religar mantém a data da primeira vez, no back).
+  if (Boolean(iniciais[CHAVE_OPT_OUT]) !== Boolean(valores[CHAVE_OPT_OUT])) {
+    payload[CHAVE_OPT_OUT] = Boolean(valores[CHAVE_OPT_OUT]);
+  }
 
   return payload;
 }
@@ -359,6 +396,7 @@ export function errosDoServidor(fields, campos) {
   );
   idPorChave.set(CAMPO_VALOR.chave, CAMPO_VALOR.chave);
   idPorChave.set(CHAVE_RESPONSAVEL, CHAVE_RESPONSAVEL);
+  idPorChave.set(CHAVE_OPT_OUT, CHAVE_OPT_OUT);
 
   const porCampo = {};
   const gerais = [];

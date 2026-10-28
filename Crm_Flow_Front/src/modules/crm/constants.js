@@ -221,6 +221,20 @@ export const ROTULOS_ACESSO = Object.freeze({ edit: 'Editar', view: 'Só ver', h
 
 export const MENSAGEM_SEM_PERMISSAO = 'Sem permissão para editar';
 
+/** Pontuação de leads (`crm.score`): espelho dos limites do back. */
+export const SCORE = Object.freeze({ MAX_REGRAS: 100, MAX_CONDICOES: 10, MAX_FAIXAS: 10, PONTOS_MAX: 1000 });
+
+/** O campo nativo calculado pela pontuação. */
+export const CHAVE_SCORE = 'leadScore';
+
+export const MENSAGEM_CALCULADO = 'Calculado pelas regras de pontuação';
+
+/** LGPD (`crm.lgpd`): chaves da base legal e do opt-out (este só no payload, sim/não). */
+export const CAMPOS_LGPD = Object.freeze({ BASE_LEGAL: 'baseLegal', OPT_OUT: 'optOutMarketing' });
+
+/** Campo `somenteLeitura` de `/fields` (datas e origem carimbadas pelo back). */
+export const MENSAGEM_SOMENTE_LEITURA = 'Preenchido pelo sistema';
+
 /** Distribuição automática (`crm.distribuicao`): espelho dos limites do back. */
 export const DISTRIBUICAO = Object.freeze({ MAX_REGRAS: 50, MAX_CONDICOES: 10 });
 
@@ -252,6 +266,7 @@ export const AVISOS_LEAD = Object.freeze({
   NA_LIXEIRA: 'Lead enviado para a lixeira.',
   ARQUIVADO: 'Lead arquivado.',
   DESARQUIVADO: 'Lead desarquivado.',
+  ANONIMIZADO: 'Lead anonimizado.',
   RESTAURADO: 'Lead restaurado.',
   RESTAURADO_ARQUIVADO: 'Lead restaurado em Arquivados.',
   MESCLADO: 'Leads mesclados.',
@@ -295,6 +310,7 @@ export const TIPOS_EVENTO = Object.freeze({
   MESCLADO: 'mesclado',
   // M11b: dados da Receita aplicados pelo enriquecimento automático (autor nulo).
   ENRIQUECIDO: 'enriquecido',
+  ANONIMIZADO: 'anonimizado',
 });
 
 /** Regras de duplicidade (`crm.duplicidade`): por campo, avisar ou bloquear. */
