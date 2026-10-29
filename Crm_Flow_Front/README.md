@@ -114,8 +114,11 @@ dias. A lixeira não abre o lead nem exporta. Sem a flag, a lista é a de antes.
 
 Com `crm.atividades`, o drawer do lead tem as abas **Dados · Atividades · Histórico**:
 registrar (inclusive "já aconteceu"), concluir/reabrir, editar e remover atividades,
-e a lista de mudanças do lead ("Ana mudou Status de Novo para Ganho"). Os tipos de
-atividade são a lista "Tipos de atividade" de Configurações › Listas.
+e a timeline do lead: um título por evento ("Criado por Ana", "Arquivado", "Mesclado
+com …") e o que mudou ("Responsável: Ana → Bruno"). Os tipos de atividade são a lista
+"Tipos de atividade" de Configurações › Listas. Com `crm.timeline`, a timeline ganha
+chips para filtrar por categoria (Campos, Atribuições, Mesclagens, Enriquecimentos,
+Ciclo de vida). O back já tira os campos que o papel não vê.
 
 Com `crm.duplicidade`, cada empresa define em Configurações › Duplicidade quais dados
 (e-mail, telefone, CNPJ, CPF) contam como duplicado e se o CRM **avisa** ou **bloqueia**.

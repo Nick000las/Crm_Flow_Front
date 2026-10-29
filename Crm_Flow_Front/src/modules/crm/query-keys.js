@@ -13,6 +13,8 @@ export const crmKeys = {
   historico: (leadId) => ['crm', 'historico', leadId],
   // Prefixo do histórico de todos os leads (edição em massa).
   historicos: () => ['crm', 'historico'],
+  // Lista fixa do filtro (M16): fora do prefixo `historicos()`.
+  historicoCategorias: () => ['crm', 'historico-categorias'],
   views: () => ['crm', 'views'],
   usuarios: () => ['crm', 'usuarios'],
   camposConfigurados: () => ['crm', 'configuracoes', 'campos'],

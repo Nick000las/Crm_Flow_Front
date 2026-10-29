@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { autorDoEvento, fraseDoItem, frasesDoEvento } from './historico.js';
+import { autorDoEvento, detalheDoEvento, itemDoDiff, itensDoEvento, tituloDoEvento } from './historico.js';
 
 const NOMES = new Map([['u1', 'Ana']]);
 const STATUS = {
@@ -12,104 +12,94 @@ const STATUS = {
     { key: 'ganho', label: 'Ganho', color: null, category: 'ganho', ativo: true },
   ],
 };
+const ANA = { id: 'u1', nome: 'Ana' };
 
 const evento = (extra) => ({ id: 'e1', tipo: 'atualizado', autor: null, criadoEm: '2026-10-16T10:00:00Z', diff: [], ...extra });
+const titulo = (extra) => tituloDoEvento(evento(extra)).titulo;
 
 test('autor nulo é o sistema', () => {
-  assert.equal(autorDoEvento(evento({ autor: { id: 'u1', nome: 'Ana' } })), 'Ana');
+  assert.equal(autorDoEvento(evento({ autor: ANA })), 'Ana');
   assert.equal(autorDoEvento(evento()), 'Sistema');
 });
 
-test('lista vira rótulo pela opcoesLista', () => {
-  assert.equal(fraseDoItem({ ...STATUS, antes: 'novo', depois: 'ganho' }, NOMES), 'mudou Status de Novo para Ganho');
+test('título por tipo; criado e atualizado já trazem o autor', () => {
+  assert.deepEqual(tituloDoEvento(evento({ tipo: 'criado', autor: ANA })), { titulo: 'Criado por Ana', comAutor: true });
+  assert.deepEqual(tituloDoEvento(evento({ autor: ANA })), { titulo: 'Ana alterou', comAutor: true });
+  assert.equal(titulo({}), 'Sistema alterou');
+  assert.deepEqual(tituloDoEvento(evento({ tipo: 'arquivado', autor: ANA })), { titulo: 'Arquivado', comAutor: false });
+  assert.equal(titulo({ tipo: 'desarquivado' }), 'Desarquivado');
+  assert.equal(titulo({ tipo: 'excluido' }), 'Enviado para a lixeira');
+  assert.equal(titulo({ tipo: 'restaurado' }), 'Restaurado da lixeira');
+  assert.equal(titulo({ tipo: 'anonimizado' }), 'Dados pessoais removidos a pedido do titular');
+  assert.equal(titulo({ tipo: 'convertido' }), 'Lead alterado');
 });
 
-test('preencher e limpar', () => {
-  const cidade = { chave: 'cidade', label: 'Cidade', tipo: 'texto' };
-
-  assert.equal(fraseDoItem({ ...cidade, antes: null, depois: 'Recife' }, NOMES), 'preencheu Cidade com Recife');
-  assert.equal(fraseDoItem({ ...cidade, antes: 'Recife', depois: '' }, NOMES), 'limpou Cidade (era Recife)');
+test('mesclado diz com quem', () => {
+  assert.equal(titulo({ tipo: 'mesclado', detalhes: { leadDescartadoId: 'l2', nomeDescartado: 'Ana S.' } }), 'Mesclado com Ana S.');
+  assert.equal(titulo({ tipo: 'mesclado', detalhes: {} }), 'Mesclado com outro lead');
 });
 
-test('estágio usa o nome do momento; responsável, o nome do usuário', () => {
-  const estagio = { chave: 'funilEstagioId', label: 'Estágio', tipo: 'texto', antes: 'id-1', depois: 'id-2' };
-  const responsavel = { chave: 'usuarioResponsavelId', label: 'Responsável', tipo: 'usuario' };
-
+test('enriquecido: CNPJ mascarado só quando vem', () => {
   assert.equal(
-    fraseDoItem({ ...estagio, antesNome: 'Contato', depoisNome: 'Proposta' }, NOMES),
-    'mudou Estágio de Contato para Proposta',
+    titulo({ tipo: 'enriquecido', detalhes: { cnpj: '12345678000190', provedor: 'brasilapi' } }),
+    'Dados da Receita aplicados (CNPJ 12.345.678/0001-90)',
   );
-  assert.equal(fraseDoItem({ ...responsavel, antes: null, depois: 'u1' }, NOMES), 'preencheu Responsável com Ana');
-  assert.equal(
-    fraseDoItem({ ...responsavel, antes: 'u9', depois: 'u1' }, NOMES),
-    'mudou Responsável de usuário removido para Ana',
-  );
-});
-
-test('monetário e booleano saem formatados; texto longo é resumido', () => {
-  const valor = { chave: 'valor', label: 'Valor', tipo: 'monetario', antes: 10, depois: 1500.5 };
-  const ativo = { chave: 'vip', label: 'VIP', tipo: 'booleano', antes: true, depois: false };
-  const nota = { chave: 'obs', label: 'Obs', tipo: 'texto_longo', antes: null, depois: 'x'.repeat(200) };
-
-  assert.match(fraseDoItem(valor, NOMES), /^mudou Valor de R\$\s10,00 para R\$\s1\.500,50$/);
-  assert.equal(fraseDoItem(ativo, NOMES), 'mudou VIP de Sim para Não');
-  assert.equal(fraseDoItem(nota, NOMES).length, 'preencheu Obs com '.length + 80);
-});
-
-test('frasesDoEvento: uma por campo, ou a do tipo', () => {
-  assert.deepEqual(frasesDoEvento(evento({ diff: [{ ...STATUS, antes: 'novo', depois: 'ganho' }] }), NOMES), [
-    'mudou Status de Novo para Ganho',
-  ]);
-  assert.deepEqual(frasesDoEvento(evento({ tipo: 'arquivado' }), NOMES), ['arquivou o lead']);
-  assert.deepEqual(frasesDoEvento(evento({ tipo: 'criado' }), NOMES), ['criou o lead']);
-  assert.deepEqual(frasesDoEvento(evento(), NOMES), ['atualizou o lead']);
-  assert.deepEqual(frasesDoEvento(evento({ tipo: 'convertido' }), NOMES), ['alterou o lead']);
-});
-
-test('mesclado diz quem foi mesclado e o que mudou', () => {
-  const mesclado = evento({
-    tipo: 'mesclado',
-    detalhes: { leadDescartadoId: 'l2', nomeDescartado: 'Ana S.' },
-    diff: [{ ...STATUS, antes: 'novo', depois: 'ganho' }],
-  });
-
-  assert.deepEqual(frasesDoEvento(mesclado, NOMES), ['mesclou Ana S. neste lead', 'mudou Status de Novo para Ganho']);
-  assert.deepEqual(frasesDoEvento(evento({ tipo: 'mesclado', detalhes: {} }), NOMES), ['mesclou outro lead neste lead']);
-});
-
-test('enriquecido: autor Sistema, CNPJ mascarado e o que foi preenchido', () => {
-  const evento = {
-    tipo: 'enriquecido',
-    autor: null,
-    detalhes: { cnpj: '12345678000190', provedor: 'brasilapi' },
-    diff: [{ chave: 'empresa', label: 'Empresa', tipo: 'texto', antes: null, depois: 'ACME LTDA' }],
-  };
-
-  assert.equal(autorDoEvento(evento), 'Sistema');
-  assert.deepEqual(frasesDoEvento(evento, new Map()), [
-    'preencheu dados da Receita (CNPJ 12.345.678/0001-90)',
-    'preencheu Empresa com ACME LTDA',
-  ]);
+  assert.equal(titulo({ tipo: 'enriquecido', detalhes: { provedor: 'brasilapi' } }), 'Dados da Receita aplicados');
 });
 
 test('criado com distribuição: de onde veio o responsável', () => {
   const criado = (distribuicao) => evento({ tipo: 'criado', detalhes: { distribuicao } });
 
-  assert.deepEqual(frasesDoEvento(criado({ origem: 'regra', regraId: 'r1', regraNome: 'Site' }), NOMES), [
-    'criou o lead',
-    'responsável definido pela regra "Site"',
-  ]);
-  assert.deepEqual(frasesDoEvento(criado({ origem: 'rodizio_geral' }), NOMES), [
-    'criou o lead',
-    'responsável definido pelo rodízio geral',
-  ]);
-  assert.deepEqual(frasesDoEvento(criado({ origem: 'sem_responsavel' }), NOMES), [
-    'criou o lead',
-    'ficou sem responsável (nenhuma regra casou)',
-  ]);
+  assert.equal(detalheDoEvento(criado({ origem: 'regra', regraId: 'r1', regraNome: 'Site' })), 'Atribuído pela regra "Site"');
+  assert.equal(detalheDoEvento(criado({ origem: 'rodizio_geral' })), 'Atribuído pelo rodízio geral');
+  assert.equal(detalheDoEvento(criado({ origem: 'sem_responsavel' })), 'Ficou sem responsável (nenhuma regra casou)');
+  assert.equal(detalheDoEvento(evento({ tipo: 'criado' })), null);
+  assert.equal(detalheDoEvento(evento({ detalhes: { distribuicao: { origem: 'regra' } } })), null);
 });
 
-test('anonimizado: frase própria, sem os detalhes do resumo', () => {
-  const anonimizado = evento({ tipo: 'anonimizado', detalhes: { leads: 1, atividades: 2 } });
-  assert.deepEqual(frasesDoEvento(anonimizado, NOMES), ['anonimizou o lead (pedido do titular)']);
+test('lista vira rótulo pela opcoesLista; lado vazio é null', () => {
+  assert.deepEqual(itemDoDiff({ ...STATUS, antes: 'novo', depois: 'ganho' }, NOMES), {
+    chave: 'status',
+    label: 'Status',
+    antes: 'Novo',
+    depois: 'Ganho',
+  });
+
+  const cidade = { chave: 'cidade', label: 'Cidade', tipo: 'texto' };
+  assert.equal(itemDoDiff({ ...cidade, antes: null, depois: 'Recife' }, NOMES).antes, null);
+  assert.equal(itemDoDiff({ ...cidade, antes: 'Recife', depois: '' }, NOMES).depois, null);
+});
+
+test('usuário: nome do back, depois o da lista, depois "Usuário removido"', () => {
+  const responsavel = { chave: 'usuarioResponsavelId', label: 'Responsável', tipo: 'usuario' };
+  const estagio = { chave: 'funilEstagioId', label: 'Estágio', tipo: 'texto', antes: 'id-1', depois: 'id-2' };
+
+  const comNomes = itemDoDiff({ ...responsavel, antes: 'u8', depois: 'u9', antesNome: 'Dona Ana', depoisNome: 'Bruno' }, NOMES);
+  assert.deepEqual([comNomes.antes, comNomes.depois], ['Dona Ana', 'Bruno']);
+
+  const removido = itemDoDiff({ ...responsavel, antes: 'u9', depois: 'u1', antesNome: null, depoisNome: null }, NOMES);
+  assert.deepEqual([removido.antes, removido.depois], ['Usuário removido', 'Ana']);
+
+  const doEstagio = itemDoDiff({ ...estagio, antesNome: 'Contato', depoisNome: 'Proposta' }, NOMES);
+  assert.deepEqual([doEstagio.antes, doEstagio.depois], ['Contato', 'Proposta']);
+});
+
+test('monetário e booleano saem formatados; texto longo é resumido', () => {
+  const valor = itemDoDiff({ chave: 'valor', label: 'Valor', tipo: 'monetario', antes: 10, depois: 1500.5 }, NOMES);
+  const ativo = itemDoDiff({ chave: 'vip', label: 'VIP', tipo: 'booleano', antes: true, depois: false }, NOMES);
+  const nota = itemDoDiff({ chave: 'obs', label: 'Obs', tipo: 'texto_longo', antes: null, depois: 'x'.repeat(200) }, NOMES);
+
+  assert.match(valor.antes, /^R\$\s10,00$/);
+  assert.match(valor.depois, /^R\$\s1\.500,50$/);
+  assert.deepEqual([ativo.antes, ativo.depois], ['Sim', 'Não']);
+  assert.equal(nota.depois.length, 80);
+});
+
+test('itensDoEvento: o diff, menos na anonimização', () => {
+  const diff = [{ ...STATUS, antes: 'novo', depois: 'ganho' }];
+
+  assert.equal(itensDoEvento(evento({ diff }), NOMES).length, 1);
+  assert.equal(itensDoEvento(evento({ tipo: 'mesclado', diff }), NOMES).length, 1);
+  assert.deepEqual(itensDoEvento(evento({ tipo: 'anonimizado', diff }), NOMES), []);
+  assert.deepEqual(itensDoEvento(evento({ diff: undefined }), NOMES), []);
 });

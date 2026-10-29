@@ -29,6 +29,7 @@
  * @typedef {{
  *   id: string,
  *   tipo: string,
+ *   categorias?: string[],
  *   autor: { id: string, nome: string } | null,
  *   criadoEm: string,
  *   diff: ItemDiff[],
@@ -91,13 +92,28 @@ export function excluirAtividade(authApi, leadId, atividadeId) {
 }
 
 /**
+ * `categorias` (M16, flag `crm.timeline`): OU entre elas; vazio = todas.
+ * Total e paginação já vêm filtrados.
+ *
  * @param {import('@/hooks/create-auth-session').AuthApi} authApi
  * @param {string} leadId
- * @param {{ pagina: number, tamanho: number }} paginacao
+ * @param {{ pagina: number, tamanho: number, categorias?: string[] }} paginacao
  * @param {{ signal?: AbortSignal }} [options]
  * @returns {Promise<{ itens: EventoLead[], total: number, pagina: number, tamanho: number }>}
  */
-export function listarHistorico(authApi, leadId, { pagina, tamanho }, options) {
+export function listarHistorico(authApi, leadId, { pagina, tamanho, categorias = [] }, options) {
   const query = new URLSearchParams({ pagina: String(pagina), tamanho: String(tamanho) });
+  if (categorias.length > 0) query.set('categorias', categorias.join(','));
   return authApi.get(`${doLead(leadId, 'historico')}?${query}`, options);
+}
+
+/**
+ * Categorias do filtro do histórico (flag `crm.timeline`).
+ *
+ * @param {import('@/hooks/create-auth-session').AuthApi} authApi
+ * @param {{ signal?: AbortSignal }} [options]
+ * @returns {Promise<{ key: string, label: string }[]>}
+ */
+export function listarCategoriasHistorico(authApi, options) {
+  return authApi.get('/crm/historico/categorias', options);
 }
