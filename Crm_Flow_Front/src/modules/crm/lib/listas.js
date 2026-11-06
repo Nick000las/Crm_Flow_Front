@@ -93,13 +93,14 @@ export function payloadDaOpcao(tipo, valores, original) {
  *
  * @param {OpcaoConfigurada} opcao
  */
-export function motivoNaoExclui(opcao) {
+export function motivoNaoExclui(opcao, [singular, plural] = ['lead', 'leads']) {
   if (opcao.usos <= 0) {
     return null;
   }
 
-  const leads = opcao.usos === 1 ? '1 lead' : `${opcao.usos.toLocaleString('pt-BR')} leads`;
-  return `Em uso por ${leads}. Desative em vez de excluir.`;
+  const quantos =
+    opcao.usos === 1 ? `1 ${singular}` : `${opcao.usos.toLocaleString('pt-BR')} ${plural}`;
+  return `Em uso por ${quantos}. Desative em vez de excluir.`;
 }
 
 // ---------------------------------------------------------------------------

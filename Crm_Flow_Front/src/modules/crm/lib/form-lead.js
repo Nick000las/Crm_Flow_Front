@@ -2,6 +2,7 @@ import {
   ACESSOS_CAMPO,
   CAMADA,
   CAMPOS_LGPD,
+  CATEGORIAS_STATUS,
   CHAVE_SCORE,
   PARTES_ENDERECO,
   TIPOS_CAMPO,
@@ -15,7 +16,7 @@ import {
   mascararCpf,
   paraNumero,
 } from './formatadores.js';
-import { ehListaLivre, rotuloOpcao } from './opcoes.js';
+import { campoDoStatus, categoriaDoStatus, ehListaLivre, rotuloOpcao } from './opcoes.js';
 
 /**
  * Ponte entre três formas do mesmo dado:
@@ -39,12 +40,16 @@ export const CHAVE_RESPONSAVEL = 'usuarioResponsavelId';
 /** Opt-out de marketing (LGPD): não é campo de `/fields`; no payload, sim/não. */
 export const CHAVE_OPT_OUT = CAMPOS_LGPD.OPT_OUT;
 
+const CHAVE_DATA_CONVERSAO = 'dataConversao';
+const PROBABILIDADE_MAXIMA = 100;
+
 /**
  * Dica abaixo do campo, por chave. `primeiroNome`: o back deriva do Nome
  * quando vazio (e rederiva ao mudar o Nome, se não foi editado à mão).
  */
 export const AJUDA_POR_CHAVE = Object.freeze({
   primeiroNome: 'Vazio usa o primeiro nome do Nome.',
+  [CHAVE_DATA_CONVERSAO]: 'Vazio usa a data de hoje.',
 });
 
 const PREFIXO_CUSTOM = 'custom.';
@@ -77,6 +82,8 @@ export const MENSAGENS = Object.freeze({
   CEP_INVALIDO: 'Informe os 8 dígitos do CEP',
   PERIODO_INCOMPLETO: 'Informe o início e o fim',
   PERIODO_INVERTIDO: 'O início precisa ser antes do fim',
+  VALOR_NEGATIVO: 'O valor não pode ser negativo',
+  PROBABILIDADE_INVALIDA: 'Informe um número inteiro de 0 a 100',
 });
 
 const MENSAGEM_DOCUMENTO = Object.freeze({
@@ -294,6 +301,31 @@ export function marcarCalculados(campos, comScore) {
 }
 
 /**
+ * A data de conversão só existe em venda ganha: fora disso o back dá 400 e,
+ * ao ganhar, preenche sozinho. Sem o campo Status no form, o back decide.
+ *
+ * @template {{ chave: string }} T
+ * @param {T[]} campos
+ * @param {Record<string, unknown>} valores
+ * @returns {T[]}
+ */
+export function camposDoStatus(campos, valores) {
+  const status = campoDoStatus(campos);
+  if (!status) {
+    return campos;
+  }
+
+  const ganho = categoriaDoStatus(campos, valores[idNoForm(status)]) === CATEGORIAS_STATUS.GANHO;
+  return ganho ? campos : campos.filter((campo) => campo.chave !== CHAVE_DATA_CONVERSAO);
+}
+
+/** Campos que entram no payload. */
+const camposDoPayload = (campos, valores) => [
+  ...camposDoStatus(campos, valores).filter(podeEditarCampo),
+  CAMPO_VALOR,
+];
+
+/**
  * Payload de criação: só o que foi preenchido. Sem responsável, o back usa
  * quem está criando.
  *
@@ -303,7 +335,7 @@ export function marcarCalculados(campos, comScore) {
 export function montarPayloadCriacao(campos, valores) {
   const payload = {};
 
-  for (const campo of [...campos.filter(podeEditarCampo), CAMPO_VALOR]) {
+  for (const campo of camposDoPayload(campos, valores)) {
     const valor = paraValorDeApi(campo.tipo, valores[idNoForm(campo)]);
     if (valor !== null) {
       atribuir(payload, campo, valor);
@@ -345,7 +377,7 @@ function iguais(a, b) {
 export function montarPayloadEdicao(campos, iniciais, valores) {
   const payload = {};
 
-  for (const campo of [...campos.filter(podeEditarCampo), CAMPO_VALOR]) {
+  for (const campo of camposDoPayload(campos, valores)) {
     const id = idNoForm(campo);
     const antes = paraValorDeApi(campo.tipo, iniciais[id]);
     const depois = paraValorDeApi(campo.tipo, valores[id]);
@@ -395,6 +427,8 @@ export function validarNoCliente(campos, valores) {
       erros[id] = MENSAGENS.TELEFONE_INVALIDO;
     } else if (valor !== null && erroDoTipo(campo.tipo, valor)) {
       erros[id] = erroDoTipo(campo.tipo, valor);
+    } else if (erroComercial(campo.chave, valor)) {
+      erros[id] = erroComercial(campo.chave, valor);
     } else if (campo.obrigatorio && valor === null) {
       erros[id] = MENSAGENS.OBRIGATORIO;
     }
@@ -454,6 +488,27 @@ export function errosDoServidor(fields, campos) {
   }
 
   return { porCampo, gerais };
+}
+
+/**
+ * Limites de `crm_deal`, os mesmos no lead e na oportunidade.
+ *
+ * @param {string} chave
+ * @param {unknown} valor número, ou `null` se vazio
+ * @returns {string | null}
+ */
+export function erroComercial(chave, valor) {
+  if (typeof valor !== 'number') {
+    return null;
+  }
+  if (chave === CAMPO_VALOR.chave) {
+    return valor < 0 ? MENSAGENS.VALOR_NEGATIVO : null;
+  }
+  if (chave === 'probabilidadeFechamento') {
+    const valida = Number.isInteger(valor) && valor >= 0 && valor <= PROBABILIDADE_MAXIMA;
+    return valida ? null : MENSAGENS.PROBABILIDADE_INVALIDA;
+  }
+  return null;
 }
 
 /**

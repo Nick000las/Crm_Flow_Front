@@ -1,6 +1,5 @@
 const BOARD_TYPE_LABELS = {
   projetos: 'Projetos',
-  crm_leads: 'CRM',
   postagens_agencia: 'Postagens',
 };
 

@@ -16,6 +16,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { ConfirmationDialog } from '@/components/confirmation-dialog';
 import { PageHeader } from '@/components/page-header';
 import { getBoardTypeLabel } from '../lib/board-types';
+import { TIPO_PESSOA, podeVincular } from '../lib/vinculo';
 import './kanban.css';
 
 export default function KanbanPage({ boardId }) {
@@ -293,6 +294,25 @@ export default function KanbanPage({ boardId }) {
       // Revalida também quando a API detecta versão antiga antes do socket chegar.
       reload({ clearError: false }).catch((error) => setError(error.message));
     }
+  }
+  /**
+   * Vincular muda o `updatedAt` do card: o editor recebe o novo, senão o
+   * salvar daria conflito, mas não remonta, para o rascunho ficar. O DELETE
+   * não devolve o card, então a versão vem sempre do GET.
+   */
+  async function changeLink(entidadeId) {
+    const path = `/kanban/cards/${editor.id}/vinculo`;
+
+    await run(async () => {
+      if (entidadeId) {
+        await authApi.put(path, { entidadeTipo: TIPO_PESSOA, entidadeId });
+      } else {
+        await authApi.delete(path);
+      }
+      const { updatedAt, vinculo } = await authApi.get(`/kanban/cards/${editor.id}`);
+      setEditor((current) => current && { ...current, updatedAt, vinculo });
+      await reload();
+    }, 'card.link');
   }
   function matchesFilters(card) {
     const details = getCardDetails(card);
@@ -580,10 +600,12 @@ export default function KanbanPage({ boardId }) {
       )}
       {editor?.kind === 'card' && (
         <CardEditor
-          key={`${editor.id || 'new'}-${editor.updatedAt || editor.colunaId}`}
+          key={`${editor.id || `new-${editor.colunaId}`}-${editor.versao ?? 0}`}
           card={editor}
           authApi={authApi}
           readOnly={!canEdit}
+          canLink={podeVincular(user, canEdit)}
+          onChangeLink={changeLink}
           archiving={pendingOperation === 'card.archive'}
           onArchive={() =>
             run(async () => {
@@ -616,7 +638,11 @@ export default function KanbanPage({ boardId }) {
                 authApi.get(`/kanban/cards/${editor.id}`),
                 reload(),
               ]);
-              setEditor({ kind: 'card', ...card });
+              setEditor((current) => ({
+                kind: 'card',
+                ...card,
+                versao: (current?.versao ?? 0) + 1,
+              }));
             }, 'card.reload')
           }
           onDelete={() =>

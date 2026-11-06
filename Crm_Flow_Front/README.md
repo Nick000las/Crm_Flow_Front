@@ -194,6 +194,14 @@ resumo diário do CRM, a lista de leads já filtrada em Esfriando; num lead atri
 pela distribuição, o próprio lead; num import distribuído, a lista dos leads recebidos. Não há push: recarrega
 a cada minuto e ao abrir.
 
+Uma pessoa pode ter várias **oportunidades**, cada uma em um pipeline e com o próprio status
+(aba Oportunidades da ficha). Os pipelines ficam em CRM › Configurações › Pipelines, e os dados
+comerciais do lead vêm da oportunidade principal, escolhida pelo back.
+
+Com `kanban_universal.vinculo_entidade`, um card de projeto pode apontar para uma pessoa do
+CRM, e a ficha do lead ganha a aba **Projetos** com os cards dela. O vínculo é só leitura:
+nada muda no CRM.
+
 Documentação do back: `Back/docs/crm/` (plano vigente em `plano-configuracoes.md`).
 
 ## Usuários de teste

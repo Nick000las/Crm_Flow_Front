@@ -12,10 +12,12 @@ import { BotoesOrdem } from '../ordenavel/botoes-ordem';
 import { PuxadorOrdem } from '../ordenavel/puxador-ordem';
 import { useLinhaOrdenavel } from '../ordenavel/use-linha-ordenavel';
 
+const USOS_DE_PIPELINE = Object.freeze(['oportunidade', 'oportunidades']);
+
 /**
  * Uma opção da lista. "Ativa" salva na hora; desativar some dos seletores,
  * mas o lead que já a tem continua mostrando (com o selo "inativa"). O 409
- * de "último status ganho/perdido" aparece na própria linha.
+ * de "último status da categoria" aparece na própria linha.
  *
  * @param {{
  *   tipo: string,
@@ -26,6 +28,7 @@ import { useLinhaOrdenavel } from '../ordenavel/use-linha-ordenavel';
  *   onMover: (de: number, para: number) => void,
  *   onEditar: (opcao: import('../../lib/listas').OpcaoConfigurada) => void,
  *   onExcluir: (opcao: import('../../lib/listas').OpcaoConfigurada) => void,
+ *   pipelineId?: string,
  * }} props
  */
 export function LinhaOpcao({
@@ -37,12 +40,13 @@ export function LinhaOpcao({
   onMover,
   onEditar,
   onExcluir,
+  pipelineId,
 }) {
-  const atualizar = useAtualizarOpcao();
+  const atualizar = useAtualizarOpcao(pipelineId);
   const { linha, puxador } = useLinhaOrdenavel(opcao.id, ordemOcupada);
   const ativo = atualizar.isPending ? atualizar.variables.parcial.ativo : opcao.ativo;
   const idBase = `opcao-${opcao.id}`;
-  const motivoExcluir = motivoNaoExclui(opcao);
+  const motivoExcluir = motivoNaoExclui(opcao, pipelineId ? USOS_DE_PIPELINE : undefined);
 
   return (
     <TableRow {...linha}>

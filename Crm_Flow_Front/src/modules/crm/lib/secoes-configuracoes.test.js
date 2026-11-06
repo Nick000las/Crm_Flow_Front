@@ -2,12 +2,14 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { caminhoDaSecao, secoesVisiveis } from './secoes-configuracoes.js';
 
+const chaves = (user) => secoesVisiveis(user).map((secao) => secao.key);
+
 const dono = { role: 'DONO', modulosAtivos: ['crm'], featuresAtivas: [] };
 
-test('sem flag nenhuma, Campos aparece (é a única pronta)', () => {
+test('sem flag nenhuma, aparecem Campos e Pipelines', () => {
   assert.deepEqual(
     secoesVisiveis(dono).map((secao) => secao.key),
-    ['campos'],
+    ['campos', 'pipelines'],
   );
 });
 
@@ -18,39 +20,39 @@ test('Listas aparece só com crm.listas, na ordem da spec', () => {
   );
   assert.deepEqual(
     secoesVisiveis({ ...dono, featuresAtivas: ['crm.listas'] }).map((secao) => secao.key),
-    ['campos', 'listas'],
+    ['campos', 'listas', 'pipelines'],
   );
   assert.deepEqual(
     secoesVisiveis({ ...dono, featuresAtivas: ['crm.listas', 'crm.regras'] }).map(
       (secao) => secao.key,
     ),
-    ['campos', 'listas', 'regras'],
+    ['campos', 'listas', 'pipelines', 'regras'],
   );
 });
 
-test('OPERADOR vê só o Layout, e só com crm.layout', () => {
+test('OPERADOR vê Pipelines e, só com crm.layout, o Layout', () => {
   const operador = { ...dono, role: 'OPERADOR' };
 
-  assert.deepEqual(secoesVisiveis(operador), []);
+  assert.deepEqual(chaves(operador), ['pipelines']);
   assert.deepEqual(
     secoesVisiveis({ ...operador, featuresAtivas: ['crm.layout', 'crm.listas'] }).map(
       (secao) => secao.key,
     ),
-    ['layout'],
+    ['layout', 'pipelines'],
   );
   // Regras de campo são de gestão: o OPERADOR não vê (o form dele aplica as regras).
-  assert.deepEqual(secoesVisiveis({ ...operador, featuresAtivas: ['crm.regras'] }), []);
+  assert.deepEqual(chaves({ ...operador, featuresAtivas: ['crm.regras'] }), ['pipelines']);
   // Duplicidade: o OPERADOR lê as regras (só gestão altera).
   assert.deepEqual(
     secoesVisiveis({ ...operador, featuresAtivas: ['crm.duplicidade'] }).map((secao) => secao.key),
-    ['duplicidade'],
+    ['pipelines', 'duplicidade'],
   );
 });
 
 test('com crm.layout, o DONO vê Layout antes de Campos (ordem da spec)', () => {
   assert.deepEqual(
     secoesVisiveis({ ...dono, featuresAtivas: ['crm.layout'] }).map((secao) => secao.key),
-    ['layout', 'campos'],
+    ['layout', 'campos', 'pipelines'],
   );
 });
 
@@ -65,75 +67,74 @@ test('Inatividade aparece com crm.inatividade, para gestão e OPERADOR', () => {
   );
   assert.deepEqual(
     secoesVisiveis({ ...dono, featuresAtivas: ['crm.inatividade'] }).map((secao) => secao.key),
-    ['campos', 'inatividade'],
+    ['campos', 'pipelines', 'inatividade'],
   );
   assert.deepEqual(
     secoesVisiveis({ ...dono, role: 'OPERADOR', featuresAtivas: ['crm.inatividade'] }).map(
       (secao) => secao.key,
     ),
-    ['inatividade'],
+    ['pipelines', 'inatividade'],
   );
 });
 
 test('Enriquecimento aparece com crm.cnpj; o OPERADOR também vê (só leitura)', () => {
   assert.deepEqual(
     secoesVisiveis({ ...dono, featuresAtivas: ['crm.cnpj'] }).map((secao) => secao.key),
-    ['campos', 'enriquecimento'],
+    ['campos', 'pipelines', 'enriquecimento'],
   );
   assert.deepEqual(
     secoesVisiveis({ ...dono, role: 'OPERADOR', featuresAtivas: ['crm.cnpj'] }).map(
       (secao) => secao.key,
     ),
-    ['enriquecimento'],
+    ['pipelines', 'enriquecimento'],
   );
 });
 
 test('Distribuição aparece com crm.distribuicao; o OPERADOR também vê (só leitura)', () => {
   assert.deepEqual(
     secoesVisiveis({ ...dono, featuresAtivas: ['crm.distribuicao'] }).map((secao) => secao.key),
-    ['campos', 'distribuicao'],
+    ['campos', 'pipelines', 'distribuicao'],
   );
   assert.deepEqual(
     secoesVisiveis({ ...dono, role: 'OPERADOR', featuresAtivas: ['crm.distribuicao'] }).map(
       (secao) => secao.key,
     ),
-    ['distribuicao'],
+    ['pipelines', 'distribuicao'],
   );
 });
 
 test('Permissões por campo aparece com crm.permissoes, só para gestão', () => {
   assert.deepEqual(
     secoesVisiveis({ ...dono, featuresAtivas: ['crm.permissoes'] }).map((secao) => secao.key),
-    ['campos', 'permissoes'],
+    ['campos', 'pipelines', 'permissoes'],
   );
-  assert.deepEqual(
-    secoesVisiveis({ ...dono, role: 'OPERADOR', featuresAtivas: ['crm.permissoes'] }),
-    [],
-  );
+  assert.deepEqual(chaves({ ...dono, role: 'OPERADOR', featuresAtivas: ['crm.permissoes'] }), [
+    'pipelines',
+  ]);
 });
 
 test('Pontuação aparece com crm.score; o OPERADOR também vê (só leitura)', () => {
   assert.deepEqual(
     secoesVisiveis({ ...dono, featuresAtivas: ['crm.score'] }).map((secao) => secao.key),
-    ['campos', 'pontuacao'],
+    ['campos', 'pipelines', 'pontuacao'],
   );
   assert.deepEqual(
     secoesVisiveis({ ...dono, role: 'OPERADOR', featuresAtivas: ['crm.score'] }).map(
       (secao) => secao.key,
     ),
-    ['pontuacao'],
+    ['pipelines', 'pontuacao'],
   );
 });
 
 test('Privacidade aparece com crm.lgpd; o OPERADOR também vê (só leitura)', () => {
   assert.deepEqual(
     secoesVisiveis({ ...dono, featuresAtivas: ['crm.lgpd'] }).map((secao) => secao.key),
-    ['campos', 'privacidade'],
+    ['campos', 'pipelines', 'privacidade'],
   );
   assert.deepEqual(
     secoesVisiveis({ ...dono, role: 'OPERADOR', featuresAtivas: ['crm.lgpd'] }).map(
       (secao) => secao.key,
     ),
-    ['privacidade'],
+    ['pipelines', 'privacidade'],
   );
 });

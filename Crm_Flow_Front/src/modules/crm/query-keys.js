@@ -11,6 +11,8 @@ export const crmKeys = {
   // Fora do prefixo `lead(id)`: recarregar o lead não recarrega as abas.
   atividades: (leadId) => ['crm', 'atividades', leadId],
   historico: (leadId) => ['crm', 'historico', leadId],
+  projetos: (leadId) => ['crm', 'projetos', leadId],
+  oportunidades: (leadId) => ['crm', 'oportunidades', leadId],
   // Prefixo do histórico de todos os leads (edição em massa).
   historicos: () => ['crm', 'historico'],
   // Lista fixa do filtro (M16): fora do prefixo `historicos()`.
@@ -19,6 +21,7 @@ export const crmKeys = {
   usuarios: () => ['crm', 'usuarios'],
   camposConfigurados: () => ['crm', 'configuracoes', 'campos'],
   listas: () => ['crm', 'configuracoes', 'listas'],
+  pipelines: () => ['crm', 'configuracoes', 'pipelines'],
   layout: () => ['crm', 'layout'],
   duplicidade: () => ['crm', 'configuracoes', 'duplicidade'],
   regras: () => ['crm', 'configuracoes', 'regras'],

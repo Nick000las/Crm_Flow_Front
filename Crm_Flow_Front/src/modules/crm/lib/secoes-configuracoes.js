@@ -30,6 +30,8 @@ export const SECOES_CONFIGURACOES = Object.freeze([
   secao('layout', 'Layout do lead', CRM_FEATURES.LAYOUT, { pronta: true, roles: null }),
   secao('campos', 'Campos', null, { pronta: true }),
   secao('listas', 'Listas', CRM_FEATURES.LISTAS, { pronta: true }),
+  // Sem flag: a aba Oportunidades depende dela. Todos leem; alterar, só gestão.
+  secao('pipelines', 'Pipelines', null, { pronta: true, roles: null }),
   secao('regras', 'Regras de campo', CRM_FEATURES.REGRAS, { pronta: true }),
   secao('permissoes', 'Permissões por campo', CRM_FEATURES.PERMISSOES, { pronta: true }),
   // Leitura para todos; alterar as regras, só gestão (decidido na tela).

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import {
   MENSAGENS,
+  camposDoStatus,
   errosDoServidor,
   lerNumeroDigitado,
   marcarCalculados,
@@ -93,6 +94,92 @@ const lead = {
   usuario_responsavel_id: 'u1',
   custom_fields: { renda: 3000 },
 };
+
+describe('limites comerciais', () => {
+  test('valor negativo e probabilidade fora de 0 a 100 barram no cliente', () => {
+    const probabilidade = {
+      chave: 'probabilidadeFechamento',
+      label: 'Probabilidade',
+      tipo: 'numero',
+      camada: 2,
+      obrigatorio: false,
+    };
+    const base = { email: 'a@b.co', probabilidadeFechamento: '40', valor: '10' };
+    const validar = (valores) => validarNoCliente([probabilidade], { ...base, ...valores });
+
+    assert.deepEqual(validar({}), {});
+    assert.equal(validar({ valor: '-1' }).valor, MENSAGENS.VALOR_NEGATIVO);
+    assert.equal(
+      validar({ probabilidadeFechamento: '101' }).probabilidadeFechamento,
+      MENSAGENS.PROBABILIDADE_INVALIDA,
+    );
+    assert.equal(
+      validar({ probabilidadeFechamento: '10,5' }).probabilidadeFechamento,
+      MENSAGENS.PROBABILIDADE_INVALIDA,
+    );
+  });
+});
+
+describe('camposDoStatus', () => {
+  const status = {
+    chave: 'status',
+    coluna: 'status',
+    label: 'Status',
+    tipo: 'selecao',
+    camada: 1,
+    obrigatorio: false,
+    opcoes: ['novo', 'ganho'],
+    opcoesLista: [
+      { key: 'novo', label: 'Novo', color: null, category: 'aberto', ativo: true },
+      { key: 'ganho', label: 'Ganho', color: null, category: 'ganho', ativo: true },
+    ],
+  };
+  const data = {
+    chave: 'dataConversao',
+    coluna: 'data_conversao',
+    label: 'Conversão',
+    tipo: 'data',
+    camada: 2,
+    obrigatorio: false,
+  };
+  const lista = [status, data];
+
+  test('a data de conversão só aparece em status ganho', () => {
+    assert.deepEqual(camposDoStatus(lista, { status: 'novo' }), [status]);
+    assert.deepEqual(camposDoStatus(lista, { status: '' }), [status]);
+    assert.deepEqual(camposDoStatus(lista, { status: 'ganho' }), lista);
+  });
+
+  test('sem o campo Status no form, o back decide', () => {
+    assert.deepEqual(camposDoStatus([data], {}), [data]);
+  });
+
+  test('fora de ganho, a data não vai no payload de criação', () => {
+    const valores = { status: 'novo', dataConversao: '2026-11-06', valor: '' };
+
+    assert.deepEqual(montarPayloadCriacao(lista, valores), { status: 'novo' });
+    assert.deepEqual(montarPayloadCriacao(lista, { ...valores, status: 'ganho' }), {
+      status: 'ganho',
+      dataConversao: '2026-11-06',
+    });
+  });
+
+  test('reabrir a venda não reenvia nem limpa a data', () => {
+    const iniciais = { status: 'ganho', dataConversao: '2026-11-06', valor: '' };
+
+    assert.deepEqual(montarPayloadEdicao(lista, iniciais, { ...iniciais, status: 'novo' }), {
+      status: 'novo',
+    });
+    assert.deepEqual(
+      montarPayloadEdicao(lista, iniciais, {
+        ...iniciais,
+        status: 'novo',
+        dataConversao: '2026-11-01',
+      }),
+      { status: 'novo' },
+    );
+  });
+});
 
 describe('lerNumeroDigitado', () => {
   test('aceita vírgula decimal e milhar com ponto', () => {

@@ -98,6 +98,8 @@ export function SecaoListas() {
           <p className="max-w-2xl text-sm text-muted-foreground">
             A ordem daqui é a dos seletores. Renomear não muda os leads; desativar tira a opção dos
             seletores, e quem já a tem continua com ela.
+            {tipo === TIPOS_LISTA.STATUS &&
+              ' Estes são os status do pipeline padrão; os demais ficam em Pipelines.'}
           </p>
           {opcoes.length > 0 && botaoNovo}
         </div>

@@ -23,6 +23,11 @@ const TITULO_DO_TIPO = Object.freeze({
   [TIPOS_EVENTO.EXCLUIDO]: 'Enviado para a lixeira',
   [TIPOS_EVENTO.RESTAURADO]: 'Restaurado da lixeira',
   [TIPOS_EVENTO.ANONIMIZADO]: 'Dados pessoais removidos a pedido do titular',
+  [TIPOS_EVENTO.OPORTUNIDADE_CRIADA]: 'Oportunidade criada',
+  [TIPOS_EVENTO.OPORTUNIDADE_ARQUIVADA]: 'Oportunidade arquivada',
+  [TIPOS_EVENTO.OPORTUNIDADE_DESARQUIVADA]: 'Oportunidade desarquivada',
+  [TIPOS_EVENTO.OPORTUNIDADE_EXCLUIDA]: 'Oportunidade enviada para a lixeira',
+  [TIPOS_EVENTO.OPORTUNIDADE_RESTAURADA]: 'Oportunidade restaurada da lixeira',
 });
 
 /** `autor: null` = sistema (import, job) ou usuário removido. */
@@ -97,7 +102,7 @@ function resumir(texto) {
 }
 
 /**
- * Um lado do diff como texto, ou `null` se vazio. Estágio, responsável e
+ * Um lado do diff como texto, ou `null` se vazio. Responsável e
  * personalizado `usuario` trazem o nome do back (`antesNome`/`depoisNome`;
  * `null` = usuário que já não existe).
  *

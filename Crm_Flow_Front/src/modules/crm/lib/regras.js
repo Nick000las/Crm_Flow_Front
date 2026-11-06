@@ -9,7 +9,9 @@ import {
   valorVazio,
 } from './filtro.js';
 import { idNoForm, paraValorDeApi } from './form-lead.js';
-import { ehListaLivre, opcaoDoCampo, rotuloOpcao } from './opcoes.js';
+import { campoDoStatus, categoriaDoStatus, ehListaLivre, rotuloOpcao } from './opcoes.js';
+
+export { categoriaDoStatus };
 
 /**
  * Regras de campo (`crm.regras`): "Status = Perdido exige Motivo" e "se A =
@@ -223,20 +225,6 @@ export function avaliarRegras(regras, lead, contexto = {}) {
 
 // ---------------------------------------------------------------------------
 // Ponte com o form do lead
-
-const campoDoStatus = (campos) =>
-  campos.find((campo) => campo.chave === 'status' && campo.camada !== CAMADA.CAMADA_3);
-
-/**
- * Categoria (`aberto`/`ganho`/`perdido`) do status do lead, pela
- * `opcoesLista` do campo Status de `/fields`.
- *
- * @param {import('../types.js').Campo[]} campos
- * @param {unknown} status
- */
-export function categoriaDoStatus(campos, status) {
-  return opcaoDoCampo(campoDoStatus(campos), status)?.category ?? null;
-}
 
 /** Tags: o form edita pelo nome; a regra compara pela key. */
 function keysDasTags(campo, nomes) {

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { LoadingState } from '@/components/loading-state';
-import { CalendarDays, CheckSquare, ChevronDown, UserRound } from 'lucide-react';
+import { CalendarDays, CheckSquare, ChevronDown, Link2, UserRound } from 'lucide-react';
 import { formatDueDate, getCardDetails, getDueState, PRIORITIES } from '../lib/card-details';
 
 export function KanbanCard({
@@ -89,6 +89,13 @@ export function KanbanCard({
         <UserRound size={14} aria-hidden="true" />
         {member?.nome || 'Sem responsável'}
       </div>
+      {card.vinculo && (
+        <div className="kb-card-person">
+          <Link2 size={14} aria-hidden="true" />
+          <span className="sr-only">Pessoa:</span>
+          {card.vinculo.restrito ? 'Registro restrito' : card.vinculo.titulo}
+        </div>
+      )}
       {!readOnly && (
         <details className="kb-card-movement">
           <summary>

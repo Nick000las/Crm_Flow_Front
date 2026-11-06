@@ -223,12 +223,15 @@ export function opcoesDoEditor(campos) {
       chave: campo.chave,
       camada: campo.camada,
     }));
-  const fixas = Object.entries(REFERENCIAS_FIXAS).map(([ref, fixa]) => ({
-    ref,
-    label: fixa.label,
-    tipo: fixa.tipo,
-    chave: fixa.chave,
-  }));
+  // Estágio é o próprio status (M2.5): não se oferece mais; o back ainda resolve o salvo.
+  const fixas = Object.entries(REFERENCIAS_FIXAS)
+    .filter(([ref]) => ref !== 'lead.estagio')
+    .map(([ref, fixa]) => ({
+      ref,
+      label: fixa.label,
+      tipo: fixa.tipo,
+      chave: fixa.chave,
+    }));
 
   return [...deCampos, ...fixas];
 }

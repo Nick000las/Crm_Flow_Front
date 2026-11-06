@@ -15,6 +15,7 @@ import {
 import { EditorDialog } from './editor-dialog';
 import { CardActivity } from './card-activity';
 import { CardComments } from './card-comments';
+import { CardVinculo } from './card-vinculo';
 import {
   formatDueDate,
   getCardDetails,
@@ -48,6 +49,8 @@ export function CardEditor({
   onDelete,
   onComment,
   onDeleteComment,
+  canLink = false,
+  onChangeLink,
 }) {
   const [title, setTitle] = useState(card.titulo ?? '');
   const [assignee, setAssignee] = useState(card.responsavelId ?? '');
@@ -444,6 +447,13 @@ export function CardEditor({
         <aside className="kb-card-editor-sidebar" aria-label="Conversa e ações do card">
           {card.id ? (
             <>
+              <CardVinculo
+                canLink={canLink}
+                disabled={busy || changedElsewhere}
+                onLink={onChangeLink}
+                onUnlink={() => onChangeLink(null)}
+                vinculo={card.vinculo}
+              />
               <CardComments
                 comments={comments}
                 members={members}

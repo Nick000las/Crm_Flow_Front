@@ -71,7 +71,6 @@ export function BoardSettingsForm({
               Tipo do quadro
               <select name="boardType" defaultValue="projetos">
                 <option value="projetos">Projetos</option>
-                <option value="crm_leads">CRM</option>
                 <option value="postagens_agencia">Postagens</option>
               </select>
             </label>

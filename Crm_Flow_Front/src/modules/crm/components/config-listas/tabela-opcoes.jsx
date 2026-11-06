@@ -20,7 +20,8 @@ const HEAD_CLASS =
  *   onEditar: (opcao: import('../../lib/listas').OpcaoConfigurada) => void,
  *   onExcluir: (opcao: import('../../lib/listas').OpcaoConfigurada) => void,
  *   acaoVazio: import('react').ReactNode,
- * }} props
+ *   pipelineId?: string,
+ * }} props `pipelineId`: status de um pipeline, contados em oportunidades
  */
 export function TabelaOpcoes({
   tipo,
@@ -30,6 +31,7 @@ export function TabelaOpcoes({
   onEditar,
   onExcluir,
   acaoVazio,
+  pipelineId,
 }) {
   if (opcoes.length === 0) {
     return (
@@ -71,7 +73,7 @@ export function TabelaOpcoes({
                 </TableHead>
               )}
               <TableHead className={`${HEAD_CLASS} text-right`} scope="col">
-                Leads
+                {pipelineId ? 'Oportunidades' : 'Leads'}
               </TableHead>
               <TableHead className={`${HEAD_CLASS} text-center`} scope="col">
                 Ativa
@@ -92,6 +94,7 @@ export function TabelaOpcoes({
                 onMover={mover}
                 opcao={opcao}
                 ordemOcupada={ordemOcupada}
+                pipelineId={pipelineId}
                 tipo={tipo}
                 total={opcoes.length}
               />

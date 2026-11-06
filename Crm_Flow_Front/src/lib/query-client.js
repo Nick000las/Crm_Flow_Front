@@ -12,9 +12,6 @@ const MAX_RETRIES = 2;
  * @param {unknown} error
  */
 export function shouldRetry(failureCount, error) {
-  if (error instanceof ApiError && error.code === 'CRM_SCHEMA_INCOMPATIBLE') {
-    return false;
-  }
   if (error instanceof ApiError && error.status !== null && error.status < 500) {
     return false;
   }

@@ -1,12 +1,12 @@
-import { TIPOS_CAMPO } from '../constants.js';
 import { lerValorDoCampo } from './colunas.js';
 import { textoDoValor } from './layout.js';
 
 /**
  * Mesclagem de dois leads (`crm.duplicidade`, DONO/MASTER). O back monta o
  * resultado: campo sem escolha fica com o principal (ou com o secundário,
- * se o principal estiver vazio), tags são unidas. Aqui só se mostra o que
- * difere e se diz, campo a campo, de qual lado vem o valor.
+ * se o principal estiver vazio), tags são unidas. As oportunidades dos dois
+ * continuam existindo, então os dados comerciais não têm escolha. Aqui só se
+ * mostra o que difere e se diz, campo a campo, de qual lado vem o valor.
  *
  * @typedef {'a' | 'b'} Lado
  * @typedef {{
@@ -20,12 +20,18 @@ import { textoDoValor } from './layout.js';
 
 export const LADO = Object.freeze({ A: 'a', B: 'b' });
 
-/** Tags se unem no back: não há o que escolher. */
-const CHAVES_UNIDAS = new Set(['tags']);
+/** O back resolve sozinho: tags se unem e o comercial vem da oportunidade principal. */
+const CHAVES_SEM_ESCOLHA = new Set([
+  'tags',
+  'status',
+  'motivoPerda',
+  'dataConversao',
+  'probabilidadeFechamento',
+  'dataPrevistaFechamento',
+]);
 
 /** Dados do lead fora de `/fields`, pela chave da API (a mesma de `escolhas`). */
 const CAMPOS_DO_LEAD = Object.freeze([
-  { chave: 'valor', label: 'Valor', tipo: TIPOS_CAMPO.MONETARIO, coluna: 'valor' },
   {
     chave: 'usuarioResponsavelId',
     label: 'Responsável',
@@ -46,7 +52,7 @@ const CAMPOS_DO_LEAD = Object.freeze([
  */
 export function linhasDaMesclagem(campos, a, b, nomePorId) {
   return [...campos, ...CAMPOS_DO_LEAD]
-    .filter((campo) => !CHAVES_UNIDAS.has(campo.chave))
+    .filter((campo) => !CHAVES_SEM_ESCOLHA.has(campo.chave))
     .map((campo) => {
       const textoA = textoDoValor(campo, lerValorDoCampo(a, campo), nomePorId);
       const textoB = textoDoValor(campo, lerValorDoCampo(b, campo), nomePorId);

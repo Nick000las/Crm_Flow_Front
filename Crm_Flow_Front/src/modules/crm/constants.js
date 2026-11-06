@@ -60,6 +60,29 @@ export const ROTULOS_CATEGORIA = Object.freeze({
   [CATEGORIAS_STATUS.PERDIDO]: 'Perdido',
 });
 
+/** Pipelines (M2.5): espelho de `constants/pipelines.js` do back. */
+export const LIMITE_PIPELINES = 5;
+
+export const TIPOS_PIPELINE = Object.freeze({ VENDAS: 'sales', ATENDIMENTO: 'service' });
+
+export const ROTULOS_TIPO_PIPELINE = Object.freeze({
+  [TIPOS_PIPELINE.VENDAS]: 'Vendas',
+  [TIPOS_PIPELINE.ATENDIMENTO]: 'Atendimento',
+});
+
+/** Quem assume o card de atendimento criado pela venda. */
+export const REGRAS_DONO_ATENDIMENTO = Object.freeze({
+  PESSOA: 'person_owner',
+  USUARIO: 'specific_user',
+  NINGUEM: 'none',
+});
+
+export const ROTULOS_REGRA_DONO = Object.freeze({
+  [REGRAS_DONO_ATENDIMENTO.PESSOA]: 'O responsável pela pessoa',
+  [REGRAS_DONO_ATENDIMENTO.USUARIO]: 'Um usuário específico',
+  [REGRAS_DONO_ATENDIMENTO.NINGUEM]: 'Ninguém',
+});
+
 /**
  * Layout do lead (flag `crm.layout`): espelho de `constants/layout.js` do
  * back. Referência fixa = dado do lead que não é campo configurável; `coluna`
@@ -340,6 +363,12 @@ export const TIPOS_EVENTO = Object.freeze({
   // M11b: dados da Receita aplicados pelo enriquecimento automático (autor nulo).
   ENRIQUECIDO: 'enriquecido',
   ANONIMIZADO: 'anonimizado',
+  // M2.5: ciclo da oportunidade na timeline da pessoa.
+  OPORTUNIDADE_CRIADA: 'oportunidade_criada',
+  OPORTUNIDADE_ARQUIVADA: 'oportunidade_arquivada',
+  OPORTUNIDADE_DESARQUIVADA: 'oportunidade_desarquivada',
+  OPORTUNIDADE_EXCLUIDA: 'oportunidade_excluida',
+  OPORTUNIDADE_RESTAURADA: 'oportunidade_restaurada',
 });
 
 /** Regras de duplicidade (`crm.duplicidade`): por campo, avisar ou bloquear. */
