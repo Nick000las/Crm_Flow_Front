@@ -7,6 +7,7 @@ import {
   MENSAGEM_SEM_PERMISSAO,
   MENSAGEM_SOMENTE_LEITURA,
   TIPOS_CAMPO,
+  TIPOS_LISTA,
 } from '../constants';
 import { AJUDA_POR_CHAVE, podeEditarCampo } from '../lib/form-lead';
 import { opcoesDoSeletor, rotuloOpcao, sugestoesDoCampo } from '../lib/opcoes';
@@ -55,14 +56,15 @@ function CampoBooleano({ value, onChange, controle }) {
 function CampoSelecao({ campo, value, onChange, controle }) {
   // Ativas da lista do tenant, mais a inativa que o lead já tem (se tiver).
   const opcoes = opcoesDoSeletor(campo, value);
+  // Toda oportunidade tem status: o back dá 400 em `status: null`.
+  const aceitaVazio = !campo.obrigatorio && campo.lista !== TIPOS_LISTA.STATUS;
 
   return (
     <SelectSimples
       {...controle}
       onChange={onChange}
       opcoes={opcoes}
-      // Sem obrigatoriedade, dá para voltar ao vazio.
-      vazio={campo.obrigatorio ? undefined : 'Nenhum'}
+      vazio={aceitaVazio ? 'Nenhum' : undefined}
       value={value}
     />
   );

@@ -28,7 +28,7 @@ export function criarOpcao(authApi, tipo, corpo) {
 }
 
 /**
- * `PUT` parcial; `color: null` limpa. Desativar o último status ganho/perdido = 409.
+ * `PUT` parcial; `color: null` limpa. Desativar o último status de uma categoria = 409.
  *
  * @param {import('@/hooks/create-auth-session').AuthApi} authApi
  * @param {string} tipo

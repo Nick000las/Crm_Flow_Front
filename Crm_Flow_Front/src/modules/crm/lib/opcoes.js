@@ -63,6 +63,21 @@ export function rotuloOpcao(valor, campo) {
 const rotuloComSituacao = (opcao) =>
   opcao.ativo ? opcao.label : `${opcao.label}${SUFIXO_INATIVA}`;
 
+/** O campo Status do sistema (um personalizado pode ter a mesma chave). */
+export const campoDoStatus = (campos) =>
+  campos.find((campo) => campo.chave === 'status' && campo.camada !== CAMADA.CAMADA_3);
+
+/**
+ * Categoria (`aberto`/`ganho`/`perdido`) do status do lead, pela
+ * `opcoesLista` do campo Status de `/fields`.
+ *
+ * @param {import('../types.js').Campo[]} campos
+ * @param {unknown} status
+ */
+export function categoriaDoStatus(campos, status) {
+  return opcaoDoCampo(campoDoStatus(campos), status)?.category ?? null;
+}
+
 /**
  * Itens do seletor do formulário: só as ativas — mais a inativa que o lead
  * já tem, para ela continuar selecionada (o back aceita manter).

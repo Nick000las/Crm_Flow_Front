@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useKanbanEvents } from './use-kanban-events';
 import { useAuth } from '@/hooks/useAuth';
+import { quadrosNativos } from '../lib/board-modo';
 
 export function useAvailableBoards() {
   const { authApi } = useAuth();
@@ -17,7 +18,7 @@ export function useAvailableBoards() {
       .get('/kanban/boards')
       .then((rows) => {
         if (active) {
-          setBoards(rows);
+          setBoards(quadrosNativos(rows));
           setError('');
         }
       })

@@ -1011,6 +1011,86 @@ button:disabled {
   color: var(--destructive);
   border-color: var(--destructive);
 }
+.kb-card-person {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.35rem;
+  font-size: 0.78rem;
+  color: var(--muted-foreground);
+}
+.kb-link {
+  display: grid;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+.kb-link h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.kb-link-person {
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+.kb-link-person a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.kb-link-remove {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  width: fit-content;
+  font-size: 0.78rem;
+  color: var(--muted-foreground);
+}
+.kb-link-search {
+  display: grid;
+  gap: 0.5rem;
+}
+.kb-link-search label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid var(--border);
+  padding: 0.35rem 0.5rem;
+}
+.kb-link-search label:focus-within {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+.kb-link-search input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  background: transparent;
+  outline: none;
+  font-size: 0.85rem;
+}
+.kb-link-search ul {
+  max-height: 14rem;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+}
+.kb-link-search li + li {
+  border-top: 1px solid var(--border);
+}
+.kb-link-search li button {
+  display: grid;
+  width: 100%;
+  padding: 0.4rem 0.5rem;
+  text-align: left;
+  font-size: 0.82rem;
+}
+.kb-link-search li button:hover,
+.kb-link-search li button:focus-visible {
+  background: var(--muted);
+}
+.kb-link-search li span {
+  font-size: 0.72rem;
+  color: var(--muted-foreground);
+}
 .kb-activity {
   margin: 1.5rem 0;
   border-top: 1px solid var(--border);

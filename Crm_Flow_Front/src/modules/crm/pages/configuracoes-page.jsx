@@ -10,6 +10,7 @@ import { SecaoInatividade } from '../components/config-inatividade/secao-inativi
 import { SecaoLgpd } from '../components/config-lgpd/secao-lgpd';
 import { SecaoLayout } from '../components/config-layout/secao-layout';
 import { SecaoListas } from '../components/config-listas/secao-listas';
+import { SecaoPipelines } from '../components/config-pipelines/secao-pipelines';
 import { SecaoRegras } from '../components/config-regras/secao-regras';
 import { SecaoScore } from '../components/config-score/secao-score';
 import { SecaoPermissoes } from '../components/config-permissoes/secao-permissoes';
@@ -21,6 +22,7 @@ const TELA_DA_SECAO = Object.freeze({
   layout: SecaoLayout,
   campos: SecaoCampos,
   listas: SecaoListas,
+  pipelines: SecaoPipelines,
   regras: SecaoRegras,
   permissoes: SecaoPermissoes,
   duplicidade: SecaoDuplicidade,

@@ -53,12 +53,12 @@ function CampoCor({ value, onChange, controle }) {
 }
 
 /** Montado só com o dialog aberto: cada abertura parte da opção atual. */
-function FormOpcao({ tipo, opcao, onSalvo }) {
+function FormOpcao({ tipo, opcao, pipelineId, onSalvo }) {
   const editando = Boolean(opcao);
   const [valores, setValores] = useState(() => valoresDaOpcao(tipo, opcao));
   const [errosCliente, setErrosCliente] = useState({});
-  const criar = useCriarOpcao();
-  const atualizar = useAtualizarOpcao();
+  const criar = useCriarOpcao(pipelineId);
+  const atualizar = useAtualizarOpcao(pipelineId);
   const mutacao = editando ? atualizar : criar;
 
   const erroDe = (campo) =>
@@ -166,9 +166,18 @@ function FormOpcao({ tipo, opcao, onSalvo }) {
  *   onOpenChange: (open: boolean) => void,
  *   opcao?: import('../../lib/listas').OpcaoConfigurada | null,
  *   onSalvo: (salva: import('../../lib/listas').OpcaoConfigurada | null) => void,
+ *   pipelineId?: string,
  * }} props `onSalvo(null)` = nada mudou
  */
-export function OpcaoDialog({ tipo, rotuloDaLista, open, onOpenChange, opcao, onSalvo }) {
+export function OpcaoDialog({
+  tipo,
+  rotuloDaLista,
+  open,
+  onOpenChange,
+  opcao,
+  onSalvo,
+  pipelineId,
+}) {
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent className="rounded-none sm:max-w-md">
@@ -186,6 +195,7 @@ export function OpcaoDialog({ tipo, rotuloDaLista, open, onOpenChange, opcao, on
               onSalvo(salva);
             }}
             opcao={opcao}
+            pipelineId={pipelineId}
             tipo={tipo}
           />
         )}

@@ -17,6 +17,7 @@ import {
   CAMPO_VALOR,
   CHAVE_OPT_OUT,
   CHAVE_RESPONSAVEL,
+  camposDoStatus,
   errosDoServidor,
   idNoForm,
   podeEditarCampo,
@@ -144,7 +145,10 @@ export function LeadForm({
   const [erros, setErros] = useState({});
   const [erroGeral, setErroGeral] = useState(null);
   const [duplicidade, setDuplicidade] = useState(null);
-  const camposVisiveis = camposComRegras(campos, avaliarRegras?.(valores) ?? SEM_REGRAS);
+  const camposVisiveis = camposComRegras(
+    camposDoStatus(campos, valores),
+    avaliarRegras?.(valores) ?? SEM_REGRAS,
+  );
   const checar = useChecarDuplicados();
   const parecidos = checar.data?.duplicados ?? [];
 

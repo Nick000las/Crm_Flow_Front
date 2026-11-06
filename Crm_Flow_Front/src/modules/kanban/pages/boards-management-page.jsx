@@ -8,6 +8,7 @@ import { ConfirmationDialog } from '@/components/confirmation-dialog';
 import { PageHeader } from '@/components/page-header';
 import { useKanbanEvents } from '../hooks/use-kanban-events';
 import { BoardSettingsForm } from '../components/board-settings-form';
+import { quadrosNativos } from '../lib/board-modo';
 import { getBoardTypeLabel } from '../lib/board-types';
 import './kanban.css';
 
@@ -39,7 +40,7 @@ export default function BoardsManagementPage() {
       .get('/kanban/boards')
       .then((rows) => {
         if (active) {
-          setBoards(rows);
+          setBoards(quadrosNativos(rows));
           setError('');
         }
       })

@@ -4,8 +4,8 @@ import { CAMPO_VALOR } from './form-lead.js';
  * Colunas do export: um checklist ordenável. Começa com as colunas visíveis
  * da tabela (na ordem dela) marcadas, e o resto desmarcado no fim.
  *
- * `funilEstagio` também é aceito pelo back, mas fica de fora enquanto o
- * front não mostra estágio (aguarda o Kanban).
+ * `funilEstagio` também é aceito pelo back, mas fica de fora: é o próprio
+ * status com outro nome.
  *
  * @typedef {{ chave: string, label: string, marcada: boolean }} ItemExport
  */

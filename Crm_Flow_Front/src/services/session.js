@@ -18,9 +18,7 @@ export async function restoreSession(
       break;
     } catch (error) {
       const temporary =
-        error instanceof ApiError &&
-        (error.code === 'NETWORK_ERROR' ||
-          (error.status >= 500 && error.code !== 'CRM_SCHEMA_INCOMPATIBLE'));
+        error instanceof ApiError && (error.code === 'NETWORK_ERROR' || error.status >= 500);
       if (!temporary || attempt >= delays.length) {
         throw error;
       }

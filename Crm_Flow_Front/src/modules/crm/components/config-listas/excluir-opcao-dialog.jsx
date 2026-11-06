@@ -20,10 +20,11 @@ import { useExcluirOpcao } from '../../hooks/use-listas';
  *   opcao: { id: string, label: string } | null,
  *   onOpenChange: (open: boolean) => void,
  *   onExcluida: (label: string) => void,
+ *   pipelineId?: string,
  * }} props aberto enquanto houver `opcao`
  */
-export function ExcluirOpcaoDialog({ tipo, opcao, onOpenChange, onExcluida }) {
-  const excluir = useExcluirOpcao();
+export function ExcluirOpcaoDialog({ tipo, opcao, onOpenChange, onExcluida, pipelineId }) {
+  const excluir = useExcluirOpcao(pipelineId);
 
   function handleOpenChange(proximo) {
     if (excluir.isPending) {

@@ -44,8 +44,8 @@ function FormAnonimizar({ lead, onAnonimizado }) {
           identificam a pessoa e as notas das atividades.
         </p>
         <p>
-          <span className="font-medium">Fica, para as estatísticas:</span> status, estágio, valor,
-          origem, score, datas, responsável, cidade/UF, tags e o histórico (sem os valores
+          <span className="font-medium">Fica, para as estatísticas:</span> status, valor, origem,
+          score, datas, responsável, cidade/UF, tags e o histórico (sem os valores
           pessoais).
         </p>
         <p>Os leads que foram mesclados neste também são anonimizados.</p>

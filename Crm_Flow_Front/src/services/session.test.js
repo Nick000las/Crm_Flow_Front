@@ -73,16 +73,3 @@ test('reinício do backend: falha de conexão e 503 são seguidos pela restaura�
   assert.deepEqual(delays, [300, 1000]);
   assert.equal(calls, 3);
 });
-
-test('falha de schema não dispara tentativas que não podem resolver o erro', async () => {
-  let calls = 0;
-  globalThis.fetch = async () => {
-    calls++;
-    return Response.json(
-      { code: 'CRM_SCHEMA_INCOMPATIBLE', message: 'Schema incompatível' },
-      { status: 503 },
-    );
-  };
-  await assert.rejects(restoreSession(), { code: 'CRM_SCHEMA_INCOMPATIBLE' });
-  assert.equal(calls, 1);
-});

@@ -227,8 +227,9 @@ function Comparar({ idA, idB, campos, nomePorId, onMesclado }) {
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Campo vazio de um lado fica com o valor do outro. Tags são unidas. Atividades e histórico
-        vão para o lead que fica; o outro vai para a lixeira e não pode ser restaurado.
+        Campo vazio de um lado fica com o valor do outro. Tags são unidas. As oportunidades dos
+        dois continuam existindo e o lead mostra a principal. Atividades e histórico vão para o
+        lead que fica; o outro vai para a lixeira e não pode ser restaurado.
       </p>
 
       <ApiErrorAlert error={mesclar.error} id="mesclar-erro" title="Não foi possível mesclar" />

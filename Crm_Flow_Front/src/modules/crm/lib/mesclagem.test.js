@@ -15,6 +15,14 @@ const CAMPOS = [
     opcoesLista: [],
   },
   { chave: 'setor', label: 'Setor', tipo: 'texto', camada: 3 },
+  { chave: 'status', label: 'Status', tipo: 'selecao', camada: 1, coluna: 'status' },
+  {
+    chave: 'motivoPerda',
+    label: 'Motivo',
+    tipo: 'selecao',
+    camada: 2,
+    coluna: 'motivo_perda',
+  },
 ];
 const NOMES = new Map([
   ['u1', 'Ana'],
@@ -27,6 +35,8 @@ const A = {
   email: 'ana@x.com',
   cidade: null,
   tags: ['vip'],
+  status: 'novo',
+  motivo_perda: null,
   valor: '100.00',
   usuario_responsavel_id: 'u1',
   custom_fields: { setor: 'Varejo' },
@@ -37,12 +47,14 @@ const B = {
   email: 'ana@x.com',
   cidade: 'Recife',
   tags: ['frio'],
-  valor: '100',
+  status: 'perdido',
+  motivo_perda: 'preco',
+  valor: '250',
   usuario_responsavel_id: 'u2',
   custom_fields: {},
 };
 
-test('linhasDaMesclagem mostra só o que difere, sem tags', () => {
+test('linhasDaMesclagem mostra só o que difere, sem tags nem dados comerciais', () => {
   const linhas = linhasDaMesclagem(CAMPOS, A, B, NOMES);
 
   assert.deepEqual(
