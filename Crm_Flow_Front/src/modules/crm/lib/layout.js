@@ -4,6 +4,7 @@ import {
   LIMITES_LAYOUT,
   REFERENCIAS_FIXAS,
   TIPOS_CAMPO,
+  CHAVE_VALOR,
 } from '../constants.js';
 import { TIPO_COLUNA, lerValorDoCampo } from './colunas.js';
 import {
@@ -214,8 +215,9 @@ export function identificadorPermitido(campo) {
  * @returns {{ ref: string, label: string, tipo: string, chave: string, camada?: number }[]}
  */
 export function opcoesDoEditor(campos) {
+  // O campo Valor é a referência `lead.valor`: o back recusa o id, para não repetir o dado.
   const deCampos = campos
-    .filter((campo) => campo.id)
+    .filter((campo) => campo.id && campo.chave !== CHAVE_VALOR)
     .map((campo) => ({
       ref: campo.id,
       label: campo.label,

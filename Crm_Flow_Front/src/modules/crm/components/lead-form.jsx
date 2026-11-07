@@ -14,7 +14,6 @@ import {
 import { camposComRegras } from '../lib/regras';
 import { ROTAS_CRM } from '../rotas';
 import {
-  CAMPO_VALOR,
   CHAVE_OPT_OUT,
   CHAVE_RESPONSAVEL,
   camposDoStatus,
@@ -257,7 +256,6 @@ export function LeadForm({
         <ApiErrorAlert error={erroGeral} id={ERRO_GERAL_ID} title="Não foi possível salvar" />
 
         {camposVisiveis.map(campoDoForm)}
-        {campoDoForm(CAMPO_VALOR)}
 
         {usuarios.length > 0 && (
           <CampoResponsavel

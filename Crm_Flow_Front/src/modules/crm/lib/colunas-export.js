@@ -1,5 +1,3 @@
-import { CAMPO_VALOR } from './form-lead.js';
-
 /**
  * Colunas do export: um checklist ordenável. Começa com as colunas visíveis
  * da tabela (na ordem dela) marcadas, e o resto desmarcado no fim.
@@ -28,7 +26,7 @@ const COLUNAS_EXTRAS = Object.freeze([
  */
 export function itensIniciais(campos, idsVisiveis, { comMassa = false } = {}) {
   const extras = comMassa ? COLUNAS_EXTRAS : [];
-  const exportaveis = [...campos, CAMPO_VALOR, ...extras].map(({ chave, label }) => ({
+  const exportaveis = [...campos, ...extras].map(({ chave, label }) => ({
     chave,
     label,
   }));

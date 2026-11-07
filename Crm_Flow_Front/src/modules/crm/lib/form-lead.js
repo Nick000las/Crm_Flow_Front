@@ -4,6 +4,7 @@ import {
   CAMPOS_LGPD,
   CATEGORIAS_STATUS,
   CHAVE_SCORE,
+  CHAVE_VALOR,
   PARTES_ENDERECO,
   TIPOS_CAMPO,
 } from '../constants.js';
@@ -28,19 +29,23 @@ import { campoDoStatus, categoriaDoStatus, ehListaLivre, rotuloOpcao } from './o
  * cada campo; só o payload separa a Camada 3.
  */
 
-/** Campos do form que não vêm de `/fields`. */
-export const CAMPO_VALOR = Object.freeze({
-  chave: 'valor',
-  label: 'Valor',
-  tipo: TIPOS_CAMPO.NUMERO,
-  obrigatorio: false,
-});
+/** Campo do form que não vem de `/fields`. */
 export const CHAVE_RESPONSAVEL = 'usuarioResponsavelId';
 
 /** Opt-out de marketing (LGPD): não é campo de `/fields`; no payload, sim/não. */
 export const CHAVE_OPT_OUT = CAMPOS_LGPD.OPT_OUT;
 
 const CHAVE_DATA_CONVERSAO = 'dataConversao';
+/** Moram na oportunidade principal (como `CAMPOS_COMERCIAIS` do back). */
+const CHAVES_COMERCIAIS = new Set([
+  'status',
+  'funilEstagioId',
+  CHAVE_VALOR,
+  'probabilidadeFechamento',
+  'dataPrevistaFechamento',
+  'motivoPerda',
+  CHAVE_DATA_CONVERSAO,
+]);
 const PROBABILIDADE_MAXIMA = 100;
 
 /**
@@ -244,7 +249,6 @@ export function valoresIniciais(campos, lead, padroes = {}) {
     }),
   );
 
-  valores[CAMPO_VALOR.chave] = paraValorDeForm(CAMPO_VALOR.tipo, lead?.valor);
   valores[CHAVE_RESPONSAVEL] = lead?.usuario_responsavel_id ?? '';
   valores[CHAVE_OPT_OUT] = Boolean(lead?.marketing_opt_out_at);
 
@@ -279,7 +283,12 @@ function atribuir(payload, campo, valor) {
  * @param {{ acesso?: string, calculado?: boolean, somenteLeitura?: boolean }} campo
  */
 export function podeEditarCampo(campo) {
-  return campo.acesso !== ACESSOS_CAMPO.VER && !campo.calculado && !campo.somenteLeitura;
+  return (
+    campo.acesso !== ACESSOS_CAMPO.VER &&
+    !campo.calculado &&
+    !campo.somenteLeitura &&
+    !campo.semAcessoComercial
+  );
 }
 
 /**
@@ -298,6 +307,39 @@ export function marcarCalculados(campos, comScore) {
   return campos.map((campo) =>
     campo.chave === CHAVE_SCORE ? { ...campo, calculado: true } : campo,
   );
+}
+
+/** @param {string} chave */
+export const ehCampoComercial = (chave) => CHAVES_COMERCIAIS.has(chave);
+
+/**
+ * Principal em pipeline oculto para o papel (D4): `status` chega `null`, e
+ * mandar dado comercial daria 409. O contato continua editável.
+ *
+ * @template {{ chave: string, camada?: number }} T
+ * @param {T[]} campos
+ * @param {{ status?: string | null } | undefined} lead
+ * @returns {Array<T & { semAcessoComercial?: true }>}
+ */
+export function marcarSemAcessoComercial(campos, lead) {
+  if (lead?.status !== null) {
+    return campos;
+  }
+  return campos.map((campo) =>
+    campo.camada !== CAMADA.CAMADA_3 && CHAVES_COMERCIAIS.has(campo.chave)
+      ? { ...campo, semAcessoComercial: true }
+      : campo,
+  );
+}
+
+/**
+ * Versão lida do lead, para o `expectedUpdatedAt` do `PUT`.
+ *
+ * @param {{ updated_at?: string } | undefined} lead
+ * @returns {string | undefined}
+ */
+export function versaoDoLead(lead) {
+  return lead?.updated_at ? new Date(lead.updated_at).toISOString() : undefined;
 }
 
 /**
@@ -320,10 +362,8 @@ export function camposDoStatus(campos, valores) {
 }
 
 /** Campos que entram no payload. */
-const camposDoPayload = (campos, valores) => [
-  ...camposDoStatus(campos, valores).filter(podeEditarCampo),
-  CAMPO_VALOR,
-];
+const camposDoPayload = (campos, valores) =>
+  camposDoStatus(campos, valores).filter(podeEditarCampo);
 
 /**
  * Payload de criação: só o que foi preenchido. Sem responsável, o back usa
@@ -417,7 +457,7 @@ export function validarNoCliente(campos, valores) {
   const erros = {};
 
   // Campo só de ver: o usuário não tem como corrigir — não cobra nada dele.
-  for (const campo of [...campos.filter(podeEditarCampo), CAMPO_VALOR]) {
+  for (const campo of campos.filter(podeEditarCampo)) {
     const id = idNoForm(campo);
     const valor = paraValorDeApi(campo.tipo, valores[id]);
 
@@ -467,7 +507,6 @@ export function errosDoServidor(fields, campos) {
       .filter((campo) => campo.camada !== CAMADA.CAMADA_3)
       .map((campo) => [campo.chave, idNoForm(campo)]),
   );
-  idPorChave.set(CAMPO_VALOR.chave, CAMPO_VALOR.chave);
   idPorChave.set(CHAVE_RESPONSAVEL, CHAVE_RESPONSAVEL);
   idPorChave.set(CHAVE_OPT_OUT, CHAVE_OPT_OUT);
 
@@ -501,7 +540,7 @@ export function erroComercial(chave, valor) {
   if (typeof valor !== 'number') {
     return null;
   }
-  if (chave === CAMPO_VALOR.chave) {
+  if (chave === CHAVE_VALOR) {
     return valor < 0 ? MENSAGENS.VALOR_NEGATIVO : null;
   }
   if (chave === 'probabilidadeFechamento') {

@@ -7,6 +7,7 @@ import {
   chavesComErro,
   chavesForaDosCampos,
   chipsDoFiltro,
+  filtroComValor,
   contarFiltros,
   descreverItem,
   filtroDoRascunho,
@@ -30,6 +31,13 @@ const campos = [
   { chave: 'vip', label: 'VIP', tipo: 'booleano', camada: 3 },
 ];
 const porChave = (chave) => campos.find((campo) => campo.chave === chave);
+
+test('filtroComValor tira a faixa só sem o campo Valor', () => {
+  const filtro = { filtros: [], busca: 'a', valorMin: 1, valorMax: 2 };
+
+  assert.equal(filtroComValor(filtro, true), filtro);
+  assert.deepEqual(filtroComValor(filtro, false), { filtros: [], busca: 'a' });
+});
 
 describe('URL e contagem', () => {
   test('filtro vazio não vai para a URL', () => {

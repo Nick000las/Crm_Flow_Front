@@ -6,6 +6,7 @@ const campos = [
   { chave: 'nome', label: 'Nome' },
   { chave: 'email', label: 'E-mail' },
   { chave: 'status', label: 'Status' },
+  { chave: 'valor', label: 'Valor' },
 ];
 
 test('começa com as visíveis da tabela, na ordem dela, e o resto desmarcado', () => {

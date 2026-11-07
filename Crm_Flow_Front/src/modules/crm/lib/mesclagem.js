@@ -24,6 +24,7 @@ export const LADO = Object.freeze({ A: 'a', B: 'b' });
 const CHAVES_SEM_ESCOLHA = new Set([
   'tags',
   'status',
+  'valor',
   'motivoPerda',
   'dataConversao',
   'probabilidadeFechamento',

@@ -8,11 +8,29 @@ export const crmKeys = {
   leads: () => ['crm', 'leads'],
   leadsSearch: (params) => ['crm', 'leads', params],
   lead: (id) => ['crm', 'lead', id],
+  // Dentro do prefixo `leads()`: o que muda a lista muda o quadro, sem listar
+  // o quadro em cada mutação do CRM.
+  quadro: (ref) => ['crm', 'leads', 'quadro', ref],
+  quadroColunas: (ref) => ['crm', 'leads', 'quadro', ref, 'colunas'],
+  quadroCardsTodos: (ref) => [...crmKeys.quadro(ref), 'cards'],
+  // Sem `consulta`/`filtros`, o prefixo da coluna: alcança todas as consultas dela.
+  quadroCards: (ref, colunaRef, consulta) => [
+    ...crmKeys.quadroCardsTodos(ref),
+    colunaRef,
+    ...(consulta ? [consulta] : []),
+  ],
+  quadroResumo: (ref, colunaRef, filtros) => [
+    ...crmKeys.quadro(ref),
+    'resumo',
+    colunaRef,
+    ...(filtros ? [filtros] : []),
+  ],
   // Fora do prefixo `lead(id)`: recarregar o lead não recarrega as abas.
   atividades: (leadId) => ['crm', 'atividades', leadId],
   historico: (leadId) => ['crm', 'historico', leadId],
   projetos: (leadId) => ['crm', 'projetos', leadId],
   oportunidades: (leadId) => ['crm', 'oportunidades', leadId],
+  oportunidadesNaLixeira: (leadId) => ['crm', 'oportunidades', leadId, 'lixeira'],
   // Prefixo do histórico de todos os leads (edição em massa).
   historicos: () => ['crm', 'historico'],
   // Lista fixa do filtro (M16): fora do prefixo `historicos()`.

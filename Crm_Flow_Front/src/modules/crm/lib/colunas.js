@@ -8,7 +8,6 @@ export const TIPO_COLUNA = Object.freeze({
   INSTANTE: 'instante',
 });
 
-const COLUNA_VALOR = Object.freeze({ id: 'valor', label: 'Valor', tipo: TIPO_COLUNA.MOEDA });
 const COLUNA_RESPONSAVEL = Object.freeze({
   id: 'responsavel',
   label: 'Responsável',
@@ -49,7 +48,7 @@ export function lerValorDoCampo(lead, campo) {
 
 /**
  * Todas as colunas exibíveis: campos ativos do tenant, na ordem do back, mais
- * Valor, Responsável e Criado em, que não são campos de `/fields`.
+ * Responsável e Criado em, que não são campos de `/fields`.
  *
  * @param {import('../types.js').Campo[]} campos
  * @returns {Coluna[]}
@@ -62,7 +61,7 @@ export function montarColunas(campos) {
     campo,
   }));
 
-  return [...colunasDeCampo, COLUNA_VALOR, COLUNA_RESPONSAVEL, COLUNA_CRIADO_EM];
+  return [...colunasDeCampo, COLUNA_RESPONSAVEL, COLUNA_CRIADO_EM];
 }
 
 /**

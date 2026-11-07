@@ -18,6 +18,7 @@ import {
 
 const CAMPOS = [
   { chave: 'status', camada: 1 },
+  { chave: 'valor', camada: 2 },
   { chave: 'motivoPerda', camada: 2 },
   { chave: 'probabilidadeFechamento', camada: 2 },
   { chave: 'dataPrevistaFechamento', camada: 2 },
@@ -41,7 +42,7 @@ test('sem o campo em /fields, o dado some; o responsável não depende disso', (
 
   assert.deepEqual(acesso.probabilidadeFechamento, { visivel: false, editavel: false });
   assert.deepEqual(acesso.responsavelId, { visivel: true, editavel: true });
-  assert.deepEqual(acesso.valor, { visivel: true, editavel: true });
+  assert.deepEqual(acesso.valor, { visivel: false, editavel: false });
 });
 
 test('campo só de ver aparece e não edita', () => {

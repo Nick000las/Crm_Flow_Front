@@ -36,7 +36,12 @@ export const MODULES = [
     icon: KanbanSquare,
     path: '/kanban',
     pages: [
-      { key: 'workspace', label: 'Quadros disponíveis', path: '/kanban' },
+      {
+        key: 'workspace',
+        label: 'Quadros disponíveis',
+        path: '/kanban',
+        ativoEm: ['/kanban/pipeline'],
+      },
       {
         key: 'boards',
         label: 'Gerenciar quadros',

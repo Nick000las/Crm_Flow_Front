@@ -1,4 +1,4 @@
-import { ArrowRightLeft, Pencil } from 'lucide-react';
+import { Archive, ArchiveRestore, ArrowRightLeft, Pencil, Trash2 } from 'lucide-react';
 import { formatarData, formatarMoeda } from '../../lib/formatadores';
 import { campoDoMotivo } from '../../lib/oportunidades';
 import { humanizar, rotuloOpcao } from '../../lib/opcoes';
@@ -19,8 +19,8 @@ function Detalhe({ rotulo, children }) {
 
 /**
  * Uma oportunidade. Toda chave comercial é opcional: campo oculto para o papel
- * não vem. Sem `onEditar`/`onMudarStatus` (arquivada, lead anonimizado, sem
- * permissão), os botões somem.
+ * não vem. Sem um handler (arquivada, lead anonimizado, sem permissão), o botão
+ * dele some.
  *
  * @param {{
  *   oportunidade: import('../../api/oportunidades.api').Oportunidade,
@@ -29,6 +29,9 @@ function Detalhe({ rotulo, children }) {
  *   nomePorId: Map<string, string>,
  *   onEditar?: () => void,
  *   onMudarStatus?: () => void,
+ *   onArquivar?: () => void,
+ *   onDesarquivar?: () => void,
+ *   onExcluir?: () => void,
  * }} props
  */
 export function ItemOportunidade({
@@ -38,6 +41,9 @@ export function ItemOportunidade({
   nomePorId,
   onEditar,
   onMudarStatus,
+  onArquivar,
+  onDesarquivar,
+  onExcluir,
 }) {
   const pipeline = pipelines.find((item) => item.id === oportunidade.pipelineId);
   const pipelineNome = pipeline?.nome ?? 'Pipeline removido';
@@ -85,6 +91,23 @@ export function ItemOportunidade({
             />
           )}
           {onEditar && <BotaoIcone icone={Pencil} onClick={onEditar} rotulo={`Editar ${titulo}`} />}
+          {onArquivar && (
+            <BotaoIcone icone={Archive} onClick={onArquivar} rotulo={`Arquivar ${titulo}`} />
+          )}
+          {onDesarquivar && (
+            <BotaoIcone
+              icone={ArchiveRestore}
+              onClick={onDesarquivar}
+              rotulo={`Desarquivar ${titulo}`}
+            />
+          )}
+          {onExcluir && (
+            <BotaoIcone
+              icone={Trash2}
+              onClick={onExcluir}
+              rotulo={`Mover ${titulo} para a lixeira`}
+            />
+          )}
         </div>
       </div>
 

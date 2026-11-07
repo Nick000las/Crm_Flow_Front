@@ -198,6 +198,13 @@ Uma pessoa pode ter várias **oportunidades**, cada uma em um pipeline e com o p
 (aba Oportunidades da ficha). Os pipelines ficam em CRM › Configurações › Pipelines, e os dados
 comerciais do lead vêm da oportunidade principal, escolhida pelo back.
 
+Com `crm.quadro_comercial` e `kanban_universal.quadros_entidade`, cada pipeline ativo aparece
+no Kanban como um quadro: cada status é uma coluna e cada oportunidade é um card. Arrastar muda
+o status, e o que as regras exigirem é pedido na hora. Busca, filtros e views são os da lista
+de leads, e cada quadro lembra a ordem escolhida neste navegador. O que muda em qualquer lugar
+do CRM aparece no quadro aberto, em tempo real. O campo Valor nasce pelo
+`pnpm crm:reconcile` do back.
+
 Com `kanban_universal.vinculo_entidade`, um card de projeto pode apontar para uma pessoa do
 CRM, e a ficha do lead ganha a aba **Projetos** com os cards dela. O vínculo é só leitura:
 nada muda no CRM.

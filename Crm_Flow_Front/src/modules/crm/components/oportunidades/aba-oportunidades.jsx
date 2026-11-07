@@ -1,20 +1,27 @@
-import { Handshake, Plus } from 'lucide-react';
+import { Handshake, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
+import { ConfirmationDialog } from '@/components/confirmation-dialog';
 import { ModulePlaceholder } from '@/components/module-placeholder';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { isAccessError } from '@/services/api';
 import { useCampos } from '../../hooks/use-campos';
-import { useOportunidades } from '../../hooks/use-oportunidades';
+import { useAcaoDaOportunidade, useOportunidades } from '../../hooks/use-oportunidades';
 import { usePipelines } from '../../hooks/use-pipelines';
 import { podeAlterar, podeMudarStatus } from '../../lib/oportunidades';
 import { ItemOportunidade } from './item-oportunidade';
+import { LixeiraOportunidades } from './lixeira-oportunidades';
 import { MudarStatusDialog } from './mudar-status-dialog';
 import { OportunidadeDialog } from './oportunidade-dialog';
 
 const CAMPOS_VAZIOS = [];
+const AVISO_DA_ACAO = Object.freeze({
+  arquivar: 'Oportunidade arquivada.',
+  desarquivar: 'Oportunidade desarquivada.',
+  excluir: 'Oportunidade na lixeira.',
+});
 
 function Carregando() {
   return (
@@ -45,7 +52,10 @@ export function AbaOportunidades({ lead, nomePorId }) {
   // `undefined` = fechado; `null` = criando; objeto = editando.
   const [emEdicao, setEmEdicao] = useState(undefined);
   const [mudandoStatus, setMudandoStatus] = useState(null);
+  const [aExcluir, setAExcluir] = useState(null);
+  const [comLixeira, setComLixeira] = useState(false);
   const [aviso, setAviso] = useState(null);
+  const acao = useAcaoDaOportunidade(lead.id);
 
   const erro = oportunidadesQuery.error ?? pipelinesQuery.error;
   if (isAccessError(erro)) {
@@ -69,6 +79,11 @@ export function AbaOportunidades({ lead, nomePorId }) {
     acao();
   }
 
+  function aplicar(id, nome) {
+    setAviso(null);
+    acao.mutate({ id, acao: nome }, { onSuccess: () => setAviso(AVISO_DA_ACAO[nome]) });
+  }
+
   const botaoNovo = !anonimizado && (
     <Button onClick={() => abrir(() => setEmEdicao(null))} size="sm">
       <Plus aria-hidden="true" />
@@ -83,6 +98,11 @@ export function AbaOportunidades({ lead, nomePorId }) {
       <p className={aviso ? 'border border-border px-3 py-2 text-sm' : 'sr-only'} role="status">
         {aviso}
       </p>
+      <ApiErrorAlert
+        error={acao.error}
+        id="oportunidades-acao-erro"
+        title="Não foi possível alterar a oportunidade"
+      />
 
       {oportunidades.length === 0 ? (
         <ModulePlaceholder
@@ -96,13 +116,20 @@ export function AbaOportunidades({ lead, nomePorId }) {
         <ul>
           {oportunidades.map((oportunidade) => {
             const alteravel = podeAlterar(oportunidade, lead);
+            const arquivada = Boolean(oportunidade.arquivadaEm);
+            const { id } = oportunidade;
 
             return (
               <ItemOportunidade
                 campos={campos}
                 key={oportunidade.id}
                 nomePorId={nomePorId}
+                onArquivar={alteravel ? () => aplicar(id, 'arquivar') : undefined}
+                onDesarquivar={
+                  arquivada && !anonimizado ? () => aplicar(id, 'desarquivar') : undefined
+                }
                 onEditar={alteravel ? () => abrir(() => setEmEdicao(oportunidade)) : undefined}
+                onExcluir={anonimizado ? undefined : () => setAExcluir(oportunidade)}
                 onMudarStatus={
                   alteravel && comStatus
                     ? () => abrir(() => setMudandoStatus(oportunidade))
@@ -115,6 +142,28 @@ export function AbaOportunidades({ lead, nomePorId }) {
           })}
         </ul>
       )}
+
+      <div className="grid gap-2 border-t border-border pt-3">
+        <Button
+          aria-expanded={comLixeira}
+          className="w-fit rounded-none"
+          onClick={() => setComLixeira((atual) => !atual)}
+          size="sm"
+          type="button"
+          variant="ghost"
+        >
+          <Trash2 aria-hidden="true" />
+          {comLixeira ? 'Esconder a lixeira' : 'Ver a lixeira'}
+        </Button>
+        {comLixeira && (
+          <LixeiraOportunidades
+            leadId={lead.id}
+            onRestaurada={() => setAviso('Oportunidade restaurada.')}
+            pipelines={pipelines}
+            podeRestaurar={!anonimizado}
+          />
+        )}
+      </div>
 
       <OportunidadeDialog
         campos={campos}
@@ -133,6 +182,19 @@ export function AbaOportunidades({ lead, nomePorId }) {
         oportunidade={mudandoStatus}
         pipelines={pipelines}
       />
+      {aExcluir && (
+        <ConfirmationDialog
+          confirmLabel="Mover para a lixeira"
+          description="Ela sai da ficha e do quadro. Dá para restaurar pela lixeira desta aba."
+          onClose={() => setAExcluir(null)}
+          onConfirm={async () => {
+            await acao.mutateAsync({ id: aExcluir.id, acao: 'excluir' });
+            setAviso(AVISO_DA_ACAO.excluir);
+          }}
+          pendingLabel="Movendo…"
+          title="Mover esta oportunidade para a lixeira?"
+        />
+      )}
     </div>
   );
 }

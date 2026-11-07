@@ -1,8 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import {
+  acaoDaOportunidade,
   criarOportunidade,
   editarOportunidade,
+  listarLixeira,
   listarOportunidades,
   mudarStatusDaOportunidade,
 } from '../api/oportunidades.api';
@@ -15,6 +17,16 @@ export function useOportunidades(leadId) {
   return useQuery({
     queryKey: crmKeys.oportunidades(leadId),
     queryFn: ({ signal }) => listarOportunidades(authApi, leadId, { signal }),
+  });
+}
+
+/** @param {string} leadId */
+export function useLixeiraDeOportunidades(leadId) {
+  const { authApi } = useAuth();
+
+  return useQuery({
+    queryKey: crmKeys.oportunidadesNaLixeira(leadId),
+    queryFn: ({ signal }) => listarLixeira(authApi, leadId, { signal }),
   });
 }
 
@@ -38,6 +50,12 @@ function useMutacaoDeOportunidade(leadId, mutationFn) {
         ].map((queryKey) => queryClient.invalidateQueries({ queryKey })),
       ),
   });
+}
+
+/** Arquivar, desarquivar, excluir e restaurar. @param {string} leadId */
+export function useAcaoDaOportunidade(leadId) {
+  const { authApi } = useAuth();
+  return useMutacaoDeOportunidade(leadId, ({ id, acao }) => acaoDaOportunidade(authApi, id, acao));
 }
 
 /** @param {string} leadId */

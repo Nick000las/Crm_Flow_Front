@@ -58,7 +58,7 @@ function Faixa({ legenda, nome, de, ate, tipo, erros, onChange }) {
  *   className?: string,
  * }} props
  */
-export function FiltrosFixos({ fixos, usuarios, erros, onChange, className }) {
+export function FiltrosFixos({ fixos, usuarios, erros, comValor, onChange, className }) {
   const faixas = useFaixasScore();
   // "Sem responsável" (sem dono ou dono desativado) vale mesmo sem a lista de usuários.
   const opcoesResponsavel = [
@@ -80,15 +80,17 @@ export function FiltrosFixos({ fixos, usuarios, erros, onChange, className }) {
           value={fixos.usuarioResponsavelId}
         />
       </div>
-      <Faixa
-        ate={fixos.valorMax}
-        de={fixos.valorMin}
-        erros={erros}
-        legenda="Valor (R$)"
-        nome={['valorMin', 'valorMax']}
-        onChange={onChange}
-        tipo="text"
-      />
+      {comValor && (
+        <Faixa
+          ate={fixos.valorMax}
+          de={fixos.valorMin}
+          erros={erros}
+          legenda="Valor (R$)"
+          nome={['valorMin', 'valorMax']}
+          onChange={onChange}
+          tipo="text"
+        />
+      )}
       <Faixa
         ate={fixos.criadoAte}
         de={fixos.criadoDe}

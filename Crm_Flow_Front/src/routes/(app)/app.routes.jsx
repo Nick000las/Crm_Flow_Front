@@ -5,6 +5,7 @@ import { PAPEIS_GESTAO } from '@/modules/crm/constants';
 import ConfiguracoesCrmPage from '@/modules/crm/pages/configuracoes-page';
 import ImportarPage from '@/modules/crm/pages/importar-page';
 import LeadsPage from '@/modules/crm/pages/leads-page';
+import QuadroPage from '@/modules/crm/pages/quadro-page';
 import { ROTAS_CRM } from '@/modules/crm/rotas';
 import DashboardPage from '@/modules/dashboard/pages/dashboard-page';
 import KanbanLayout from '@/modules/kanban/pages/kanban-layout';
@@ -22,6 +23,12 @@ export const appRoutes = [
     children: [
       { index: true, element: <KanbanEntryPage /> },
       { path: 'quadros', element: <BoardsManagementRoute /> },
+      {
+        // Quadro comercial: é do CRM, mas mora no Kanban. A ficha abre por cima.
+        path: 'pipeline/:quadroRef',
+        element: <QuadroPage />,
+        children: [{ path: 'leads/:leadId', element: <LeadSheet /> }],
+      },
     ],
   },
   {

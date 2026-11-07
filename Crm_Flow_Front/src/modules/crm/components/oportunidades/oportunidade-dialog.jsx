@@ -9,11 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { semChave } from '@/lib/objetos';
-import { cn } from '@/lib/utils';
 import { toApiError } from '@/services/api';
-import { MENSAGEM_SEM_PERMISSAO } from '../../constants';
 import { useCriarOportunidade, useEditarOportunidade } from '../../hooks/use-oportunidades';
 import { useUsuarios } from '../../hooks/use-usuarios';
 import {
@@ -27,11 +24,10 @@ import {
 } from '../../lib/oportunidades';
 import { pipelinesAtivos, statusAbertos } from '../../lib/pipelines';
 import { CampoForm } from '../campo-form';
-import { CampoMonetario, INPUT_CLASS } from '../campos-texto';
 import { SelectSimples } from '../select-simples';
+import { CamposOportunidade } from './campos-oportunidade';
 import { ErrosDoDialog } from './erros-do-dialog';
 
-const TAMANHO_TITULO = 200;
 const CHAVES_DO_DIALOG = Object.freeze([
   'pipelineId',
   'status',
@@ -71,7 +67,6 @@ function FormOportunidade({ oportunidade, lead, pipelines, campos, onSalvo, onCo
     (Object.keys(porCampo).length === 0 || outros.length > 0);
 
   const erroDe = (chave) => errosCliente[chave] ?? porCampo[chave];
-  const travado = (chave) => (acesso[chave].editavel ? null : MENSAGEM_SEM_PERMISSAO);
 
   function alterar(chave, valor) {
     setValores((atuais) => ({ ...atuais, [chave]: valor }));
@@ -149,85 +144,14 @@ function FormOportunidade({ oportunidade, lead, pipelines, campos, onSalvo, onCo
         </>
       )}
 
-      <CampoForm erro={erroDe('titulo')} id="oportunidade-titulo" label="Título">
-        {(controle) => (
-          <Input
-            {...controle}
-            autoFocus
-            className={INPUT_CLASS}
-            maxLength={TAMANHO_TITULO}
-            onChange={(event) => alterar('titulo', event.target.value)}
-            value={valores.titulo}
-          />
-        )}
-      </CampoForm>
-
-      <CampoForm erro={erroDe('valor')} id="oportunidade-valor" label="Valor">
-        {(controle) => (
-          <CampoMonetario
-            controle={controle}
-            onChange={(valor) => alterar('valor', valor)}
-            value={valores.valor}
-          />
-        )}
-      </CampoForm>
-
-      {acesso.probabilidadeFechamento.visivel && (
-        <CampoForm
-          erro={erroDe('probabilidadeFechamento')}
-          id="oportunidade-probabilidade"
-          label="Probabilidade (%)"
-          motivoTravado={travado('probabilidadeFechamento')}
-        >
-          {(controle) => (
-            <Input
-              {...controle}
-              className={cn(INPUT_CLASS, 'font-mono tabular-nums')}
-              inputMode="numeric"
-              onChange={(event) => alterar('probabilidadeFechamento', event.target.value)}
-              value={valores.probabilidadeFechamento}
-            />
-          )}
-        </CampoForm>
-      )}
-
-      {acesso.dataPrevistaFechamento.visivel && (
-        <CampoForm
-          erro={erroDe('dataPrevistaFechamento')}
-          id="oportunidade-data"
-          label="Previsão de fechamento"
-          motivoTravado={travado('dataPrevistaFechamento')}
-        >
-          {(controle) => (
-            <Input
-              {...controle}
-              className={cn(INPUT_CLASS, 'font-mono')}
-              onChange={(event) => alterar('dataPrevistaFechamento', event.target.value)}
-              type="date"
-              value={valores.dataPrevistaFechamento}
-            />
-          )}
-        </CampoForm>
-      )}
-
-      {acesso.responsavelId.visivel && (
-        <CampoForm
-          erro={erroDe('responsavelId')}
-          id="oportunidade-responsavel"
-          label="Responsável"
-          motivoTravado={travado('responsavelId')}
-        >
-          {(controle) => (
-            <SelectSimples
-              {...controle}
-              onChange={(valor) => alterar('responsavelId', valor)}
-              opcoes={usuarios.map((usuario) => ({ valor: usuario.id, rotulo: usuario.nome }))}
-              vazio="Sem responsável"
-              value={valores.responsavelId}
-            />
-          )}
-        </CampoForm>
-      )}
+      <CamposOportunidade
+        acesso={acesso}
+        erroDe={erroDe}
+        focarTitulo
+        onChange={alterar}
+        usuarios={usuarios}
+        valores={valores}
+      />
 
       <ErrosDoDialog
         erro={mutacao.error}

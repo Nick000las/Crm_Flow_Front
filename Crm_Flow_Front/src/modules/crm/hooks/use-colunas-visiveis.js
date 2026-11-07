@@ -1,23 +1,8 @@
 import { useCallback, useMemo, useState } from 'react';
+import { lerPreferencia, salvarPreferencia } from '@/lib/preferencia-local';
 import { sanearSelecao } from '../lib/colunas';
 
 const PREFIXO_CHAVE = 'crm:colunas:';
-
-function lerSalvo(chave) {
-  try {
-    return JSON.parse(localStorage.getItem(chave) ?? 'null');
-  } catch {
-    return null;
-  }
-}
-
-function salvar(chave, ids) {
-  try {
-    localStorage.setItem(chave, JSON.stringify(ids));
-  } catch {
-    // Storage bloqueado (aba privada, cota): a escolha vale só nesta sessão.
-  }
-}
 
 /**
  * Colunas escolhidas na tabela. Fica em `localStorage` por tenant porque é
@@ -29,7 +14,7 @@ function salvar(chave, ids) {
  */
 export function useColunasVisiveis(tenantId, colunas, padrao) {
   const chave = `${PREFIXO_CHAVE}${tenantId ?? 'anonimo'}`;
-  const [escolha, setEscolha] = useState(() => lerSalvo(chave));
+  const [escolha, setEscolha] = useState(() => lerPreferencia(chave));
 
   // Saneia na leitura: um campo desligado depois de salvo some sem quebrar.
   const ids = useMemo(() => sanearSelecao(escolha, colunas, padrao), [escolha, colunas, padrao]);
@@ -48,7 +33,7 @@ export function useColunasVisiveis(tenantId, colunas, padrao) {
       }
 
       setEscolha(proximos);
-      salvar(chave, proximos);
+      salvarPreferencia(chave, proximos);
     },
     [chave, ids],
   );
