@@ -25,10 +25,11 @@ import { LinhaFiltro } from './linha-filtro';
  *   campos: import('../types').Campo[],
  *   usuarios: { id: string, nome: string }[],
  *   chavesComErro: Set<string>,
+ *   comValor: boolean,
  *   onAplicar: (filtro: import('../lib/filtro').FiltroAplicado) => void,
  * }} props
  */
-export function ConstrutorFiltro({ filtro, campos, usuarios, chavesComErro, onAplicar }) {
+export function ConstrutorFiltro({ filtro, campos, usuarios, chavesComErro, comValor, onAplicar }) {
   const [aberto, setAberto] = useState(false);
   const [rascunho, setRascunho] = useState(rascunhoVazio);
   const [erros, setErros] = useState({});
@@ -112,6 +113,7 @@ export function ConstrutorFiltro({ filtro, campos, usuarios, chavesComErro, onAp
         <Separator />
 
         <FiltrosFixos
+          comValor={comValor}
           erros={erros}
           fixos={rascunho.fixos}
           onChange={(chave, valor) =>

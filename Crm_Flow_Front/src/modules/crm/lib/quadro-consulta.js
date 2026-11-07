@@ -1,0 +1,105 @@
+import { contarFiltros, paraCorpoDeBusca } from './filtro.js';
+
+/**
+ * Filtro e ordem do quadro comercial (M4): quem filtra e ordena é o servidor.
+ * O filtro é o mesmo da tabela; a ordem vale só para o quadro.
+ *
+ * @typedef {'atualizadoEm' | 'criadoEm' | 'nome' | 'valor' | 'dataPrevistaFechamento' | 'probabilidadeFechamento'} CampoDeOrdem
+ * @typedef {{ campo: CampoDeOrdem, direcao: 'asc' | 'desc' }} OrdemDoQuadro
+ * @typedef {{ filtros?: Record<string, unknown>, ordem?: OrdemDoQuadro }} ConsultaDoQuadro
+ *   chave ausente = o padrão do back
+ */
+
+export const DIRECAO = Object.freeze({ ASC: 'asc', DESC: 'desc' });
+
+/** @type {OrdemDoQuadro} */
+export const ORDEM_PADRAO = Object.freeze({ campo: 'atualizadoEm', direcao: DIRECAO.DESC });
+
+/** `exigeCampo`: o campo tem a mesma chave em `/fields`; sem ele, a ordem dá 400. */
+const ORDENS = Object.freeze([
+  { campo: 'atualizadoEm', rotulo: 'Última atualização' },
+  { campo: 'criadoEm', rotulo: 'Data de criação' },
+  { campo: 'nome', rotulo: 'Nome' },
+  { campo: 'valor', rotulo: 'Valor', exigeCampo: true },
+  { campo: 'dataPrevistaFechamento', rotulo: 'Data prevista', exigeCampo: true },
+  { campo: 'probabilidadeFechamento', rotulo: 'Probabilidade', exigeCampo: true },
+]);
+
+const DIRECOES = new Set(Object.values(DIRECAO));
+
+const AVISO_MOVIDO = 'Card movido.';
+const AVISO_CONFLITO = 'Card movido, mas outra pessoa mexeu nesta oportunidade antes. Confira.';
+const AVISO_SAIU_DO_FILTRO = 'Movido. Não aparece no filtro atual.';
+const AVISO_CONFLITO_FORA_DO_FILTRO = `${AVISO_SAIU_DO_FILTRO} Outra pessoa mexeu nesta oportunidade antes.`;
+
+/**
+ * Ordens que este papel pode escolher.
+ *
+ * @param {{ chave: string }[]} campos todos os de `/fields`
+ * @returns {{ valor: CampoDeOrdem, rotulo: string }[]}
+ */
+export function opcoesDeOrdem(campos) {
+  return ORDENS.filter(
+    ({ campo, exigeCampo }) => !exigeCampo || campos.some((atual) => atual.chave === campo),
+  ).map(({ campo, rotulo }) => ({ valor: campo, rotulo }));
+}
+
+/**
+ * Ordem salva → ordem que dá para pedir. O `localStorage` pode trazer lixo, ou
+ * um campo que o papel deixou de ver.
+ *
+ * @param {unknown} salva
+ * @param {{ chave: string }[]} campos
+ * @returns {OrdemDoQuadro}
+ */
+export function ordemValida(salva, campos) {
+  const { campo, direcao } = /** @type {Partial<OrdemDoQuadro>} */ (salva ?? {});
+  const disponivel = opcoesDeOrdem(campos).some((opcao) => opcao.valor === campo);
+
+  return disponivel && DIRECOES.has(direcao) ? { campo, direcao } : ORDEM_PADRAO;
+}
+
+/**
+ * Corpo comum de `/cards/busca`, e os `filtros` também vão em `/resumo` e em
+ * `/mover`. Sem filtro, a chave some: `/mover` só compara com o filtro quando
+ * há um na tela.
+ *
+ * @param {{ busca: string, filtro: import('./filtro.js').FiltroAplicado }} estado
+ * @param {OrdemDoQuadro} ordem
+ * @returns {ConsultaDoQuadro}
+ */
+export function montarConsulta({ busca, filtro }, ordem) {
+  const comFiltro = Boolean(busca) || contarFiltros(filtro) > 0;
+  const ordemPadrao = ordem.campo === ORDEM_PADRAO.campo && ordem.direcao === ORDEM_PADRAO.direcao;
+
+  return {
+    ...(comFiltro && { filtros: { ...(busca && { busca }), ...paraCorpoDeBusca(filtro) } }),
+    ...(!ordemPadrao && { ordem }),
+  };
+}
+
+/**
+ * Aviso depois de arrastar. `null` quando deu tudo certo e o card está à vista.
+ *
+ * @param {{ conflito: boolean, saiuDoFiltro: boolean }} resposta
+ * @returns {string | null}
+ */
+export function avisoDoMovimento({ conflito, saiuDoFiltro }) {
+  if (conflito && saiuDoFiltro) {
+    return AVISO_CONFLITO_FORA_DO_FILTRO;
+  }
+  if (saiuDoFiltro) {
+    return AVISO_SAIU_DO_FILTRO;
+  }
+  return conflito ? AVISO_CONFLITO : null;
+}
+
+/**
+ * Aviso depois do form de `CAMPOS_OBRIGATORIOS`: ele acabou de se fechar, então
+ * sempre confirma.
+ *
+ * @param {{ conflito: boolean, saiuDoFiltro: boolean }} resposta
+ */
+export function avisoDoFormulario(resposta) {
+  return avisoDoMovimento(resposta) ?? AVISO_MOVIDO;
+}

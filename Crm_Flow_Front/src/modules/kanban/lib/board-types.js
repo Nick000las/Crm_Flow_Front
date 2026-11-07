@@ -1,6 +1,7 @@
 const BOARD_TYPE_LABELS = {
   projetos: 'Projetos',
   postagens_agencia: 'Postagens',
+  crm_oportunidades: 'Pipeline',
 };
 
 export function getBoardTypeLabel(boardType) {

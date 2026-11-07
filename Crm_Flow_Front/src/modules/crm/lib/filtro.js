@@ -633,6 +633,23 @@ export function chavesForaDosCampos(fields, campos) {
   return [...chavesComErro(fields)].filter((chave) => !conhecidas.has(chave));
 }
 
+const semChaves = (objeto, chaves) =>
+  Object.fromEntries(Object.entries(objeto).filter(([chave]) => !chaves.includes(chave)));
+
+/**
+ * Sem o campo Valor em `/fields`, `valorMin`/`valorMax` dão 400: um link ou view
+ * antiga não quebra a lista.
+ *
+ * @param {FiltroAplicado} filtro
+ * @param {boolean} comValor
+ */
+export function filtroComValor(filtro, comValor) {
+  if (comValor) {
+    return filtro;
+  }
+  return semChaves(filtro, ['valorMin', 'valorMax']);
+}
+
 /** O filtro sem os itens dessas chaves. @param {FiltroAplicado} filtro @param {string[]} chaves */
 export function filtroSemChaves(filtro, chaves) {
   return { ...filtro, filtros: filtro.filtros.filter((item) => !chaves.includes(item.chave)) };

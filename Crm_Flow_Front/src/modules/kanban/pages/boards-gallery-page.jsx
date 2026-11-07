@@ -79,7 +79,7 @@ export default function BoardsGalleryPage() {
           {visibleBoards.length > 0 ? (
             <div className="kb-gallery-grid">
               {visibleBoards.map((board) => (
-                <AvailableBoardCard key={board.id} board={board} />
+                <AvailableBoardCard key={board.id ?? board.quadroRef} board={board} />
               ))}
             </div>
           ) : (

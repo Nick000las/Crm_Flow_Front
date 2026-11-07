@@ -4,6 +4,7 @@ import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import {
   MENSAGEM_CALCULADO,
+  MENSAGEM_SEM_ACESSO_PIPELINE,
   MENSAGEM_SEM_PERMISSAO,
   MENSAGEM_SOMENTE_LEITURA,
   TIPOS_CAMPO,
@@ -150,6 +151,9 @@ function motivoTravado(campo) {
   }
   if (campo.somenteLeitura) {
     return MENSAGEM_SOMENTE_LEITURA;
+  }
+  if (campo.semAcessoComercial) {
+    return MENSAGEM_SEM_ACESSO_PIPELINE;
   }
   return podeEditarCampo(campo) ? null : MENSAGEM_SEM_PERMISSAO;
 }

@@ -19,6 +19,7 @@ const totalFormatter = new Intl.NumberFormat('pt-BR');
  *   colunasSelecionadas: string[],
  *   onAlternarColuna: (id: string) => void,
  *   chavesComErro: Set<string>,
+ *   comValor: boolean,
  *   total: number | undefined,
  *   placeholderBusca: string,
  * }} props
@@ -32,6 +33,7 @@ export function LeadsToolbar({
   colunasSelecionadas,
   onAlternarColuna,
   chavesComErro,
+  comValor,
   total,
   placeholderBusca,
 }) {
@@ -45,6 +47,7 @@ export function LeadsToolbar({
       <ConstrutorFiltro
         campos={campos}
         chavesComErro={chavesComErro}
+        comValor={comValor}
         filtro={estado.filtro}
         onAplicar={(filtro) => atualizar({ filtro, pagina: 1 })}
         usuarios={usuarios}

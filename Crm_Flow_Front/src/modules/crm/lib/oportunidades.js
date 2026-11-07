@@ -1,4 +1,4 @@
-import { CAMADA, CATEGORIAS_STATUS, TIPOS_CAMPO } from '../constants.js';
+import { CAMADA, CATEGORIAS_STATUS, CHAVE_VALOR, TIPOS_CAMPO } from '../constants.js';
 import {
   CHAVE_RESPONSAVEL,
   MENSAGENS,
@@ -33,7 +33,7 @@ const CHAVE_DATA_PREVISTA = 'dataPrevistaFechamento';
 /** Cada dado do form: o tipo, e o campo de `/fields` que controla o acesso. */
 const DADOS = Object.freeze([
   { chave: 'titulo', tipo: TIPOS_CAMPO.TEXTO },
-  { chave: 'valor', tipo: TIPOS_CAMPO.MONETARIO },
+  { chave: CHAVE_VALOR, tipo: TIPOS_CAMPO.MONETARIO, campo: CHAVE_VALOR },
   { chave: CHAVE_PROBABILIDADE, tipo: TIPOS_CAMPO.NUMERO, campo: CHAVE_PROBABILIDADE },
   { chave: CHAVE_DATA_PREVISTA, tipo: TIPOS_CAMPO.DATA, campo: CHAVE_DATA_PREVISTA },
   { chave: 'responsavelId', tipo: TIPOS_CAMPO.TEXTO, campo: CHAVE_RESPONSAVEL, semFields: true },

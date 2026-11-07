@@ -21,6 +21,7 @@
  *   position: number,
  *   padrao: boolean,
  *   ativo: boolean,
+ *   visivelOperador: boolean,
  *   oportunidades: number,
  *   automacao: Automacao,
  *   status: StatusDoPipeline[],

@@ -22,6 +22,7 @@ const campos = [
   },
   { chave: 'status', coluna: 'status', label: 'Status', tipo: 'selecao', camada: 1, ordem: 4 },
   { chave: 'renda', label: 'Renda', tipo: 'numero', camada: 3, ordem: 10 },
+  { chave: 'valor', coluna: 'valor', label: 'Valor', tipo: 'monetario', camada: 2, ordem: 11 },
 ];
 
 const lead = {
@@ -39,11 +40,11 @@ test('lerValorDoCampo lê Camadas 1/2 pela coluna e Camada 3 em custom_fields', 
   assert.equal(lerValorDoCampo({ id: 'x' }, campos[5]), undefined);
 });
 
-test('montarColunas acrescenta Valor, Responsável e Criado em', () => {
+test('montarColunas acrescenta Responsável e Criado em', () => {
   const ids = montarColunas(campos).map((coluna) => coluna.id);
 
   assert.deepEqual(ids.slice(-3), ['valor', 'responsavel', 'criadoEm']);
-  assert.equal(ids.length, campos.length + 3);
+  assert.equal(ids.length, campos.length + 2);
 });
 
 test('lerValorDaColuna resolve colunas especiais', () => {

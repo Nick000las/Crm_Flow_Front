@@ -10,10 +10,23 @@ import {
   montarPayloadEdicao,
   payloadVazio,
   validarNoCliente,
+  marcarSemAcessoComercial,
+  podeEditarCampo,
   valoresIniciais,
+  versaoDoLead,
 } from './form-lead.js';
 
+const campoValor = {
+  chave: 'valor',
+  coluna: 'valor',
+  label: 'Valor',
+  tipo: 'monetario',
+  camada: 2,
+  obrigatorio: false,
+};
+
 const campos = [
+  campoValor,
   {
     chave: 'nome',
     coluna: 'nome',
@@ -95,6 +108,42 @@ const lead = {
   custom_fields: { renda: 3000 },
 };
 
+describe('sem acesso à principal (D4)', () => {
+  const lista = [
+    campoValor,
+    { chave: 'status', coluna: 'status', label: 'Status', tipo: 'selecao', camada: 1 },
+    { chave: 'empresa', coluna: 'empresa', label: 'Empresa', tipo: 'texto', camada: 2 },
+    { chave: 'valor', label: 'Valor interno', tipo: 'texto', camada: 3 },
+  ];
+
+  test('status null trava só o comercial do sistema', () => {
+    const marcados = marcarSemAcessoComercial(lista, { status: null });
+
+    assert.deepEqual(
+      marcados.map((campo) => podeEditarCampo(campo)),
+      [false, false, true, true],
+    );
+  });
+
+  test('campo oculto pela permissão (chave ausente) não é falta de acesso à principal', () => {
+    assert.equal(marcarSemAcessoComercial(lista, { nome: 'Ana' }), lista);
+    assert.equal(marcarSemAcessoComercial(lista, undefined), lista);
+  });
+
+  test('o comercial travado não vai no diff', () => {
+    const marcados = marcarSemAcessoComercial(lista, { status: null });
+    const iniciais = { valor: '', status: '', empresa: 'Acme' };
+    const valores = { valor: '10', status: 'novo', empresa: 'Beta' };
+
+    assert.deepEqual(montarPayloadEdicao(marcados, iniciais, valores), { empresa: 'Beta' });
+  });
+});
+
+test('versaoDoLead normaliza para ISO', () => {
+  assert.equal(versaoDoLead({ updated_at: '2026-11-06T12:00:00Z' }), '2026-11-06T12:00:00.000Z');
+  assert.equal(versaoDoLead(undefined), undefined);
+});
+
 describe('limites comerciais', () => {
   test('valor negativo e probabilidade fora de 0 a 100 barram no cliente', () => {
     const probabilidade = {
@@ -105,7 +154,8 @@ describe('limites comerciais', () => {
       obrigatorio: false,
     };
     const base = { email: 'a@b.co', probabilidadeFechamento: '40', valor: '10' };
-    const validar = (valores) => validarNoCliente([probabilidade], { ...base, ...valores });
+    const validar = (valores) =>
+      validarNoCliente([probabilidade, campoValor], { ...base, ...valores });
 
     assert.deepEqual(validar({}), {});
     assert.equal(validar({ valor: '-1' }).valor, MENSAGENS.VALOR_NEGATIVO);

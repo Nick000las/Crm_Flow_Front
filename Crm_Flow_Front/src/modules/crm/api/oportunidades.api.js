@@ -41,6 +41,29 @@ export function listarOportunidades(authApi, leadId, options) {
 }
 
 /**
+ * @param {import('@/hooks/create-auth-session').AuthApi} authApi
+ * @param {string} leadId
+ * @param {{ signal?: AbortSignal }} [options]
+ * @returns {Promise<Oportunidade[]>}
+ */
+export function listarLixeira(authApi, leadId, options) {
+  return authApi.get(`${doLead(leadId)}?situacao=lixeira`, options);
+}
+
+/**
+ * Sem corpo; responde a oportunidade. Arquivada segue na lista, com
+ * `arquivadaEm`, e sai do quadro.
+ *
+ * @param {import('@/hooks/create-auth-session').AuthApi} authApi
+ * @param {string} id
+ * @param {'arquivar' | 'desarquivar' | 'excluir' | 'restaurar'} acao
+ * @returns {Promise<Oportunidade>}
+ */
+export function acaoDaOportunidade(authApi, id, acao) {
+  return authApi.post(`${caminho(id)}/${acao}`);
+}
+
+/**
  * Tudo opcional: sem pipeline, o padrão; sem status, o primeiro aberto.
  *
  * @param {import('@/hooks/create-auth-session').AuthApi} authApi

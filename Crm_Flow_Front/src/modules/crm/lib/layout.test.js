@@ -75,6 +75,18 @@ const lead = {
   usuario_responsavel_id: 'u1',
 };
 
+test('o campo Valor sai do editor; a referência lead.valor fica', () => {
+  const opcoes = opcoesDoEditor([
+    { id: 'c1', chave: 'valor', label: 'Valor', tipo: 'monetario', camada: 2 },
+    { id: 'c2', chave: 'empresa', label: 'Empresa', tipo: 'texto', camada: 2 },
+  ]);
+
+  assert.deepEqual(
+    opcoes.filter((opcao) => opcao.chave === 'valor').map((opcao) => opcao.ref),
+    ['lead.valor'],
+  );
+});
+
 describe('título e subtítulo', () => {
   test('identificador formatado; vazio cai no Nome; sem Nome, "Lead sem nome"', () => {
     assert.equal(tituloDoLead(lead, cnpj), '12.345.678/0001-90');

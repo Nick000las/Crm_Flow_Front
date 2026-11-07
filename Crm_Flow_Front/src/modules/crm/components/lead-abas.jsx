@@ -1,19 +1,13 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useProjetosDoLead } from '../hooks/use-projetos-do-lead';
+import { ABAS_LEAD as ABA } from '../rotas';
 import { AbaAtividades } from './atividades/aba-atividades';
 import { AbaHistorico } from './historico/aba-historico';
 import { LeadDetalhe } from './lead-detalhe';
 import { AbaOportunidades } from './oportunidades/aba-oportunidades';
 import { AbaProjetos } from './projetos/aba-projetos';
 
-const ABA = Object.freeze({
-  DADOS: 'dados',
-  OPORTUNIDADES: 'oportunidades',
-  ATIVIDADES: 'atividades',
-  HISTORICO: 'historico',
-  PROJETOS: 'projetos',
-});
 const PAINEL_CLASS = 'min-h-0 overflow-y-auto px-4 pb-4';
 
 /**
@@ -22,6 +16,7 @@ const PAINEL_CLASS = 'min-h-0 overflow-y-auto px-4 pb-4';
  * ligados ao lead. Só a aba aberta monta (e busca).
  *
  * @param {{
+ *   abaInicial?: string,
  *   comAtividades: boolean,
  *   lead: import('../types').Lead,
  *   campos: import('../types').Campo[],
@@ -29,8 +24,15 @@ const PAINEL_CLASS = 'min-h-0 overflow-y-auto px-4 pb-4';
  *   nomePorId: Map<string, string>,
  * }} props
  */
-export function LeadAbas({ comAtividades, lead, campos, layout, nomePorId }) {
-  const [aba, setAba] = useState(ABA.DADOS);
+export function LeadAbas({
+  abaInicial = ABA.DADOS,
+  comAtividades,
+  lead,
+  campos,
+  layout,
+  nomePorId,
+}) {
+  const [aba, setAba] = useState(abaInicial);
   const projetos = useProjetosDoLead(lead.id);
   const comProjetos = projetos.length > 0;
 

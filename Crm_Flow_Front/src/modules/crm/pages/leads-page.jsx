@@ -18,28 +18,19 @@ import { ExportarDialog } from '../components/exportar-dialog';
 import { LeadsToolbar } from '../components/leads-toolbar';
 import { LeadsConteudo } from '../components/leads-conteudo';
 import { MesclarDialog } from '../components/mesclagem/mesclar-dialog';
-import {
-  AVISOS_LEAD,
-  BULK,
-  CONTEXTO,
-  CRM_FEATURES,
-  PAPEIS_GESTAO,
-  SITUACOES_LEAD,
-} from '../constants';
+import { AVISOS_LEAD, BULK, CRM_FEATURES, PAPEIS_GESTAO, SITUACOES_LEAD } from '../constants';
 import { useAcoesDeArquivo } from '../hooks/use-acoes-de-arquivo';
 import { useCampos } from '../hooks/use-campos';
 import { useColunasDaLista } from '../hooks/use-colunas-da-lista';
 import { useEstadoLista } from '../hooks/use-estado-lista';
+import { useFiltroPermitido } from '../hooks/use-filtro-permitido';
 import { useLeadsSearch } from '../hooks/use-leads-search';
 import { useNavegacaoLeads } from '../hooks/use-navegacao-leads';
 import { useSelecaoLeads } from '../hooks/use-selecao-leads';
 import { useUsuarios } from '../hooks/use-usuarios';
 import { useFaixasScore } from '../hooks/use-score';
 import { situacaoDaBusca } from '../lib/arquivo';
-import { filtroDaBusca } from '../lib/inatividade';
-import { filtroComScore } from '../lib/score';
 import { avisoDoResultado } from '../lib/massa';
-import { camposDoContexto } from '../lib/contextos';
 import { placeholderDaBusca } from '../lib/layout';
 import { FILTRO_VAZIO, chavesComErro, chavesForaDosCampos, chipsDoFiltro } from '../lib/filtro';
 import { ID_BOTAO_NOVO_LEAD } from '../rotas';
@@ -60,20 +51,17 @@ export default function LeadsPage() {
   const comArquivo = temFeature(user, CRM_FEATURES.ARQUIVO);
   // Sem a flag, um link ou view da lixeira cai em "ativos" (o back daria 403).
   const situacao = situacaoDaBusca(estadoDaUrl.situacao, comArquivo);
-  // Sem `crm.inatividade`, o "esfriando" de um link ou view antiga sai (idem).
-  const comInatividade = temFeature(user, CRM_FEATURES.INATIVIDADE);
-  const comScore = temFeature(user, CRM_FEATURES.SCORE);
+  const camposQuery = useCampos();
+  const { filtro, comValor, camposDoFiltro } = useFiltroPermitido(
+    estadoDaUrl.filtro,
+    camposQuery.data,
+  );
   const estado = useMemo(
-    () => ({
-      ...estadoDaUrl,
-      situacao,
-      filtro: filtroComScore(filtroDaBusca(estadoDaUrl.filtro, comInatividade), comScore),
-    }),
-    [estadoDaUrl, situacao, comInatividade, comScore],
+    () => ({ ...estadoDaUrl, situacao, filtro }),
+    [estadoDaUrl, situacao, filtro],
   );
   const naLixeira = situacao === SITUACOES_LEAD.LIXEIRA;
   const { destinos, abrirLead, voltarParaLista } = useNavegacaoLeads();
-  const camposQuery = useCampos();
   const leadsQuery = useLeadsSearch(estado);
   const arquivo = useAcoesDeArquivo(voltarParaLista);
   const { usuarios, nomePorId } = useUsuarios();
@@ -105,7 +93,6 @@ export default function LeadsPage() {
   // Chips e export usam todos: um filtro antigo por campo fora de "Filtros"
   // ainda precisa do rótulo (o back o recusa com 400, destacado no chip).
   const campos = camposQuery.data ?? CAMPOS_VAZIOS;
-  const camposDoFiltro = useMemo(() => camposDoContexto(campos, CONTEXTO.FILTRO), [campos]);
   const { identificador, colunas, ids, visiveis, alternar } = useColunasDaLista(
     campos,
     user?.tenantId,
@@ -183,6 +170,7 @@ export default function LeadsPage() {
         atualizar={atualizar}
         campos={camposDoFiltro}
         chavesComErro={errosDeFiltro}
+        comValor={comValor}
         colunas={colunas}
         colunasSelecionadas={ids}
         estado={estado}

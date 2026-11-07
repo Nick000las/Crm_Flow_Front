@@ -1,8 +1,7 @@
-import { EyeOff } from 'lucide-react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
-import { Button } from '@/components/ui/button';
 import { SITUACOES_LEAD } from '../constants';
 import { FILTRO_VAZIO, contarFiltros, filtroSemChaves } from '../lib/filtro';
+import { FiltroComCampoOculto } from './filtro-com-campo-oculto';
 import { LeadsTable, LeadsTableSkeleton } from './leads-table';
 import { LeadsNaoEncontrados, LeadsVazio, PaginaSemLeads, SituacaoVazia } from './leads-vazio';
 import { Paginacao } from './paginacao';
@@ -10,26 +9,6 @@ import { Paginacao } from './paginacao';
 const ERRO_ID = 'crm-leads-erro';
 // Sem `situacao`: limpar a busca não troca de aba.
 const SEM_FILTRO = Object.freeze({ busca: '', filtro: FILTRO_VAZIO, pagina: 1 });
-
-/**
- * O filtro (uma view salva por outra pessoa, um link) usa um campo oculto
- * para este usuário (permissão por campo): o back dá 400. Em vez do erro
- * genérico, explica e oferece tirar só esses itens.
- */
-function FiltroComCampoOculto({ onTirar }) {
-  return (
-    <div
-      className="flex flex-wrap items-center gap-3 border border-border px-4 py-3 text-sm"
-      role="alert"
-    >
-      <EyeOff aria-hidden="true" className="size-4 text-muted-foreground" />
-      <p className="flex-1">Este filtro usa um campo que você não pode ver.</p>
-      <Button onClick={onTirar} size="sm" variant="outline">
-        Tirar este filtro
-      </Button>
-    </div>
-  );
-}
 
 /**
  * Corpo da lista: escolhe entre erro, carregando, os estados vazios e a

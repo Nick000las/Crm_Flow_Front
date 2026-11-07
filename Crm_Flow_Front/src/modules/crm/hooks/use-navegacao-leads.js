@@ -1,22 +1,28 @@
 import { useCallback, useMemo } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useOutletContext } from 'react-router-dom';
 import { ROTAS_CRM } from '../rotas';
 
 /**
  * Navegação entre a lista e o Sheet preservando a query string: abrir um lead
- * e voltar mantém busca, página e tamanho.
+ * e voltar mantém busca, página e tamanho. Aberto sobre o quadro comercial, a
+ * rota-pai manda `baseDoLead` pelo Outlet, e o Sheet volta para ela.
  */
 export function useNavegacaoLeads() {
   const navigate = useNavigate();
   const { search } = useLocation();
 
+  const baseDoLead = useOutletContext()?.baseDoLead;
+
   const destinos = useMemo(
     () => ({
-      lista: { pathname: ROTAS_CRM.LISTA, search },
+      lista: { pathname: baseDoLead ?? ROTAS_CRM.LISTA, search },
       novo: { pathname: ROTAS_CRM.NOVO_LEAD, search },
-      lead: (id) => ({ pathname: ROTAS_CRM.lead(id), search }),
+      lead: (id) => ({
+        pathname: baseDoLead ? `${baseDoLead}/leads/${encodeURIComponent(id)}` : ROTAS_CRM.lead(id),
+        search,
+      }),
     }),
-    [search],
+    [baseDoLead, search],
   );
 
   /**

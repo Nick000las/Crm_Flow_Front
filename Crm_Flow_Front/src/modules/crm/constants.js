@@ -267,6 +267,10 @@ export const ACESSOS_CAMPO = Object.freeze({ EDITAR: 'edit', VER: 'view', OCULTO
 export const ROTULOS_ACESSO = Object.freeze({ edit: 'Editar', view: 'Só ver', hidden: 'Oculto' });
 
 export const MENSAGEM_SEM_PERMISSAO = 'Sem permissão para editar';
+export const MENSAGEM_SEM_ACESSO_PIPELINE = 'Sem acesso ao pipeline desta oportunidade';
+
+/** Campo do sistema Valor (M3): pode não vir para o papel, e aí some da lista toda. */
+export const CHAVE_VALOR = 'valor';
 
 /** Pontuação de leads (`crm.score`): espelho dos limites do back. */
 export const SCORE = Object.freeze({

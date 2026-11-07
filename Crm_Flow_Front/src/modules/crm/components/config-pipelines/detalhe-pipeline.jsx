@@ -1,6 +1,7 @@
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { ApiErrorAlert } from '@/components/api-error-alert';
+import { ConfirmationDialog } from '@/components/confirmation-dialog';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -45,6 +46,54 @@ function StatusEmLeitura({ status }) {
   );
 }
 
+/**
+ * Vale só para OPERADOR. Ocultar o padrão pede confirmação: é onde o que o
+ * OPERADOR cria nasce, e a pessoa pode sumir para ele.
+ */
+function VisibilidadeDoPipeline({ pipeline }) {
+  const atualizar = useAtualizarPipeline();
+  const [confirmando, setConfirmando] = useState(false);
+  const id = `pipeline-${pipeline.id}-visivel`;
+  const visivel = atualizar.isPending
+    ? atualizar.variables.parcial.visivelOperador
+    : pipeline.visivelOperador;
+
+  function salvar(visivelOperador) {
+    return atualizar.mutateAsync({ id: pipeline.id, parcial: { visivelOperador } });
+  }
+
+  return (
+    <>
+      <label className="flex items-center gap-2 text-sm" htmlFor={id}>
+        <Switch
+          checked={visivel}
+          disabled={atualizar.isPending}
+          id={id}
+          onCheckedChange={(proximo) =>
+            pipeline.padrao && !proximo ? setConfirmando(true) : salvar(proximo).catch(() => {})
+          }
+        />
+        Visível para operadores
+      </label>
+      <ApiErrorAlert
+        error={confirmando ? null : atualizar.error}
+        id={`${id}-erro`}
+        title="Não foi possível mudar a visibilidade"
+      />
+      {confirmando && (
+        <ConfirmationDialog
+          confirmLabel="Ocultar"
+          description="O que os operadores criarem neste pipeline deixa de aparecer para eles, se a pessoa não tiver outra oportunidade visível."
+          onClose={() => setConfirmando(false)}
+          onConfirm={() => salvar(false)}
+          pendingLabel="Ocultando…"
+          title="Ocultar o pipeline padrão dos operadores?"
+        />
+      )}
+    </>
+  );
+}
+
 /** Ativo, renomear e excluir. Desativar mantém as oportunidades e impede criar novas. */
 function AcoesDoPipeline({ pipeline, pipelines, onAviso }) {
   const atualizar = useAtualizarPipeline();
@@ -85,6 +134,8 @@ function AcoesDoPipeline({ pipeline, pipelines, onAviso }) {
           />
         </ControleTravado>
       </div>
+
+      <VisibilidadeDoPipeline pipeline={pipeline} />
 
       <ApiErrorAlert
         error={atualizar.error}
@@ -201,6 +252,7 @@ export function DetalhePipeline({ pipeline, pipelines, podeEditar, onAviso }) {
             {ROTULOS_TIPO_PIPELINE[pipeline.tipo]}
             {pipeline.padrao && ' · Padrão'}
             {!pipeline.ativo && ' · Inativo'}
+            {!pipeline.visivelOperador && ' · Oculto para operadores'}
             {' · '}
             <span className="font-mono tabular-nums">{contagem(pipeline.oportunidades)}</span>
           </p>
