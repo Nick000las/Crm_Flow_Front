@@ -73,7 +73,8 @@ export function SecaoCampos() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <p className="max-w-2xl text-sm text-muted-foreground">
           Escolha em que telas cada campo aparece e a ordem dele no formulário. Desligar uma tela
-          não apaga os dados já preenchidos.
+          não apaga os dados já preenchidos. Campo sensível fica oculto para o Operador e fora da
+          exportação padrão.
         </p>
         <div className="flex gap-2">
           <Button onClick={() => abrir(() => setRestaurando(true))} variant="outline">

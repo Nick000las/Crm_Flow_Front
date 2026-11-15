@@ -17,6 +17,7 @@ export const MOTIVOS = Object.freeze({
   OBRIGATORIEDADE_FIXA: 'A obrigatoriedade deste campo é fixa.',
   LIGUE_CRIACAO: 'Ligue "Criação" antes de tornar o campo obrigatório.',
   NAO_RENOMEIA: 'Este campo não pode ser renomeado.',
+  NAO_SENSIVEL: 'Nome, contato e os campos da LGPD não podem ser sensíveis.',
 });
 
 /**
@@ -27,6 +28,7 @@ export const MOTIVOS = Object.freeze({
  *   visibilidade: Record<Contexto, string | null>,
  *   obrigatorio: string | null,
  *   renomear: string | null,
+ *   sensivel: string | null,
  * }}
  */
 export function bloqueios(campo) {
@@ -55,6 +57,7 @@ export function bloqueios(campo) {
     ),
     obrigatorio: motivoObrigatorio,
     renomear: capacidades.canRename ? null : MOTIVOS.NAO_RENOMEIA,
+    sensivel: capacidades.canBeSensitive ? null : MOTIVOS.NAO_SENSIVEL,
   };
 }
 

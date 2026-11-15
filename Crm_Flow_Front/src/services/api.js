@@ -23,6 +23,8 @@ export const API_BASE_URL = (import.meta.env?.VITE_API_URL?.trim() || DEFAULT_AP
   '',
 );
 
+const STATUS_MUITAS_TENTATIVAS = 429;
+
 function buildApiUrl(path) {
   return `${API_BASE_URL}/${path.replace(/^\/+/, '')}`;
 }
@@ -115,7 +117,13 @@ export async function apiRequest(path, options = {}) {
   }
 
   if (!response.ok) {
-    throw createApiErrorFromResponse(data, response.status);
+    const erro = createApiErrorFromResponse(data, response.status);
+    // 429: quantos segundos esperar (a página pública do formulário mostra).
+    const retryAfter = Number(response.headers.get('Retry-After'));
+    if (response.status === STATUS_MUITAS_TENTATIVAS && retryAfter > 0) {
+      erro.retryAfter = retryAfter;
+    }
+    throw erro;
   }
 
   return unwrapResponseData(data);

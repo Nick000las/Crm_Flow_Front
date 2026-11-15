@@ -30,6 +30,11 @@ export const crmKeys = {
   historico: (leadId) => ['crm', 'historico', leadId],
   projetos: (leadId) => ['crm', 'projetos', leadId],
   oportunidades: (leadId) => ['crm', 'oportunidades', leadId],
+  linksDeFormulario: (leadId) => ['crm', 'formularios-da-pessoa', leadId],
+  // Dentro do prefixo dos links: recarregar os links recarrega as respostas.
+  respostasDeFormulario: (leadId) => ['crm', 'formularios-da-pessoa', leadId, 'respostas'],
+  respostaDeFormulario: (leadId, id) => ['crm', 'formularios-da-pessoa', leadId, 'respostas', id],
+  formulariosDisponiveis: () => ['crm', 'formularios-disponiveis'],
   oportunidadesNaLixeira: (leadId) => ['crm', 'oportunidades', leadId, 'lixeira'],
   // Prefixo do histórico de todos os leads (edição em massa).
   historicos: () => ['crm', 'historico'],
@@ -49,6 +54,18 @@ export const crmKeys = {
   permissoes: () => ['crm', 'configuracoes', 'permissoes'],
   configScore: () => ['crm', 'configuracoes', 'score'],
   lgpd: () => ['crm', 'configuracoes', 'lgpd'],
+  formularios: () => ['crm', 'configuracoes', 'formularios'],
+  formulario: (id) => ['crm', 'configuracoes', 'formularios', id],
+  formularioVersao: (id, versaoId) => [
+    'crm',
+    'configuracoes',
+    'formularios',
+    id,
+    'versao',
+    versaoId,
+  ],
+  // Fora do prefixo `formularios()`: mudar um campo recarrega só os elegíveis.
+  formulariosElegiveis: () => ['crm', 'configuracoes', 'formularios-elegiveis'],
   // Prefixo de todos os leads abertos (`lead(id)`).
   leadsAbertos: () => ['crm', 'lead'],
   importJob: (jobId) => ['crm', 'import', jobId],

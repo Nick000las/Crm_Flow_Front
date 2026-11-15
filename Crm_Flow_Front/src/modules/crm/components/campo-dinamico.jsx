@@ -170,14 +170,16 @@ function motivoTravado(campo) {
  *   onChange: (valor: unknown) => void,
  *   erro?: string | null,
  *   onBlur?: () => void,
- * }} props `onBlur` vai para o input (ex.: checar duplicidade ao sair do campo)
+ *   ajuda?: string | null,
+ * }} props `onBlur` vai para o input (ex.: checar duplicidade ao sair do campo);
+ *   `ajuda` troca a dica padrão da chave (a pergunta do formulário traz a sua)
  */
-export function CampoDinamico({ campo, id, value, onChange, erro, onBlur }) {
+export function CampoDinamico({ campo, id, value, onChange, erro, onBlur, ajuda }) {
   const Controle = escolherControle(campo);
 
   return (
     <CampoForm
-      ajuda={AJUDA_POR_CHAVE[campo.chave]}
+      ajuda={ajuda ?? AJUDA_POR_CHAVE[campo.chave]}
       comoGrupo={CONTROLES_EM_GRUPO.has(Controle)}
       erro={erro}
       id={id}

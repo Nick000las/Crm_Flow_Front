@@ -36,7 +36,8 @@
  * @property {boolean} obrigatorio
  * @property {number} ordem
  * @property {Visibilidade} visibilidade
- * @property {{ canHide: boolean, canMakeOptional: boolean, canRename: boolean }} capacidades
+ * @property {boolean} sensivel  oculto para o OPERADOR e fora da exportação padrão (FM1)
+ * @property {{ canHide: boolean, canMakeOptional: boolean, canRename: boolean, canBeSensitive: boolean }} capacidades
  *
  * @typedef {Object} Lead  Leitura de lead (snake_case). NUMERIC chega como string.
  * @property {string} id

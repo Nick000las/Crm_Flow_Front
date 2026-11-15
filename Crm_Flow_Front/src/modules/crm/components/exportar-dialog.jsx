@@ -32,6 +32,11 @@ function ListaDeColunas({ itens, onAlternar, onMover }) {
   return (
     <fieldset className="grid gap-1.5">
       <legend className="mb-1.5 text-sm font-medium">Colunas, na ordem da planilha</legend>
+      {itens.some((item) => item.sensivel) && (
+        <p className="text-xs text-muted-foreground">
+          Campos sensíveis começam desmarcados. Marque só se a planilha precisar deles.
+        </p>
+      )}
       <ol className="max-h-72 divide-y divide-border overflow-y-auto border border-border">
         {itens.map((item, indice) => {
           const id = `exportar-${item.chave}`;

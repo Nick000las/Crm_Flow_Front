@@ -1,4 +1,4 @@
-import { ORIGEM_DISTRIBUICAO, TIPOS_EVENTO } from '../constants.js';
+import { ORIGEM_DISTRIBUICAO, ORIGEM_FORMULARIO, TIPOS_EVENTO } from '../constants.js';
 import { formatarCnpj } from './formatadores.js';
 import { textoDoValor } from './layout.js';
 
@@ -49,7 +49,15 @@ export function tituloDoEvento(evento) {
     case TIPOS_EVENTO.CRIADO:
       return { titulo: `Criado por ${autor}`, comAutor: true };
     case TIPOS_EVENTO.ATUALIZADO:
-      return { titulo: `${autor} alterou`, comAutor: true };
+      // FM4: quem gravou foi a resposta do formulário, não um usuário.
+      return evento.detalhes?.origem === ORIGEM_FORMULARIO
+        ? { titulo: 'Atualizado pelo formulário', comAutor: true }
+        : { titulo: `${autor} alterou`, comAutor: true };
+    case TIPOS_EVENTO.FORMULARIO_RESPONDIDO:
+      return {
+        titulo: `Respondeu o formulário ${evento.detalhes?.formularioNome ?? ''}`.trim(),
+        comAutor: true,
+      };
     case TIPOS_EVENTO.MESCLADO:
       return {
         titulo: `Mesclado com ${evento.detalhes?.nomeDescartado || 'outro lead'}`,

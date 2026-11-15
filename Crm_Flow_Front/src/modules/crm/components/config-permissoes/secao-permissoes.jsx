@@ -23,6 +23,7 @@ import {
 } from '../../lib/permissoes';
 import { ControleTravado } from '../controle-travado';
 import { SelectSimples } from '../select-simples';
+import { SeloSensivel } from '../selo-sensivel';
 
 const HEAD_CLASS =
   'font-mono text-[11px] font-normal uppercase tracking-wide text-muted-foreground';
@@ -115,6 +116,7 @@ function FormPermissoes({ config, onSalvo }) {
               <TableRow key={campo.id}>
                 <TableCell className="min-w-48">
                   <span className="text-sm">{campo.label}</span>
+                  {campo.sensivel && <SeloSensivel className="ml-2" />}
                   {campo.camada === CAMADA.CAMADA_3 && (
                     <span className="ml-2 font-mono text-[11px] text-muted-foreground">
                       personalizado

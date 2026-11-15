@@ -1,5 +1,6 @@
 import { History } from 'lucide-react';
 import { useState } from 'react';
+import { TIPOS_EVENTO } from '../../constants';
 import { AcessoIndisponivel } from '@/components/acesso-indisponivel';
 import { ApiErrorAlert } from '@/components/api-error-alert';
 import { ModulePlaceholder } from '@/components/module-placeholder';
@@ -91,7 +92,7 @@ function Lado({ texto }) {
  * Um evento da timeline: título ("Criado por Ana", "Arquivado"), data e
  * autor, a distribuição (no `criado`) e o diff ("Status: Novo → Ganho").
  */
-function Evento({ evento, nomePorId }) {
+function Evento({ evento, nomePorId, onAbrirResposta }) {
   const { titulo, comAutor } = tituloDoEvento(evento);
   const detalhe = detalheDoEvento(evento);
   const itens = itensDoEvento(evento, nomePorId);
@@ -107,6 +108,20 @@ function Evento({ evento, nomePorId }) {
         {!comAutor && ` · por ${autorDoEvento(evento)}`}
       </p>
       {detalhe && <p className="text-sm text-muted-foreground">{detalhe}</p>}
+      {onAbrirResposta &&
+        evento.tipo === TIPOS_EVENTO.FORMULARIO_RESPONDIDO &&
+        evento.detalhes?.respostaId && (
+          <div>
+            <Button
+              className="h-auto rounded-none px-0 text-sm"
+              onClick={() => onAbrirResposta(evento.detalhes.respostaId)}
+              type="button"
+              variant="link"
+            >
+              Ver resposta
+            </Button>
+          </div>
+        )}
       {itens.length > 0 && (
         <ul className="grid gap-0.5 text-sm">
           {itens.map((item, indice) => (
@@ -127,9 +142,13 @@ function Evento({ evento, nomePorId }) {
  * recente para o mais antigo. Com `crm.timeline`, chips por categoria
  * (`?categorias=`). O back já tira os campos que o papel não vê.
  *
- * @param {{ leadId: string, nomePorId: Map<string, string> }} props
+ * @param {{
+ *   leadId: string,
+ *   nomePorId: Map<string, string>,
+ *   onAbrirResposta?: (respostaId: string) => void,
+ * }} props `onAbrirResposta` (com `crm.formularios`): o evento da resposta abre ela
  */
-export function AbaHistorico({ leadId, nomePorId }) {
+export function AbaHistorico({ leadId, nomePorId, onAbrirResposta }) {
   const [selecionadas, setSelecionadas] = useState(() => new Set());
   const categoriasQuery = useCategoriasHistorico();
   const categorias = categoriasQuery.data ?? [];
@@ -197,7 +216,12 @@ export function AbaHistorico({ leadId, nomePorId }) {
           className={cn('ml-1 border-l border-border pt-0.5', carregandoFiltro && 'opacity-60')}
         >
           {eventos.map((evento) => (
-            <Evento evento={evento} key={evento.id} nomePorId={nomePorId} />
+            <Evento
+              evento={evento}
+              key={evento.id}
+              nomePorId={nomePorId}
+              onAbrirResposta={onAbrirResposta}
+            />
           ))}
         </ol>
       )}

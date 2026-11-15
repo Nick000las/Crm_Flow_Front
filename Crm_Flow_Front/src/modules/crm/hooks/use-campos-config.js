@@ -14,9 +14,12 @@ function useMutacaoDeCampos(mutationFn) {
     mutationFn,
     onSuccess: () =>
       Promise.all(
-        [crmKeys.campos(), crmKeys.leads(), crmKeys.camposConfigurados()].map((queryKey) =>
-          queryClient.invalidateQueries({ queryKey }),
-        ),
+        [
+          crmKeys.campos(),
+          crmKeys.leads(),
+          crmKeys.camposConfigurados(),
+          crmKeys.formulariosElegiveis(),
+        ].map((queryKey) => queryClient.invalidateQueries({ queryKey })),
       ),
   });
 }

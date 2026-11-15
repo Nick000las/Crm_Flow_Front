@@ -1,11 +1,13 @@
 /**
  * Colunas do export: um checklist ordenável. Começa com as colunas visíveis
- * da tabela (na ordem dela) marcadas, e o resto desmarcado no fim.
+ * da tabela (na ordem dela) marcadas, e o resto desmarcado no fim. Campo
+ * sensível (FM1) começa desmarcado: o front sempre manda `colunas`, e o back
+ * só o tira do padrão quando elas não vêm.
  *
  * `funilEstagio` também é aceito pelo back, mas fica de fora: é o próprio
  * status com outro nome.
  *
- * @typedef {{ chave: string, label: string, marcada: boolean }} ItemExport
+ * @typedef {{ chave: string, label: string, marcada: boolean, sensivel?: boolean }} ItemExport
  */
 
 /**
@@ -19,16 +21,17 @@ const COLUNAS_EXTRAS = Object.freeze([
 ]);
 
 /**
- * @param {{ chave: string, label: string }[]} campos de `/crm/leads/fields`
+ * @param {{ chave: string, label: string, sensivel?: boolean }[]} campos de `/crm/leads/fields`
  * @param {string[]} idsVisiveis colunas visíveis na tabela, em ordem
  * @param {{ comMassa?: boolean }} [opcoes] `crm.massa` libera Responsável e Criado em
  * @returns {ItemExport[]}
  */
 export function itensIniciais(campos, idsVisiveis, { comMassa = false } = {}) {
   const extras = comMassa ? COLUNAS_EXTRAS : [];
-  const exportaveis = [...campos, ...extras].map(({ chave, label }) => ({
+  const exportaveis = [...campos, ...extras].map(({ chave, label, sensivel }) => ({
     chave,
     label,
+    ...(sensivel && { sensivel: true }),
   }));
   const porChave = new Map(exportaveis.map((item) => [item.chave, item]));
   const chaveDaColuna = new Map(extras.map((extra) => [extra.idNaTabela, extra.chave]));
@@ -40,7 +43,10 @@ export function itensIniciais(campos, idsVisiveis, { comMassa = false } = {}) {
   const restantes = exportaveis.filter((item) => !visiveis.includes(item.chave));
 
   return [
-    ...visiveis.map((chave) => ({ ...porChave.get(chave), marcada: true })),
+    ...visiveis.map((chave) => ({
+      ...porChave.get(chave),
+      marcada: !porChave.get(chave).sensivel,
+    })),
     ...restantes.map((item) => ({ ...item, marcada: false })),
   ];
 }

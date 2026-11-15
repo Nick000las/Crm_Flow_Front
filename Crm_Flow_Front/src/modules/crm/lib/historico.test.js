@@ -20,14 +20,32 @@ const STATUS = {
 };
 const ANA = { id: 'u1', nome: 'Ana' };
 
-const evento = (extra) => ({
-  id: 'e1',
-  tipo: 'atualizado',
-  autor: null,
-  criadoEm: '2026-10-16T10:00:00Z',
-  diff: [],
-  ...extra,
+test('eventos do formulário não mostram autor', () => {
+  assert.deepEqual(
+    tituloDoEvento(
+      evento({
+        tipo: 'formulario_respondido',
+        detalhes: { formularioId: 'f', formularioNome: 'Anamnese', respostaId: 'r' },
+      }),
+    ),
+    { titulo: 'Respondeu o formulário Anamnese', comAutor: true },
+  );
+  assert.deepEqual(tituloDoEvento(evento({ detalhes: { origem: 'formulario' } })), {
+    titulo: 'Atualizado pelo formulário',
+    comAutor: true,
+  });
 });
+
+function evento(extra) {
+  return {
+    id: 'e1',
+    tipo: 'atualizado',
+    autor: null,
+    criadoEm: '2026-10-16T10:00:00Z',
+    diff: [],
+    ...extra,
+  };
+}
 const titulo = (extra) => tituloDoEvento(evento(extra)).titulo;
 
 test('autor nulo é o sistema', () => {

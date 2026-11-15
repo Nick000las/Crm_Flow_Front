@@ -23,12 +23,13 @@ export function useCamposConfigurados() {
 
 /**
  * Mudar configuração reflete em todas as telas: os campos de cada contexto
- * (`/fields`) e a lista de leads (Camada 2 oculta em tudo sai do lead).
+ * (`/fields`) e a lista de leads (Camada 2 oculta em tudo sai do lead). O
+ * sensível muda o acesso padrão das permissões e o que um formulário pode pedir.
  */
 function invalidarConsumidores(queryClient) {
   return Promise.all(
-    [crmKeys.campos(), crmKeys.leads()].map((queryKey) =>
-      queryClient.invalidateQueries({ queryKey }),
+    [crmKeys.campos(), crmKeys.leads(), crmKeys.permissoes(), crmKeys.formulariosElegiveis()].map(
+      (queryKey) => queryClient.invalidateQueries({ queryKey }),
     ),
   );
 }

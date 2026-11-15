@@ -10,7 +10,7 @@ import { PuxadorOrdem } from '../ordenavel/puxador-ordem';
 import { useLinhaOrdenavel } from '../ordenavel/use-linha-ordenavel';
 import { CheckboxDaMatriz } from './checkbox-da-matriz';
 
-const CAMPOS_DO_ERRO = Object.freeze(['visibilidade', 'obrigatorio', 'label']);
+const CAMPOS_DO_ERRO = Object.freeze(['visibilidade', 'obrigatorio', 'label', 'sensivel']);
 
 /** Mensagem do 400 por campo (`fields.visibilidade` etc.), senão a geral. */
 function mensagemDoErro(error) {
@@ -43,6 +43,7 @@ export function LinhaCampo({ campo, indice, total, ordemOcupada, onMover, onEdit
   const exibido = {
     ...campo,
     obrigatorio: pedido.obrigatorio ?? campo.obrigatorio,
+    sensivel: pedido.sensivel ?? campo.sensivel,
     visibilidade: { ...campo.visibilidade, ...pedido.visibilidade },
   };
   const travas = bloqueios(exibido);
@@ -103,6 +104,17 @@ export function LinhaCampo({ campo, indice, total, ordemOcupada, onMover, onEdit
           ocupado={atualizar.isPending}
           onChange={(obrigatorio) => salvar({ obrigatorio })}
           rotulo={`Obrigatório: ${campo.label}`}
+        />
+      </TableCell>
+
+      <TableCell className="text-center">
+        <CheckboxDaMatriz
+          checked={Boolean(exibido.sensivel)}
+          id={`${idBase}-sensivel`}
+          motivo={travas.sensivel}
+          ocupado={atualizar.isPending}
+          onChange={(sensivel) => salvar({ sensivel })}
+          rotulo={`Sensível: ${campo.label}`}
         />
       </TableCell>
 

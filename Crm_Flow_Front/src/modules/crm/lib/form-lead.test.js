@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import {
+  payloadDeUmCampo,
   MENSAGENS,
   camposDoStatus,
   errosDoServidor,
@@ -136,6 +137,15 @@ describe('sem acesso à principal (D4)', () => {
     const valores = { valor: '10', status: 'novo', empresa: 'Beta' };
 
     assert.deepEqual(montarPayloadEdicao(marcados, iniciais, valores), { empresa: 'Beta' });
+  });
+});
+
+test('payloadDeUmCampo põe o personalizado em customFields', () => {
+  assert.deepEqual(payloadDeUmCampo({ chave: 'email', camada: 1 }, 'a@b.com'), {
+    email: 'a@b.com',
+  });
+  assert.deepEqual(payloadDeUmCampo({ chave: 'alergias', camada: 3 }, 'Dipirona'), {
+    customFields: { alergias: 'Dipirona' },
   });
 });
 

@@ -13,6 +13,7 @@ export const ABAS_LEAD = Object.freeze({
   ATIVIDADES: 'atividades',
   HISTORICO: 'historico',
   PROJETOS: 'projetos',
+  FORMULARIOS: 'formularios',
 });
 
 export const ROTAS_CRM = Object.freeze({

@@ -28,6 +28,7 @@ export const CRM_FEATURES = Object.freeze({
   SCORE: 'crm.score',
   LGPD: 'crm.lgpd',
   TIMELINE: 'crm.timeline',
+  FORMULARIOS: 'crm.formularios',
 });
 
 /** Listas do tenant (Configurações › Listas); `:tipo` das rotas e `campo.lista`. */
@@ -373,7 +374,12 @@ export const TIPOS_EVENTO = Object.freeze({
   OPORTUNIDADE_DESARQUIVADA: 'oportunidade_desarquivada',
   OPORTUNIDADE_EXCLUIDA: 'oportunidade_excluida',
   OPORTUNIDADE_RESTAURADA: 'oportunidade_restaurada',
+  // FM4: a pessoa respondeu um formulário (autor nulo).
+  FORMULARIO_RESPONDIDO: 'formulario_respondido',
 });
+
+/** `detalhes.origem` do `atualizado` gravado pela resposta de um formulário. */
+export const ORIGEM_FORMULARIO = 'formulario';
 
 /** Regras de duplicidade (`crm.duplicidade`): por campo, avisar ou bloquear. */
 export const ACOES_DUPLICIDADE = Object.freeze({ AVISAR: 'warn', BLOQUEAR: 'block' });
