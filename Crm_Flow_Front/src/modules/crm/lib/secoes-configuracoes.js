@@ -46,6 +46,8 @@ export const SECOES_CONFIGURACOES = Object.freeze([
     roles: null,
   }),
   secao('privacidade', 'Privacidade (LGPD)', CRM_FEATURES.LGPD, { pronta: true, roles: null }),
+  // Montar formulário é configuração: só gestão (o back dá 403 ao OPERADOR).
+  secao('formularios', 'Formulários', CRM_FEATURES.FORMULARIOS, { pronta: true }),
 ]);
 
 /** @param {Parameters<typeof podeVer>[1]} user */

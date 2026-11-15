@@ -274,6 +274,19 @@ function atribuir(payload, campo, valor) {
 }
 
 /**
+ * Payload de edição com um campo só, já no formato da API ("Usar este valor"
+ * da resposta de formulário): personalizado vai em `customFields`.
+ *
+ * @param {import('../types.js').Campo} campo
+ * @param {unknown} valor
+ */
+export function payloadDeUmCampo(campo, valor) {
+  const payload = {};
+  atribuir(payload, campo, valor);
+  return payload;
+}
+
+/**
  * Pode editar o campo? `acesso: 'view'` (permissão por campo, M13) = só
  * ver: aparece desabilitado e nunca vai no payload — o back conta até o
  * `null` como "enviado" e responde 403. Sem `acesso` = editável. Também

@@ -23,11 +23,28 @@ const campo = (overrides = {}) => ({
   obrigatorio: false,
   ordem: 1,
   visibilidade: todasAsTelas,
-  capacidades: { canHide: true, canMakeOptional: true, canRename: true },
+  capacidades: { canHide: true, canMakeOptional: true, canRename: true, canBeSensitive: true },
   ...overrides,
 });
 
 describe('bloqueios', () => {
+  test('sem canBeSensitive, marcar sensível trava com o motivo', () => {
+    assert.equal(bloqueios(campo()).sensivel, null);
+    assert.equal(
+      bloqueios(
+        campo({
+          capacidades: {
+            canHide: true,
+            canMakeOptional: true,
+            canRename: true,
+            canBeSensitive: false,
+          },
+        }),
+      ).sensivel,
+      MOTIVOS.NAO_SENSIVEL,
+    );
+  });
+
   test('campo livre: nada travado', () => {
     const { visibilidade, obrigatorio, renomear } = bloqueios(campo());
 

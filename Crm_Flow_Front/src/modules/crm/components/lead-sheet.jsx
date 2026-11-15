@@ -59,6 +59,7 @@ function SheetDoLead({ leadId }) {
   const { user } = useAuth();
   const comArquivo = temFeature(user, CRM_FEATURES.ARQUIVO);
   const comAtividades = temFeature(user, CRM_FEATURES.ATIVIDADES);
+  const comFormularios = temFeature(user, CRM_FEATURES.FORMULARIOS);
   const gestao = podeVer({ roles: PAPEIS_GESTAO }, user);
 
   const [aberto, setAberto] = useState(true);
@@ -241,6 +242,7 @@ function SheetDoLead({ leadId }) {
               abaInicial={location.state?.aba}
               campos={campos}
               comAtividades={comAtividades}
+              comFormularios={comFormularios}
               layout={layout}
               lead={lead}
               nomePorId={nomePorId}

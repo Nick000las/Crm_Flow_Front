@@ -186,6 +186,17 @@ marketing (marcado no formulário). Configurações › Privacidade define a bas
 **anonimizar** um lead a pedido do titular (menu ⋯, com confirmação pelo nome): é
 irreversível, e o lead anonimizado não pode mais ser editado nem mesclado.
 
+Em Configurações › Campos, um campo pode ser marcado como **sensível**: some para o Operador
+e começa desmarcado na exportação. Com `crm.formularios`, DONO e MASTER montam
+**formulários** em Configurações › Formulários com os campos que a pessoa vai responder, em
+seções, e publicam versões; uma versão publicada não muda mais. Além dos campos, o
+formulário pode ter perguntas próprias, cuja resposta fica só no formulário, e cada campo
+pode vir preenchido com o valor salvo (menos os sensíveis). Na ficha, a aba Formulários
+gera o link pessoal de um formulário publicado, para copiar, abrir no WhatsApp ou mostrar
+em QR Code, e lista os links já enviados. O link abre a página `/f/:token`, sem login, onde a
+pessoa responde e aceita o termo. As respostas aparecem na mesma aba, com o que foi gravado
+na ficha e o que ficou para revisar.
+
 ## Notificações
 
 O sino no Rail (para todo usuário logado, sem flag) mostra as não lidas, a lista

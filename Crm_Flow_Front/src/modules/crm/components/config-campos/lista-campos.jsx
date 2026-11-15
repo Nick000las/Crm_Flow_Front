@@ -53,6 +53,9 @@ export function ListaCampos({ campos, ordemOcupada, onReordenar, onEditar, onExc
               <TableHead className={`${HEAD_CLASS} text-center`} scope="col">
                 Obrigatório
               </TableHead>
+              <TableHead className={`${HEAD_CLASS} text-center`} scope="col">
+                Sensível
+              </TableHead>
               <TableHead scope="col">
                 <span className="sr-only">Ações</span>
               </TableHead>

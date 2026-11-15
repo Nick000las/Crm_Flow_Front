@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useProjetosDoLead } from '../hooks/use-projetos-do-lead';
 import { ABAS_LEAD as ABA } from '../rotas';
 import { AbaAtividades } from './atividades/aba-atividades';
+import { AbaFormularios } from './formularios-da-pessoa/aba-formularios';
 import { AbaHistorico } from './historico/aba-historico';
 import { LeadDetalhe } from './lead-detalhe';
 import { AbaOportunidades } from './oportunidades/aba-oportunidades';
@@ -12,12 +13,14 @@ const PAINEL_CLASS = 'min-h-0 overflow-y-auto px-4 pb-4';
 
 /**
  * Corpo do drawer no modo de ver: Dados e Oportunidades sempre (M2.5, sem
- * flag); Atividades e Histórico com `crm.atividades`; "Projetos" só com cards
+ * flag); Atividades e Histórico com `crm.atividades`; Formulários com
+ * `crm.formularios` (qualquer papel); "Projetos" só com cards
  * ligados ao lead. Só a aba aberta monta (e busca).
  *
  * @param {{
  *   abaInicial?: string,
  *   comAtividades: boolean,
+ *   comFormularios?: boolean,
  *   lead: import('../types').Lead,
  *   campos: import('../types').Campo[],
  *   layout: import('../lib/layout').LayoutEfetivo | null,
@@ -27,12 +30,22 @@ const PAINEL_CLASS = 'min-h-0 overflow-y-auto px-4 pb-4';
 export function LeadAbas({
   abaInicial = ABA.DADOS,
   comAtividades,
+  comFormularios = false,
   lead,
   campos,
   layout,
   nomePorId,
 }) {
   const [aba, setAba] = useState(abaInicial);
+  // Resposta de formulário aberta: a aba Formulários e o histórico abrem uma.
+  const [respostaAberta, setRespostaAberta] = useState(null);
+
+  function abrirResposta(respostaId) {
+    setRespostaAberta(respostaId);
+    if (respostaId) {
+      setAba(ABA.FORMULARIOS);
+    }
+  }
   const projetos = useProjetosDoLead(lead.id);
   const comProjetos = projetos.length > 0;
 
@@ -46,6 +59,7 @@ export function LeadAbas({
         <TabsTrigger value={ABA.OPORTUNIDADES}>Oportunidades</TabsTrigger>
         {comAtividades && <TabsTrigger value={ABA.ATIVIDADES}>Atividades</TabsTrigger>}
         {comAtividades && <TabsTrigger value={ABA.HISTORICO}>Histórico</TabsTrigger>}
+        {comFormularios && <TabsTrigger value={ABA.FORMULARIOS}>Formulários</TabsTrigger>}
         {comProjetos && <TabsTrigger value={ABA.PROJETOS}>Projetos</TabsTrigger>}
       </TabsList>
       <TabsContent className="min-h-0 overflow-y-auto" value={ABA.DADOS}>
@@ -61,7 +75,21 @@ export function LeadAbas({
       )}
       {comAtividades && (
         <TabsContent className={PAINEL_CLASS} value={ABA.HISTORICO}>
-          <AbaHistorico leadId={lead.id} nomePorId={nomePorId} />
+          <AbaHistorico
+            leadId={lead.id}
+            nomePorId={nomePorId}
+            onAbrirResposta={comFormularios ? abrirResposta : undefined}
+          />
+        </TabsContent>
+      )}
+      {comFormularios && (
+        <TabsContent className={PAINEL_CLASS} value={ABA.FORMULARIOS}>
+          <AbaFormularios
+            lead={lead}
+            nomePorId={nomePorId}
+            onAbrirResposta={abrirResposta}
+            respostaAberta={respostaAberta}
+          />
         </TabsContent>
       )}
       {comProjetos && (

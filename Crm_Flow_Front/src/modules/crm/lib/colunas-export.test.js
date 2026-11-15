@@ -23,6 +23,14 @@ test('começa com as visíveis da tabela, na ordem dela, e o resto desmarcado', 
   );
 });
 
+test('campo sensível começa desmarcado, mesmo visível na tabela', () => {
+  const comSensivel = [...campos, { chave: 'alergias', label: 'Alergias', sensivel: true }];
+  const itens = itensIniciais(comSensivel, ['nome', 'alergias']);
+
+  assert.deepEqual(colunasSelecionadas(itens), ['nome']);
+  assert.equal(itens.find((item) => item.chave === 'alergias').sensivel, true);
+});
+
 test('mover troca vizinhos e não passa das bordas', () => {
   const itens = itensIniciais(campos, ['nome', 'email']);
 
