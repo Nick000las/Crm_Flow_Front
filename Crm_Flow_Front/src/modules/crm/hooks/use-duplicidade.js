@@ -35,8 +35,9 @@ export function useChecarDuplicados() {
 }
 
 /**
- * Mesclar: o principal muda (dados, histórico, atividades) e o secundário
- * vai para a lixeira — a lista e os dois detalhes saem do cache.
+ * Mesclar: o principal muda (dados, histórico, atividades e, na FM6, links,
+ * respostas e alertas de formulário) e o secundário vai para a lixeira — a
+ * lista e os dois detalhes saem do cache.
  */
 export function useMesclarLeads() {
   const { authApi } = useAuth();
@@ -47,10 +48,14 @@ export function useMesclarLeads() {
     onSuccess: (principal, { principalId, secundarioId }) => {
       queryClient.setQueryData(crmKeys.lead(principalId), principal);
       queryClient.removeQueries({ queryKey: crmKeys.lead(secundarioId) });
+      queryClient.removeQueries({ queryKey: crmKeys.linksDeFormulario(secundarioId) });
       return Promise.all(
-        [crmKeys.leads(), crmKeys.historico(principalId), crmKeys.atividades(principalId)].map(
-          (queryKey) => queryClient.invalidateQueries({ queryKey }),
-        ),
+        [
+          crmKeys.leads(),
+          crmKeys.historico(principalId),
+          crmKeys.atividades(principalId),
+          crmKeys.linksDeFormulario(principalId),
+        ].map((queryKey) => queryClient.invalidateQueries({ queryKey })),
       );
     },
   });

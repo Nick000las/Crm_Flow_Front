@@ -1,4 +1,12 @@
 import { ROTULOS_TIPO, TIPOS_CAMPO } from '../constants.js';
+import {
+  CAMINHO_DO_ALERTA,
+  alertasDoForm,
+  alertasParaApi,
+  alvosDoRascunho,
+  destinoDoErroDeAlerta,
+  validarAlertas,
+} from './alertas-formulario.js';
 import { moverPara } from './ordem.js';
 
 /**
@@ -20,7 +28,10 @@ import { moverPara } from './ordem.js';
  * @typedef {{ campoId: string, obrigatorio: boolean, politica: Politica, preencher?: boolean }} ItemDeCampoDaApi
  * @typedef {{ pergunta: PerguntaDaApi, obrigatorio: boolean }} ItemDePerguntaDaApi
  * @typedef {{ titulo: string | null, itens: (ItemDeCampoDaApi | ItemDePerguntaDaApi)[] }} SecaoDaApi
- * @typedef {{ secoes: SecaoDaApi[], introducao: string | null, termo: string | null }} RascunhoDaApi
+ * @typedef {{
+ *   secoes: SecaoDaApi[], introducao: string | null, termo: string | null,
+ *   alertas?: import('./alertas-formulario.js').AlertaDaApi[],
+ * }} RascunhoDaApi
  * @typedef {{
  *   id: string, nome: string, descricao: string | null, ativo: boolean, validadeDias: number,
  *   versaoAtual: { id: string, versao: number, publicadaEm: string } | null,
@@ -37,7 +48,10 @@ import { moverPara } from './ordem.js';
  * @typedef {{ chaveLocal: string, pergunta: PerguntaNoForm, obrigatorio: boolean }} ItemDePergunta
  * @typedef {ItemDeCampo | ItemDePergunta} ItemDoFormulario  `chaveLocal` é o id do arraste e dos erros
  * @typedef {{ chaveLocal: string, titulo: string, itens: ItemDoFormulario[] }} SecaoNoForm
- * @typedef {{ secoes: SecaoNoForm[], introducao: string, termo: string, sequencia: number }} RascunhoNoForm
+ * @typedef {{
+ *   secoes: SecaoNoForm[], introducao: string, termo: string, sequencia: number,
+ *   alertas: import('./alertas-formulario.js').AlertaNoForm[],
+ * }} RascunhoNoForm  `sequencia` gera as chaves locais novas (seção, pergunta, alerta)
  * @typedef {{ nome: string, descricao: string, validadeDias: string, ativo: boolean }} DadosNoForm
  * @typedef {{ campo?: string, preencher?: string, pergunta?: string, item?: string }} ErrosDoItem
  * @typedef {{
@@ -47,8 +61,10 @@ import { moverPara } from './ordem.js';
  *   secoes: string | null,
  *   introducao: string | null,
  *   termo: string | null,
+ *   porAlerta: Record<string, import('./alertas-formulario.js').ErrosDoAlerta>,
+ *   alertas: string | null,
  *   outros: string[],
- * }} ErrosDoFormulario  `porItem` e `porSecao` por `chaveLocal`
+ * }} ErrosDoFormulario  `porItem`, `porSecao` e `porAlerta` por `chaveLocal`
  */
 
 export const POLITICAS = Object.freeze({
@@ -200,12 +216,14 @@ function itemDoForm(item, chaveNova) {
 
 /**
  * Sem seção, o form começa com uma vazia, para já dar onde pôr o primeiro item.
- * A pergunta vem com o `id` do back, que volta em toda edição.
+ * A pergunta vem com o `id` do back, que volta em toda edição. Os alertas
+ * (FM5) precisam do schema (`campos`) para o valor ir para o formato do form.
  *
  * @param {RascunhoDaApi | null | undefined} rascunho
+ * @param {import('../types.js').Campo[]} [campos] schema (`/fields`)
  * @returns {RascunhoNoForm}
  */
-export function rascunhoDoForm(rascunho) {
+export function rascunhoDoForm(rascunho, campos = []) {
   let novas = 0;
   const secoes = (rascunho?.secoes ?? []).map((secao, indice) => ({
     chaveLocal: chaveDaSecao(indice),
@@ -215,10 +233,13 @@ export function rascunhoDoForm(rascunho) {
   const comUma =
     secoes.length > 0 ? secoes : [{ chaveLocal: chaveDaSecao(0), titulo: '', itens: [] }];
 
+  const alvos = alvosDoRascunho({ secoes: comUma }, campos);
+
   return {
     secoes: comUma,
     introducao: rascunho?.introducao ?? '',
     termo: rascunho?.termo ?? '',
+    alertas: alertasDoForm(rascunho?.alertas, alvos),
     sequencia: comUma.length,
   };
 }
@@ -261,8 +282,14 @@ function itemParaApi(item) {
   return { campoId, obrigatorio, politica, preencher };
 }
 
-/** @param {RascunhoNoForm} rascunho @returns {RascunhoDaApi} */
-export function rascunhoParaApi(rascunho) {
+/**
+ * Os alertas vão todos, na ordem do form: os índices dos erros são os dele.
+ *
+ * @param {RascunhoNoForm} rascunho
+ * @param {import('../types.js').Campo[]} [campos] schema (`/fields`)
+ * @returns {RascunhoDaApi}
+ */
+export function rascunhoParaApi(rascunho, campos = []) {
   return {
     secoes: secoesEnviadas(rascunho).map((secao) => ({
       titulo: textoOuNulo(secao.titulo),
@@ -270,6 +297,7 @@ export function rascunhoParaApi(rascunho) {
     })),
     introducao: textoOuNulo(rascunho.introducao),
     termo: textoOuNulo(rascunho.termo),
+    alertas: alertasParaApi(rascunho.alertas ?? [], alvosDoRascunho(rascunho, campos)),
   };
 }
 
@@ -278,9 +306,10 @@ export function rascunhoParaApi(rascunho) {
  *
  * @param {DadosNoForm} dados
  * @param {RascunhoNoForm} rascunho
+ * @param {import('../types.js').Campo[]} [campos] schema (`/fields`)
  */
-export function corpoDoPut(dados, rascunho) {
-  return { ...dadosParaApi(dados), rascunho: rascunhoParaApi(rascunho) };
+export function corpoDoPut(dados, rascunho, campos = []) {
+  return { ...dadosParaApi(dados), rascunho: rascunhoParaApi(rascunho, campos) };
 }
 
 /**
@@ -554,9 +583,15 @@ export function validarPergunta(pergunta) {
  * @param {DadosNoForm} dados
  * @param {RascunhoNoForm} rascunho
  * @param {CampoElegivel[]} elegiveis
- * @returns {{ dados: Record<string, string>, porItem: Record<string, ErrosDoItem>, geral: string | null }}
+ * @param {import('../types.js').Campo[]} [campos] schema (`/fields`), para os alertas
+ * @returns {{
+ *   dados: Record<string, string>,
+ *   porItem: Record<string, ErrosDoItem>,
+ *   porAlerta: Record<string, import('./alertas-formulario.js').ErrosDoAlerta>,
+ *   geral: string | null,
+ * }}
  */
-export function validarNoCliente(dados, rascunho, elegiveis) {
+export function validarNoCliente(dados, rascunho, elegiveis, campos = []) {
   const erros = {};
   if (!dados.nome.trim()) {
     erros.nome = MENSAGENS_FORMULARIO.NOME;
@@ -582,14 +617,16 @@ export function validarNoCliente(dados, rascunho, elegiveis) {
     }
   }
 
-  let geral = null;
+  const alertas = validarAlertas(rascunho.alertas ?? [], alvosDoRascunho(rascunho, campos));
+
+  let geral = alertas.geral;
   if (itensIndisponiveis(rascunho, elegiveis).size > 0) {
     geral = MENSAGENS_FORMULARIO.INDISPONIVEIS;
   } else if (Object.keys(porItem).length > 0) {
     geral = MENSAGENS_FORMULARIO.REVISE_ITENS;
   }
 
-  return { dados: erros, porItem, geral };
+  return { dados: erros, porItem, porAlerta: alertas.porAlerta, geral };
 }
 
 /**
@@ -611,11 +648,24 @@ export function errosDoFormulario(fields, enviado) {
     secoes: null,
     introducao: null,
     termo: null,
+    porAlerta: {},
+    alertas: null,
     outros: [],
   };
 
   for (const [caminho, mensagens] of Object.entries(fields ?? {})) {
     const mensagem = Array.isArray(mensagens) ? mensagens[0] : String(mensagens);
+    const doAlerta = CAMINHO_DO_ALERTA.exec(caminho);
+    const destino = doAlerta && destinoDoErroDeAlerta(doAlerta, enviado.alertas ?? []);
+    if (destino) {
+      const doMesmo = erros.porAlerta[destino.chaveLocal] ?? {};
+      erros.porAlerta[destino.chaveLocal] = { [destino.parte]: mensagem, ...doMesmo };
+      continue;
+    }
+    if (caminho === 'rascunho.alertas') {
+      erros.alertas = mensagem;
+      continue;
+    }
     const doItem = CAMINHO_DO_ITEM.exec(caminho);
     const daSecao = CAMINHO_DA_SECAO.exec(caminho);
     const item = doItem && secoes[Number(doItem[1])]?.itens[Number(doItem[2])];

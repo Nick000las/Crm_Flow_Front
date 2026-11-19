@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
+  MENSAGEM_RESPOSTAS_APAGADAS,
   podeUsarValor,
   precisaRevisar,
+  respostasApagadas,
   resumoDaEscrita,
   rotuloDeQuemPreencheu,
   textoDaEscrita,
@@ -56,4 +58,14 @@ test('rotuloDeQuemPreencheu nomeia o responsável', () => {
     rotuloDeQuemPreencheu({ preenchidoPor: 'responsavel', nomeResponsavel: 'Joana' }),
     'Responsável: Joana',
   );
+});
+
+test('pessoa anonimizada: respostas sem valor e nada para usar', () => {
+  const diferente = { resultado: 'revisao', motivo: 'valor_diferente' };
+
+  assert.equal(respostasApagadas({ anonimizado_em: '2026-11-15T10:00:00Z' }), true);
+  assert.equal(respostasApagadas({ anonimizado_em: null }), false);
+  assert.equal(respostasApagadas(undefined), false);
+  assert.match(MENSAGEM_RESPOSTAS_APAGADAS, /LGPD/);
+  assert.equal(podeUsarValor({ campoId: 'c', valor: null, escrita: diferente }), false);
 });

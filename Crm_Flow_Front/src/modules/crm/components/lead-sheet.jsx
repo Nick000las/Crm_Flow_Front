@@ -29,6 +29,7 @@ import {
 import { versaoDoConflito } from '../lib/oportunidades';
 import { crmKeys } from '../query-keys';
 import { ID_BOTAO_NOVO_LEAD, ID_NOVO_LEAD, idLinkDoLead } from '../rotas';
+import { ConfirmarArquivarDialog } from './confirmar-arquivar-dialog';
 import { ExcluirLeadDialog } from './excluir-lead-dialog';
 import { AnonimizarLeadDialog } from './anonimizar-lead-dialog';
 import { LeadCabecalho } from './lead-cabecalho';
@@ -66,6 +67,8 @@ function SheetDoLead({ leadId }) {
   const [editando, setEditando] = useState(Boolean(location.state?.editar));
   const [excluindo, setExcluindo] = useState(false);
   const [anonimizando, setAnonimizando] = useState(false);
+  // Com `crm.formularios` (FM6), arquivar confirma antes: cancela os links ativos.
+  const [confirmandoArquivo, setConfirmandoArquivo] = useState(false);
   const [aviso, setAviso] = useState(null);
   // Versão que o form edita: uma recarga em segundo plano não pode trocá-la.
   const [versaoLida, setVersaoLida] = useState(undefined);
@@ -145,7 +148,10 @@ function SheetDoLead({ leadId }) {
   const arquivo = comArquivo
     ? {
         ocupado: arquivar.isPending || desarquivar.isPending,
-        onArquivar: () => mudarArquivo(arquivar, desarquivar, AVISOS_LEAD.ARQUIVADO),
+        onArquivar: () =>
+          comFormularios
+            ? setConfirmandoArquivo(true)
+            : mudarArquivo(arquivar, desarquivar, AVISOS_LEAD.ARQUIVADO),
         onDesarquivar: () => mudarArquivo(desarquivar, arquivar, AVISOS_LEAD.DESARQUIVADO),
       }
     : null;
@@ -251,7 +257,26 @@ function SheetDoLead({ leadId }) {
         </div>
       </SheetContent>
 
+      {confirmandoArquivo && (
+        <ConfirmarArquivarDialog
+          lead={lead ?? {}}
+          onConfirmar={async () => {
+            setAviso(null);
+            desarquivar.reset();
+            try {
+              await arquivar.mutateAsync(leadId);
+            } catch (error) {
+              // O erro aparece no dialog, não também no alerta do drawer.
+              arquivar.reset();
+              throw new Error(toApiError(error).message, { cause: error });
+            }
+            setAviso(AVISOS_LEAD.ARQUIVADO);
+          }}
+          onFechar={() => setConfirmandoArquivo(false)}
+        />
+      )}
       <ExcluirLeadDialog
+        comFormularios={comFormularios}
         comLixeira={comArquivo}
         lead={lead ?? null}
         onExcluido={() => fechar(comArquivo ? AVISOS_LEAD.NA_LIXEIRA : AVISOS_LEAD.EXCLUIDO)}
@@ -259,6 +284,7 @@ function SheetDoLead({ leadId }) {
         open={excluindo}
       />
       <AnonimizarLeadDialog
+        comFormularios={comFormularios}
         lead={anonimizando ? (lead ?? null) : null}
         onAnonimizado={(texto) => {
           setEditando(false);

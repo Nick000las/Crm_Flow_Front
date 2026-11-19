@@ -55,6 +55,8 @@ export function useExcluirLead() {
     mutationFn: (id) => excluirLead(authApi, id),
     onSuccess: (_, id) => {
       queryClient.removeQueries({ queryKey: crmKeys.lead(id) });
+      // FM6: os links ativos de formulário são revogados.
+      queryClient.invalidateQueries({ queryKey: crmKeys.linksDeFormulario(id) });
       return invalidar();
     },
   });
@@ -82,7 +84,8 @@ export function useEditarEmMassa() {
 /**
  * Arquivar, desarquivar ou restaurar: mudam a situação do lead, então a
  * lista invalida; a resposta já é o lead, e vira o detalhe (o selo
- * "Arquivado" do drawer troca sem nova ida).
+ * "Arquivado" do drawer troca sem nova ida). Arquivar revoga os links de
+ * formulário ativos (FM6), e desarquivar não os reativa.
  *
  * @param {'arquivar' | 'desarquivar' | 'restaurar'} acao
  */
@@ -96,6 +99,7 @@ function useAcaoDeArquivo(acao) {
     onSuccess: (lead, id) => {
       queryClient.setQueryData(crmKeys.lead(id), lead);
       queryClient.invalidateQueries({ queryKey: crmKeys.historico(id) });
+      queryClient.invalidateQueries({ queryKey: crmKeys.linksDeFormulario(id) });
       return invalidar();
     },
   });

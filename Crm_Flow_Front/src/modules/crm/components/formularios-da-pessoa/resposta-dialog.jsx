@@ -17,7 +17,9 @@ import { formatarInstante } from '../../lib/formatadores';
 import { payloadDeUmCampo, podeEditarCampo, versaoDoLead } from '../../lib/form-lead';
 import { textoDoValor } from '../../lib/layout';
 import {
+  MENSAGEM_RESPOSTAS_APAGADAS,
   podeUsarValor,
+  respostasApagadas,
   resumoDaEscrita,
   rotuloDeQuemPreencheu,
   textoDaEscrita,
@@ -60,7 +62,8 @@ function UsarValor({ lead, campo, valor, rotulo, onUsado }) {
   );
 }
 
-function Item({ item, lead, campos, nomePorId, usados, onUsado }) {
+/** `apagada`: pessoa anonimizada (FM6), os valores vêm vazios e não aparecem. */
+function Item({ item, lead, campos, nomePorId, usados, onUsado, apagada }) {
   const pergunta = 'pergunta' in item ? item.pergunta : null;
   const retrato = pergunta ?? item.campo;
   const rotulo = pergunta ? pergunta.rotulo : item.campo.label;
@@ -69,7 +72,11 @@ function Item({ item, lead, campos, nomePorId, usados, onUsado }) {
   // O campo de agora, em `/fields`: sem ele (oculto) ou só de ver, não dá para gravar.
   const campoAtual = pergunta ? null : campos.find((atual) => atual.id === item.campoId);
   const usavel =
-    !usados.has(item.campoId) && podeUsarValor(item) && campoAtual && podeEditarCampo(campoAtual);
+    !apagada &&
+    !usados.has(item.campoId) &&
+    podeUsarValor(item) &&
+    campoAtual &&
+    podeEditarCampo(campoAtual);
 
   return (
     <li className="grid gap-1 border border-border px-3 py-2 text-sm">
@@ -80,9 +87,11 @@ function Item({ item, lead, campos, nomePorId, usados, onUsado }) {
       {item.oculto ? (
         <p className="text-muted-foreground">Restrito</p>
       ) : (
-        <p className="break-words whitespace-pre-wrap">
-          {texto ?? <span className="text-muted-foreground">Sem resposta</span>}
-        </p>
+        !apagada && (
+          <p className="break-words whitespace-pre-wrap">
+            {texto ?? <span className="text-muted-foreground">Sem resposta</span>}
+          </p>
+        )
       )}
       {escrita && (
         <p
@@ -130,9 +139,15 @@ function Conteudo({ lead, respostaId, nomePorId }) {
 
   const resposta = respostaQuery.data;
   const resumo = resumoDaEscrita(resposta.escrita);
+  const apagada = respostasApagadas(lead);
 
   return (
     <div className="grid max-h-[70vh] gap-4 overflow-y-auto pr-1">
+      {apagada && (
+        <p className="border border-border px-3 py-2 text-sm" role="status">
+          {MENSAGEM_RESPOSTAS_APAGADAS}
+        </p>
+      )}
       <dl className="grid gap-x-4 gap-y-1 text-xs sm:grid-cols-[auto_minmax(0,1fr)]">
         <dt className="text-muted-foreground">Respondido em</dt>
         <dd className="font-mono tabular-nums">{formatarInstante(resposta.respondidoEm)}</dd>
@@ -153,9 +168,11 @@ function Conteudo({ lead, respostaId, nomePorId }) {
           </>
         )}
       </dl>
-      <p className="text-xs text-muted-foreground">
-        É o que a pessoa declarou. Editar a ficha depois não muda a resposta.
-      </p>
+      {!apagada && (
+        <p className="text-xs text-muted-foreground">
+          É o que a pessoa declarou. Editar a ficha depois não muda a resposta.
+        </p>
+      )}
 
       {resposta.secoes.map((secao, indice) => (
         <section className="grid gap-2" key={indice}>
@@ -163,6 +180,7 @@ function Conteudo({ lead, respostaId, nomePorId }) {
           <ul className="grid gap-1.5">
             {secao.itens.map((item) => (
               <Item
+                apagada={apagada}
                 campos={campos}
                 item={item}
                 key={'pergunta' in item ? `p-${item.pergunta.id}` : item.campoId}

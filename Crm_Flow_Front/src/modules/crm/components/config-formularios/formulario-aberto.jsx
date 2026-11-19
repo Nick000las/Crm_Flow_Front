@@ -6,6 +6,7 @@ import { ModulePlaceholder } from '@/components/module-placeholder';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { isAccessError, toApiError } from '@/services/api';
+import { useCampos } from '../../hooks/use-campos';
 import {
   useCamposElegiveis,
   useFormulario,
@@ -40,6 +41,8 @@ function Carregando() {
 export function FormularioAberto({ id, onVoltar, onAviso }) {
   const formularioQuery = useFormulario(id);
   const elegiveisQuery = useCamposElegiveis();
+  // O schema: os alertas (FM5) usam o tipo e as opções do campo.
+  const camposQuery = useCampos();
   const { nomePorId } = useUsuarios();
   const salvar = useSalvarFormulario(id);
   const publicar = usePublicarFormulario(id);
@@ -74,7 +77,7 @@ export function FormularioAberto({ id, onVoltar, onAviso }) {
     }
   }
 
-  const erro = formularioQuery.error ?? elegiveisQuery.error;
+  const erro = formularioQuery.error ?? elegiveisQuery.error ?? camposQuery.error;
   if (isAccessError(erro)) {
     return <AcessoIndisponivel error={erro} />;
   }
@@ -95,12 +98,13 @@ export function FormularioAberto({ id, onVoltar, onAviso }) {
   if (erro) {
     return <ApiErrorAlert error={erro} id="config-formulario-carregar-erro" />;
   }
-  if (formularioQuery.isPending || elegiveisQuery.isPending) {
+  if (formularioQuery.isPending || elegiveisQuery.isPending || camposQuery.isPending) {
     return <Carregando />;
   }
 
   return (
     <EditorFormulario
+      campos={camposQuery.data}
       detalhe={formularioQuery.data}
       elegiveis={elegiveisQuery.data}
       falha={falha}

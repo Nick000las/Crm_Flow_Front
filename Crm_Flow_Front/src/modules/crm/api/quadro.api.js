@@ -21,7 +21,10 @@
  *   titulo?: string,
  *   subtitulo?: ItemDoCard[],
  *   destaques?: ItemDoCard[],
- *   selos?: { tipo: 'esfriando' | 'origem_reaberta', desde: string }[],
+ *   selos?: (
+ *     | { tipo: 'esfriando' | 'origem_reaberta', desde: string }
+ *     | { tipo: 'alerta_formulario', nivel: 'info' | 'warning' | 'critical' }
+ *   )[],
  *   tituloOportunidade?: string | null,
  *   responsavelId?: string | null,
  * }} CardQuadro  `restrito`: sem descrição, só os três primeiros campos. `podeMover`

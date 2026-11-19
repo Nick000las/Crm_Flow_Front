@@ -19,7 +19,7 @@ const CONFIRMACAO_ID = 'anonimizar-confirmacao';
 const AJUDA_ID = 'anonimizar-confirmacao-ajuda';
 
 /** Montado só com o dialog aberto: cada abertura começa com o campo vazio. */
-function FormAnonimizar({ lead, onAnonimizado }) {
+function FormAnonimizar({ lead, comFormularios, onAnonimizado }) {
   const [digitado, setDigitado] = useState('');
   const anonimizar = useAnonimizarLead();
   const esperado = textoDeConfirmacao(lead);
@@ -43,10 +43,15 @@ function FormAnonimizar({ lead, onAnonimizado }) {
           telefone, empresa, cargo, CPF, CNPJ, endereço, CEP, os campos personalizados que
           identificam a pessoa e as notas das atividades.
         </p>
+        {comFormularios && (
+          <p>
+            As respostas de formulários e os alertas desta pessoa também serão apagados, e os links
+            ainda não respondidos, cancelados.
+          </p>
+        )}
         <p>
           <span className="font-medium">Fica, para as estatísticas:</span> status, valor, origem,
-          score, datas, responsável, cidade/UF, tags e o histórico (sem os valores
-          pessoais).
+          score, datas, responsável, cidade/UF, tags e o histórico (sem os valores pessoais).
         </p>
         <p>Os leads que foram mesclados neste também são anonimizados.</p>
       </div>
@@ -108,9 +113,15 @@ function FormAnonimizar({ lead, onAnonimizado }) {
  *   lead: { id: string, nome?: string | null } | null,
  *   onOpenChange: (open: boolean) => void,
  *   onAnonimizado: (resumo: string) => void,
- * }} props aberto enquanto houver `lead`
+ *   comFormularios?: boolean,
+ * }} props aberto enquanto houver `lead`; `comFormularios` (FM6) avisa das respostas
  */
-export function AnonimizarLeadDialog({ lead, onOpenChange, onAnonimizado }) {
+export function AnonimizarLeadDialog({
+  lead,
+  onOpenChange,
+  onAnonimizado,
+  comFormularios = false,
+}) {
   return (
     <Dialog onOpenChange={onOpenChange} open={Boolean(lead)}>
       <DialogContent className="rounded-none sm:max-w-lg">
@@ -122,6 +133,7 @@ export function AnonimizarLeadDialog({ lead, onOpenChange, onAnonimizado }) {
         </DialogHeader>
         {lead && (
           <FormAnonimizar
+            comFormularios={comFormularios}
             key={lead.id}
             lead={lead}
             onAnonimizado={(resumo) => {
