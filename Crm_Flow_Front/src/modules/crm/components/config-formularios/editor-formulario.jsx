@@ -28,21 +28,24 @@ import {
 } from '../../lib/formularios';
 import { CampoForm } from '../campo-form';
 import { ControleTravado } from '../controle-travado';
+import { AlertasDoFormulario } from './alertas-do-formulario';
 import { SecoesDoFormulario } from './secoes-do-formulario';
 import { VersoesDoFormulario } from './versoes-do-formulario';
 
 const MOTIVO_NADA_NOVO = 'A versão publicada já é igual ao rascunho.';
 const LEGENDA = 'mb-3 text-sm font-semibold';
-const SEM_ERROS = Object.freeze({ dados: {}, porItem: {}, geral: null });
+const SEM_ERROS = Object.freeze({ dados: {}, porItem: {}, porAlerta: {}, geral: null });
 
 /**
- * Editor de um formulário: dados, perguntas (seções e campos) e termo. Tudo é
+ * Editor de um formulário: dados, perguntas (seções e campos), termo e
+ * alertas (FM5, que precisam do schema em `campos`). Tudo é
  * rascunho até "Salvar"; publicar grava uma versão nova a partir do salvo.
  * Montado com a `key` do `atualizadoEm`: depois de salvar, recomeça da resposta.
  *
  * @param {{
  *   detalhe: import('../../lib/formularios').DetalheDoFormulario,
  *   elegiveis: import('../../lib/formularios').CampoElegivel[],
+ *   campos: import('../../types').Campo[],
  *   falha: {
  *     error: unknown,
  *     publicando: boolean,
@@ -62,6 +65,7 @@ const SEM_ERROS = Object.freeze({ dados: {}, porItem: {}, geral: null });
 export function EditorFormulario({
   detalhe,
   elegiveis,
+  campos,
   falha,
   ocupado,
   nomePorId,
@@ -70,14 +74,14 @@ export function EditorFormulario({
   onVoltar,
 }) {
   const [dados, setDados] = useState(() => dadosDoForm(detalhe));
-  const [rascunho, setRascunho] = useState(() => rascunhoDoForm(detalhe.rascunho));
+  const [rascunho, setRascunho] = useState(() => rascunhoDoForm(detalhe.rascunho, campos));
   const [errosLocais, setErrosLocais] = useState(SEM_ERROS);
   const [confirmandoSaida, setConfirmandoSaida] = useState(false);
   const inicial = useMemo(
-    () => corpoDoPut(dadosDoForm(detalhe), rascunhoDoForm(detalhe.rascunho)),
-    [detalhe],
+    () => corpoDoPut(dadosDoForm(detalhe), rascunhoDoForm(detalhe.rascunho, campos), campos),
+    [detalhe, campos],
   );
-  const corpo = corpoDoPut(dados, rascunho);
+  const corpo = corpoDoPut(dados, rascunho, campos);
   const mudou = formularioMudou(inicial, corpo);
   const indisponiveis = itensIndisponiveis(rascunho, elegiveis);
   const situacao = situacaoDoFormulario(detalhe);
@@ -101,10 +105,11 @@ export function EditorFormulario({
   }
 
   function gravar(publicarDepois) {
-    const validacao = validarNoCliente(dados, rascunho, elegiveis);
+    const validacao = validarNoCliente(dados, rascunho, elegiveis, campos);
     if (
       Object.keys(validacao.dados).length > 0 ||
       Object.keys(validacao.porItem).length > 0 ||
+      Object.keys(validacao.porAlerta).length > 0 ||
       validacao.geral
     ) {
       setErrosLocais(validacao);
@@ -297,6 +302,14 @@ export function EditorFormulario({
           )}
         </CampoForm>
       </fieldset>
+
+      <AlertasDoFormulario
+        campos={campos}
+        erroGeral={erros?.alertas ?? null}
+        errosPorAlerta={{ ...erros?.porAlerta, ...errosLocais.porAlerta }}
+        onChange={mudarRascunho}
+        rascunho={rascunho}
+      />
 
       <VersoesDoFormulario formulario={detalhe} nomePorId={nomePorId} />
 

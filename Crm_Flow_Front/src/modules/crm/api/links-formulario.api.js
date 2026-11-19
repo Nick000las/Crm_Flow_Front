@@ -76,6 +76,31 @@ export function obterResposta(authApi, leadId, respostaId, options) {
 }
 
 /**
+ * Alertas da pessoa (FM5) que **eu** ainda não vi, do mais grave para o mais
+ * leve e do mais novo para o mais antigo; `todos` traz também os vistos, com
+ * `vistoEm`. Quem não vê o alvo recebe `generico: true` e um texto genérico.
+ *
+ * @param {import('@/hooks/create-auth-session').AuthApi} authApi
+ * @param {string} leadId
+ * @param {{ todos?: boolean, signal?: AbortSignal }} [options]
+ * @returns {Promise<import('../lib/alertas-formulario.js').AlertaDaPessoa[]>}
+ */
+export function listarAlertas(authApi, leadId, { todos = false, ...options } = {}) {
+  return authApi.get(`${doLead(leadId)}/alertas${todos ? '?todos=true' : ''}`, options);
+}
+
+/**
+ * Marca como visto só para quem pede. Repetir não muda nada.
+ *
+ * @param {import('@/hooks/create-auth-session').AuthApi} authApi
+ * @param {string} leadId
+ * @param {string} alertaId
+ */
+export function marcarAlertaVisto(authApi, leadId, alertaId) {
+  return authApi.post(`${doLead(leadId)}/alertas/${encodeURIComponent(alertaId)}/visto`, {});
+}
+
+/**
  * 409 quando o link não está mais ativo.
  *
  * @param {import('@/hooks/create-auth-session').AuthApi} authApi

@@ -195,7 +195,11 @@ pode vir preenchido com o valor salvo (menos os sensíveis). Na ficha, a aba For
 gera o link pessoal de um formulário publicado, para copiar, abrir no WhatsApp ou mostrar
 em QR Code, e lista os links já enviados. O link abre a página `/f/:token`, sem login, onde a
 pessoa responde e aceita o termo. As respostas aparecem na mesma aba, com o que foi gravado
-na ficha e o que ficou para revisar.
+na ficha e o que ficou para revisar. O formulário também pode ter **alertas** ("Alergias
+contém dipirona → Crítico"): quando a resposta casa, o alerta aparece no topo da ficha e
+como selo no card do quadro comercial, até cada usuário marcá-lo como visto. Arquivar ou
+excluir a pessoa cancela os links ainda não respondidos (arquivar pede confirmação), anonimizar
+apaga os valores das respostas e os alertas, e mesclar leva tudo para a pessoa que fica.
 
 ## Notificações
 

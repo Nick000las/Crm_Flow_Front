@@ -44,6 +44,8 @@ export function useAnonimizarLead() {
       queryClient.invalidateQueries({ queryKey: crmKeys.leadsAbertos() });
       queryClient.invalidateQueries({ queryKey: crmKeys.leads() });
       queryClient.invalidateQueries({ queryKey: crmKeys.atividades(id) });
+      // FM6: links revogados, respostas sem valor e alertas apagados.
+      queryClient.invalidateQueries({ queryKey: crmKeys.linksDeFormulario(id) });
       // Os mesclados nele também mudam: o prefixo de todos os históricos.
       queryClient.invalidateQueries({ queryKey: crmKeys.historicos() });
     },

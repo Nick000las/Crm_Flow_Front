@@ -10,6 +10,7 @@ import { podeVer, temFeature } from '@/lib/acesso';
 import { isAccessError } from '@/services/api';
 import { AbasSituacao } from '../components/abas-situacao';
 import { AnonimizarLeadDialog } from '../components/anonimizar-lead-dialog';
+import { ConfirmarArquivarDialog } from '../components/confirmar-arquivar-dialog';
 import { BarraSelecao } from '../components/barra-selecao';
 import { EditarEmMassaDialog } from '../components/editar-em-massa-dialog';
 import { ChipsFiltro } from '../components/chips-filtro';
@@ -49,6 +50,8 @@ export default function LeadsPage() {
   const { state } = useLocation();
   const { estado: estadoDaUrl, atualizar } = useEstadoLista();
   const comArquivo = temFeature(user, CRM_FEATURES.ARQUIVO);
+  // Formulários (FM6): arquivar, excluir e anonimizar avisam dos links e respostas.
+  const comFormularios = temFeature(user, CRM_FEATURES.FORMULARIOS);
   // Sem a flag, um link ou view da lixeira cai em "ativos" (o back daria 403).
   const situacao = situacaoDaBusca(estadoDaUrl.situacao, comArquivo);
   const camposQuery = useCampos();
@@ -63,7 +66,7 @@ export default function LeadsPage() {
   const naLixeira = situacao === SITUACOES_LEAD.LIXEIRA;
   const { destinos, abrirLead, voltarParaLista } = useNavegacaoLeads();
   const leadsQuery = useLeadsSearch(estado);
-  const arquivo = useAcoesDeArquivo(voltarParaLista);
+  const arquivo = useAcoesDeArquivo(voltarParaLista, { confirmarArquivo: comFormularios });
   const { usuarios, nomePorId } = useUsuarios();
   const [leadAExcluir, setLeadAExcluir] = useState(null);
   const [aAnonimizar, setAAnonimizar] = useState(null);
@@ -294,13 +297,23 @@ export default function LeadsPage() {
 
       {podeAnonimizar && (
         <AnonimizarLeadDialog
+          comFormularios={comFormularios}
           lead={aAnonimizar}
           onAnonimizado={(texto) => setAvisoAnonimizar({ chave: chaveDaConsulta, texto })}
           onOpenChange={(aberto) => !aberto && setAAnonimizar(null)}
         />
       )}
 
+      {arquivo.aConfirmar && (
+        <ConfirmarArquivarDialog
+          lead={arquivo.aConfirmar}
+          onConfirmar={arquivo.confirmarArquivo}
+          onFechar={arquivo.cancelarArquivo}
+        />
+      )}
+
       <ExcluirLeadDialog
+        comFormularios={comFormularios}
         comLixeira={comArquivo}
         lead={leadAExcluir}
         onExcluido={() =>

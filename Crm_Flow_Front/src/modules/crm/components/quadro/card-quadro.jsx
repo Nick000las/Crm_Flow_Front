@@ -11,15 +11,37 @@ import { cn } from '@/lib/utils';
 import { CHAVE_RESPONSAVEL } from '../../lib/form-lead';
 import { textoDoCard } from '../../lib/quadro';
 import { idCardDoQuadro } from '../../rotas';
+import { SeloAlerta } from '../selo-alerta';
 import { SeloEsfriando } from '../selo-esfriando';
 
-const SELO_ORIGEM_REABERTA = 'origem_reaberta';
+const SELOS = Object.freeze({
+  ESFRIANDO: 'esfriando',
+  ORIGEM_REABERTA: 'origem_reaberta',
+  ALERTA_FORMULARIO: 'alerta_formulario',
+});
 const CAIXA = 'grid gap-1.5 border border-border bg-background p-3 text-sm';
 
 const comTexto = (itens, campos, nomePorId) =>
   (itens ?? [])
     .map((item) => ({ item, texto: textoDoCard(item, campos, nomePorId) }))
     .filter(({ texto }) => texto);
+
+/**
+ * Um selo do card. O de alerta (FM5) traz só o nível mais grave que eu não vi,
+ * nunca o texto. Tipo desconhecido não aparece.
+ */
+function Selo({ selo }) {
+  switch (selo.tipo) {
+    case SELOS.ORIGEM_REABERTA:
+      return <span className="border border-border px-1.5 text-[11px]">Venda reaberta</span>;
+    case SELOS.ESFRIANDO:
+      return <SeloEsfriando esfriandoDesde={selo.desde} />;
+    case SELOS.ALERTA_FORMULARIO:
+      return <SeloAlerta nivel={selo.nivel} prefixo="Alerta do formulário" />;
+    default:
+      return null;
+  }
+}
 
 /**
  * Conteúdo do card, também usado no `DragOverlay`, onde não há botões.
@@ -68,15 +90,9 @@ function CorpoDoCard({ card, campos, nomePorId, titulo }) {
       {responsavel && <p className="truncate text-xs text-muted-foreground">{responsavel}</p>}
       {selos.length > 0 && (
         <div className="flex flex-wrap gap-1">
-          {selos.map((selo) =>
-            selo.tipo === SELO_ORIGEM_REABERTA ? (
-              <span className="border border-border px-1.5 text-[11px]" key={selo.tipo}>
-                Venda reaberta
-              </span>
-            ) : (
-              <SeloEsfriando esfriandoDesde={selo.desde} key={selo.tipo} />
-            ),
-          )}
+          {selos.map((selo) => (
+            <Selo key={selo.tipo} selo={selo} />
+          ))}
         </div>
       )}
     </>

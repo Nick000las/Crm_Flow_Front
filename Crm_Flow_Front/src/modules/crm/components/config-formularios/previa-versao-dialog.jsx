@@ -8,11 +8,47 @@ import {
 } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ROTULOS_TIPO } from '../../constants';
+import { useCampos } from '../../hooks/use-campos';
 import { useVersaoDoFormulario } from '../../hooks/use-formularios';
+import { alvosDaVersao, descreverAlerta } from '../../lib/alertas-formulario';
 import { OPCOES_POLITICA } from '../../lib/formularios';
+import { SeloAlerta } from '../selo-alerta';
 import { SeloSensivel } from '../selo-sensivel';
 
 const ROTULO_POLITICA = new Map(OPCOES_POLITICA.map((opcao) => [opcao.valor, opcao.rotulo]));
+const CAMPOS_VAZIOS = [];
+
+/** Os alertas da versão (FM5): um link já enviado usa os da versão dele. */
+function AlertasDaVersao({ versao }) {
+  const campos = useCampos().data ?? CAMPOS_VAZIOS;
+  const alertas = versao.alertas ?? [];
+  if (alertas.length === 0) {
+    return null;
+  }
+  const alvos = alvosDaVersao(versao, campos);
+
+  return (
+    <div className="grid gap-1">
+      <p className="text-xs font-medium text-muted-foreground">Alertas</p>
+      <ul className="grid gap-1.5">
+        {alertas.map((alerta, indice) => (
+          <li
+            className="grid gap-1 border border-border px-3 py-2 text-sm"
+            key={alerta.id ?? indice}
+          >
+            <span className="flex flex-wrap items-baseline gap-2">
+              <SeloAlerta nivel={alerta.nivel} />
+              <span className="font-medium">{alerta.texto}</span>
+            </span>
+            <span className="text-xs text-muted-foreground">
+              Quando {descreverAlerta(alerta, alvos)}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 function Conteudo({ formularioId, versaoId }) {
   const versaoQuery = useVersaoDoFormulario(formularioId, versaoId);
@@ -91,6 +127,7 @@ function Conteudo({ formularioId, versaoId }) {
         <p className="text-xs font-medium text-muted-foreground">Termo de aceite</p>
         <p className="border border-border px-3 py-2 text-sm whitespace-pre-wrap">{versao.termo}</p>
       </div>
+      <AlertasDaVersao versao={versao} />
     </div>
   );
 }

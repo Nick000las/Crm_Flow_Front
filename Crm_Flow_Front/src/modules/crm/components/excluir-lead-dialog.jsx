@@ -13,11 +13,13 @@ import { DIAS_NA_LIXEIRA } from '../constants';
 import { useExcluirLead } from '../hooks/use-lead-mutations';
 
 const ERRO_ID = 'excluir-lead-erro';
+const AVISO_LINKS_CANCELADOS = 'Os links de formulário ainda não respondidos serão cancelados.';
 
 /**
  * Confirmação de exclusão. Usada pela linha da tabela e pelo Sheet. Excluir
  * sempre manda para a lixeira; com `comLixeira` (`crm.arquivo`) há tela para
- * restaurar, e o texto diz o prazo.
+ * restaurar, e o texto diz o prazo. Com `comFormularios` (FM6), avisa que os
+ * links de formulário ainda não respondidos são cancelados.
  *
  * @param {{
  *   lead: { id: string, nome: string } | null,
@@ -25,9 +27,17 @@ const ERRO_ID = 'excluir-lead-erro';
  *   onOpenChange: (open: boolean) => void,
  *   onExcluido: () => void,
  *   comLixeira?: boolean,
+ *   comFormularios?: boolean,
  * }} props
  */
-export function ExcluirLeadDialog({ lead, open, onOpenChange, onExcluido, comLixeira = false }) {
+export function ExcluirLeadDialog({
+  lead,
+  open,
+  onOpenChange,
+  onExcluido,
+  comLixeira = false,
+  comFormularios = false,
+}) {
   const excluir = useExcluirLead();
 
   function handleOpenChange(proximo) {
@@ -58,6 +68,7 @@ export function ExcluirLeadDialog({ lead, open, onOpenChange, onExcluido, comLix
             {comLixeira
               ? `${lead ? `"${lead.nome}"` : 'O lead'} vai para a lixeira e pode ser restaurado em até ${DIAS_NA_LIXEIRA} dias.`
               : `${lead ? `"${lead.nome}" será excluído. ` : ''}Esta ação não pode ser desfeita.`}
+            {comFormularios && ` ${AVISO_LINKS_CANCELADOS}`}
           </AlertDialogDescription>
         </AlertDialogHeader>
 

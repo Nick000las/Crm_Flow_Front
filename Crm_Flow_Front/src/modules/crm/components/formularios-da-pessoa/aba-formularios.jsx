@@ -29,6 +29,7 @@ import { precisaRevisar, rotuloDeQuemPreencheu } from '../../lib/respostas-formu
 import { caminhoDaSecao } from '../../lib/secoes-configuracoes';
 import { ControleTravado } from '../controle-travado';
 import { SelectSimples } from '../select-simples';
+import { TodosOsAlertas } from './alertas-da-pessoa';
 import { EnvioDoLink } from './envio-do-link';
 import { RespostaDialog } from './resposta-dialog';
 
@@ -218,6 +219,8 @@ export function AbaFormularios({ lead, nomePorId, respostaAberta, onAbrirRespost
           </ul>
         )}
       </section>
+
+      <TodosOsAlertas leadId={lead.id} onAbrirResposta={onAbrirResposta} />
 
       <section aria-labelledby="formularios-historico-titulo" className="grid gap-2">
         <h3 className="text-sm font-semibold" id="formularios-historico-titulo">

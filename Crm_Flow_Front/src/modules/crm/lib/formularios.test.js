@@ -64,6 +64,7 @@ const DA_API = {
   ],
   introducao: 'Oi',
   termo: 'Aceito',
+  alertas: [],
 };
 const FORMULARIO = {
   id: 'f1',
@@ -112,7 +113,12 @@ test('rascunhoDoForm começa com uma seção vazia, que não vai no PUT', () => 
   const vazio = rascunhoDoForm({ secoes: [], introducao: null, termo: null });
 
   assert.equal(vazio.secoes.length, 1);
-  assert.deepEqual(rascunhoParaApi(vazio), { secoes: [], introducao: null, termo: null });
+  assert.deepEqual(rascunhoParaApi(vazio), {
+    secoes: [],
+    introducao: null,
+    termo: null,
+    alertas: [],
+  });
 });
 
 test('pergunta nova vai sem id e com a chave local própria', () => {
@@ -254,6 +260,7 @@ test('validarNoCliente confere nome, validade e itens', () => {
   assert.deepEqual(validarNoCliente(dados, rascunho, ELEGIVEIS), {
     dados: {},
     porItem: {},
+    porAlerta: {},
     geral: null,
   });
   assert.deepEqual(

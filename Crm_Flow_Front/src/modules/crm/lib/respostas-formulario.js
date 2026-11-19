@@ -71,8 +71,19 @@ export function textoDaEscrita(escrita) {
   return TEXTO_POR_MOTIVO[escrita.motivo] ?? TEXTO_POR_RESULTADO[escrita.resultado] ?? null;
 }
 
+/** Pessoa anonimizada (FM6): as respostas ficam, mas sem nenhum valor. */
+export const MENSAGEM_RESPOSTAS_APAGADAS = 'Respostas apagadas a pedido do titular (LGPD)';
+
 /**
- * "Usar este valor" só quando a pessoa declarou outro valor e ele está à vista.
+ * Os valores das respostas foram apagados: a pessoa foi anonimizada.
+ *
+ * @param {{ anonimizado_em?: string | null } | null | undefined} lead
+ */
+export const respostasApagadas = (lead) => Boolean(lead?.anonimizado_em);
+
+/**
+ * "Usar este valor" só quando a pessoa declarou outro valor e ele está à vista
+ * (sem valor, como depois de anonimizar, não há o que usar).
  *
  * @param {ItemRespondidoDeCampo | ItemRespondidoDePergunta} item
  */
@@ -80,6 +91,8 @@ export function podeUsarValor(item) {
   return (
     'campoId' in item &&
     !item.oculto &&
+    item.valor !== null &&
+    item.valor !== undefined &&
     item.escrita?.resultado === RESULTADOS_ESCRITA.REVISAO &&
     item.escrita.motivo === 'valor_diferente'
   );

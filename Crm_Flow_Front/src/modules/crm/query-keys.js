@@ -10,7 +10,9 @@ export const crmKeys = {
   lead: (id) => ['crm', 'lead', id],
   // Dentro do prefixo `leads()`: o que muda a lista muda o quadro, sem listar
   // o quadro em cada mutação do CRM.
-  quadro: (ref) => ['crm', 'leads', 'quadro', ref],
+  // Prefixo de todos os quadros (o selo de alerta muda em todos ao marcar visto).
+  quadros: () => ['crm', 'leads', 'quadro'],
+  quadro: (ref) => [...crmKeys.quadros(), ref],
   quadroColunas: (ref) => ['crm', 'leads', 'quadro', ref, 'colunas'],
   quadroCardsTodos: (ref) => [...crmKeys.quadro(ref), 'cards'],
   // Sem `consulta`/`filtros`, o prefixo da coluna: alcança todas as consultas dela.
@@ -34,6 +36,14 @@ export const crmKeys = {
   // Dentro do prefixo dos links: recarregar os links recarrega as respostas.
   respostasDeFormulario: (leadId) => ['crm', 'formularios-da-pessoa', leadId, 'respostas'],
   respostaDeFormulario: (leadId, id) => ['crm', 'formularios-da-pessoa', leadId, 'respostas', id],
+  // Sem `todos`, o prefixo: alcança os não vistos (topo) e todos (aba).
+  alertasDeFormulario: (leadId, todos) => [
+    'crm',
+    'formularios-da-pessoa',
+    leadId,
+    'alertas',
+    ...(todos === undefined ? [] : [{ todos }]),
+  ],
   formulariosDisponiveis: () => ['crm', 'formularios-disponiveis'],
   oportunidadesNaLixeira: (leadId) => ['crm', 'oportunidades', leadId, 'lixeira'],
   // Prefixo do histórico de todos os leads (edição em massa).
