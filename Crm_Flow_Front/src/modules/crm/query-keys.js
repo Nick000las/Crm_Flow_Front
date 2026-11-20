@@ -27,11 +27,18 @@ export const crmKeys = {
     colunaRef,
     ...(filtros ? [filtros] : []),
   ],
+  // Forecast (FC2), também dentro do prefixo `leads()`: toda mutação do CRM que
+  // invalida `leads()` (oportunidade, status, arquivo…) já recarrega o forecast.
+  forecastTudo: () => ['crm', 'leads', 'forecast'],
+  forecast: (params) => [...crmKeys.forecastTudo(), params],
+  forecastLista: (params) => [...crmKeys.forecastTudo(), 'lista', params],
   // Fora do prefixo `lead(id)`: recarregar o lead não recarrega as abas.
   atividades: (leadId) => ['crm', 'atividades', leadId],
   historico: (leadId) => ['crm', 'historico', leadId],
   projetos: (leadId) => ['crm', 'projetos', leadId],
   oportunidades: (leadId) => ['crm', 'oportunidades', leadId],
+  // Prefixo das oportunidades de todos os leads (ação em massa do forecast).
+  oportunidadesTodas: () => ['crm', 'oportunidades'],
   linksDeFormulario: (leadId) => ['crm', 'formularios-da-pessoa', leadId],
   // Dentro do prefixo dos links: recarregar os links recarrega as respostas.
   respostasDeFormulario: (leadId) => ['crm', 'formularios-da-pessoa', leadId, 'respostas'],

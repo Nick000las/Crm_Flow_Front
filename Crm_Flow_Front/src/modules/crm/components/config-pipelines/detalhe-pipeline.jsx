@@ -12,6 +12,7 @@ import {
 } from '../../constants';
 import { useAtualizarPipeline, useReordenarStatus } from '../../hooks/use-pipelines';
 import { motivoNaoDesativa, motivoNaoExclui } from '../../lib/pipelines';
+import { comPorcento } from '../../lib/probabilidade';
 import { BotaoIcone } from '../botao-icone';
 import { ExcluirOpcaoDialog } from '../config-listas/excluir-opcao-dialog';
 import { OpcaoDialog } from '../config-listas/opcao-dialog';
@@ -39,6 +40,14 @@ function StatusEmLeitura({ status }) {
           <OpcaoBadge opcao={item} />
           <span className="text-sm text-muted-foreground">
             {ROTULOS_CATEGORIA[item.category] ?? '—'}
+            {typeof item.probabilidadePadrao === 'number' && (
+              <>
+                {' · '}
+                <span className="font-mono tabular-nums">
+                  {comPorcento(item.probabilidadePadrao)}
+                </span>
+              </>
+            )}
           </span>
         </li>
       ))}

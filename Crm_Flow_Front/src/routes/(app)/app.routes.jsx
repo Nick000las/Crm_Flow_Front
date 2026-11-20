@@ -3,6 +3,7 @@ import ConfiguracoesPage from '@/modules/configuracoes/pages/configuracoes-page'
 import { LeadSheet } from '@/modules/crm/components/lead-sheet';
 import { PAPEIS_GESTAO } from '@/modules/crm/constants';
 import ConfiguracoesCrmPage from '@/modules/crm/pages/configuracoes-page';
+import ForecastPage from '@/modules/crm/pages/forecast-page';
 import ImportarPage from '@/modules/crm/pages/importar-page';
 import LeadsPage from '@/modules/crm/pages/leads-page';
 import QuadroPage from '@/modules/crm/pages/quadro-page';
@@ -41,6 +42,12 @@ export const appRoutes = [
           { index: true, element: null },
           { path: 'leads/:leadId', element: <LeadSheet /> },
         ],
+      },
+      {
+        // FC2: atrás de `crm.forecast` no menu; o 403 vira estado da página.
+        path: 'forecast',
+        element: <ForecastPage />,
+        children: [{ path: 'leads/:leadId', element: <LeadSheet /> }],
       },
       {
         path: 'importar',

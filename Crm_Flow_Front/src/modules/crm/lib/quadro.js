@@ -1,5 +1,11 @@
 import { CAMADA, CHAVE_VALOR, TIPOS_CAMPO } from '../constants.js';
-import { CHAVE_RESPONSAVEL, ehCampoComercial, podeEditarCampo } from './form-lead.js';
+import {
+  CHAVE_RESPONSAVEL,
+  ehCampoComercial,
+  idNoForm,
+  paraValorDeApi,
+  podeEditarCampo,
+} from './form-lead.js';
 import { formatarMoeda } from './formatadores.js';
 import { textoDoValor } from './layout.js';
 
@@ -13,16 +19,22 @@ import { textoDoValor } from './layout.js';
  * @typedef {import('../types.js').Campo} Campo
  * @typedef {{ pages: PaginaDeCards[], pageParams: unknown[] }} PaginasDaColuna
  * @typedef {{
- *   motivo: Campo | null,
+ *   noMover: Campo[],
  *   daOportunidade: Campo[],
  *   doLead: Campo[],
  *   bloqueados: string[],
- * }} Obrigatorios  `bloqueados`: mensagens do que este papel não preenche
+ * }} Obrigatorios  `noMover`: vão em `campos` do próprio mover; `bloqueados`:
+ *   mensagens do que este papel não preenche
  */
 
 export const CODIGO_CAMPOS_OBRIGATORIOS = 'CAMPOS_OBRIGATORIOS';
 
-const CHAVE_MOTIVO = 'motivoPerda';
+/**
+ * Gravam junto com o status, em `campos` do mover. A probabilidade (FC1) não
+ * pode ir antes pela oportunidade: a mudança de status a apagaria, e o mover
+ * falharia de novo.
+ */
+const CHAVES_NO_MOVER = new Set(['motivoPerda', 'probabilidadeFechamento']);
 /** Todos os personalizados chegam nesta chave, com o nome do campo na mensagem. */
 const CHAVE_PERSONALIZADOS = 'customFields';
 /** O responsável não está em `/fields`, mas a regra de campo pode exigi-lo. */
@@ -32,12 +44,8 @@ const CAMPO_RESPONSAVEL = Object.freeze({
   tipo: TIPOS_CAMPO.USUARIO,
   camada: CAMADA.CAMADA_2,
 });
-/** O que `PUT /crm/oportunidades/:id` aceita, entre os campos de `/fields`. */
-const CHAVES_DA_OPORTUNIDADE = new Set([
-  CHAVE_VALOR,
-  'probabilidadeFechamento',
-  'dataPrevistaFechamento',
-]);
+/** O que vai por `PUT /crm/oportunidades/:id`, entre os campos de `/fields`. */
+const CHAVES_DA_OPORTUNIDADE = new Set([CHAVE_VALOR, 'dataPrevistaFechamento']);
 /** Na pessoa nova do quadro, o status é a coluna, e a conversão é do back. */
 const FORA_DA_PESSOA_NOVA = new Set(['status', 'dataConversao']);
 
@@ -166,8 +174,9 @@ function recusasDaChave(chave, mensagens, campos) {
 /**
  * Reparte o `fields` de `CAMPOS_OBRIGATORIOS`. A regra de campo avalia a pessoa
  * inteira, então a recusa pode citar um dado de contato, que só
- * `PUT /crm/leads/:id` aceita. Só o motivo vai junto do status, e o comercial
- * vai pela oportunidade: pelo lead, gravaria na principal, que pode ser outra.
+ * `PUT /crm/leads/:id` aceita. Motivo e probabilidade vão junto do status, e o
+ * resto do comercial vai pela oportunidade: pelo lead, gravaria na principal,
+ * que pode ser outra.
  *
  * @param {Record<string, string[]> | undefined} fields
  * @param {Campo[]} campos todos os de `/fields`, com a permissão do papel
@@ -175,7 +184,7 @@ function recusasDaChave(chave, mensagens, campos) {
  */
 export function separarObrigatorios(fields, campos) {
   /** @type {Obrigatorios} */
-  const resultado = { motivo: null, daOportunidade: [], doLead: [], bloqueados: [] };
+  const resultado = { noMover: [], daOportunidade: [], doLead: [], bloqueados: [] };
 
   const recusas = Object.entries(fields ?? {}).flatMap(([chave, mensagens]) =>
     recusasDaChave(chave, mensagens, campos),
@@ -186,8 +195,8 @@ export function separarObrigatorios(fields, campos) {
 
     if (!campo || !podeEditarCampo(campo)) {
       resultado.bloqueados.push(mensagem);
-    } else if (sistema && campo.chave === CHAVE_MOTIVO) {
-      resultado.motivo = campo;
+    } else if (sistema && CHAVES_NO_MOVER.has(campo.chave)) {
+      resultado.noMover.push(campo);
     } else if (sistema && CHAVES_DA_OPORTUNIDADE.has(campo.chave)) {
       resultado.daOportunidade.push(campo);
     } else if (sistema && ehCampoComercial(campo.chave)) {
@@ -199,6 +208,23 @@ export function separarObrigatorios(fields, campos) {
   }
 
   return resultado;
+}
+
+/**
+ * `campos` do mover: os valores do form, no formato da API. `undefined` = nada
+ * a mandar.
+ *
+ * @param {Campo[]} noMover
+ * @param {Record<string, unknown>} valores do form, por `idNoForm`
+ * @returns {Record<string, unknown> | undefined}
+ */
+export function camposDoMover(noMover, valores) {
+  if (noMover.length === 0) {
+    return undefined;
+  }
+  return Object.fromEntries(
+    noMover.map((campo) => [campo.chave, paraValorDeApi(campo.tipo, valores[idNoForm(campo)])]),
+  );
 }
 
 /**

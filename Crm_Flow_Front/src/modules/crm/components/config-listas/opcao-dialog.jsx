@@ -15,11 +15,18 @@ import { semChave } from '@/lib/objetos';
 import { getFieldError } from '@/services/api';
 import { CATEGORIAS_STATUS, ROTULOS_CATEGORIA } from '../../constants';
 import { useAtualizarOpcao, useCriarOpcao } from '../../hooks/use-listas';
-import { payloadDaOpcao, temCategoria, validarOpcao, valoresDaOpcao } from '../../lib/listas';
+import {
+  payloadDaOpcao,
+  pedeProbabilidade,
+  temCategoria,
+  validarOpcao,
+  valoresDaOpcao,
+} from '../../lib/listas';
+import { AJUDA_PROBABILIDADE_PADRAO } from '../../lib/probabilidade';
 import { CampoForm } from '../campo-form';
 import { SelectSimples } from '../select-simples';
 
-const CAMPOS_DO_SERVIDOR = ['label', 'color', 'category'];
+const CAMPOS_DO_SERVIDOR = ['label', 'color', 'category', 'probabilidadePadrao'];
 const OPCOES_CATEGORIA = Object.values(CATEGORIAS_STATUS).map((valor) => ({
   valor,
   rotulo: ROTULOS_CATEGORIA[valor],
@@ -60,6 +67,8 @@ function FormOpcao({ tipo, opcao, pipelineId, onSalvo }) {
   const criar = useCriarOpcao(pipelineId);
   const atualizar = useAtualizarOpcao(pipelineId);
   const mutacao = editando ? atualizar : criar;
+  // Só ao criar status de pipeline: na edição, a probabilidade é a coluna da tabela.
+  const comProbabilidade = Boolean(pipelineId) && !editando && pedeProbabilidade(tipo, valores);
 
   const erroDe = (campo) =>
     errosCliente[campo] ?? (mutacao.error ? getFieldError(mutacao.error, campo) : null);
@@ -76,13 +85,15 @@ function FormOpcao({ tipo, opcao, pipelineId, onSalvo }) {
 
   function handleSubmit(event) {
     event.preventDefault();
-    const erros = validarOpcao(tipo, valores);
+    // Fora de status de pipeline, o campo não aparece e não vai.
+    const enviados = comProbabilidade ? valores : { ...valores, probabilidadePadrao: '' };
+    const erros = validarOpcao(tipo, enviados);
     if (Object.keys(erros).length > 0) {
       setErrosCliente(erros);
       return;
     }
 
-    const corpo = payloadDaOpcao(tipo, valores, opcao);
+    const corpo = payloadDaOpcao(tipo, enviados, opcao);
     if (!corpo) {
       onSalvo(null);
       return;
@@ -133,6 +144,25 @@ function FormOpcao({ tipo, opcao, pipelineId, onSalvo }) {
               onChange={(categoria) => alterar('category', categoria)}
               opcoes={OPCOES_CATEGORIA}
               value={valores.category}
+            />
+          )}
+        </CampoForm>
+      )}
+
+      {comProbabilidade && (
+        <CampoForm
+          ajuda={`${AJUDA_PROBABILIDADE_PADRAO} Vazio usa a sugestão do sistema.`}
+          erro={erroDe('probabilidadePadrao')}
+          id="opcao-probabilidade"
+          label="Probabilidade (%)"
+        >
+          {(controle) => (
+            <Input
+              {...controle}
+              className="h-9 w-24 rounded-none font-mono tabular-nums"
+              inputMode="numeric"
+              onChange={(event) => alterar('probabilidadePadrao', event.target.value)}
+              value={valores.probabilidadePadrao}
             />
           )}
         </CampoForm>

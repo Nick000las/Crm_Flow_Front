@@ -1,5 +1,6 @@
 import { Construction, KanbanSquare, LayoutDashboard, Settings } from 'lucide-react';
-import { PAPEIS_GESTAO } from '@/modules/crm/constants';
+import { CRM_FEATURES, PAPEIS_GESTAO } from '@/modules/crm/constants';
+import { ROTAS_CRM } from '@/modules/crm/rotas';
 import { SECOES_CONFIGURACOES } from '@/modules/crm/lib/secoes-configuracoes';
 import { paginaVisivel, podeVer } from './acesso';
 
@@ -65,6 +66,14 @@ export const MODULES = [
     path: '/crm',
     pages: [
       { key: 'leads', label: 'Leads', path: '/crm', ativoEm: ['/crm/leads'] },
+      {
+        key: 'forecast',
+        label: 'Forecast',
+        path: ROTAS_CRM.FORECAST,
+        // Todos os papéis; o que cada um vê muda pela permissão de campo.
+        feature: CRM_FEATURES.FORECAST,
+        ativoEm: [ROTAS_CRM.FORECAST],
+      },
       {
         key: 'importar',
         label: 'Importar',

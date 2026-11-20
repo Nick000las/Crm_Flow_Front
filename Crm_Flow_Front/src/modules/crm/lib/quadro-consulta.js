@@ -1,4 +1,5 @@
 import { contarFiltros, paraCorpoDeBusca } from './filtro.js';
+import { avisoDeProbabilidade, juntarAvisos } from './probabilidade.js';
 
 /**
  * Filtro e ordem do quadro comercial (M4): quem filtra e ordena é o servidor.
@@ -79,12 +80,15 @@ export function montarConsulta({ busca, filtro }, ordem) {
 }
 
 /**
- * Aviso depois de arrastar. `null` quando deu tudo certo e o card está à vista.
- *
- * @param {{ conflito: boolean, saiuDoFiltro: boolean }} resposta
- * @returns {string | null}
+ * @typedef {{
+ *   conflito: boolean,
+ *   saiuDoFiltro: boolean,
+ *   avisos?: import('./probabilidade.js').AvisoDaResposta[],
+ * }} RespostaDoMover
  */
-export function avisoDoMovimento({ conflito, saiuDoFiltro }) {
+
+/** @param {RespostaDoMover} resposta */
+function avisoDaPosicao({ conflito, saiuDoFiltro }) {
   if (conflito && saiuDoFiltro) {
     return AVISO_CONFLITO_FORA_DO_FILTRO;
   }
@@ -95,11 +99,31 @@ export function avisoDoMovimento({ conflito, saiuDoFiltro }) {
 }
 
 /**
+ * Aviso depois de arrastar. `null` quando deu tudo certo e o card está à vista.
+ * A probabilidade redefinida (FC1) entra junto; o mover não traz a efetiva,
+ * então `padraoDoDestino` é a do status da coluna de destino.
+ *
+ * @param {RespostaDoMover} resposta
+ * @param {number | null} [padraoDoDestino]
+ * @returns {string | null}
+ */
+export function avisoDoMovimento(resposta, padraoDoDestino) {
+  return juntarAvisos(
+    avisoDaPosicao(resposta),
+    avisoDeProbabilidade(resposta.avisos, padraoDoDestino),
+  );
+}
+
+/**
  * Aviso depois do form de `CAMPOS_OBRIGATORIOS`: ele acabou de se fechar, então
  * sempre confirma.
  *
- * @param {{ conflito: boolean, saiuDoFiltro: boolean }} resposta
+ * @param {RespostaDoMover} resposta
+ * @param {number | null} [padraoDoDestino]
  */
-export function avisoDoFormulario(resposta) {
-  return avisoDoMovimento(resposta) ?? AVISO_MOVIDO;
+export function avisoDoFormulario(resposta, padraoDoDestino) {
+  return juntarAvisos(
+    avisoDaPosicao(resposta) ?? AVISO_MOVIDO,
+    avisoDeProbabilidade(resposta.avisos, padraoDoDestino),
+  );
 }

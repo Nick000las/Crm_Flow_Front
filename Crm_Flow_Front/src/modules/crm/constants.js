@@ -29,6 +29,7 @@ export const CRM_FEATURES = Object.freeze({
   LGPD: 'crm.lgpd',
   TIMELINE: 'crm.timeline',
   FORMULARIOS: 'crm.formularios',
+  FORECAST: 'crm.forecast',
 });
 
 /** Listas do tenant (Configurações › Listas); `:tipo` das rotas e `campo.lista`. */
@@ -428,4 +429,47 @@ export const ROTULOS_TIPO = Object.freeze({
   [TIPOS_CAMPO.USUARIO]: 'Usuário',
   [TIPOS_CAMPO.INTERVALO_DATAS]: 'Período (de/até)',
   [TIPOS_CAMPO.ENDERECO]: 'Endereço',
+});
+
+/** Forecast (`crm.forecast`): limites e tamanhos de página, espelho do back. */
+export const FORECAST = Object.freeze({
+  MAX_MESES: 24,
+  MAX_IDS: 200,
+  TAMANHO_PADRAO: 50,
+  TAMANHOS: Object.freeze([25, 50, 100]),
+});
+
+/** Chaves de `blocos` na resposta de `GET /crm/forecast`. */
+export const BLOCOS_FORECAST = Object.freeze({
+  ATRASADAS: 'atrasadas',
+  ANTES_DO_PERIODO: 'antesDoPeriodo',
+  SEM_PREVISAO: 'semPrevisao',
+  ALEM_DO_HORIZONTE: 'alemDoHorizonte',
+  SEM_VALOR: 'semValor',
+});
+
+/** Valor de `?bloco=` em `GET /crm/forecast/oportunidades`, por bloco. */
+export const BLOCO_NA_ROTA = Object.freeze({
+  atrasadas: 'atrasadas',
+  antesDoPeriodo: 'antes_do_periodo',
+  semPrevisao: 'sem_previsao',
+  alemDoHorizonte: 'alem_do_horizonte',
+  semValor: 'sem_valor',
+});
+
+/** Valor de `?tipo=` em `GET /crm/forecast/oportunidades` (com `mes`). */
+export const TIPOS_MES = Object.freeze({ REALIZADO: 'realizado', ABERTO: 'aberto' });
+
+/** Valor de `?agrupar=` em `GET /crm/forecast`. */
+export const AGRUPAR_FORECAST = Object.freeze({
+  TOTAL: 'total',
+  RESPONSAVEL: 'responsavel',
+  STATUS: 'status',
+});
+
+/** `ignoradas[].motivo` de `POST /crm/forecast/data-prevista`. */
+export const MOTIVOS_IGNORADA = Object.freeze({
+  NAO_ENCONTRADA: 'NAO_ENCONTRADA',
+  NAO_ABERTA: 'NAO_ABERTA',
+  RESOURCE_CONFLICT: 'RESOURCE_CONFLICT',
 });

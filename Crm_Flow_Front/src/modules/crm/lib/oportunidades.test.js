@@ -9,6 +9,7 @@ import {
   payloadDaEdicao,
   payloadDoStatus,
   pedeMotivo,
+  pedeProbabilidadeNoStatus,
   podeAlterar,
   podeMudarStatus,
   validarOportunidade,
@@ -164,6 +165,28 @@ test('payloadDoStatus só leva o motivo em status perdido', () => {
       ...versao,
     },
   );
+});
+
+test('payloadDoStatus leva a probabilidade escolhida só em status aberto', () => {
+  const versao = { expectedUpdatedAt: OPORTUNIDADE.atualizadaEm };
+  const valores = { status: 'proposta', motivoPerda: '', probabilidadeFechamento: '35' };
+
+  assert.deepEqual(payloadDoStatus(OPORTUNIDADE, valores, 'aberto'), {
+    status: 'proposta',
+    probabilidadeFechamento: 35,
+    ...versao,
+  });
+  // Vazia = volta à do status: não vai.
+  assert.deepEqual(
+    payloadDoStatus(OPORTUNIDADE, { ...valores, probabilidadeFechamento: '' }, 'aberto'),
+    { status: 'proposta', ...versao },
+  );
+  assert.deepEqual(payloadDoStatus(OPORTUNIDADE, { ...valores, status: 'ganho' }, 'ganho'), {
+    status: 'ganho',
+    ...versao,
+  });
+  assert.equal(pedeProbabilidadeNoStatus('aberto'), true);
+  assert.equal(pedeProbabilidadeNoStatus('perdido'), false);
 });
 
 test('pedeMotivo vale para toda categoria perdido', () => {

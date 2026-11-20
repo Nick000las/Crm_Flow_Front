@@ -27,6 +27,7 @@ import {
 import { payloadDaEdicao, valoresDaOportunidade } from '../../lib/oportunidades';
 import {
   CODIGO_CAMPOS_OBRIGATORIOS,
+  camposDoMover,
   pedeOutrosCampos,
   separarObrigatorios,
 } from '../../lib/quadro';
@@ -39,19 +40,24 @@ const ERRO_ID = 'quadro-obrigatorios-erro';
 const obrigatorio = (campo) => ({ ...campo, obrigatorio: true });
 
 /** Valores do form: comercial da oportunidade movida, nunca o da principal do lead. */
-function valoresDoForm({ motivo, daOportunidade, doLead }, oportunidade, lead) {
-  const comerciais = valoresDaOportunidade(oportunidade);
+function valoresDoForm({ noMover, daOportunidade, doLead }, oportunidade, lead) {
+  const comerciais = {
+    ...valoresDaOportunidade(oportunidade),
+    motivoPerda: oportunidade.motivoPerda ?? '',
+  };
 
   return {
     ...valoresIniciais(doLead, lead),
-    ...Object.fromEntries(daOportunidade.map(({ chave }) => [chave, comerciais[chave]])),
-    ...(motivo && { [idNoForm(motivo)]: oportunidade.motivoPerda ?? '' }),
+    ...Object.fromEntries(
+      [...daOportunidade, ...noMover].map((campo) => [idNoForm(campo), comerciais[campo.chave]]),
+    ),
   };
 }
 
 /**
  * Montado com os dados já lidos. Grava em ordem: oportunidade, contato e, por
- * último, repete o `mover`, que leva o motivo e diz se o card saiu do filtro.
+ * último, repete o `mover`, que leva o motivo e a probabilidade (`campos`) e diz
+ * se o card saiu do filtro.
  * Se a última etapa falhar, as anteriores ficam, e reenviar é seguro: o diff
  * parte do que recarregou e sai vazio.
  */
@@ -65,8 +71,8 @@ function FormObrigatorios({
   onSalvo,
 }) {
   const { card } = pendencia;
-  const { motivo, daOportunidade, doLead, bloqueados } = obrigatorios;
-  const lista = [...(motivo ? [motivo] : []), ...daOportunidade, ...doLead].map(obrigatorio);
+  const { noMover, daOportunidade, doLead, bloqueados } = obrigatorios;
+  const lista = [...noMover, ...daOportunidade, ...doLead].map(obrigatorio);
   const chaves = new Set(lista.map((campo) => campo.chave));
 
   const editar = useEditarOportunidade(card.leadId);
@@ -133,11 +139,9 @@ function FormObrigatorios({
     try {
       const versao = await gravarOportunidade();
       await gravarContato();
-      const resposta = await onMover(pendencia, {
-        versao,
-        ...(motivo && { campos: { motivoPerda: valores[idNoForm(motivo)] } }),
-      });
-      onSalvo(avisoDoFormulario(resposta));
+      const campos = camposDoMover(noMover, valores);
+      const resposta = await onMover(pendencia, { versao, ...(campos && { campos }) });
+      onSalvo(avisoDoFormulario(resposta, pendencia.padraoDoDestino));
     } catch (error) {
       tratarErro(error);
     } finally {
@@ -250,16 +254,21 @@ function ConteudoDoDialog({ pendencia, campos, onMover, onRecusado, onSalvo }) {
  *     de: string,
  *     destino: import('../../api/quadro.api').ColunaQuadro,
  *     erro: import('@/services/api-error').ApiError,
+ *     padraoDoDestino?: number | null,
  *   } | null,
  *   campos: import('../../types').Campo[],
  *   onFechar: () => void,
  *   onMover: (
  *     pendencia: { card: object, de: string, destino: object },
- *     extras: { versao: string, campos?: { motivoPerda: string } },
- *   ) => Promise<{ conflito: boolean, saiuDoFiltro: boolean }>,
+ *     extras: {
+ *       versao: string,
+ *       campos?: { motivoPerda?: string | null, probabilidadeFechamento?: number | null },
+ *     },
+ *   ) => Promise<import('../../api/quadro.api').ResultadoDoMover>,
  *   onRecusado: (erro: import('@/services/api-error').ApiError) => void,
  *   onSalvo: (aviso: string) => void,
- * }} props `campos`: todos os de `/fields`, com a permissão do papel
+ * }} props `campos`: todos os de `/fields`, com a permissão do papel;
+ *   `padraoDoDestino`: a probabilidade padrão do status da coluna, para o aviso
  */
 export function CamposObrigatoriosDialog({
   pendencia,

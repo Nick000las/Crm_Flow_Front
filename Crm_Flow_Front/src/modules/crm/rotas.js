@@ -20,6 +20,7 @@ export const ROTAS_CRM = Object.freeze({
   LISTA: '/crm',
   IMPORTAR: '/crm/importar',
   CONFIGURACOES: '/crm/configuracoes',
+  FORECAST: '/crm/forecast',
   NOVO_LEAD: `/crm/leads/${ID_NOVO_LEAD}`,
   lead: (id) => `/crm/leads/${encodeURIComponent(id)}`,
   pipelineNaConfiguracao: (id) => `/crm/configuracoes/pipelines?pipeline=${encodeURIComponent(id)}`,

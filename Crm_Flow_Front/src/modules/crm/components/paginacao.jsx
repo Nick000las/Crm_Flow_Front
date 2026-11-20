@@ -16,9 +16,18 @@ import { totalDePaginas } from '../lib/url-state';
  *   tamanho: number,
  *   total: number,
  *   onChange: (mudancas: { pagina?: number, tamanho?: number }) => void,
- * }} props
+ *   tamanhos?: readonly number[],
+ *   rotuloTamanho?: string,
+ * }} props `tamanhos` e `rotuloTamanho` trocam as opções e o nome acessível do seletor
  */
-export function Paginacao({ pagina, tamanho, total, onChange }) {
+export function Paginacao({
+  pagina,
+  tamanho,
+  total,
+  onChange,
+  tamanhos = TAMANHOS_PAGINA,
+  rotuloTamanho = 'Leads por página',
+}) {
   const ultima = totalDePaginas(total, tamanho);
 
   return (
@@ -58,11 +67,11 @@ export function Paginacao({ pagina, tamanho, total, onChange }) {
           onValueChange={(valor) => onChange({ tamanho: Number(valor), pagina: 1 })}
           value={String(tamanho)}
         >
-          <SelectTrigger aria-label="Leads por página" className="h-8 w-20 rounded-none">
+          <SelectTrigger aria-label={rotuloTamanho} className="h-8 w-20 rounded-none">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {TAMANHOS_PAGINA.map((opcao) => (
+            {tamanhos.map((opcao) => (
               <SelectItem key={opcao} value={String(opcao)}>
                 {opcao}
               </SelectItem>

@@ -178,19 +178,37 @@ export function payloadDaEdicao(oportunidade, valores, campos) {
 }
 
 /**
- * Corpo do `PATCH`: o motivo só vale em status perdido.
+ * Corpo do `PATCH`: o motivo só vale em status perdido. A probabilidade (FC1)
+ * só em status aberto e preenchida: sem ela, o back volta à do status novo e
+ * avisa; com ela, grava a escolhida e não avisa.
  *
  * @param {Oportunidade} oportunidade
- * @param {{ status: string, motivoPerda: string }} valores
+ * @param {{ status: string, motivoPerda: string, probabilidadeFechamento?: string }} valores
  * @param {string | null | undefined} categoria do status escolhido
  */
-export function payloadDoStatus(oportunidade, { status, motivoPerda }, categoria) {
+export function payloadDoStatus(
+  oportunidade,
+  { status, motivoPerda, probabilidadeFechamento = '' },
+  categoria,
+) {
+  const probabilidade = pedeProbabilidadeNoStatus(categoria)
+    ? paraValorDeApi(TIPOS_CAMPO.NUMERO, probabilidadeFechamento)
+    : null;
+
   return {
     status,
     expectedUpdatedAt: oportunidade.atualizadaEm,
     ...(pedeMotivo(categoria) && motivoPerda ? { motivoPerda } : {}),
+    ...(typeof probabilidade === 'number' && { probabilidadeFechamento: probabilidade }),
   };
 }
+
+/**
+ * Ganho e perdido têm probabilidade fixa: só o status aberto escolhe uma.
+ *
+ * @param {string | null | undefined} categoria
+ */
+export const pedeProbabilidadeNoStatus = (categoria) => categoria === CATEGORIAS_STATUS.ABERTO;
 
 /** @param {string | null | undefined} categoria */
 export const pedeMotivo = (categoria) => categoria === CATEGORIAS_STATUS.PERDIDO;

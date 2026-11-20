@@ -22,7 +22,7 @@ import {
   valoresDaOportunidade,
   versaoDoConflito,
 } from '../../lib/oportunidades';
-import { pipelinesAtivos, statusAbertos } from '../../lib/pipelines';
+import { pipelinesAtivos, statusAbertos, statusDoPipeline } from '../../lib/pipelines';
 import { CampoForm } from '../campo-form';
 import { SelectSimples } from '../select-simples';
 import { CamposOportunidade } from './campos-oportunidade';
@@ -149,6 +149,9 @@ function FormOportunidade({ oportunidade, lead, pipelines, campos, onSalvo, onCo
         erroDe={erroDe}
         focarTitulo
         onChange={alterar}
+        probabilidadePadrao={
+          statusDoPipeline(pipelines, valores.pipelineId, valores.status)?.probabilidadePadrao
+        }
         usuarios={usuarios}
         valores={valores}
       />

@@ -1,6 +1,7 @@
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { MENSAGEM_SEM_PERMISSAO } from '../../constants';
+import { placeholderDoPadrao } from '../../lib/probabilidade';
 import { CampoForm } from '../campo-form';
 import { CampoMonetario, INPUT_CLASS } from '../campos-texto';
 import { SelectSimples } from '../select-simples';
@@ -19,7 +20,8 @@ const TAMANHO_TITULO = 200;
  *   erroDe: (chave: string) => string | undefined,
  *   onChange: (chave: string, valor: string) => void,
  *   focarTitulo?: boolean,
- * }} props
+ *   probabilidadePadrao?: number | null,
+ * }} props `probabilidadePadrao`: a do status, quando se sabe qual é; vazio usa ela
  */
 export function CamposOportunidade({
   valores,
@@ -28,6 +30,7 @@ export function CamposOportunidade({
   erroDe,
   onChange,
   focarTitulo = false,
+  probabilidadePadrao,
 }) {
   const travado = (chave) => (acesso[chave].editavel ? null : MENSAGEM_SEM_PERMISSAO);
 
@@ -65,6 +68,7 @@ export function CamposOportunidade({
 
       {acesso.probabilidadeFechamento.visivel && (
         <CampoForm
+          ajuda="Vazio usa a probabilidade do status."
           erro={erroDe('probabilidadeFechamento')}
           id="oportunidade-probabilidade"
           label="Probabilidade (%)"
@@ -76,6 +80,7 @@ export function CamposOportunidade({
               className={cn(INPUT_CLASS, 'font-mono tabular-nums')}
               inputMode="numeric"
               onChange={(event) => onChange('probabilidadeFechamento', event.target.value)}
+              placeholder={placeholderDoPadrao(probabilidadePadrao)}
               value={valores.probabilidadeFechamento}
             />
           )}

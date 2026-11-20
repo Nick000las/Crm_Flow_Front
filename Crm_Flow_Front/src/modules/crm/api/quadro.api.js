@@ -36,6 +36,14 @@
  *   itens: (CardQuadro & { colunaRef: string })[],
  *   ausentes: string[],
  * }} ReleituraDeCards  `ausentes`: saiu do quadro, do filtro ou do alcance do usuário
+ * @typedef {{
+ *   entidadeId: string,
+ *   colunaRef: string,
+ *   conflito: boolean,
+ *   avisos: import('../lib/probabilidade.js').AvisoDaResposta[],
+ *   atualizadoEm: string,
+ *   saiuDoFiltro: boolean,
+ * }} ResultadoDoMover
  */
 
 export const BOARD_TYPE = 'crm_oportunidades';
@@ -116,7 +124,10 @@ export function criarCard(authApi, quadroRef, corpo) {
  * Mover é mudar o status. `CAMPOS_OBRIGATORIOS` (400) traz o que falta em
  * `fields`; `conflito: true` = gravou, mas outra pessoa mexeu antes. Com `filtros`
  * (o da tela), `saiuDoFiltro` diz se o card ainda atende a ele. `campos` é o
- * que grava junto com o status, e só aceita `motivoPerda`.
+ * que grava junto com o status: `motivoPerda` e `probabilidadeFechamento`.
+ * Mudar o status apaga a probabilidade própria (FC1), com o aviso
+ * `PROBABILIDADE_REDEFINIDA` em `avisos` (sempre uma lista), a menos que ela
+ * venha em `campos`.
  *
  * @param {import('@/hooks/create-auth-session').AuthApi} authApi
  * @param {string} quadroRef
@@ -125,15 +136,9 @@ export function criarCard(authApi, quadroRef, corpo) {
  *   colunaDestino: string,
  *   expectedUpdatedAt?: string,
  *   filtros?: Record<string, unknown>,
- *   campos?: { motivoPerda: string },
+ *   campos?: { motivoPerda?: string | null, probabilidadeFechamento?: number | null },
  * }} corpo
- * @returns {Promise<{
- *   entidadeId: string,
- *   colunaRef: string,
- *   conflito: boolean,
- *   atualizadoEm: string,
- *   saiuDoFiltro: boolean,
- * }>}
+ * @returns {Promise<ResultadoDoMover>}
  */
 export function moverCard(authApi, quadroRef, entidadeId, corpo) {
   return authApi.patch(doQuadro(quadroRef, `cards/${encodeURIComponent(entidadeId)}/mover`), corpo);

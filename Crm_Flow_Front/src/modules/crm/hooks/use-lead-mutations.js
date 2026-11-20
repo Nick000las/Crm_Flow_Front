@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
+import { semChave } from '@/lib/objetos';
 import {
   acaoDeArquivo,
   atualizarLead,
@@ -36,9 +37,10 @@ export function useAtualizarLead(id) {
 
   return useMutation({
     mutationFn: (payload) => atualizarLead(authApi, id, payload),
-    onSuccess: (leadAtualizado) => {
-      // A resposta já é o lead formatado: o detalhe atualiza sem nova ida.
-      queryClient.setQueryData(crmKeys.lead(id), leadAtualizado);
+    onSuccess: (resposta) => {
+      // A resposta já é o lead formatado: o detalhe atualiza sem nova ida. Os
+      // `avisos` (FC1) são da gravação, não do lead: ficam com quem chamou.
+      queryClient.setQueryData(crmKeys.lead(id), semChave(resposta, 'avisos'));
       // Cada edição vira um evento no histórico (`crm.atividades`).
       queryClient.invalidateQueries({ queryKey: crmKeys.historico(id) });
       return invalidar();

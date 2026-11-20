@@ -3,6 +3,7 @@ import { ModulePlaceholder } from '@/components/module-placeholder';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { temCategoria } from '../../lib/listas';
 import { moverPara } from '../../lib/ordem';
+import { AJUDA_PROBABILIDADE_PADRAO } from '../../lib/probabilidade';
 import { ListaOrdenavel } from '../ordenavel/lista-ordenavel';
 import { LinhaOpcao } from './linha-opcao';
 
@@ -21,7 +22,8 @@ const HEAD_CLASS =
  *   onExcluir: (opcao: import('../../lib/listas').OpcaoConfigurada) => void,
  *   acaoVazio: import('react').ReactNode,
  *   pipelineId?: string,
- * }} props `pipelineId`: status de um pipeline, contados em oportunidades
+ * }} props `pipelineId`: status de um pipeline, contados em oportunidades e com
+ *   a probabilidade padrão (FC1), que só se grava pelas rotas do pipeline
  */
 export function TabelaOpcoes({
   tipo,
@@ -46,6 +48,9 @@ export function TabelaOpcoes({
   }
 
   const ids = opcoes.map((opcao) => opcao.id);
+  const ajudaProbabilidadeId = pipelineId
+    ? `pipeline-${pipelineId}-probabilidade-ajuda`
+    : undefined;
   const rotuloDe = (id) => opcoes.find((opcao) => opcao.id === id)?.label ?? '';
 
   function mover(de, para) {
@@ -57,6 +62,11 @@ export function TabelaOpcoes({
 
   return (
     <ListaOrdenavel ids={ids} onMover={mover} rotuloDe={rotuloDe}>
+      {pipelineId && (
+        <p className="mb-2 text-xs text-muted-foreground" id={ajudaProbabilidadeId}>
+          Probabilidade: {AJUDA_PROBABILIDADE_PADRAO} Ganho é sempre 100% e perdido, 0%.
+        </p>
+      )}
       <div aria-busy={ordemOcupada} className="overflow-x-auto border border-border">
         <Table>
           <TableHeader>
@@ -70,6 +80,11 @@ export function TabelaOpcoes({
               {temCategoria(tipo) && (
                 <TableHead className={HEAD_CLASS} scope="col">
                   Categoria
+                </TableHead>
+              )}
+              {pipelineId && (
+                <TableHead className={`${HEAD_CLASS} text-right`} scope="col">
+                  Probabilidade
                 </TableHead>
               )}
               <TableHead className={`${HEAD_CLASS} text-right`} scope="col">
@@ -94,6 +109,7 @@ export function TabelaOpcoes({
                 onMover={mover}
                 opcao={opcao}
                 ordemOcupada={ordemOcupada}
+                ajudaProbabilidadeId={ajudaProbabilidadeId}
                 pipelineId={pipelineId}
                 tipo={tipo}
                 total={opcoes.length}
