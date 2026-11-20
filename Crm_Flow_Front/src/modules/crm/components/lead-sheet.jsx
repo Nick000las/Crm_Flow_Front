@@ -27,6 +27,7 @@ import {
   versaoDoLead,
 } from '../lib/form-lead';
 import { versaoDoConflito } from '../lib/oportunidades';
+import { avisoDeProbabilidade, juntarAvisos } from '../lib/probabilidade';
 import { crmKeys } from '../query-keys';
 import { ID_BOTAO_NOVO_LEAD, ID_NOVO_LEAD, idLinkDoLead } from '../rotas';
 import { ConfirmarArquivarDialog } from './confirmar-arquivar-dialog';
@@ -112,10 +113,14 @@ function SheetDoLead({ leadId }) {
     }
 
     const payload = montarPayloadEdicao(campos, iniciais, valores);
+    // Mudar o status volta a probabilidade ao padrão (FC1). O lead não traz a
+    // efetiva, então a frase sai sem o número novo.
+    let avisoDaProbabilidade = null;
     if (!payloadVazio(payload)) {
       const expectedUpdatedAt = versaoLida ?? versaoDoLead(lead);
       try {
-        await atualizar.mutateAsync({ ...payload, ...extra, expectedUpdatedAt });
+        const salvo = await atualizar.mutateAsync({ ...payload, ...extra, expectedUpdatedAt });
+        avisoDaProbabilidade = avisoDeProbabilidade(salvo.avisos);
       } catch (error) {
         const atual = versaoDoConflito(toApiError(error));
         if (!atual) {
@@ -127,7 +132,7 @@ function SheetDoLead({ leadId }) {
     }
 
     setEditando(false);
-    setAviso(payloadVazio(payload) ? null : AVISOS_LEAD.SALVO);
+    setAviso(payloadVazio(payload) ? null : juntarAvisos(AVISOS_LEAD.SALVO, avisoDaProbabilidade));
   }
 
   /** O rascunho só se perde aqui, no clique: o form remonta sobre o lead atual. */

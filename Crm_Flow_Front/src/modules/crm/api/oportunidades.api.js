@@ -13,6 +13,7 @@
  *   categoria?: 'aberto' | 'ganho' | 'perdido',
  *   valor?: number | null,
  *   probabilidadeFechamento?: number | null,
+ *   probabilidadeEfetiva?: number,
  *   dataPrevistaFechamento?: string | null,
  *   ganhaEm?: string | null,
  *   perdidaEm?: string | null,
@@ -22,7 +23,10 @@
  *   arquivadaEm: string | null,
  *   criadaEm: string,
  *   atualizadaEm: string,
- * }} Oportunidade
+ * }} Oportunidade  `probabilidadeFechamento` é a própria (`null` = sem);
+ *   `probabilidadeEfetiva` (FC1), a que vale: a própria ou a padrão do status.
+ *   As duas somem com o campo Probabilidade oculto ou desligado.
+ * @typedef {import('../lib/probabilidade.js').AvisoDaResposta} AvisoDaResposta
  */
 
 const doLead = (leadId) => `/crm/leads/${encodeURIComponent(leadId)}/oportunidades`;
@@ -90,12 +94,19 @@ export function editarOportunidade(authApi, id, corpo) {
 
 /**
  * Ganhar, perder e reabrir. Aqui a última gravação vence: com versão antiga
- * grava do mesmo jeito e responde `conflito: true`.
+ * grava do mesmo jeito e responde `conflito: true`. Mudar o status apaga a
+ * probabilidade própria (aviso `PROBABILIDADE_REDEFINIDA` em `avisos`, sempre
+ * uma lista), a menos que `probabilidadeFechamento` venha junto.
  *
  * @param {import('@/hooks/create-auth-session').AuthApi} authApi
  * @param {string} id
- * @param {{ status: string, motivoPerda?: string | null, expectedUpdatedAt?: string }} corpo
- * @returns {Promise<Oportunidade & { conflito: boolean }>}
+ * @param {{
+ *   status: string,
+ *   motivoPerda?: string | null,
+ *   probabilidadeFechamento?: number | null,
+ *   expectedUpdatedAt?: string,
+ * }} corpo
+ * @returns {Promise<Oportunidade & { conflito: boolean, avisos: AvisoDaResposta[] }>}
  */
 export function mudarStatusDaOportunidade(authApi, id, corpo) {
   return authApi.patch(`${caminho(id)}/status`, corpo);

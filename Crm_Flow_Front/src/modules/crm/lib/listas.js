@@ -1,6 +1,7 @@
 import { corValida } from '../../../lib/contraste.js';
 import { CATEGORIAS_STATUS, TIPOS_LISTA } from '../constants.js';
 import { ordenarPorIds } from './ordem.js';
+import { lerProbabilidade, probabilidadeFixa, validarProbabilidade } from './probabilidade.js';
 
 /**
  * Regras de Configurações › Listas. O back valida de novo (400/409); aqui
@@ -15,10 +16,16 @@ import { ordenarPorIds } from './ordem.js';
  *   category: string | null,
  *   ativo: boolean,
  *   usos: number,
- * }} OpcaoConfigurada
+ *   probabilidadePadrao?: number | null,
+ * }} OpcaoConfigurada  `probabilidadePadrao` (FC1): só em status; `null` nas outras listas
  *
  * @typedef {Record<string, OpcaoConfigurada[]>} Listas  `GET /crm/configuracoes/listas`, por tipo
- * @typedef {{ label: string, color: string, category: string }} ValoresOpcao  estado do form
+ * @typedef {{
+ *   label: string,
+ *   color: string,
+ *   category: string,
+ *   probabilidadePadrao?: string,
+ * }} ValoresOpcao  estado do form; `probabilidadePadrao` só em status, vazio = o back sugere
  */
 
 export const MENSAGENS_LISTA = Object.freeze({
@@ -31,6 +38,16 @@ export const MENSAGENS_LISTA = Object.freeze({
 export const temCategoria = (tipo) => tipo === TIPOS_LISTA.STATUS;
 
 /**
+ * A probabilidade padrão se escolhe ao criar um status aberto de pipeline;
+ * ganho e perdido são fixos, e o resto se edita na coluna da tabela.
+ *
+ * @param {string} tipo
+ * @param {ValoresOpcao} valores
+ */
+export const pedeProbabilidade = (tipo, valores) =>
+  temCategoria(tipo) && probabilidadeFixa(valores.category) === null;
+
+/**
  * @param {string} tipo
  * @param {OpcaoConfigurada} [opcao] ausente = criando
  * @returns {ValoresOpcao}
@@ -40,6 +57,7 @@ export function valoresDaOpcao(tipo, opcao) {
     label: opcao?.label ?? '',
     color: opcao?.color ?? '',
     category: opcao?.category ?? (temCategoria(tipo) ? CATEGORIAS_STATUS.ABERTO : ''),
+    ...(temCategoria(tipo) && { probabilidadePadrao: '' }),
   };
 }
 
@@ -55,6 +73,12 @@ export function validarOpcao(tipo, valores) {
   }
   if (temCategoria(tipo) && !valores.category) {
     erros.category = MENSAGENS_LISTA.CATEGORIA;
+  }
+  const probabilidade = pedeProbabilidade(tipo, valores)
+    ? validarProbabilidade(valores.probabilidadePadrao ?? '')
+    : null;
+  if (probabilidade) {
+    erros.probabilidadePadrao = probabilidade;
   }
 
   return erros;
@@ -75,7 +99,15 @@ export function payloadDaOpcao(tipo, valores, original) {
   const category = temCategoria(tipo) ? valores.category : undefined;
 
   if (!original) {
-    return { label, ...(color && { color }), ...(category && { category }) };
+    const probabilidadePadrao = pedeProbabilidade(tipo, valores)
+      ? lerProbabilidade(valores.probabilidadePadrao ?? '')
+      : null;
+    return {
+      label,
+      ...(color && { color }),
+      ...(category && { category }),
+      ...(probabilidadePadrao !== null && { probabilidadePadrao }),
+    };
   }
 
   const mudancas = {

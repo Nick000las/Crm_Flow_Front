@@ -37,6 +37,7 @@ import { useTempoRealDoQuadro } from '../hooks/use-tempo-real-do-quadro';
 import { useUsuarios } from '../hooks/use-usuarios';
 import { chavesComErro, chavesForaDosCampos, filtroSemChaves } from '../lib/filtro';
 import { podeMudarStatus } from '../lib/oportunidades';
+import { statusDoPipeline } from '../lib/pipelines';
 import { CODIGO_CAMPOS_OBRIGATORIOS } from '../lib/quadro';
 import { avisoDoMovimento, montarConsulta } from '../lib/quadro-consulta';
 import { crmKeys } from '../query-keys';
@@ -134,14 +135,20 @@ export default function QuadroPage() {
   function moverCard(card, de, destino, { devolverFoco = false } = {}) {
     setAviso(null);
     setErroAoMover(null);
+    // O ref da coluna é a key do status, e o quadro é o pipeline.
+    const padraoDoDestino = statusDoPipeline(
+      pipelinesQuery.data ?? [],
+      quadroRef,
+      destino.ref,
+    )?.probabilidadePadrao;
     mover.mutate(
       { card, de, para: destino.ref },
       {
-        onSuccess: (resposta) => setAviso(avisoDoMovimento(resposta)),
+        onSuccess: (resposta) => setAviso(avisoDoMovimento(resposta, padraoDoDestino)),
         onError: (error) => {
           const erro = toApiError(error);
           if (erro.code === CODIGO_CAMPOS_OBRIGATORIOS) {
-            setPendencia({ card, de, destino, erro });
+            setPendencia({ card, de, destino, erro, padraoDoDestino });
           } else {
             setErroAoMover(erro);
           }

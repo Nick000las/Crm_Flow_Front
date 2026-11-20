@@ -9,18 +9,33 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { toApiError } from '@/services/api';
 import { MENSAGEM_SEM_PERMISSAO } from '../../constants';
 import { useMudarStatusDaOportunidade } from '../../hooks/use-oportunidades';
 import { podeEditarCampo } from '../../lib/form-lead';
-import { campoDoMotivo, errosDoDialog, payloadDoStatus, pedeMotivo } from '../../lib/oportunidades';
+import {
+  acessoAosDados,
+  campoDoMotivo,
+  errosDoDialog,
+  payloadDoStatus,
+  pedeMotivo,
+  pedeProbabilidadeNoStatus,
+} from '../../lib/oportunidades';
 import { opcoesDoSeletor } from '../../lib/opcoes';
 import { statusDisponiveis, statusDoPipeline } from '../../lib/pipelines';
+import {
+  avisoDeProbabilidade,
+  juntarAvisos,
+  placeholderDoPadrao,
+  validarProbabilidade,
+} from '../../lib/probabilidade';
 import { CampoForm } from '../campo-form';
+import { INPUT_CLASS } from '../campos-texto';
 import { SelectSimples } from '../select-simples';
 import { ErrosDoDialog } from './erros-do-dialog';
 
-const CHAVES_DO_DIALOG = Object.freeze(['status', 'motivoPerda']);
+const CHAVES_DO_DIALOG = Object.freeze(['status', 'motivoPerda', 'probabilidadeFechamento']);
 const AVISO_SALVO = 'Status alterado.';
 const AVISO_CONFLITO = 'Status alterado, mas outra pessoa mexeu nesta oportunidade antes. Confira.';
 
@@ -29,8 +44,18 @@ function FormStatus({ oportunidade, pipelines, campos, leadId, onSalvo }) {
   const mudar = useMudarStatusDaOportunidade(leadId);
   const [status, setStatus] = useState(oportunidade.status ?? '');
   const [motivo, setMotivo] = useState(oportunidade.motivoPerda ?? '');
+  // Vazia = a do status novo (o back apaga a própria e avisa).
+  const [probabilidade, setProbabilidade] = useState('');
+  const [erroProbabilidade, setErroProbabilidade] = useState(null);
   const pipeline = pipelines.find((item) => item.id === oportunidade.pipelineId);
-  const categoria = statusDoPipeline(pipelines, oportunidade.pipelineId, status)?.category;
+  const escolhido = statusDoPipeline(pipelines, oportunidade.pipelineId, status);
+  const categoria = escolhido?.category;
+  const acessoProbabilidade = acessoAosDados(campos).probabilidadeFechamento;
+  const comProbabilidade =
+    acessoProbabilidade.visivel &&
+    acessoProbabilidade.editavel &&
+    pedeProbabilidadeNoStatus(categoria) &&
+    status !== oportunidade.status;
   const campoMotivo = campoDoMotivo(campos);
   const comMotivo = pedeMotivo(categoria) && Boolean(campoMotivo);
   const motivoEditavel = Boolean(campoMotivo) && podeEditarCampo(campoMotivo);
@@ -49,16 +74,34 @@ function FormStatus({ oportunidade, pipelines, campos, leadId, onSalvo }) {
 
   function handleSubmit(event) {
     event.preventDefault();
+    const invalida = comProbabilidade ? validarProbabilidade(probabilidade) : null;
+    setErroProbabilidade(invalida);
+    if (invalida) {
+      return;
+    }
+
     mudar.mutate(
       {
         id: oportunidade.id,
         corpo: payloadDoStatus(
           oportunidade,
-          { status, motivoPerda: motivoEditavel ? motivo : '' },
+          {
+            status,
+            motivoPerda: motivoEditavel ? motivo : '',
+            probabilidadeFechamento: comProbabilidade ? probabilidade : '',
+          },
           categoria,
         ),
       },
-      { onSuccess: ({ conflito }) => onSalvo(conflito ? AVISO_CONFLITO : AVISO_SALVO) },
+      {
+        onSuccess: ({ conflito, avisos, probabilidadeEfetiva }) =>
+          onSalvo(
+            juntarAvisos(
+              conflito ? AVISO_CONFLITO : AVISO_SALVO,
+              avisoDeProbabilidade(avisos, probabilidadeEfetiva),
+            ),
+          ),
+      },
     );
   }
 
@@ -89,6 +132,29 @@ function FormStatus({ oportunidade, pipelines, campos, leadId, onSalvo }) {
               opcoes={opcoesDoSeletor(campoMotivo, motivo)}
               value={motivo}
               vazio="Nenhum"
+            />
+          )}
+        </CampoForm>
+      )}
+
+      {comProbabilidade && (
+        <CampoForm
+          ajuda="Vazio volta à probabilidade do status novo."
+          erro={erroProbabilidade ?? porCampo.probabilidadeFechamento}
+          id="oportunidade-status-probabilidade"
+          label="Probabilidade (%)"
+        >
+          {(controle) => (
+            <Input
+              {...controle}
+              className={`${INPUT_CLASS} w-48 font-mono tabular-nums`}
+              inputMode="numeric"
+              onChange={(event) => {
+                setErroProbabilidade(null);
+                alterar(setProbabilidade, event.target.value);
+              }}
+              placeholder={placeholderDoPadrao(escolhido?.probabilidadePadrao)}
+              value={probabilidade}
             />
           )}
         </CampoForm>

@@ -3,6 +3,7 @@ import { formatarData, formatarMoeda } from '../../lib/formatadores';
 import { campoDoMotivo } from '../../lib/oportunidades';
 import { humanizar, rotuloOpcao } from '../../lib/opcoes';
 import { statusDoPipeline } from '../../lib/pipelines';
+import { textoDaProbabilidade } from '../../lib/probabilidade';
 import { BotaoIcone } from '../botao-icone';
 import { OpcaoBadge } from '../opcao-badge';
 
@@ -57,6 +58,7 @@ export function ItemOportunidade({
       })
     : null;
   const valor = formatarMoeda(oportunidade.valor);
+  const probabilidade = textoDaProbabilidade(oportunidade);
   const previsao = formatarData(oportunidade.dataPrevistaFechamento);
   const ganhaEm = formatarData(oportunidade.ganhaEm);
   const perdidaEm = formatarData(oportunidade.perdidaEm);
@@ -115,6 +117,14 @@ export function ItemOportunidade({
         {valor && (
           <Detalhe rotulo="Valor">
             <span className={DADO}>{valor}</span>
+          </Detalhe>
+        )}
+        {probabilidade && (
+          <Detalhe rotulo="Probabilidade">
+            <span className={DADO}>{probabilidade.valor}</span>
+            {probabilidade.doStatus && (
+              <span className="text-muted-foreground"> (padrão do status)</span>
+            )}
           </Detalhe>
         )}
         {responsavel && <Detalhe rotulo="Responsável">{responsavel}</Detalhe>}

@@ -70,6 +70,22 @@ test('avisoDoMovimento avisa do filtro e do conflito', () => {
   assert.match(avisoDoMovimento({ conflito: true, saiuDoFiltro: true }), /filtro.*Outra pessoa/);
 });
 
+test('a probabilidade redefinida entra no aviso, com a padrão do destino', () => {
+  const avisos = [
+    { codigo: 'PROBABILIDADE_REDEFINIDA', campo: 'probabilidadeFechamento', anterior: 35 },
+  ];
+
+  assert.equal(
+    avisoDoMovimento({ conflito: false, saiuDoFiltro: false, avisos }, 80),
+    'A probabilidade voltou ao padrão do status (80%). Antes era 35%.',
+  );
+  assert.equal(
+    avisoDoFormulario({ conflito: false, saiuDoFiltro: false, avisos }, 80),
+    'Card movido. A probabilidade voltou ao padrão do status (80%). Antes era 35%.',
+  );
+  assert.equal(avisoDoMovimento({ conflito: false, saiuDoFiltro: false, avisos: [] }, 80), null);
+});
+
 test('avisoDoFormulario sempre confirma, com o aviso exato do filtro', () => {
   assert.equal(avisoDoFormulario({ conflito: false, saiuDoFiltro: false }), 'Card movido.');
   assert.equal(

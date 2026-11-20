@@ -5,6 +5,7 @@ import {
   colunasDeDestino,
   pedeOutrosCampos,
   porNoTopo,
+  camposDoMover,
   separarObrigatorios,
   somaDoResumo,
   textoDoCard,
@@ -93,25 +94,27 @@ test('pessoa nova não escolhe status nem conversão; personalizado de mesmo nom
 
 const CAMPOS = [
   { chave: 'status', camada: 1 },
-  { chave: 'motivoPerda', camada: 2 },
+  { chave: 'motivoPerda', camada: 2, tipo: 'selecao' },
   { chave: 'valor', camada: 2 },
+  { chave: 'probabilidadeFechamento', camada: 2, tipo: 'numero' },
   { chave: 'dataPrevistaFechamento', camada: 2 },
   { chave: 'empresa', camada: 2 },
   { chave: 'contrato', camada: 3 },
 ];
 const campo = (chave) => CAMPOS.find((atual) => atual.chave === chave);
 
-test('o motivo vai com o status, e o dado comercial vai pela oportunidade', () => {
+test('motivo e probabilidade vão com o status; o resto do comercial, pela oportunidade', () => {
   const resultado = separarObrigatorios(
     {
       motivoPerda: ['Informe o motivo'],
       valor: ['Informe o valor'],
+      probabilidadeFechamento: ['Informe a probabilidade'],
       dataPrevistaFechamento: ['Informe a data'],
     },
     CAMPOS,
   );
 
-  assert.equal(resultado.motivo, campo('motivoPerda'));
+  assert.deepEqual(resultado.noMover, [campo('motivoPerda'), campo('probabilidadeFechamento')]);
   assert.deepEqual(resultado.daOportunidade, [campo('valor'), campo('dataPrevistaFechamento')]);
   assert.deepEqual(resultado.doLead, []);
   assert.deepEqual(resultado.bloqueados, []);
@@ -185,11 +188,24 @@ test('status recusado não vira campo do form', () => {
 
 test('sem fields, nada a preencher', () => {
   assert.deepEqual(separarObrigatorios(undefined, CAMPOS), {
-    motivo: null,
+    noMover: [],
     daOportunidade: [],
     doLead: [],
     bloqueados: [],
   });
+});
+
+test('camposDoMover converte os valores do form para a API', () => {
+  const noMover = [campo('motivoPerda'), campo('probabilidadeFechamento')];
+
+  assert.deepEqual(
+    camposDoMover(noMover, { motivoPerda: 'preco', probabilidadeFechamento: '35' }),
+    {
+      motivoPerda: 'preco',
+      probabilidadeFechamento: 35,
+    },
+  );
+  assert.equal(camposDoMover([], {}), undefined);
 });
 
 test('pedeOutrosCampos só com chave fora do form', () => {

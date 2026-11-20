@@ -75,7 +75,10 @@ export function excluirPipeline(authApi, id) {
 /**
  * @param {import('@/hooks/create-auth-session').AuthApi} authApi
  * @param {string} pipelineId
- * @param {{ label: string, color?: string, category: string }} corpo
+ * Sem `probabilidadePadrao` (FC1, 0 a 100), o aberto nasce com a sugestão pela
+ * chave ou 10; ganho é sempre 100 e perdido 0 (outro valor = 400).
+ *
+ * @param {{ label: string, color?: string, category: string, probabilidadePadrao?: number }} corpo
  */
 export function criarStatus(authApi, pipelineId, corpo) {
   return authApi.post(caminho(pipelineId, 'status'), corpo);
@@ -87,7 +90,13 @@ export function criarStatus(authApi, pipelineId, corpo) {
  * @param {import('@/hooks/create-auth-session').AuthApi} authApi
  * @param {string} pipelineId
  * @param {string} id
- * @param {{ label?: string, color?: string | null, category?: string, ativo?: boolean }} parcial
+ * @param {{
+ *   label?: string,
+ *   color?: string | null,
+ *   category?: string,
+ *   ativo?: boolean,
+ *   probabilidadePadrao?: number,
+ * }} parcial  mudar a categoria acerta a probabilidade, se ela não vier junto
  */
 export function atualizarStatus(authApi, pipelineId, id, parcial) {
   return authApi.put(caminho(pipelineId, 'status', id), parcial);
