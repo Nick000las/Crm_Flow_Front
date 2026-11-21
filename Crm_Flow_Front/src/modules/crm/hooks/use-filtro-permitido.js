@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { temFeature } from '@/lib/acesso';
 import { CHAVE_VALOR, CONTEXTO, CRM_FEATURES } from '../constants';
+import { comDataConversao as temDataConversao, filtroComDataConversao } from '../lib/ciclo-de-vida';
 import { camposDoContexto } from '../lib/contextos';
 import { filtroComValor } from '../lib/filtro';
 import { filtroDaBusca } from '../lib/inatividade';
@@ -22,10 +23,16 @@ export function useFiltroPermitido(filtro, campos) {
   const comScore = temFeature(user, CRM_FEATURES.SCORE);
   // Antes de `/fields` chegar, não se sabe: fica o que a URL pediu.
   const comValor = !campos || campos.some((campo) => campo.chave === CHAVE_VALOR);
+  // Ciclo de vida (FC4): sem "Data de conversão", os filtros de data dão 400.
+  const comDataConversao = temDataConversao(campos);
 
   const permitido = useMemo(
-    () => filtroComValor(filtroComScore(filtroDaBusca(filtro, comInatividade), comScore), comValor),
-    [filtro, comInatividade, comScore, comValor],
+    () =>
+      filtroComDataConversao(
+        filtroComValor(filtroComScore(filtroDaBusca(filtro, comInatividade), comScore), comValor),
+        comDataConversao,
+      ),
+    [filtro, comInatividade, comScore, comValor, comDataConversao],
   );
   // Valor é a faixa fixa do construtor: como campo, seria o mesmo filtro duas vezes.
   const camposDoFiltro = useMemo(
@@ -36,5 +43,5 @@ export function useFiltroPermitido(filtro, campos) {
     [campos],
   );
 
-  return { filtro: permitido, comValor, camposDoFiltro };
+  return { filtro: permitido, comValor, comDataConversao, camposDoFiltro };
 }

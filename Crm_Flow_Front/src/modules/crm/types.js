@@ -62,6 +62,10 @@
  * @property {string | null} [origem_registro]
  * @property {string | null} [marketing_opt_out_at]  ISO do opt-out de marketing; `null` = recebe
  * @property {string | null} [atribuido_por_regra_nome]  regra de distribuição que escolheu o responsável (`crm.distribuicao`)
+ * @property {'lead' | 'oportunidade' | 'cliente'} ciclo_de_vida  calculado a cada leitura (FC4); sempre vem
+ * @property {string | null} [cliente_desde]  ISO UTC da primeira venda ganha; não vem sem permissão de `dataConversao`
+ * @property {string | null} [ultima_compra]  ISO UTC da última venda ganha; não vem sem permissão de `dataConversao`
+ * @property {number} oportunidades_abertas  oportunidades não arquivadas que o usuário vê, de qualquer pipeline; sempre vem
  *
  * @typedef {'igual' | 'contem' | 'entre' | 'e_um_dos' | 'vazio' | 'nao_vazio'} Operador
  *

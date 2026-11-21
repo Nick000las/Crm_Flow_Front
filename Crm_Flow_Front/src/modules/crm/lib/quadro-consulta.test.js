@@ -94,3 +94,27 @@ test('avisoDoFormulario sempre confirma, com o aviso exato do filtro', () => {
   );
   assert.match(avisoDoFormulario({ conflito: true, saiuDoFiltro: false }), /outra pessoa/);
 });
+
+test('montarConsulta não manda os filtros do ciclo de vida (FC4) ao quadro', () => {
+  const ciclo = {
+    cicloDeVida: ['cliente'],
+    clienteDesdeDe: '2026-01-01',
+    clienteDesdeAte: '2026-01-31',
+    ultimaCompraDe: '2026-02-01',
+    ultimaCompraAte: '2026-02-28',
+    oportunidadesAbertasMin: 0,
+    oportunidadesAbertasMax: 2,
+  };
+
+  // Só o ciclo: o quadro fica sem filtro nenhum.
+  assert.deepEqual(
+    montarConsulta({ busca: '', filtro: { filtros: [], ...ciclo } }, ORDEM_PADRAO),
+    {},
+  );
+
+  const { filtros } = montarConsulta(
+    { busca: '', filtro: { filtros: [], esfriando: true, ...ciclo } },
+    ORDEM_PADRAO,
+  );
+  assert.deepEqual(filtros, { filtros: [], esfriando: true });
+});

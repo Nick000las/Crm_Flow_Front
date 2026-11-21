@@ -101,3 +101,28 @@ test('estadoDaVisao lê a view salva e volta para a 1ª página', () => {
     pagina: 1,
   });
 });
+
+test('filtros do ciclo de vida (FC4) vão e voltam pela URL e pela view, datas como texto', () => {
+  const filtro = {
+    filtros: [],
+    cicloDeVida: ['oportunidade', 'cliente'],
+    clienteDesdeDe: '2026-01-01',
+    ultimaCompraAte: '2026-06-30',
+    oportunidadesAbertasMin: 0,
+  };
+  const params = escreverEstadoLista(new URLSearchParams(), { filtro });
+
+  assert.deepEqual(lerEstadoLista(params).filtro, filtro);
+  assert.deepEqual(estadoDaVisao(visaoDoEstado({ ...ESTADO_LISTA_PADRAO, filtro })).filtro, filtro);
+  assert.equal(lerEstadoLista(params).filtro.ultimaCompraAte, '2026-06-30');
+});
+
+test('cicloDeVida vazio ou desconhecido some da URL', () => {
+  const params = escreverEstadoLista(new URLSearchParams(), {
+    filtro: { filtros: [], cicloDeVida: [] },
+  });
+
+  assert.equal(params.has('f'), false);
+  const lido = lerEstadoLista(new URLSearchParams({ f: '{"filtros":[],"cicloDeVida":["x"]}' }));
+  assert.deepEqual(lido.filtro, { filtros: [] });
+});

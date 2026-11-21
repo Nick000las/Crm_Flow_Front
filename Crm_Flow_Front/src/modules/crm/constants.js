@@ -473,3 +473,32 @@ export const MOTIVOS_IGNORADA = Object.freeze({
   NAO_ABERTA: 'NAO_ABERTA',
   RESOURCE_CONFLICT: 'RESOURCE_CONFLICT',
 });
+
+/** Abas da página Forecast: Previsão (todos) e Assertividade (gestão, `crm.forecast`). */
+export const ABAS_FORECAST = Object.freeze({
+  PREVISAO: 'previsao',
+  ASSERTIVIDADE: 'assertividade',
+});
+
+/**
+ * Faixas de assertividade (realizado / previsto). Abaixo de 80% = forecast
+ * otimista (previu mais do que vendeu); acima de 120% = pessimista (vendeu
+ * mais do que previu); entre os dois, inclusive, = boa. Configurável aqui.
+ */
+export const FAIXAS_ASSERTIVIDADE = Object.freeze({ OTIMISTA_ABAIXO: 0.8, PESSIMISTA_ACIMA: 1.2 });
+
+/** Assertividade (FC3): período máximo de meses consultado na tela, espelho do back. */
+export const ASSERTIVIDADE = Object.freeze({ MAX_MESES: 24 });
+
+/** Ciclo de vida do lead (FC4): calculado pelo back a cada leitura, a partir das oportunidades que o usuário vê. */
+export const CICLOS_DE_VIDA = Object.freeze({
+  LEAD: 'lead',
+  OPORTUNIDADE: 'oportunidade',
+  CLIENTE: 'cliente',
+});
+
+/** Chave do campo "Data de conversão" (FC4): sem ela, `cliente_desde` e `ultima_compra` não vêm. */
+export const CHAVE_DATA_CONVERSAO = 'dataConversao';
+
+/** Fuso de exibição quando o do tenant não vem ou não vale (FC4; também usado pela assertividade). */
+export const FUSO_PADRAO = 'America/Sao_Paulo';

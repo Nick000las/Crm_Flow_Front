@@ -59,7 +59,7 @@ function Faixa({ campo, value, onChange, rotulo, controle }) {
   );
 }
 
-function ListaDeOpcoes({ opcoes, value, onChange, controle }) {
+export function ListaDeOpcoes({ opcoes, value, onChange, controle }) {
   return (
     <div
       aria-describedby={controle['aria-describedby']}

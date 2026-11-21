@@ -144,7 +144,7 @@
  * @param {string} caminho
  * @param {Record<string, string | number | null | undefined>} [params]
  */
-function comQuery(caminho, params = {}) {
+export function comQuery(caminho, params = {}) {
   const query = new URLSearchParams();
   for (const [chave, valor] of Object.entries(params ?? {})) {
     if (valor === undefined || valor === null || valor === '') {

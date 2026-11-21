@@ -1,4 +1,5 @@
 import { CHAVE_SCORE, TIPOS_CAMPO } from '../constants';
+import { textoDaCelulaCiclo } from '../lib/celula-ciclo';
 import { TIPO_COLUNA } from '../lib/colunas';
 import {
   formatarCep,
@@ -15,6 +16,7 @@ import {
 } from '../lib/formatadores';
 import { opcaoDoCampo } from '../lib/opcoes';
 import { OpcaoBadge } from './opcao-badge';
+import { SeloCiclo } from './selo-ciclo';
 import { SeloScore } from './selo-score';
 
 const MAX_BADGES = 2;
@@ -109,6 +111,18 @@ function Url({ valor }) {
 export function CelulaLead({ coluna, valor, nomePorId, completo = false, semLink = false }) {
   if (valor === null || valor === undefined || valor === '') {
     return <Vazio />;
+  }
+  // Ciclo de vida (FC4): o chip lê o lead inteiro; sem ciclo conhecido, vazio.
+  if (coluna.tipo === TIPO_COLUNA.CICLO) {
+    return textoDaCelulaCiclo(coluna, valor) ? <SeloCiclo lead={valor} /> : <Vazio />;
+  }
+  if (
+    coluna.tipo === TIPO_COLUNA.MES_ANO ||
+    coluna.tipo === TIPO_COLUNA.DIA ||
+    coluna.tipo === TIPO_COLUNA.INTEIRO
+  ) {
+    const texto = textoDaCelulaCiclo(coluna, valor);
+    return texto ? <span className={DADO}>{texto}</span> : <Vazio />;
   }
   // Lead score: selo da faixa (`crm.score`; sem a flag, só o número).
   if (coluna.id === CHAVE_SCORE) {

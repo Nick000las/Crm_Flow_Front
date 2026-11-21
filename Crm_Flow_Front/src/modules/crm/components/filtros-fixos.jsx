@@ -1,10 +1,13 @@
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { useFaixasScore } from '../hooks/use-score';
+import { ORDEM_CICLOS, ROTULOS_CICLO, TEXTOS_FILTRO_CICLO } from '../lib/ciclo-textos';
 import { RESPONSAVEL_NENHUM } from '../lib/filtro';
 import { SelectSimples } from './select-simples';
+import { ListaDeOpcoes } from './valor-do-filtro';
 
 const INPUT_CLASS = 'h-9 rounded-none font-mono tabular-nums';
+const OPCOES_CICLO = ORDEM_CICLOS.map((valor) => ({ valor, rotulo: ROTULOS_CICLO[valor] }));
 
 function Faixa({ legenda, nome, de, ate, tipo, erros, onChange }) {
   const [chaveDe, chaveAte] = nome;
@@ -14,8 +17,8 @@ function Faixa({ legenda, nome, de, ate, tipo, erros, onChange }) {
     'aria-describedby': erro ? erroId : undefined,
     'aria-invalid': erro ? true : undefined,
     className: INPUT_CLASS,
-    inputMode: tipo === 'date' ? undefined : 'decimal',
-    type: tipo,
+    inputMode: tipo === 'date' ? undefined : tipo === 'inteiro' ? 'numeric' : 'decimal',
+    type: tipo === 'inteiro' ? 'text' : tipo,
   };
 
   return (
@@ -54,11 +57,23 @@ function Faixa({ legenda, nome, de, ate, tipo, erros, onChange }) {
  *   fixos: import('../lib/filtro').FixosRascunho,
  *   usuarios: { id: string, nome: string }[],
  *   erros: Record<string, string>,
+ *   comValor?: boolean,
+ *   comCiclo?: boolean,
+ *   comDataConversao?: boolean,
  *   onChange: (chave: keyof import('../lib/filtro').FixosRascunho, valor: string) => void,
  *   className?: string,
  * }} props
  */
-export function FiltrosFixos({ fixos, usuarios, erros, comValor, onChange, className }) {
+export function FiltrosFixos({
+  fixos,
+  usuarios,
+  erros,
+  comValor,
+  comCiclo = false,
+  comDataConversao = true,
+  onChange,
+  className,
+}) {
   const faixas = useFaixasScore();
   // "Sem responsável" (sem dono ou dono desativado) vale mesmo sem a lista de usuários.
   const opcoesResponsavel = [
@@ -100,6 +115,59 @@ export function FiltrosFixos({ fixos, usuarios, erros, comValor, onChange, class
         onChange={onChange}
         tipo="date"
       />
+      {comCiclo && (
+        <fieldset className="grid content-start gap-1.5">
+          <legend className="mb-1.5 text-sm font-medium">{TEXTOS_FILTRO_CICLO.cicloDeVida}</legend>
+          <ListaDeOpcoes
+            controle={{
+              'aria-describedby': erros.cicloDeVida ? 'filtro-cicloDeVida-erro' : undefined,
+              'aria-label': TEXTOS_FILTRO_CICLO.cicloDeVida,
+              id: 'filtro-ciclo',
+            }}
+            onChange={(proximo) => onChange('cicloDeVida', proximo)}
+            opcoes={OPCOES_CICLO}
+            value={fixos.cicloDeVida ?? []}
+          />
+          {erros.cicloDeVida && (
+            <p className="text-xs text-destructive" id="filtro-cicloDeVida-erro">
+              {erros.cicloDeVida}
+            </p>
+          )}
+        </fieldset>
+      )}
+      {comCiclo && comDataConversao && (
+        <>
+          <Faixa
+            ate={fixos.clienteDesdeAte ?? ''}
+            de={fixos.clienteDesdeDe ?? ''}
+            erros={erros}
+            legenda={TEXTOS_FILTRO_CICLO.clienteDesde}
+            nome={['clienteDesdeDe', 'clienteDesdeAte']}
+            onChange={onChange}
+            tipo="date"
+          />
+          <Faixa
+            ate={fixos.ultimaCompraAte ?? ''}
+            de={fixos.ultimaCompraDe ?? ''}
+            erros={erros}
+            legenda={TEXTOS_FILTRO_CICLO.ultimaCompra}
+            nome={['ultimaCompraDe', 'ultimaCompraAte']}
+            onChange={onChange}
+            tipo="date"
+          />
+        </>
+      )}
+      {comCiclo && (
+        <Faixa
+          ate={fixos.oportunidadesAbertasMax ?? ''}
+          de={fixos.oportunidadesAbertasMin ?? ''}
+          erros={erros}
+          legenda={TEXTOS_FILTRO_CICLO.oportunidadesAbertas}
+          nome={['oportunidadesAbertasMin', 'oportunidadesAbertasMax']}
+          onChange={onChange}
+          tipo="inteiro"
+        />
+      )}
       {faixas && (
         <div className="grid content-start gap-1.5">
           <label className="mb-1.5 text-sm font-medium" htmlFor="filtro-faixa-score">
