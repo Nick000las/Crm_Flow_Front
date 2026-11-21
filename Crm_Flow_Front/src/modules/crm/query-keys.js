@@ -32,6 +32,9 @@ export const crmKeys = {
   forecastTudo: () => ['crm', 'leads', 'forecast'],
   forecast: (params) => [...crmKeys.forecastTudo(), params],
   forecastLista: (params) => [...crmKeys.forecastTudo(), 'lista', params],
+  // Assertividade (FC3): dentro do prefixo para recarregar junto com o resto do
+  // forecast, embora os snapshots não mudem (o realizado de agora muda).
+  forecastAssertividade: (params) => [...crmKeys.forecastTudo(), 'assertividade', params],
   // Fora do prefixo `lead(id)`: recarregar o lead não recarrega as abas.
   atividades: (leadId) => ['crm', 'atividades', leadId],
   historico: (leadId) => ['crm', 'historico', leadId],

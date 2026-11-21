@@ -17,6 +17,7 @@ import {
   operadoresDoCampo,
   paraCorpoDeBusca,
   rascunhoDoFiltro,
+  rascunhoVazio,
   serializarFiltro,
   tipoBase,
   trocarCampo,
@@ -455,4 +456,187 @@ test('faixa de score apagada (filtros.faixaScore): destaca o chip, não vira "ca
 
   assert.equal(chavesComErro(fields).has(chip.chave), true);
   assert.deepEqual(chavesForaDosCampos(fields, []), []);
+});
+
+describe('ciclo de vida (FC4)', () => {
+  const completo = {
+    filtros: [],
+    cicloDeVida: ['lead', 'cliente'],
+    clienteDesdeDe: '2026-01-01',
+    clienteDesdeAte: '2026-03-31',
+    ultimaCompraDe: '2026-04-01',
+    ultimaCompraAte: '2026-06-30',
+    oportunidadesAbertasMin: 0,
+    oportunidadesAbertasMax: 3,
+  };
+
+  test('lerFiltro aceita as chaves novas; cada grupo conta 1', () => {
+    assert.deepEqual(lerFiltro(completo), completo);
+    assert.equal(contarFiltros(lerFiltro(completo)), 4);
+    assert.equal(contarFiltros(lerFiltro({ filtros: [], ultimaCompraAte: '2026-06-30' })), 1);
+  });
+
+  test('cicloDeVida: só os conhecidos, sem repetir, na ordem da tela; vazio some', () => {
+    const lido = lerFiltro({ filtros: [], cicloDeVida: ['cliente', 'x', 'lead', 'cliente'] });
+    assert.deepEqual(lido.cicloDeVida, ['lead', 'cliente']);
+    assert.equal('cicloDeVida' in lerFiltro({ filtros: [], cicloDeVida: [] }), false);
+    assert.equal('cicloDeVida' in lerFiltro({ filtros: [], cicloDeVida: ['x'] }), false);
+    assert.equal('cicloDeVida' in lerFiltro({ filtros: [], cicloDeVida: 'lead' }), false);
+  });
+
+  test('lerFiltro descarta data malformada e contagem negativa, fracionária ou texto', () => {
+    const lido = lerFiltro({
+      filtros: [],
+      clienteDesdeDe: '01/03/2026',
+      ultimaCompraAte: '2026-06-30T23:59:59.999Z',
+      oportunidadesAbertasMin: -1,
+      oportunidadesAbertasMax: 1.5,
+    });
+    assert.deepEqual(lido, { filtros: [] });
+    assert.deepEqual(lerFiltro({ filtros: [], oportunidadesAbertasMax: '2' }), { filtros: [] });
+    // 0 é valor real.
+    assert.equal(lerFiltro({ filtros: [], oportunidadesAbertasMin: 0 }).oportunidadesAbertasMin, 0);
+  });
+
+  test('vai e volta pela URL', () => {
+    assert.deepEqual(lerFiltro(serializarFiltro(lerFiltro(completo))), completo);
+  });
+
+  test('corpo da busca: datas como texto, fim inclusivo sem T23:59; criadoAte segue fechando o dia', () => {
+    const corpo = paraCorpoDeBusca(lerFiltro({ ...completo, criadoAte: '2026-06-30' }));
+
+    assert.equal(corpo.clienteDesdeDe, '2026-01-01');
+    assert.equal(corpo.clienteDesdeAte, '2026-03-31');
+    assert.equal(corpo.ultimaCompraDe, '2026-04-01');
+    assert.equal(corpo.ultimaCompraAte, '2026-06-30');
+    assert.deepEqual(corpo.cicloDeVida, ['lead', 'cliente']);
+    assert.equal(corpo.oportunidadesAbertasMin, 0);
+    assert.equal(corpo.criadoAte, '2026-06-30T23:59:59.999');
+    const resto = { ...corpo, criadoAte: undefined };
+    assert.doesNotMatch(JSON.stringify(resto), /T\d/);
+  });
+
+  test('atravessa o rascunho e volta igual', () => {
+    const rascunho = rascunhoDoFiltro(completo, []);
+    assert.deepEqual(rascunho.fixos.cicloDeVida, ['lead', 'cliente']);
+    assert.equal(rascunho.fixos.oportunidadesAbertasMin, '0');
+    assert.equal(rascunho.fixos.clienteDesdeAte, '2026-03-31');
+    assert.deepEqual(filtroDoRascunho(rascunho, []).filtro, completo);
+  });
+
+  test('rascunho vazio não aplica nada do ciclo', () => {
+    const vazio = rascunhoVazio();
+    assert.deepEqual(vazio.fixos.cicloDeVida, []);
+    assert.equal(vazio.fixos.oportunidadesAbertasMin, '');
+    assert.deepEqual(filtroDoRascunho(vazio, []).filtro, { filtros: [] });
+  });
+
+  const comFixos = (fixos) => ({ linhas: [], fixos: { ...rascunhoVazio().fixos, ...fixos } });
+
+  test('De depois de Até dá o erro na ponta inicial e nada é aplicado', () => {
+    const resultado = filtroDoRascunho(
+      comFixos({
+        cicloDeVida: ['cliente'],
+        clienteDesdeDe: '2026-03-02',
+        clienteDesdeAte: '2026-03-01',
+        ultimaCompraDe: '2026-12-01',
+        ultimaCompraAte: '2026-11-30',
+      }),
+      [],
+    );
+    assert.deepEqual(resultado, {
+      erros: {
+        clienteDesdeDe: 'A data inicial não pode ser depois da final',
+        ultimaCompraDe: 'A data inicial não pode ser depois da final',
+      },
+    });
+    // O mesmo dia nas duas pontas vale (inclusivo).
+    const mesmoDia = filtroDoRascunho(
+      comFixos({ clienteDesdeDe: '2026-03-01', clienteDesdeAte: '2026-03-01' }),
+      [],
+    );
+    assert.equal(mesmoDia.filtro.clienteDesdeAte, '2026-03-01');
+  });
+
+  test('mínimo maior que o máximo e inteiro inválido', () => {
+    assert.deepEqual(
+      filtroDoRascunho(
+        comFixos({ oportunidadesAbertasMin: '4', oportunidadesAbertasMax: '2' }),
+        [],
+      ),
+      { erros: { oportunidadesAbertasMin: 'O mínimo não pode ser maior que o máximo' } },
+    );
+    for (const texto of ['-1', '1,5', 'dois', '1e2']) {
+      assert.deepEqual(filtroDoRascunho(comFixos({ oportunidadesAbertasMax: texto }), []), {
+        erros: { oportunidadesAbertasMax: 'Use um número inteiro a partir de 0' },
+      });
+    }
+    assert.deepEqual(filtroDoRascunho(comFixos({ oportunidadesAbertasMin: ' 0 ' }), []).filtro, {
+      filtros: [],
+      oportunidadesAbertasMin: 0,
+    });
+  });
+
+  test('chips com a chave do 400; remover tira o grupo inteiro', () => {
+    const chips = chipsDoFiltro(completo, [], new Map());
+    const porId = Object.fromEntries(chips.map((chip) => [chip.id, chip]));
+
+    assert.equal(porId.cicloDeVida.texto, 'Ciclo: Lead, Cliente');
+    assert.equal(porId.cicloDeVida.chave, 'cicloDeVida');
+    assert.equal(porId.clienteDesde.texto, 'Cliente desde: de 01/01/2026 a 31/03/2026');
+    assert.equal(porId.clienteDesde.chave, 'clienteDesdeDe');
+    assert.equal(porId.ultimaCompra.texto, 'Última compra: de 01/04/2026 a 30/06/2026');
+    assert.equal(porId.ultimaCompra.chave, 'ultimaCompraDe');
+    assert.equal(porId.oportunidadesAbertas.texto, 'Oportunidades abertas: de 0 a 3');
+    assert.equal(porId.oportunidadesAbertas.chave, 'oportunidadesAbertasMin');
+
+    const semCompra = porId.ultimaCompra.remover();
+    assert.equal('ultimaCompraDe' in semCompra, false);
+    assert.equal('ultimaCompraAte' in semCompra, false);
+    assert.equal(semCompra.clienteDesdeDe, '2026-01-01');
+    const semAbertas = porId.oportunidadesAbertas.remover();
+    assert.equal('oportunidadesAbertasMin' in semAbertas, false);
+    assert.equal('oportunidadesAbertasMax' in semAbertas, false);
+  });
+
+  test('só uma ponta: "até" e "a partir de"', () => {
+    const chips = chipsDoFiltro(
+      { filtros: [], ultimaCompraAte: '2026-06-30', oportunidadesAbertasMin: 1 },
+      [],
+      new Map(),
+    );
+    assert.deepEqual(
+      chips.map((chip) => chip.texto),
+      ['Última compra: até 30/06/2026', 'Oportunidades abertas: a partir de 1'],
+    );
+  });
+
+  test('400 de data do ciclo vira campo oculto; cicloDeVida e abertas não', () => {
+    const fields = {
+      'filtros.clienteDesdeDe': ['Campo desconhecido'],
+      'filtros.cicloDeVida': ['x'],
+      'filtros.oportunidadesAbertasMin': ['x'],
+      'filtros.oportunidadesAbertasMax': ['x'],
+    };
+    assert.deepEqual(chavesForaDosCampos(fields, campos), ['clienteDesdeDe']);
+  });
+
+  test('"Tirar este filtro" tira a chave fixa e o grupo dela', () => {
+    const filtro = {
+      ...completo,
+      filtros: [
+        { chave: 'email', operador: 'vazio' },
+        { chave: 'segredo', operador: 'vazio' },
+      ],
+    };
+    const tirado = filtroSemChaves(filtro, ['segredo', 'clienteDesdeAte', 'ultimaCompraDe']);
+
+    assert.deepEqual(tirado, {
+      filtros: [{ chave: 'email', operador: 'vazio' }],
+      cicloDeVida: ['lead', 'cliente'],
+      oportunidadesAbertasMin: 0,
+      oportunidadesAbertasMax: 3,
+    });
+    assert.equal('cicloDeVida' in filtroSemChaves(filtro, ['cicloDeVida']), false);
+  });
 });

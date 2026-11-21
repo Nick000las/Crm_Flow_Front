@@ -1,3 +1,4 @@
+import { CHAVES_FIXAS_CICLO } from './ciclo-de-vida.js';
 import { contarFiltros, paraCorpoDeBusca } from './filtro.js';
 import { avisoDeProbabilidade, juntarAvisos } from './probabilidade.js';
 
@@ -60,16 +61,27 @@ export function ordemValida(salva, campos) {
   return disponivel && DIRECOES.has(direcao) ? { campo, direcao } : ORDEM_PADRAO;
 }
 
+/** @param {import('./filtro.js').FiltroAplicado} filtro */
+const semCiclo = (filtro) =>
+  /** @type {import('./filtro.js').FiltroAplicado} */ (
+    Object.fromEntries(
+      Object.entries(filtro).filter(([chave]) => !CHAVES_FIXAS_CICLO.includes(chave)),
+    )
+  );
+
 /**
  * Corpo comum de `/cards/busca`, e os `filtros` também vão em `/resumo` e em
  * `/mover`. Sem filtro, a chave some: `/mover` só compara com o filtro quando
- * há um na tela.
+ * há um na tela. Os filtros do ciclo de vida (FC4) ficam de fora: o contrato
+ * do FC4 só cobre a busca da lista, as views e o export, então uma view salva
+ * na lista não dá 400 no quadro.
  *
  * @param {{ busca: string, filtro: import('./filtro.js').FiltroAplicado }} estado
  * @param {OrdemDoQuadro} ordem
  * @returns {ConsultaDoQuadro}
  */
-export function montarConsulta({ busca, filtro }, ordem) {
+export function montarConsulta({ busca, filtro: filtroDaTela }, ordem) {
+  const filtro = semCiclo(filtroDaTela);
   const comFiltro = Boolean(busca) || contarFiltros(filtro) > 0;
   const ordemPadrao = ordem.campo === ORDEM_PADRAO.campo && ordem.direcao === ORDEM_PADRAO.direcao;
 

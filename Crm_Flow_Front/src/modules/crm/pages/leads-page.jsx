@@ -55,7 +55,7 @@ export default function LeadsPage() {
   // Sem a flag, um link ou view da lixeira cai em "ativos" (o back daria 403).
   const situacao = situacaoDaBusca(estadoDaUrl.situacao, comArquivo);
   const camposQuery = useCampos();
-  const { filtro, comValor, camposDoFiltro } = useFiltroPermitido(
+  const { filtro, comValor, comDataConversao, camposDoFiltro } = useFiltroPermitido(
     estadoDaUrl.filtro,
     camposQuery.data,
   );
@@ -173,6 +173,7 @@ export default function LeadsPage() {
         atualizar={atualizar}
         campos={camposDoFiltro}
         chavesComErro={errosDeFiltro}
+        comDataConversao={comDataConversao}
         comValor={comValor}
         colunas={colunas}
         colunasSelecionadas={ids}
@@ -328,7 +329,7 @@ export default function LeadsPage() {
           busca={estado.busca}
           campos={campos}
           comMassa={temFeature(user, CRM_FEATURES.MASSA)}
-          filtro={estado.filtro}
+          filtro={filtro}
           idsVisiveis={ids}
           onOpenChange={setExportando}
           open={exportando}

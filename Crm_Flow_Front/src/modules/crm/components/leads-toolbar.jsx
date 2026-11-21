@@ -20,6 +20,7 @@ const totalFormatter = new Intl.NumberFormat('pt-BR');
  *   onAlternarColuna: (id: string) => void,
  *   chavesComErro: Set<string>,
  *   comValor: boolean,
+ *   comDataConversao: boolean,
  *   total: number | undefined,
  *   placeholderBusca: string,
  * }} props
@@ -34,6 +35,7 @@ export function LeadsToolbar({
   onAlternarColuna,
   chavesComErro,
   comValor,
+  comDataConversao,
   total,
   placeholderBusca,
 }) {
@@ -47,6 +49,8 @@ export function LeadsToolbar({
       <ConstrutorFiltro
         campos={campos}
         chavesComErro={chavesComErro}
+        comCiclo
+        comDataConversao={comDataConversao}
         comValor={comValor}
         filtro={estado.filtro}
         onAplicar={(filtro) => atualizar({ filtro, pagina: 1 })}

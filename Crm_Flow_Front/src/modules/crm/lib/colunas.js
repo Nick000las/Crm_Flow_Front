@@ -1,4 +1,5 @@
 import { CAMADA } from '../constants.js';
+import { ROTULOS_COLUNA_CICLO } from './ciclo-textos.js';
 
 /** Tipos de coluna que não vêm de `/crm/leads/fields`. */
 export const TIPO_COLUNA = Object.freeze({
@@ -6,6 +7,14 @@ export const TIPO_COLUNA = Object.freeze({
   RESPONSAVEL: 'responsavel',
   /** Timestamp com fuso (`created_at`): data no fuso de quem vê. */
   INSTANTE: 'instante',
+  /** Ciclo de vida (FC4): chip com o rótulo do ciclo. */
+  CICLO: 'ciclo',
+  /** Mês e ano (`cliente_desde`, instante ISO), no fuso do tenant. */
+  MES_ANO: 'mes_ano',
+  /** Dia (`ultima_compra`, instante ISO), no fuso do tenant. */
+  DIA: 'dia',
+  /** Inteiro sem formatação de campo (`oportunidades_abertas`). */
+  INTEIRO: 'inteiro',
 });
 
 const COLUNA_RESPONSAVEL = Object.freeze({
@@ -18,6 +27,34 @@ const COLUNA_CRIADO_EM = Object.freeze({
   id: 'criadoEm',
   label: 'Criado em',
   tipo: TIPO_COLUNA.INSTANTE,
+});
+
+/**
+ * Colunas do ciclo de vida (FC4). Opcionais: fora de `COLUNAS_PADRAO`, o
+ * seletor decide se entram. As de data só existem com `dataConversao`.
+ */
+const COLUNA_CICLO = Object.freeze({
+  id: 'cicloDeVida',
+  label: ROTULOS_COLUNA_CICLO.cicloDeVida,
+  tipo: TIPO_COLUNA.CICLO,
+});
+
+const COLUNA_CLIENTE_DESDE = Object.freeze({
+  id: 'clienteDesde',
+  label: ROTULOS_COLUNA_CICLO.clienteDesde,
+  tipo: TIPO_COLUNA.MES_ANO,
+});
+
+const COLUNA_ULTIMA_COMPRA = Object.freeze({
+  id: 'ultimaCompra',
+  label: ROTULOS_COLUNA_CICLO.ultimaCompra,
+  tipo: TIPO_COLUNA.DIA,
+});
+
+const COLUNA_ABERTAS = Object.freeze({
+  id: 'oportunidadesAbertas',
+  label: ROTULOS_COLUNA_CICLO.oportunidadesAbertas,
+  tipo: TIPO_COLUNA.INTEIRO,
 });
 
 export const COLUNAS_PADRAO = Object.freeze(['nome', 'email', 'telefone', 'status', 'responsavel']);
@@ -48,12 +85,17 @@ export function lerValorDoCampo(lead, campo) {
 
 /**
  * Todas as colunas exibíveis: campos ativos do tenant, na ordem do back, mais
- * Responsável e Criado em, que não são campos de `/fields`.
+ * Responsável e Criado em, que não são campos de `/fields`, e as do ciclo de
+ * vida (FC4): Ciclo, Cliente desde, Última compra e Abertas. Sem
+ * `comDataConversao` (o papel não vê "Data de conversão"), as duas de data não
+ * existem: `cliente_desde`/`ultima_compra` nem vêm no lead.
  *
  * @param {import('../types.js').Campo[]} campos
+ * @param {{ comDataConversao?: boolean }} [opcoes] o gate é `comDataConversao(campos)`
+ *   (`lib/ciclo-de-vida.js`) sobre **todos** os de `/fields`, não só os da tabela
  * @returns {Coluna[]}
  */
-export function montarColunas(campos) {
+export function montarColunas(campos, { comDataConversao = true } = {}) {
   const colunasDeCampo = campos.map((campo) => ({
     id: campo.chave,
     label: campo.label,
@@ -61,10 +103,24 @@ export function montarColunas(campos) {
     campo,
   }));
 
-  return [...colunasDeCampo, COLUNA_RESPONSAVEL, COLUNA_CRIADO_EM];
+  return [
+    ...colunasDeCampo,
+    COLUNA_RESPONSAVEL,
+    COLUNA_CRIADO_EM,
+    COLUNA_CICLO,
+    ...(comDataConversao ? [COLUNA_CLIENTE_DESDE, COLUNA_ULTIMA_COMPRA] : []),
+    COLUNA_ABERTAS,
+  ];
 }
 
 /**
+ * Valor que a célula recebe. Ciclo (`TIPO_COLUNA.CICLO`) devolve **o próprio
+ * lead**: o chip precisa de `ciclo_de_vida` e de `cliente_desde` (use
+ * `textoDoCiclo(valor, fuso)`). As demais do FC4 devolvem o valor cru, sem
+ * trocar ausente/`null` por nada: `cliente_desde` e `ultima_compra` (instante
+ * ISO, `null` ou `undefined` sem permissão) e `oportunidades_abertas` (inteiro;
+ * `0` é valor real).
+ *
  * @param {import('../types.js').Lead} lead
  * @param {Coluna} coluna
  */
@@ -77,6 +133,18 @@ export function lerValorDaColuna(lead, coluna) {
   }
   if (coluna.tipo === TIPO_COLUNA.INSTANTE) {
     return lead.created_at;
+  }
+  if (coluna.tipo === TIPO_COLUNA.CICLO) {
+    return lead;
+  }
+  if (coluna.tipo === TIPO_COLUNA.MES_ANO) {
+    return lead.cliente_desde;
+  }
+  if (coluna.tipo === TIPO_COLUNA.DIA) {
+    return lead.ultima_compra;
+  }
+  if (coluna.tipo === TIPO_COLUNA.INTEIRO) {
+    return lead.oportunidades_abertas;
   }
 
   return lerValorDoCampo(lead, coluna.campo);

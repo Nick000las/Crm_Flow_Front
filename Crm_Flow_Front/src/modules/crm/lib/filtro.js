@@ -1,4 +1,10 @@
 import { BUSCA_LEADS, OPERADORES_POR_TIPO, TIPOS_CAMPO } from '../constants.js';
+import {
+  MENSAGENS_CICLO,
+  ORDEM_CICLOS,
+  ROTULOS_CICLO,
+  TEXTOS_FILTRO_CICLO,
+} from './ciclo-textos.js';
 import { lerNumeroDigitado } from './form-lead.js';
 import {
   formatarCep,
@@ -29,7 +35,15 @@ import { rotuloOpcao } from './opcoes.js';
  *   esfriando?: true,
  *   semResponsavel?: true,
  *   faixaScore?: string,
+ *   cicloDeVida?: string[],
+ *   clienteDesdeDe?: string,
+ *   clienteDesdeAte?: string,
+ *   ultimaCompraDe?: string,
+ *   ultimaCompraAte?: string,
+ *   oportunidadesAbertasMin?: number,
+ *   oportunidadesAbertasMax?: number,
  * }} FiltroAplicado   datas em `AAAA-MM-DD`; `esfriando` exige `crm.inatividade`;
+ *   `cicloDeVida` é "um dos" (FC4); `clienteDesde*`/`ultimaCompra*` exigem `dataConversao`;
  *   `faixaScore` (chave da faixa) exige `crm.score`;
  *   `semResponsavel` (sem dono ou dono desativado) exclui `usuarioResponsavelId`
  * @typedef {{ id: string, chave: string, operador: string, valor: unknown }} LinhaFiltro
@@ -41,6 +55,13 @@ import { rotuloOpcao } from './opcoes.js';
  *   criadoAte: string,
  *   esfriando: boolean,
  *   faixaScore: string,             '' = qualquer faixa
+ *   cicloDeVida: string[],          [] = qualquer ciclo
+ *   clienteDesdeDe: string,
+ *   clienteDesdeAte: string,
+ *   ultimaCompraDe: string,
+ *   ultimaCompraAte: string,
+ *   oportunidadesAbertasMin: string,
+ *   oportunidadesAbertasMax: string,
  * }} FixosRascunho   `esfriando` não tem controle no construtor (vem da view
  *   ou da notificação); só atravessa o rascunho para "Aplicar" não perdê-lo
  * @typedef {{ linhas: LinhaFiltro[], fixos: FixosRascunho }} Rascunho
@@ -95,6 +116,13 @@ const FIXOS_VAZIOS = Object.freeze({
   criadoAte: '',
   esfriando: false,
   faixaScore: '',
+  cicloDeVida: Object.freeze([]),
+  clienteDesdeDe: '',
+  clienteDesdeAte: '',
+  ultimaCompraDe: '',
+  ultimaCompraAte: '',
+  oportunidadesAbertasMin: '',
+  oportunidadesAbertasMax: '',
 });
 
 /** Chave de faixa de score (slug do back): texto curto, sem validar contra as faixas. */
@@ -106,6 +134,17 @@ const chaveDeFaixa = (valor) =>
   typeof valor === 'string' && valor.trim() && valor.length <= MAX_CHAVE_FAIXA
     ? valor.trim()
     : undefined;
+
+/**
+ * Chaves fixas do ciclo de vida (FC4) que saem juntas: "Tirar este filtro" num
+ * 400 de uma delas tira o grupo inteiro (o intervalo sem uma ponta ainda daria 400).
+ */
+const GRUPOS_CICLO = Object.freeze([
+  ['cicloDeVida'],
+  ['clienteDesdeDe', 'clienteDesdeAte'],
+  ['ultimaCompraDe', 'ultimaCompraAte'],
+  ['oportunidadesAbertasMin', 'oportunidadesAbertasMax'],
+]);
 
 let proximoIdLinha = 0;
 const gerarIdLinha = () => `linha-${(proximoIdLinha += 1)}`;
@@ -121,7 +160,13 @@ export function contarFiltros(filtro) {
     (filtro.valorMin !== undefined || filtro.valorMax !== undefined ? 1 : 0) +
     (filtro.criadoDe || filtro.criadoAte ? 1 : 0) +
     (filtro.esfriando ? 1 : 0) +
-    (filtro.faixaScore ? 1 : 0)
+    (filtro.faixaScore ? 1 : 0) +
+    (filtro.cicloDeVida?.length ? 1 : 0) +
+    (filtro.clienteDesdeDe || filtro.clienteDesdeAte ? 1 : 0) +
+    (filtro.ultimaCompraDe || filtro.ultimaCompraAte ? 1 : 0) +
+    (filtro.oportunidadesAbertasMin !== undefined || filtro.oportunidadesAbertasMax !== undefined
+      ? 1
+      : 0)
   );
 }
 
@@ -132,6 +177,17 @@ export function serializarFiltro(filtro) {
 
 const numeroFinito = (valor) => (Number.isFinite(valor) ? valor : undefined);
 const dataValida = (valor) => (typeof valor === 'string' && DATA.test(valor) ? valor : undefined);
+const inteiroNaoNegativo = (valor) => (Number.isInteger(valor) && valor >= 0 ? valor : undefined);
+
+/** Só os ciclos conhecidos, sem repetir, na ordem da tela; nenhum = `undefined` (array vazio dá 400). */
+function ciclosValidos(valor) {
+  if (!Array.isArray(valor)) {
+    return undefined;
+  }
+  const ciclos = ORDEM_CICLOS.filter((ciclo) => valor.includes(ciclo));
+
+  return ciclos.length > 0 ? ciclos : undefined;
+}
 
 /**
  * Lê o filtro da URL ou de uma view salva. Tudo que não tem a forma certa é
@@ -179,12 +235,22 @@ export function lerFiltro(entrada) {
     // Os dois juntos dão 400: num link editado à mão, vale o responsável.
     semResponsavel: bruto.semResponsavel === true && !usuarioResponsavelId ? true : undefined,
     faixaScore: chaveDeFaixa(bruto.faixaScore),
+    cicloDeVida: ciclosValidos(bruto.cicloDeVida),
+    // Ciclo de vida (FC4): texto de calendário, nunca instante.
+    clienteDesdeDe: dataValida(bruto.clienteDesdeDe),
+    clienteDesdeAte: dataValida(bruto.clienteDesdeAte),
+    ultimaCompraDe: dataValida(bruto.ultimaCompraDe),
+    ultimaCompraAte: dataValida(bruto.ultimaCompraAte),
+    oportunidadesAbertasMin: inteiroNaoNegativo(bruto.oportunidadesAbertasMin),
+    oportunidadesAbertasMax: inteiroNaoNegativo(bruto.oportunidadesAbertasMax),
   });
 }
 
 /**
  * Filtro aplicado → campos do corpo da busca. `criadoAte` é um dia inteiro:
- * vira o último instante do dia, senão o próprio dia ficaria de fora.
+ * vira o último instante do dia, senão o próprio dia ficaria de fora. As datas
+ * do ciclo de vida (`clienteDesde*`, `ultimaCompra*`) vão como estão
+ * (`AAAA-MM-DD`): o back já trata as duas pontas como inclusivas.
  *
  * @param {FiltroAplicado} filtro
  */
@@ -287,6 +353,7 @@ export function trocarOperador(linha, operador, campo) {
 
 const numeroParaTexto = (valor) =>
   typeof valor === 'number' ? String(valor).replace('.', ',') : '';
+const inteiroParaTexto = (valor) => (Number.isInteger(valor) ? String(valor) : '');
 
 /** Item aplicado → linha editável (também a condição de uma regra de campo). */
 export function linhaDoItem(item, campo) {
@@ -339,12 +406,19 @@ export function rascunhoDoFiltro(filtro, campos) {
       criadoAte: filtro.criadoAte ?? '',
       esfriando: Boolean(filtro.esfriando),
       faixaScore: filtro.faixaScore ?? '',
+      cicloDeVida: filtro.cicloDeVida ? [...filtro.cicloDeVida] : [],
+      clienteDesdeDe: filtro.clienteDesdeDe ?? '',
+      clienteDesdeAte: filtro.clienteDesdeAte ?? '',
+      ultimaCompraDe: filtro.ultimaCompraDe ?? '',
+      ultimaCompraAte: filtro.ultimaCompraAte ?? '',
+      oportunidadesAbertasMin: inteiroParaTexto(filtro.oportunidadesAbertasMin),
+      oportunidadesAbertasMax: inteiroParaTexto(filtro.oportunidadesAbertasMax),
     },
   };
 }
 
 export function rascunhoVazio() {
-  return { linhas: [], fixos: { ...FIXOS_VAZIOS } };
+  return { linhas: [], fixos: { ...FIXOS_VAZIOS, cicloDeVida: [] } };
 }
 
 /** Converte um limite de faixa; `undefined` = sem limite, `NaN` = inválido. */
@@ -357,6 +431,50 @@ function lerLimite(texto, numerico) {
   }
 
   return lerNumeroDigitado(texto) ?? undefined;
+}
+
+/** Contagem digitada (`oportunidadesAbertas*`); `undefined` = sem limite, `NaN` = inválido. */
+function lerInteiro(texto) {
+  const limpo = typeof texto === 'string' ? texto.trim() : '';
+  if (!limpo) {
+    return undefined;
+  }
+
+  return /^\d+$/.test(limpo) ? Number(limpo) : Number.NaN;
+}
+
+/** De > Até, só com as duas datas na forma `AAAA-MM-DD` (a ordem de texto é a de calendário). */
+const datasInvertidas = (de, ate) => DATA.test(de ?? '') && DATA.test(ate ?? '') && de > ate;
+
+/**
+ * Erros dos filtros fixos do ciclo de vida (FC4), com os textos do 400 do back
+ * e nas mesmas chaves (`clienteDesdeDe`, `ultimaCompraDe`, `oportunidadesAbertasMin`).
+ *
+ * @param {FixosRascunho} fixos
+ * @param {number | undefined} min
+ * @param {number | undefined} max
+ * @returns {Record<string, string>}
+ */
+function errosDoCiclo(fixos, min, max) {
+  const erros = {};
+
+  if (datasInvertidas(fixos.clienteDesdeDe, fixos.clienteDesdeAte)) {
+    erros.clienteDesdeDe = MENSAGENS_CICLO.DATA_INVERTIDA;
+  }
+  if (datasInvertidas(fixos.ultimaCompraDe, fixos.ultimaCompraAte)) {
+    erros.ultimaCompraDe = MENSAGENS_CICLO.DATA_INVERTIDA;
+  }
+  if (Number.isNaN(min)) {
+    erros.oportunidadesAbertasMin = MENSAGENS_CICLO.INTEIRO;
+  }
+  if (Number.isNaN(max)) {
+    erros.oportunidadesAbertasMax = MENSAGENS_CICLO.INTEIRO;
+  }
+  if (min !== undefined && max !== undefined && min > max) {
+    erros.oportunidadesAbertasMin = MENSAGENS_CICLO.MIN_MAIOR;
+  }
+
+  return erros;
 }
 
 /**
@@ -447,6 +565,10 @@ export function filtroDoRascunho({ linhas, fixos }, campos) {
     erros.valorMax = MENSAGENS_FILTRO.NUMERO;
   }
 
+  const abertasMin = lerInteiro(fixos.oportunidadesAbertasMin);
+  const abertasMax = lerInteiro(fixos.oportunidadesAbertasMax);
+  Object.assign(erros, errosDoCiclo(fixos, abertasMin, abertasMax));
+
   if (Object.keys(erros).length > 0) {
     return { erros };
   }
@@ -465,6 +587,13 @@ export function filtroDoRascunho({ linhas, fixos }, campos) {
       criadoAte: fixos.criadoAte || undefined,
       esfriando: fixos.esfriando || undefined,
       faixaScore: fixos.faixaScore || undefined,
+      cicloDeVida: fixos.cicloDeVida,
+      clienteDesdeDe: fixos.clienteDesdeDe || undefined,
+      clienteDesdeAte: fixos.clienteDesdeAte || undefined,
+      ultimaCompraDe: fixos.ultimaCompraDe || undefined,
+      ultimaCompraAte: fixos.ultimaCompraAte || undefined,
+      oportunidadesAbertasMin: abertasMin,
+      oportunidadesAbertasMax: abertasMax,
     }),
   };
 }
@@ -600,6 +729,66 @@ export function chipsDoFiltro(filtro, campos, nomePorId, faixas = null) {
       remover: sem('faixaScore'),
     });
   }
+  chips.push(...chipsDoCiclo(filtro, sem));
+
+  return chips;
+}
+
+const dataDoChip = (valor) => formatarData(valor) ?? String(valor);
+
+/**
+ * Chips do ciclo de vida (FC4). Cada um tem a `chave` do 400 do back e sai com o
+ * grupo inteiro.
+ *
+ * @param {FiltroAplicado} filtro
+ * @param {(...chaves: string[]) => () => FiltroAplicado} sem
+ */
+function chipsDoCiclo(filtro, sem) {
+  const chips = [];
+
+  if (filtro.cicloDeVida?.length) {
+    const rotulos = filtro.cicloDeVida.map((ciclo) => ROTULOS_CICLO[ciclo] ?? ciclo);
+    chips.push({
+      id: 'cicloDeVida',
+      texto: `${TEXTOS_FILTRO_CICLO.prefixoChip}: ${rotulos.join(', ')}`,
+      chave: 'cicloDeVida',
+      remover: sem('cicloDeVida'),
+    });
+  }
+  if (filtro.clienteDesdeDe || filtro.clienteDesdeAte) {
+    const faixa = descreverFaixa(filtro.clienteDesdeDe, filtro.clienteDesdeAte, dataDoChip);
+    chips.push({
+      id: 'clienteDesde',
+      texto: `${TEXTOS_FILTRO_CICLO.clienteDesde}: ${faixa}`,
+      chave: 'clienteDesdeDe',
+      remover: sem('clienteDesdeDe', 'clienteDesdeAte'),
+    });
+  }
+  if (filtro.ultimaCompraDe || filtro.ultimaCompraAte) {
+    const faixa = descreverFaixa(filtro.ultimaCompraDe, filtro.ultimaCompraAte, dataDoChip);
+    chips.push({
+      id: 'ultimaCompra',
+      texto: `${TEXTOS_FILTRO_CICLO.ultimaCompra}: ${faixa}`,
+      chave: 'ultimaCompraDe',
+      remover: sem('ultimaCompraDe', 'ultimaCompraAte'),
+    });
+  }
+  if (
+    filtro.oportunidadesAbertasMin !== undefined ||
+    filtro.oportunidadesAbertasMax !== undefined
+  ) {
+    const faixa = descreverFaixa(
+      filtro.oportunidadesAbertasMin,
+      filtro.oportunidadesAbertasMax,
+      String,
+    );
+    chips.push({
+      id: 'oportunidadesAbertas',
+      texto: `${TEXTOS_FILTRO_CICLO.oportunidadesAbertas}: ${faixa}`,
+      chave: 'oportunidadesAbertasMin',
+      remover: sem('oportunidadesAbertasMin', 'oportunidadesAbertasMax'),
+    });
+  }
 
   return chips;
 }
@@ -629,7 +818,16 @@ export function chavesComErro(fields) {
  */
 export function chavesForaDosCampos(fields, campos) {
   // `faixaScore` não é campo: é o filtro fixo de score (faixa apagada), não campo oculto.
-  const conhecidas = new Set([...campos.map((campo) => campo.chave), CHAVE_ERRO_FAIXA]);
+  // `cicloDeVida` e as abertas (FC4) valem para todo papel. As datas do ciclo
+  // ficam de fora de propósito: o 400 `filtros.clienteDesdeDe` é falta de
+  // `dataConversao`, ou seja, campo oculto.
+  const conhecidas = new Set([
+    ...campos.map((campo) => campo.chave),
+    CHAVE_ERRO_FAIXA,
+    'cicloDeVida',
+    'oportunidadesAbertasMin',
+    'oportunidadesAbertasMax',
+  ]);
   return [...chavesComErro(fields)].filter((chave) => !conhecidas.has(chave));
 }
 
@@ -650,7 +848,22 @@ export function filtroComValor(filtro, comValor) {
   return semChaves(filtro, ['valorMin', 'valorMax']);
 }
 
-/** O filtro sem os itens dessas chaves. @param {FiltroAplicado} filtro @param {string[]} chaves */
+/**
+ * O filtro sem os itens dessas chaves ("Tirar este filtro"). Chave fixa do
+ * ciclo de vida (FC4) também sai, com o grupo dela: tirar `clienteDesdeDe` tira
+ * o intervalo inteiro.
+ *
+ * @param {FiltroAplicado} filtro
+ * @param {string[]} chaves
+ * @returns {FiltroAplicado}
+ */
 export function filtroSemChaves(filtro, chaves) {
-  return { ...filtro, filtros: filtro.filtros.filter((item) => !chaves.includes(item.chave)) };
+  const fixas = GRUPOS_CICLO.filter((grupo) =>
+    grupo.some((chave) => chaves.includes(chave)),
+  ).flat();
+
+  return {
+    ...semChaves(filtro, fixas),
+    filtros: filtro.filtros.filter((item) => !chaves.includes(item.chave)),
+  };
 }

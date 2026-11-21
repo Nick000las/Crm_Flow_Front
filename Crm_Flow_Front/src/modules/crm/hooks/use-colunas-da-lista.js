@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { CONTEXTO } from '../constants';
+import { comDataConversao } from '../lib/ciclo-de-vida';
 import { montarColunas } from '../lib/colunas';
 import { camposDoContexto } from '../lib/contextos';
 import { idsDasColunas } from '../lib/layout';
@@ -21,9 +22,10 @@ export function useColunasDaLista(campos, tenantId) {
 
   const colunas = useMemo(
     () =>
-      montarColunas(camposDoContexto(campos, CONTEXTO.TABELA)).filter(
-        (coluna) => coluna.id !== identificador?.chave,
-      ),
+      // O gate olha todos os de `/fields`: "Data de conversão" pode estar fora da tabela.
+      montarColunas(camposDoContexto(campos, CONTEXTO.TABELA), {
+        comDataConversao: comDataConversao(campos),
+      }).filter((coluna) => coluna.id !== identificador?.chave),
     [campos, identificador],
   );
   const colunasPadrao = useMemo(
